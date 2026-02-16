@@ -6,9 +6,7 @@ Plugin marketplace for Claude Code and Claude Cowork.
 
 ```
 .claude-plugin/marketplace.json    # Marketplace manifest
-astro-skill/                       # Astro 5.x + Cloudflare + GSD plugin
-article-writing/                   # 7-phase writing workflow plugin
-docs/                              # Reference documentation (skill guides)
+astro-skill/                       # Astro 5.x + Cloudflare plugin
 ```
 
 ## Conventions
@@ -18,8 +16,6 @@ Each plugin is a root-level directory containing:
 - `.claude-plugin/plugin.json` — plugin manifest
 - `skills/<name>/SKILL.md` — skills following the Agent Skills spec
 - `commands/<name>.md` — slash commands
-- `agents/<name>.md` — subagent definitions (optional)
-- `hooks/hooks.json` — hook configuration (optional)
 - `README.md` — plugin documentation
 
 ### Skills
@@ -42,13 +38,9 @@ Each plugin is a root-level directory containing:
 ## Useful commands
 
 ```bash
-# Validate the marketplace
-claude plugin validate /path/to/marketplace
-
 # Add this marketplace
 /plugin marketplace add sebc-dev/marketplace
 
 # Install a plugin
 /plugin install astro-skill@sebc-dev-marketplace
-/plugin install article-writer@sebc-dev-marketplace
 ```

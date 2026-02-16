@@ -1,16 +1,14 @@
 {
   "name": "astro-skill",
-  "version": "0.3.0",
-  "description": "Astro 5.x on Cloudflare Workers/Pages. Rendering modes (SSG, SSR, hybrid, Server Islands), Content Layer, Cloudflare bindings (KV, D1, R2, Durable Objects), breaking-change prevention. Inclut le framework GSD (Get-Shit-Done) pour la gestion de projet avec agents, workflows et hooks.",
+  "version": "1.0.0",
+  "description": "Astro 5.x on Cloudflare Workers/Pages. Rendering modes (SSG, SSR, hybrid, Server Islands), Content Layer, Cloudflare bindings (KV, D1, R2, Durable Objects), breaking-change prevention.",
   "author": {
     "name": "Negus Salomon"
   },
   "license": "MIT",
-  "keywords": ["astro", "cloudflare", "workers", "pages", "ssr", "ssg", "gsd"],
+  "keywords": ["astro", "cloudflare", "workers", "pages", "ssr", "ssg"],
   "homepage": "",
-  "repository": "",
+  "repository": "https://github.com/sebc-dev/marketplace",
   "commands": "./.claude/commands/",
-  "agents": "./.claude/agents/",
-  "skills": "./.claude/skills/",
-  "hooks": "./hooks/hooks.json"
+  "skills": "./.claude/skills/"
 }

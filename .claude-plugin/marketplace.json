@@ -1,10 +1,10 @@
 {
-  "name": "negus-marketplace",
+  "name": "sebc-dev-marketplace",
   "owner": {
     "name": "Negus Salomon"
   },
   "metadata": {
-    "description": "Marketplace de plugins Claude Code et Claude Cowork pour developpeurs. Skills, commands et workflows pour le developpement web et l'ecriture technique.",
+    "description": "Marketplace de plugins Claude Code pour le développement Astro sur Cloudflare.",
     "version": "1.0.0",
     "pluginRoot": "."
   },
@@ -12,28 +12,15 @@
     {
       "name": "astro-skill",
       "source": "./astro-skill",
-      "description": "Skill Astro 5.x on Cloudflare Workers/Pages. Rendering modes, Content Layer, Cloudflare bindings, breaking-change prevention. Inclut le framework GSD (Get-Shit-Done) pour la gestion de projet.",
-      "version": "0.3.0",
+      "description": "Skill Astro 5.x on Cloudflare Workers/Pages. Rendering modes, Content Layer, Cloudflare bindings, breaking-change prevention.",
+      "version": "1.0.0",
       "author": {
         "name": "Negus Salomon"
       },
       "license": "MIT",
-      "keywords": ["astro", "cloudflare", "workers", "pages", "ssr", "ssg", "gsd"],
+      "keywords": ["astro", "cloudflare", "workers", "pages", "ssr", "ssg"],
       "category": "development",
-      "tags": ["framework", "deployment", "project-management"]
-    },
-    {
-      "name": "article-writer",
-      "source": "./article-writing",
-      "description": "Workflow d'ecriture en 7 phases pour developpeur-auteur. L'humain ecrit et pense, Claude questionne, structure et polit. Ne genere jamais de contenu a la place de l'auteur.",
-      "version": "0.1.0",
-      "author": {
-        "name": "Negus Salomon"
-      },
-      "license": "MIT",
-      "keywords": ["writing", "article", "blog", "ai-detection", "voice", "workflow"],
-      "category": "productivity",
-      "tags": ["writing", "content", "authenticity"]
+      "tags": ["framework", "deployment"]
     }
   ]
 }
