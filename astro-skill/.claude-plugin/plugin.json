@@ -1,6 +1,6 @@
 {
   "name": "astro-skill",
-  "version": "1.0.0",
+  "version": "0.3.0",
   "description": "Astro 5.x on Cloudflare Workers/Pages. Rendering modes (SSG, SSR, hybrid, Server Islands), Content Layer, Cloudflare bindings (KV, D1, R2, Durable Objects), breaking-change prevention.",
   "author": {
     "name": "Negus Salomon"

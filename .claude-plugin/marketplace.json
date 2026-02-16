@@ -1,11 +1,11 @@
 {
-  "name": "sebc-dev-marketplace",
+  "name": "negus-marketplace",
   "owner": {
     "name": "Negus Salomon"
   },
   "metadata": {
-    "description": "Marketplace de plugins Claude Code pour le développement Astro sur Cloudflare.",
-    "version": "1.0.0",
+    "description": "Marketplace de plugins Claude Code et Claude Cowork pour developpeurs. Skills, commands et workflows pour le developpement web et l'ecriture technique.",
+    "version": "0.3.0",
     "pluginRoot": "."
   },
   "plugins": [
@@ -13,7 +13,7 @@
       "name": "astro-skill",
       "source": "./astro-skill",
       "description": "Skill Astro 5.x on Cloudflare Workers/Pages. Rendering modes, Content Layer, Cloudflare bindings, breaking-change prevention.",
-      "version": "1.0.0",
+      "version": "0.3.0",
       "author": {
         "name": "Negus Salomon"
       },
