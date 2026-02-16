@@ -1,42 +1,28 @@
-# negus-marketplace
+# sebc.dev marketplace
 
-Marketplace de plugins [Claude Code](https://claude.com/code) et [Claude Cowork](https://claude.com/cowork) pour developpeurs.
+Plugin marketplace for [Claude Code](https://claude.com/code) and [Claude Cowork](https://claude.com/cowork).
 
 ## Plugins
 
-| Plugin | Version | Description |
-|--------|---------|-------------|
-| **astro-skill** | 0.3.0 | Astro 5.x on Cloudflare Workers/Pages — rendering modes, Content Layer, bindings, breaking-change prevention + framework GSD |
-| **article-writer** | 0.1.0 | Workflow d'ecriture en 7 phases — l'humain ecrit, Claude questionne et polit. Ne genere jamais de contenu a la place de l'auteur |
+### [astro-skill](./astro-skill/) `v0.3.0`
+
+Complete Astro 5.x on Cloudflare Workers/Pages skill. Covers rendering modes (SSG, SSR, hybrid, Server Islands), Content Layer, Cloudflare bindings (KV, D1, R2, Durable Objects), and Astro 5 breaking-change prevention. Bundled with the GSD (Get-Shit-Done) project management framework — agents, workflows, and slash commands for structured development.
+
+### [article-writer](./article-writing/) `v0.1.0`
+
+7-phase writing workflow for developer-authors. The human writes and thinks, Claude questions, structures, and polishes. Never generates content on the author's behalf. Includes 9 skills for AI-pattern detection (slop vocabulary, false depth, symmetric structure) and 5 slash commands that enforce a human-first writing process.
 
 ## Installation
 
 ```bash
-# Ajouter le marketplace
-/plugin marketplace add owner/negus-marketplace
+# Add the marketplace
+/plugin marketplace add sebc-dev/marketplace
 
-# Installer un plugin
-/plugin install astro-skill@negus-marketplace
-/plugin install article-writer@negus-marketplace
+# Install a plugin
+/plugin install astro-skill@sebc-dev-marketplace
+/plugin install article-writer@sebc-dev-marketplace
 ```
 
-## article-writer — Commandes
-
-| Commande | Phase | Ratio H/IA |
-|----------|-------|------------|
-| `/braindump` | Capture brute + dialogue socratique | 70/30 |
-| `/structure` | Plan structure (l'auteur propose, Claude challenge) | 80/20 |
-| `/draft` | Redaction dirigee (deblocage ponctuel) | 70-90/10-30 |
-| `/review` | Relecture critique multi-axes, sans reecriture | 40/60 |
-| `/polish` | Corrections de surface (grammaire, fluidite) | 50/50 |
-
-## astro-skill — Contenu
-
-- 1 skill principal (`astro-cloudflare`) avec 11 fichiers de reference
-- 47 commandes slash (3 Astro + 44 GSD)
-- 11 agents GSD
-- 10 regles critiques Astro 5.x breaking-changes
-
-## Licence
+## License
 
 MIT
