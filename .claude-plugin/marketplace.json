@@ -21,6 +21,19 @@
       "keywords": ["astro", "cloudflare", "workers", "pages", "ssr", "ssg"],
       "category": "development",
       "tags": ["framework", "deployment"]
+    },
+    {
+      "name": "article-writer",
+      "source": "./article-writing",
+      "description": "Human-first writing workflow in 8 phases for developer-authors. The human writes and thinks, Claude questions, structures, reviews, and polishes. Never generates content on the author's behalf.",
+      "version": "0.3.0",
+      "author": {
+        "name": "Negus Salomon"
+      },
+      "license": "MIT",
+      "keywords": ["writing", "article", "blog", "ai-detection", "voice", "workflow", "human-first"],
+      "category": "productivity",
+      "tags": ["writing", "content", "authenticity"]
     }
   ]
 }
