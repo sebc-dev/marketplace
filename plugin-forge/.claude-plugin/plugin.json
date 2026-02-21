@@ -1,0 +1,12 @@
+{
+  "name": "plugin-forge",
+  "version": "0.3.0",
+  "description": "Architectural design patterns for Claude Code plugins. Component selection, context budget architecture, multi-component orchestration, skill description optimization, and quality validation. Complements plugin-dev (component syntax) with holistic design guidance.",
+  "author": {
+    "name": "Negus Salomon"
+  },
+  "license": "MIT",
+  "keywords": ["plugin", "architecture", "design", "context-engineering", "orchestration"],
+  "commands": "./commands/",
+  "skills": "./skills/"
+}

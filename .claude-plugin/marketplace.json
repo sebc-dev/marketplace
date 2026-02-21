@@ -1,5 +1,5 @@
 {
-  "name": "negus-marketplace",
+  "name": "sebc.dev Marketplace",
   "owner": {
     "name": "Negus Salomon"
   },
@@ -25,15 +25,28 @@
     {
       "name": "article-writer",
       "source": "./article-writing",
-      "description": "Human-first writing workflow in 8 phases for developer-authors. The human writes and thinks, Claude questions, structures, reviews, and polishes. Never generates content on the author's behalf.",
+      "description": "Workflow d'ecriture en 7 phases pour developpeur-auteur. L'humain ecrit et pense, Claude questionne, structure et polit. Ne genere jamais de contenu a la place de l'auteur.",
       "version": "0.3.0",
       "author": {
         "name": "Negus Salomon"
       },
       "license": "MIT",
-      "keywords": ["writing", "article", "blog", "ai-detection", "voice", "workflow", "human-first"],
+      "keywords": ["writing", "article", "blog", "ai-detection", "voice", "workflow"],
       "category": "productivity",
       "tags": ["writing", "content", "authenticity"]
+    },
+    {
+      "name": "plugin-forge",
+      "source": "./plugin-forge",
+      "description": "Architectural design patterns for Claude Code plugins. Component selection, context budget architecture, multi-component orchestration, and quality validation. Complements plugin-dev with holistic design guidance.",
+      "version": "0.3.0",
+      "author": {
+        "name": "Negus Salomon"
+      },
+      "license": "MIT",
+      "keywords": ["plugin", "architecture", "design", "context-engineering", "orchestration"],
+      "category": "development",
+      "tags": ["plugin-development", "architecture", "best-practices"]
     }
   ]
 }
