@@ -7,6 +7,9 @@ Plugin marketplace for Claude Code and Claude Cowork.
 ```
 .claude-plugin/marketplace.json    # Marketplace manifest
 astro-skill/                       # Astro 5.x + Cloudflare plugin
+article-writing/                   # Human-first writing workflow plugin
+svelte-skill/                      # Svelte 5 + SvelteKit 2 plugin
+plugin-forge/                      # Plugin architecture design patterns
 ```
 
 ## Conventions
@@ -43,4 +46,7 @@ Each plugin is a root-level directory containing:
 
 # Install a plugin
 /plugin install astro-skill@sebc-dev-marketplace
+/plugin install article-writer@sebc-dev-marketplace
+/plugin install svelte-skill@sebc-dev-marketplace
+/plugin install plugin-forge@sebc-dev-marketplace
 ```

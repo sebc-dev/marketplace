@@ -1,7 +1,7 @@
 {
   "name": "sebc.dev Marketplace",
   "owner": {
-    "name": "Negus Salomon"
+    "name": "sebc.dev"
   },
   "metadata": {
     "description": "Marketplace de plugins Claude Code et Claude Cowork pour developpeurs. Skills, commands et workflows pour le developpement web et l'ecriture technique.",
@@ -13,9 +13,9 @@
       "name": "astro-skill",
       "source": "./astro-skill",
       "description": "Skill Astro 5.x on Cloudflare Workers/Pages. Rendering modes, Content Layer, Cloudflare bindings, breaking-change prevention.",
-      "version": "0.4.0",
+      "version": "0.3.0",
       "author": {
-        "name": "Negus Salomon"
+        "name": "sebc.dev"
       },
       "license": "MIT",
       "keywords": ["astro", "cloudflare", "workers", "pages", "ssr", "ssg"],
@@ -26,9 +26,9 @@
       "name": "article-writer",
       "source": "./article-writing",
       "description": "Workflow d'ecriture en 7 phases pour developpeur-auteur. L'humain ecrit et pense, Claude questionne, structure et polit. Ne genere jamais de contenu a la place de l'auteur.",
-      "version": "0.4.0",
+      "version": "0.2.0",
       "author": {
-        "name": "Negus Salomon"
+        "name": "sebc.dev"
       },
       "license": "MIT",
       "keywords": ["writing", "article", "blog", "ai-detection", "voice", "workflow"],
@@ -39,9 +39,9 @@
       "name": "plugin-forge",
       "source": "./plugin-forge",
       "description": "Architectural design patterns for Claude Code plugins. Component selection, context budget architecture, multi-component orchestration, and quality validation. Complements plugin-dev with holistic design guidance.",
-      "version": "0.4.0",
+      "version": "0.1.0",
       "author": {
-        "name": "Negus Salomon"
+        "name": "sebc.dev"
       },
       "license": "MIT",
       "keywords": ["plugin", "architecture", "design", "context-engineering", "orchestration"],
@@ -52,9 +52,9 @@
       "name": "svelte-skill",
       "source": "./svelte-skill",
       "description": "Skill Svelte 5 + SvelteKit 2. Runes, components, routing, data loading, state management, hooks, TypeScript, testing, deployment, ecosystem selection, anti-pattern prevention. Complements the Svelte MCP server.",
-      "version": "0.4.0",
+      "version": "0.1.0",
       "author": {
-        "name": "Negus Salomon"
+        "name": "sebc.dev"
       },
       "license": "MIT",
       "keywords": ["svelte", "sveltekit", "runes", "ssr", "typescript"],

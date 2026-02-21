@@ -1,9 +1,9 @@
 {
   "name": "svelte-skill",
-  "version": "0.4.0",
+  "version": "0.1.0",
   "description": "Svelte 5 and SvelteKit 2. Runes, components, routing, data loading, state management, hooks, TypeScript, testing, deployment, ecosystem selection, anti-pattern prevention. Complements the Svelte MCP server.",
   "author": {
-    "name": "Negus Salomon"
+    "name": "sebc.dev"
   },
   "license": "MIT",
   "keywords": ["svelte", "sveltekit", "runes", "ssr", "typescript"],
