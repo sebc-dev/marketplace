@@ -1,0 +1,122 @@
+# Last updated: 2026-02-21
+
+# Tauri v2 Documentation Index
+
+> Use this file with WebFetch to access official Tauri v2 documentation on demand.
+> Format: [Title](URL) — short description
+
+## Start
+- [Create a Project](https://v2.tauri.app/start/create-project) — scaffolding with create-tauri-app
+- [What is Tauri?](https://v2.tauri.app/start) — overview and positioning
+- [Prerequisites](https://v2.tauri.app/start/prerequisites) — system requirements per OS
+- [Project Structure](https://v2.tauri.app/start/project-structure) — src-tauri layout, lib.rs/main.rs
+- [Frontend Configuration](https://v2.tauri.app/start/frontend) — framework integration overview
+- [SvelteKit](https://v2.tauri.app/start/frontend/sveltekit) — SvelteKit frontend setup
+- [Vite](https://v2.tauri.app/start/frontend/vite) — Vite frontend setup
+- [Next.js](https://v2.tauri.app/start/frontend/nextjs) — Next.js frontend setup
+- [Nuxt](https://v2.tauri.app/start/frontend/nuxt) — Nuxt frontend setup
+- [Upgrade from Tauri 1.0](https://v2.tauri.app/start/migrate/from-tauri-1) — v1 to v2 migration guide
+
+## Core Concepts
+- [Tauri Architecture](https://v2.tauri.app/concept/architecture) — core process, webview, crates
+- [Process Model](https://v2.tauri.app/concept/process-model) — core vs webview processes
+- [Inter-Process Communication](https://v2.tauri.app/concept/inter-process-communication) — IPC overview
+- [Brownfield Pattern](https://v2.tauri.app/concept/inter-process-communication/brownfield) — default IPC mode
+- [Isolation Pattern](https://v2.tauri.app/concept/inter-process-communication/isolation) — sandboxed IPC
+
+## Security
+- [Security Overview](https://v2.tauri.app/security) — security model introduction
+- [Capabilities](https://v2.tauri.app/security/capabilities) — capability files and schema
+- [Permissions](https://v2.tauri.app/security/permissions) — permission syntax and sets
+- [Command Scopes](https://v2.tauri.app/security/scope) — FS and HTTP scoping
+- [Content Security Policy](https://v2.tauri.app/security/csp) — CSP configuration
+- [HTTP Headers](https://v2.tauri.app/security/http-headers) — COOP/COEP headers
+- [Runtime Authority](https://v2.tauri.app/security/runtime-authority) — invoke key, ACL enforcement
+
+## Develop
+- [Calling Rust from the Frontend](https://v2.tauri.app/develop/calling-rust) — commands, invoke, args, async, errors
+- [Calling the Frontend from Rust](https://v2.tauri.app/develop/calling-frontend) — events, channels, eval
+- [Configuration Files](https://v2.tauri.app/develop/configuration-files) — tauri.conf.json schema
+- [State Management](https://v2.tauri.app/develop/state-management) — Mutex, State<T>, manage()
+- [Embedding Additional Files](https://v2.tauri.app/develop/resources) — bundle.resources
+- [Embedding External Binaries](https://v2.tauri.app/develop/sidecar) — sidecars and target triples
+- [App Icons](https://v2.tauri.app/develop/icons) — tauri icon generation
+- [Plugin Development](https://v2.tauri.app/develop/plugins) — creating custom plugins
+- [Mobile Plugin Development](https://v2.tauri.app/develop/plugins/develop-mobile) — Kotlin/Swift plugins
+- [Debug](https://v2.tauri.app/develop/debug) — DevTools, VS Code, logging
+- [Debug in VS Code](https://v2.tauri.app/develop/debug/vscode) — CodeLLDB configuration
+- [Tests](https://v2.tauri.app/develop/tests) — testing strategies
+- [Mock Tauri APIs](https://v2.tauri.app/develop/tests/mocking) — @tauri-apps/api/mocks
+- [WebDriver Testing](https://v2.tauri.app/develop/tests/webdriver) — tauri-driver E2E
+
+## Distribute
+- [Distribute Overview](https://v2.tauri.app/distribute) — bundling and packaging
+- [Windows Installer](https://v2.tauri.app/distribute/windows-installer) — NSIS and WiX
+- [macOS Application Bundle](https://v2.tauri.app/distribute/macos-application-bundle) — .app and DMG
+- [Debian](https://v2.tauri.app/distribute/debian) — .deb packaging
+- [AppImage](https://v2.tauri.app/distribute/appimage) — universal Linux
+- [RPM](https://v2.tauri.app/distribute/rpm) — Fedora/RHEL
+- [Flathub](https://v2.tauri.app/distribute/flatpak) — Flatpak distribution
+- [Snapcraft](https://v2.tauri.app/distribute/snapcraft) — Snap distribution
+- [App Store](https://v2.tauri.app/distribute/app-store) — Mac App Store
+- [Google Play](https://v2.tauri.app/distribute/google-play) — Android distribution
+- [Microsoft Store](https://v2.tauri.app/distribute/microsoft-store) — Windows Store
+- [macOS Code Signing](https://v2.tauri.app/distribute/sign/macos) — notarization
+- [Windows Code Signing](https://v2.tauri.app/distribute/sign/windows) — Authenticode
+- [Linux Code Signing](https://v2.tauri.app/distribute/sign/linux) — GPG signing
+- [Android Code Signing](https://v2.tauri.app/distribute/sign/android) — keystore
+- [iOS Code Signing](https://v2.tauri.app/distribute/sign/ios) — provisioning
+- [GitHub Pipelines](https://v2.tauri.app/distribute/pipelines/github) — tauri-action CI/CD
+
+## Learn
+- [System Tray](https://v2.tauri.app/learn/system-tray) — tray icon tutorial
+- [Window Customization](https://v2.tauri.app/learn/window-customization) — titlebar, effects
+- [Window Menu](https://v2.tauri.app/learn/window-menu) — native menus
+- [Splashscreen](https://v2.tauri.app/learn/splashscreen) — splash screen pattern
+- [Node.js as a Sidecar](https://v2.tauri.app/learn/sidecar-nodejs) — Node.js sidecar
+- [Using Plugin Permissions](https://v2.tauri.app/learn/security/using-plugin-permissions) — permissions tutorial
+- [Writing Plugin Permissions](https://v2.tauri.app/learn/security/writing-plugin-permissions) — custom permissions
+
+## Plugins (Official)
+
+### File System & Storage
+- [File System (fs)](https://v2.tauri.app/plugin/file-system/) — scoped file I/O with watch support
+- [Store](https://v2.tauri.app/plugin/store/) — key-value JSON persistence
+- [SQL](https://v2.tauri.app/plugin/sql/) — SQLite/MySQL/PostgreSQL via sqlx
+- [Stronghold](https://v2.tauri.app/plugin/stronghold/) — encrypted vault storage (IOTA)
+- [Persisted Scope](https://v2.tauri.app/plugin/persisted-scope/) — auto-persist FS scope grants
+
+### Networking
+- [HTTP Client](https://v2.tauri.app/plugin/http-client/) — scoped HTTP with CORS bypass
+- [WebSocket](https://v2.tauri.app/plugin/websocket/) — WebSocket client
+- [Upload](https://v2.tauri.app/plugin/upload/) — file upload/download with progress
+
+### UI & System Interaction
+- [Dialog](https://v2.tauri.app/plugin/dialog/) — file pickers and message boxes
+- [Notification](https://v2.tauri.app/plugin/notification/) — system notifications
+- [Clipboard](https://v2.tauri.app/plugin/clipboard-manager/) — clipboard read/write
+- [Global Shortcut](https://v2.tauri.app/plugin/global-shortcut/) — system-wide hotkeys (desktop)
+- [Opener](https://v2.tauri.app/plugin/opener/) — open URLs, files, reveal in explorer
+- [Window State](https://v2.tauri.app/plugin/window-state/) — persist window position/size (desktop)
+- [Positioner](https://v2.tauri.app/plugin/positioner/) — predefined window positions (desktop)
+
+### System & OS
+- [OS Information](https://v2.tauri.app/plugin/os-information/) — platform detection
+- [Process](https://v2.tauri.app/plugin/process/) — exit and relaunch
+- [Shell](https://v2.tauri.app/plugin/shell/) — command execution and sidecars (desktop)
+- [CLI](https://v2.tauri.app/plugin/cli/) — command-line argument parsing (desktop)
+- [Autostart](https://v2.tauri.app/plugin/autostart/) — launch at login (desktop)
+- [Single Instance](https://v2.tauri.app/plugin/single-instance/) — prevent multiple instances (desktop)
+- [Log](https://v2.tauri.app/plugin/log/) — structured multi-target logging
+
+### Lifecycle & Distribution
+- [Updater](https://v2.tauri.app/plugin/updater/) — self-updating with Ed25519 signature (desktop)
+- [Deep Link](https://v2.tauri.app/plugin/deep-link/) — custom URL protocol handling
+- [Localhost](https://v2.tauri.app/plugin/localhost/) — local HTTP server for frontend (desktop)
+
+### Mobile-Specific
+- [Barcode Scanner](https://v2.tauri.app/plugin/barcode-scanner/) — camera barcode/QR scanning
+- [Biometric](https://v2.tauri.app/plugin/biometric/) — Face ID, Touch ID, fingerprint
+- [NFC](https://v2.tauri.app/plugin/nfc/) — NFC tag read/write
+- [Geolocation](https://v2.tauri.app/plugin/geolocation/) — GPS position tracking
+- [Haptics](https://v2.tauri.app/plugin/haptics/) — vibration and haptic feedback

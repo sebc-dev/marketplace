@@ -60,6 +60,19 @@
       "keywords": ["svelte", "sveltekit", "runes", "ssr", "typescript"],
       "category": "development",
       "tags": ["framework", "frontend", "best-practices"]
+    },
+    {
+      "name": "tauri-skill",
+      "source": "./tauri-skill",
+      "description": "Skill Tauri v2 desktop and mobile. Architecture, security (capabilities, permissions, scopes, CSP), IPC bridge (commands, events, channels, state), plugin ecosystem (30+ official), desktop patterns (multi-window, tray, menus, sidecars), mobile (Android, iOS), build pipeline, code signing, updater, CI/CD, testing. Uses WebFetch for official docs lookup.",
+      "version": "0.1.0",
+      "author": {
+        "name": "sebc.dev"
+      },
+      "license": "MIT",
+      "keywords": ["tauri", "desktop", "mobile", "rust", "ipc", "security"],
+      "category": "development",
+      "tags": ["framework", "desktop", "mobile", "best-practices"]
     }
   ]
 }
