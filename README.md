@@ -16,6 +16,10 @@ Human-first writing workflow in 7 phases. The human writes and thinks, Claude qu
 
 Svelte 5 + SvelteKit 2 skill. Runes, components, routing, data loading, state management, hooks, TypeScript, testing, deployment, and ecosystem selection. Complements the Svelte MCP server with architecture decisions and anti-pattern prevention. 4 slash commands (`/svelte:scaffold`, `/svelte:audit`, `/svelte:debug`, `/svelte:migrate`).
 
+### [tauri-skill](./tauri-skill/) `v0.1.0`
+
+Tauri v2 desktop and mobile skill. Architecture, security model (capabilities, permissions, scopes, CSP), IPC bridge (commands, events, channels, state), plugin ecosystem (30+ official plugins), desktop patterns (multi-window, tray, menus, sidecars), mobile (Android, iOS), build pipeline, code signing, and updater. Uses WebFetch for official docs lookup. 3 slash commands (`/tauri:scaffold`, `/tauri:audit`, `/tauri:debug`).
+
 ### [plugin-forge](./plugin-forge/) `v0.1.0`
 
 Architectural design patterns for Claude Code plugins. Component selection (skill vs command vs agent vs hook vs CLAUDE.md vs MCP), plugin sizing, context budget architecture, multi-component orchestration, and quality validation. 3 slash commands (`/forge:design`, `/forge:audit`, `/forge:distill`).
@@ -30,6 +34,7 @@ Architectural design patterns for Claude Code plugins. Component selection (skil
 /plugin install astro-skill@sebc-dev-marketplace
 /plugin install article-writer@sebc-dev-marketplace
 /plugin install svelte-skill@sebc-dev-marketplace
+/plugin install tauri-skill@sebc-dev-marketplace
 /plugin install plugin-forge@sebc-dev-marketplace
 ```
 
