@@ -6,7 +6,7 @@ Interactive guided code review on the current branch. Reviews file by file in op
 
 ### `/code-review:review-init`
 
-Bootstrap the code review environment. Detects whether `jq` is available for optimized JSON updates (falls back to read/write strategy), creates the configuration file and sessions directory.
+Bootstrap the code review environment. Detects whether `jq` is available for optimized JSON updates (falls back to read/write strategy), creates the configuration file, installs scripts and sessions directory.
 
 Run this once before your first review.
 
@@ -44,6 +44,19 @@ Specialized subagent for deep test file analysis. Automatically triggered during
 **Prerequisites:**
 - Testing principles rule installed via `/code-review:review-init` (automatic)
 
+## Scripts
+
+When `jq` is available, the plugin uses pre-written bash/jq scripts instead of generating jq filters inline. Scripts are installed from the plugin into `.claude/review/scripts/` during `review-init`.
+
+| Script | Purpose | Used in |
+|---|---|---|
+| `init-strategy.sh` | Set `json_strategy` in config.json | review-init (step 5) |
+| `update-file.sh` | Mark file completed, recalculate summary | code-review (step 3d) |
+| `add-comment.sh` | Append user comment to session | code-review (step 3e) |
+| `session-status.sh` | Read-only session status display | code-review (step 0), review-continue (step 3) |
+| `session-summary.sh` | Generate recap table + mark completed | code-review (step 4) |
+| `add-test-tasks.sh` | Store test-reviewer agent task IDs | code-review (step 2-bis) |
+
 ## Runtime files
 
 The plugin creates files under `.claude/review/` in your project:
@@ -53,9 +66,11 @@ The plugin creates files under `.claude/review/` in your project:
   config.json          # Review configuration (criteria, categories, jq strategy)
   sessions/
     feature-auth.json  # Session file per branch (slug of branch name)
+  scripts/
+    *.sh               # jq scripts installed from the plugin
 ```
 
-Add `.claude/review/sessions/` to your `.gitignore` — session files are temporary and branch-specific.
+Add `.claude/review/sessions/` and `.claude/review/scripts/` to your `.gitignore` — session files are temporary and scripts are installed from the plugin.
 
 ## Configuration
 
@@ -67,7 +82,7 @@ Add `.claude/review/sessions/` to your `.gitignore` — session files are tempor
 
 ## Requirements
 
-- **jq** (optional) — enables atomic JSON updates. If not available, falls back to full read/write cycles. Install: `brew install jq` / `apt install jq` / `choco install jq`
+- **jq** (optional) — enables atomic JSON updates via pre-written scripts. If not available, falls back to full read/write cycles. Install: `brew install jq` / `apt install jq` / `choco install jq`
 
 ## Install
 

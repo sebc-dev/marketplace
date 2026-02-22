@@ -1,6 +1,6 @@
 {
   "name": "code-review",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Interactive guided code review on the current branch. Reviews file by file in optimal order with JSON-based progress tracking, jq-optimized state updates, and cross-platform design.",
   "author": {
     "name": "sebc.dev"

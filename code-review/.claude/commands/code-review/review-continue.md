@@ -7,8 +7,7 @@ allowed-tools:
   - Bash(git merge-base:*)
   - Bash(git branch:*)
   - Bash(git show:*)
-  - Bash(jq * .claude/review/sessions/*)
-  - Bash(mv * .claude/review/sessions/*)
+  - Bash(bash .claude/review/scripts/*)
   - Read
   - Write
   - Glob
@@ -48,7 +47,15 @@ Lancez /code-review:code-review pour demarrer une nouvelle review.
 
 ## 3. Afficher la progression
 
-Lire le fichier session JSON et afficher :
+Lire `json_strategy` dans la config.
+
+**Strategie `jq`** :
+```bash
+bash .claude/review/scripts/session-status.sh .claude/review/sessions/<slug>.json
+```
+Afficher le resultat tel quel.
+
+**Strategie `readwrite`** : Read du fichier session JSON et afficher :
 ```
 Reprise de la review — <branche> (base: <base-branch>)
   X/N fichiers reviewes

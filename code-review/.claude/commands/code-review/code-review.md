@@ -8,8 +8,7 @@ allowed-tools:
   - Bash(git merge-base:*)
   - Bash(git branch:*)
   - Bash(git show:*)
-  - Bash(jq * .claude/review/sessions/*)
-  - Bash(mv * .claude/review/sessions/*)
+  - Bash(bash .claude/review/scripts/*)
   - Read
   - Write
   - Glob
@@ -33,6 +32,19 @@ Config absente. Lancez /code-review:review-init d'abord.
 ```
 Et s'arreter.
 
+## Strategie JSON
+
+Lire `json_strategy` dans `.claude/review/config.json`.
+
+Si `json_strategy == "jq"`, utiliser les scripts pour toutes les operations JSON session :
+- Status session : `bash .claude/review/scripts/session-status.sh <session>`
+- Mise a jour fichier : `bash .claude/review/scripts/update-file.sh <session> <idx> <g> <y> <r> "<note>"`
+- Ajout commentaire : `bash .claude/review/scripts/add-comment.sh <session> "<file>" "<comment>"`
+- Ajout test tasks : `bash .claude/review/scripts/add-test-tasks.sh <session> '<json>'`
+- Synthese + cloture : `bash .claude/review/scripts/session-summary.sh <session>`
+
+Si `json_strategy == "readwrite"`, utiliser Read + Write pour toutes les operations JSON.
+
 ## Etape 0 — Initialiser ou reprendre
 
 1. Lire `.claude/review/config.json` pour connaitre `json_strategy`
@@ -41,19 +53,11 @@ Et s'arreter.
 4. Chercher `.claude/review/sessions/<slug>.json` via Glob
 
 **Si une session existe et `status` != `"completed"` :**
-- Lire le fichier session JSON
-- Compter les fichiers `completed` vs `pending`/`in_progress`
-- Agreger les counts (green, yellow, red) de tous les fichiers termines
-- Afficher la progression :
-  ```
-  Review existante detectee — <branche>
-    X/N fichiers reviewes
-    Fichiers termines :
-      1/N fichier.ext [Categorie] — note
-      ...
-    Prochain fichier : X+1/N fichier.ext [Categorie]
-  ```
-- Demander a l'utilisateur en conversation libre : reprendre ou recommencer ?
+
+- **Strategie `jq`** : `bash .claude/review/scripts/session-status.sh .claude/review/sessions/<slug>.json`
+  Afficher le resultat tel quel, puis demander a l'utilisateur : reprendre ou recommencer ?
+- **Strategie `readwrite`** : Read du fichier session, compter les fichiers completed/pending, afficher la progression manuellement.
+
 - **Reprendre** → aller a Etape 3 sur le prochain fichier `pending`
 - **Recommencer** → supprimer le fichier session, continuer vers Etape 1
 
@@ -141,15 +145,11 @@ Task(
 )
 ```
 
-Stocker les task IDs retournes dans la session JSON sous la cle `test_agent_tasks` :
-```json
-"test_agent_tasks": {
-  "src/test/UserServiceTest.java": "<task_id>",
-  "src/test/AuthControllerTest.java": "<task_id>"
-}
-```
+Stocker les task IDs retournes dans la session JSON :
 
-Mettre a jour le fichier session avec Write pour inclure `test_agent_tasks`.
+- **Strategie `jq`** : `bash .claude/review/scripts/add-test-tasks.sh .claude/review/sessions/<slug>.json '<json>'`
+  ou `<json>` est un objet `{"fichier_test": "task_id", ...}`
+- **Strategie `readwrite`** : Read + Write pour ajouter `test_agent_tasks` dans le JSON.
 
 Si aucun fichier n'est de categorie `tests`, ne rien lancer et ne pas ajouter la cle.
 
@@ -210,18 +210,16 @@ Si le fichier en cours est de categorie `tests` ET que `test_agent_tasks` contie
 
 ### 3d. Mettre a jour la session JSON
 
-Mettre a jour le fichier du fichier en cours dans la session :
+Mettre a jour le fichier en cours dans la session :
 - `status` → `"completed"`
 - `green`, `yellow`, `red` → les decomptes d'observations
 - `note` → resume en 120 caracteres max
-- Mettre a jour `summary.completed`, `summary.green`, `summary.yellow`, `summary.red`
 
-**Strategie `jq`** : utiliser un filtre jq atomique + mv pour la mise a jour :
+**Strategie `jq`** :
 ```bash
-jq '(.files[] | select(.index == X)) |= {status: "completed", green: G, yellow: Y, red: R, note: "..."} + . | .summary.completed = C | .summary.green = SG | .summary.yellow = SY | .summary.red = SR' \
-  .claude/review/sessions/<slug>.json > .claude/review/sessions/<slug>.tmp.json \
-  && mv .claude/review/sessions/<slug>.tmp.json .claude/review/sessions/<slug>.json
+bash .claude/review/scripts/update-file.sh .claude/review/sessions/<slug>.json <index> <green> <yellow> <red> "<note>"
 ```
+Le script recalcule automatiquement le summary par agregation et affiche le summary mis a jour.
 
 **Strategie `readwrite`** : Read complet du JSON + Write complet avec les valeurs mises a jour (1 seul cycle lecture/ecriture par fichier).
 
@@ -234,15 +232,22 @@ Indiquer que la review du fichier est terminee et que l'utilisateur peut :
 
 **IMPORTANT** : Ne JAMAIS passer au fichier suivant sans reponse explicite de l'utilisateur. Attendre sa reponse en texte libre.
 
-Si l'utilisateur ajoute un commentaire, l'enregistrer dans `user_comments` du JSON session :
-```json
-{ "file": "chemin/fichier.ext", "comment": "texte du commentaire" }
-```
+Si l'utilisateur ajoute un commentaire :
+
+- **Strategie `jq`** : `bash .claude/review/scripts/add-comment.sh .claude/review/sessions/<slug>.json "<file>" "<comment>"`
+- **Strategie `readwrite`** : Read + Write pour appender dans `user_comments`.
 
 ## Etape 4 — Synthese
 
 Apres le dernier fichier :
 
+**Strategie `jq`** :
+```bash
+bash .claude/review/scripts/session-summary.sh .claude/review/sessions/<slug>.json
+```
+Le script genere le tableau recapitulatif, liste les commentaires, et marque la session `completed`. Afficher la sortie telle quelle.
+
+**Strategie `readwrite`** :
 1. Lire le fichier session JSON complet
 2. Construire le tableau recapitulatif :
    ```
@@ -254,12 +259,13 @@ Apres le dernier fichier :
    |   | TOTAL   |           | XX | YY | ZZ  |
    ```
 3. Lister les commentaires utilisateur si presents
-4. Fournir le verdict :
-   - Resume de ce que la branche accomplit
-   - Patterns d'architecture et de design utilises
-   - Preoccupations transversales identifiees
-   - Questions ouvertes ou suggestions d'amelioration
-5. Marquer la session `status: "completed"` dans le JSON
+4. Marquer la session `status: "completed"` dans le JSON
+
+Puis dans les deux cas, fournir le verdict :
+- Resume de ce que la branche accomplit
+- Patterns d'architecture et de design utilises
+- Preoccupations transversales identifiees
+- Questions ouvertes ou suggestions d'amelioration
 
 </process>
 

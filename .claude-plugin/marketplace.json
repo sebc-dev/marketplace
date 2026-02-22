@@ -1,5 +1,5 @@
 {
-  "name": "sebc.dev Marketplace",
+  "name": "sebc-dev-marketplace",
   "owner": {
     "name": "sebc.dev"
   },
@@ -78,7 +78,7 @@
       "name": "code-review",
       "source": "./code-review",
       "description": "Interactive guided code review on the current branch. Reviews file by file in optimal order with JSON-based progress tracking, jq-optimized state updates, and cross-platform design.",
-      "version": "0.3.0",
+      "version": "0.4.0",
       "author": {
         "name": "sebc.dev"
       },
