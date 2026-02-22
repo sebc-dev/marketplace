@@ -1,0 +1,14 @@
+{
+  "name": "code-review",
+  "version": "0.3.0",
+  "description": "Interactive guided code review on the current branch. Reviews file by file in optimal order with JSON-based progress tracking, jq-optimized state updates, and cross-platform design.",
+  "author": {
+    "name": "sebc.dev"
+  },
+  "license": "MIT",
+  "keywords": ["code-review", "review", "git", "branch", "interactive"],
+  "homepage": "",
+  "repository": "https://github.com/sebc-dev/marketplace",
+  "commands": "./.claude/commands/",
+  "agents": "./.claude/agents/"
+}

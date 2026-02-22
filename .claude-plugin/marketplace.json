@@ -73,6 +73,19 @@
       "keywords": ["tauri", "desktop", "mobile", "rust", "ipc", "security"],
       "category": "development",
       "tags": ["framework", "desktop", "mobile", "best-practices"]
+    },
+    {
+      "name": "code-review",
+      "source": "./code-review",
+      "description": "Interactive guided code review on the current branch. Reviews file by file in optimal order with JSON-based progress tracking, jq-optimized state updates, and cross-platform design.",
+      "version": "0.3.0",
+      "author": {
+        "name": "sebc.dev"
+      },
+      "license": "MIT",
+      "keywords": ["code-review", "review", "git", "branch", "interactive"],
+      "category": "productivity",
+      "tags": ["code-review", "workflow", "interactive"]
     }
   ]
 }
