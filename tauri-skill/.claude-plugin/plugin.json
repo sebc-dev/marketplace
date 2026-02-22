@@ -7,8 +7,6 @@
   },
   "license": "MIT",
   "keywords": ["tauri", "desktop", "mobile", "rust", "ipc", "security"],
-  "homepage": "",
-  "repository": "https://github.com/sebc-dev/marketplace",
   "commands": "./.claude/commands/",
   "skills": "./.claude/skills/"
 }

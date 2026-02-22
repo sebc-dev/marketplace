@@ -7,8 +7,6 @@
   },
   "license": "MIT",
   "keywords": ["astro", "cloudflare", "workers", "pages", "ssr", "ssg"],
-  "homepage": "",
-  "repository": "https://github.com/sebc-dev/marketplace",
   "commands": "./.claude/commands/",
   "skills": "./.claude/skills/"
 }

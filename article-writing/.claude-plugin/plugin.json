@@ -7,7 +7,6 @@
   },
   "license": "MIT",
   "keywords": ["writing", "article", "blog", "ai-detection", "voice", "workflow", "human-first"],
-  "repository": "https://github.com/sebc-dev/marketplace",
   "commands": "./commands/",
   "skills": "./skills/"
 }
