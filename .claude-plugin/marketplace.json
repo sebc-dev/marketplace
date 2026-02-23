@@ -9,8 +9,8 @@
   },
   "plugins": [
     {
-      "name": "astro-skill",
-      "source": "./astro-skill",
+      "name": "scd-astro",
+      "source": "./scd-astro",
       "description": "Skill Astro 5.x on Cloudflare Workers/Pages. Rendering modes, Content Layer, Cloudflare bindings, breaking-change prevention.",
       "author": {
         "name": "sebc.dev"
@@ -18,8 +18,8 @@
       "category": "development"
     },
     {
-      "name": "article-writer",
-      "source": "./article-writing",
+      "name": "scd-writer",
+      "source": "./scd-writer",
       "description": "Workflow d'ecriture en 7 phases pour developpeur-auteur. L'humain ecrit et pense, Claude questionne, structure et polit. Ne genere jamais de contenu a la place de l'auteur.",
       "author": {
         "name": "sebc.dev"
@@ -27,8 +27,8 @@
       "category": "productivity"
     },
     {
-      "name": "plugin-forge",
-      "source": "./plugin-forge",
+      "name": "scd-forge",
+      "source": "./scd-forge",
       "description": "Architectural design patterns for Claude Code plugins. Component selection, context budget architecture, multi-component orchestration, and quality validation. Complements plugin-dev with holistic design guidance.",
       "author": {
         "name": "sebc.dev"
@@ -36,8 +36,8 @@
       "category": "development"
     },
     {
-      "name": "svelte-skill",
-      "source": "./svelte-skill",
+      "name": "scd-svelte",
+      "source": "./scd-svelte",
       "description": "Skill Svelte 5 + SvelteKit 2. Runes, components, routing, data loading, state management, hooks, TypeScript, testing, deployment, ecosystem selection, anti-pattern prevention. Complements the Svelte MCP server.",
       "author": {
         "name": "sebc.dev"
@@ -45,8 +45,8 @@
       "category": "development"
     },
     {
-      "name": "tauri-skill",
-      "source": "./tauri-skill",
+      "name": "scd-tauri",
+      "source": "./scd-tauri",
       "description": "Skill Tauri v2 desktop and mobile. Architecture, security (capabilities, permissions, scopes, CSP), IPC bridge (commands, events, channels, state), plugin ecosystem (30+ official), desktop patterns (multi-window, tray, menus, sidecars), mobile (Android, iOS), build pipeline, code signing, updater, CI/CD, testing. Uses WebFetch for official docs lookup.",
       "author": {
         "name": "sebc.dev"
@@ -54,8 +54,8 @@
       "category": "development"
     },
     {
-      "name": "code-review",
-      "source": "./code-review",
+      "name": "scd-review",
+      "source": "./scd-review",
       "description": "Interactive guided code review on the current branch. Reviews file by file in optimal order with JSON-based progress tracking, jq-optimized state updates, and cross-platform design.",
       "author": {
         "name": "sebc.dev"
