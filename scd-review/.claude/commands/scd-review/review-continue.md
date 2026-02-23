@@ -12,6 +12,8 @@ allowed-tools:
   - Write
   - Glob
   - Grep
+  - Task
+  - AskUserQuestion
 ---
 
 <objective>

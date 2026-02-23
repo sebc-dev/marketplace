@@ -6,8 +6,15 @@
     "name": "sebc.dev"
   },
   "license": "MIT",
-  "repository": "https://github.com/sebc-dev/marketplace",
-  "keywords": ["tauri", "desktop", "mobile", "rust", "ipc", "security"],
+  "keywords": [
+    "tauri",
+    "desktop",
+    "mobile",
+    "rust",
+    "ipc",
+    "security"
+  ],
   "commands": "./.claude/commands/",
-  "skills": "./.claude/skills/"
+  "skills": "./.claude/skills/",
+  "repository": "https://github.com/sebc-dev/marketplace"
 }

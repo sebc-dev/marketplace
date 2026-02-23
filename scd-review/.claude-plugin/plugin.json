@@ -6,8 +6,16 @@
     "name": "sebc.dev"
   },
   "license": "MIT",
-  "repository": "https://github.com/sebc-dev/marketplace",
-  "keywords": ["code-review", "review", "git", "branch", "interactive"],
+  "keywords": [
+    "code-review",
+    "review",
+    "git",
+    "branch",
+    "interactive"
+  ],
   "commands": "./.claude/commands/",
-  "agents": ["./.claude/agents/test-reviewer.md"]
+  "agents": [
+    "./.claude/agents/test-reviewer.md"
+  ],
+  "repository": "https://github.com/sebc-dev/marketplace"
 }

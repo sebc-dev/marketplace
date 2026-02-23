@@ -14,6 +14,7 @@ allowed-tools:
   - Glob
   - Grep
   - Task
+  - AskUserQuestion
 ---
 
 <objective>
@@ -130,11 +131,24 @@ Presenter un resume initial :
 
 Ecrire le JSON avec Write.
 
-### 2-bis. Lancer les agents test-reviewer en background
+### 2-bis. Preparer les agents test-reviewer (lancement differe)
 
-Apres la persistance du fichier session, identifier tous les fichiers de categorie `tests` dans la session.
+Apres la persistance du fichier session, identifier tous les fichiers de categorie `tests` dans la session et noter leur position dans l'ordre de review. **Ne PAS lancer les agents maintenant.** Le lancement se fera a l'etape 3a, quand un fichier de test se trouve dans les 3 prochains fichiers.
 
-Pour chaque fichier de test, lancer un agent `test-reviewer` en background :
+Si aucun fichier n'est de categorie `tests`, rien a preparer.
+
+## Etape 3 — Review fichier par fichier
+
+Pour chaque fichier `pending` dans l'ordre :
+
+### 3a. En-tete + lancement anticipe des test-reviewers
+
+Afficher :
+```
+Fichier X/Y : chemin/du/fichier [CATEGORIE]
+```
+
+**Lancement anticipe des agents test-reviewer :** Verifier si un fichier de categorie `tests` se trouve parmi les 3 prochains fichiers dans l'ordre de review (positions courante+1 a courante+3) ET que son agent n'a pas encore ete lance. Si oui, lancer l'agent en background :
 
 ```
 Task(
@@ -145,24 +159,11 @@ Task(
 )
 ```
 
-Stocker les task IDs retournes dans la session JSON :
+Stocker le task ID retourne dans la session JSON :
 
 - **Strategie `jq`** : `bash .claude/review/scripts/add-test-tasks.sh .claude/review/sessions/<slug>.json '<json>'`
-  ou `<json>` est un objet `{"fichier_test": "task_id", ...}`
-- **Strategie `readwrite`** : Read + Write pour ajouter `test_agent_tasks` dans le JSON.
-
-Si aucun fichier n'est de categorie `tests`, ne rien lancer et ne pas ajouter la cle.
-
-## Etape 3 — Review fichier par fichier
-
-Pour chaque fichier `pending` dans l'ordre :
-
-### 3a. En-tete
-
-Afficher :
-```
-Fichier X/Y : chemin/du/fichier [CATEGORIE]
-```
+  ou `<json>` est un objet `{"fichier_test": "task_id"}`
+- **Strategie `readwrite`** : Read + Write pour ajouter/mettre a jour `test_agent_tasks` dans le JSON.
 
 ### 3b. Expliquer les changements
 
@@ -223,16 +224,37 @@ Le script recalcule automatiquement le summary par agregation et affiche le summ
 
 **Strategie `readwrite`** : Read complet du JSON + Write complet avec les valeurs mises a jour (1 seul cycle lecture/ecriture par fichier).
 
-### 3e. Conversation libre
+### 3e. Point de controle utilisateur (barriere programmatique)
 
-Indiquer que la review du fichier est terminee et que l'utilisateur peut :
-- Poser des questions ou approfondir un point
-- Ajouter un commentaire de review
-- Dire "suivant" pour passer au fichier suivant
+Utiliser `AskUserQuestion` pour bloquer la progression jusqu'a une action explicite de l'utilisateur :
 
-**IMPORTANT** : Ne JAMAIS passer au fichier suivant sans reponse explicite de l'utilisateur. Attendre sa reponse en texte libre.
+```
+AskUserQuestion(
+  questions: [{
+    question: "Review du fichier terminee. Que souhaitez-vous faire ?",
+    header: "Fichier X/Y",
+    options: [
+      { label: "Fichier suivant", description: "Passer au prochain fichier de la review" },
+      { label: "Ajouter un commentaire", description: "Enregistrer un commentaire de review pour ce fichier" },
+      { label: "Approfondir un point", description: "Poser des questions ou discuter d'un aspect du fichier" }
+    ],
+    multiSelect: false
+  }]
+)
+```
 
-Si l'utilisateur ajoute un commentaire :
+L'option "Other" est automatiquement disponible pour du texte libre.
+
+**Comportement en boucle :**
+
+- **"Fichier suivant"** → passer au fichier suivant (sortir de la boucle 3e)
+- **"Ajouter un commentaire"** → demander le commentaire, l'enregistrer (voir ci-dessous), puis re-afficher le AskUserQuestion
+- **"Approfondir un point"** → traiter la demande de l'utilisateur, puis re-afficher le AskUserQuestion
+- **"Other" / texte libre** → traiter comme "Approfondir un point", puis re-afficher le AskUserQuestion
+
+Cette boucle garantit que Claude ne peut PAS avancer au fichier suivant tant que l'utilisateur n'a pas explicitement choisi "Fichier suivant". Meme si un agent background termine, le AskUserQuestion bloque la progression.
+
+**Enregistrement des commentaires :**
 
 - **Strategie `jq`** : `bash .claude/review/scripts/add-comment.sh .claude/review/sessions/<slug>.json "<file>" "<comment>"`
 - **Strategie `readwrite`** : Read + Write pour appender dans `user_comments`.
