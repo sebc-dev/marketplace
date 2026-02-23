@@ -1,6 +1,9 @@
 {
   "name": "sebc-dev-marketplace",
   "description": "Marketplace de plugins Claude Code pour developpeurs. Skills, commands et workflows pour le developpement web et l'ecriture technique.",
+  "metadata": {
+    "version": "0.4.0"
+  },
   "owner": {
     "name": "sebc.dev"
   },

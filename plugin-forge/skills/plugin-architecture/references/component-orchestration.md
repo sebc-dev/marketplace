@@ -69,9 +69,9 @@ Skill: astro-cloudflare
   Decision matrices, critical rules, MCP routing
 
 Commands:
-  /astro:audit    -> Audit existing Astro project (uses skill knowledge)
-  /astro:scaffold -> Generate project structure (uses skill conventions)
-  /astro:debug    -> Debug Astro-specific issues (uses skill troubleshooting)
+  /scd:astro-audit    -> Audit existing Astro project (uses skill knowledge)
+  /scd:astro-scaffold -> Generate project structure (uses skill conventions)
+  /scd:astro-debug    -> Debug Astro-specific issues (uses skill troubleshooting)
 ```
 </skill_plus_commands>
 

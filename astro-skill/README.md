@@ -27,18 +27,9 @@ Encoded directly in the skill to prevent the most common code generation errors 
 
 | Command | Description |
 |---------|-------------|
-| `/astro:scaffold` | Project scaffolding |
-| `/astro:audit` | Config audit workflow |
-| `/astro:debug` | Dual-MCP debug with Cloudflare routing |
-
-### GSD framework (Get-Shit-Done)
-
-Bundled project management framework:
-
-- **44 slash commands** — project lifecycle from `/gsd:new-project` to `/gsd:complete-milestone`
-- **11 agents** — codebase mapper, debugger, executor, planner, verifier, and more
-- **Workflows** — phase execution, diagnostics, codebase mapping
-- **Templates** — project, milestone, phase, research, verification
+| `/scd:astro-scaffold` | Project scaffolding |
+| `/scd:astro-audit` | Config audit workflow |
+| `/scd:astro-debug` | Dual-MCP debug with Cloudflare routing |
 
 ## Installation
 

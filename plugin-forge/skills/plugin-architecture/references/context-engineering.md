@@ -208,7 +208,7 @@ This enables handling tasks that exceed a single context window.
 
 ### Plugin design implication
 
-Complex commands (like `/forge:design`) should structure their output in phases:
+Complex commands (like `/scd:design`) should structure their output in phases:
 1. Research phase (read existing code, understand constraints)
 2. Decision phase (present options, get user input)
 3. Output phase (generate the design document)

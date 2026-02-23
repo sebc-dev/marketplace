@@ -265,9 +265,9 @@ Group commands under a directory to create namespaced invocations:
 ```
 commands/
   forge/
-    design.md     -> /forge:design
-    audit.md      -> /forge:audit
-    distill.md    -> /forge:distill
+    design.md     -> /scd:design
+    audit.md      -> /scd:forge-audit
+    distill.md    -> /scd:distill
 ```
 
 The directory name becomes the namespace prefix with `:` separator.

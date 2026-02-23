@@ -28,7 +28,7 @@ Branche de base : $ARGUMENTS (defaut: lire `options.default_base_branch` dans co
 
 Verifier que `.claude/review/config.json` existe (Glob). Si absent, indiquer :
 ```
-Config absente. Lancez /code-review:review-init d'abord.
+Config absente. Lancez /scd:review-init d'abord.
 ```
 Et s'arreter.
 

@@ -128,7 +128,7 @@ See [references/context-engineering.md](references/context-engineering.md) for c
 Four proven patterns for combining components.
 
 **Pattern 1: Skill + Commands (Standard plugin)**
-Skill provides domain knowledge (auto-loaded). Commands provide explicit workflows that leverage that knowledge. Example: astro-skill has the skill for Astro knowledge + `/astro:audit`, `/astro:scaffold` commands.
+Skill provides domain knowledge (auto-loaded). Commands provide explicit workflows that leverage that knowledge. Example: astro-skill has the skill for Astro knowledge + `/scd:astro-audit`, `/scd:astro-scaffold` commands.
 
 **Pattern 2: Detection + Workflow (Workflow plugin)**
 Multiple skills detect different aspects (vocabulary, structure, voice). Commands orchestrate multi-skill analysis with defined phases. Example: article-writing has 7 detection skills + 6 phase commands.

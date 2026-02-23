@@ -183,8 +183,8 @@ The higher inactive cost (800 tokens for 9 skills) is the trade-off for the mult
 ### Command design patterns
 
 1. **Phase commands** (article-writing): `/braindump` -> `/structure` -> `/draft`. Sequential, user-driven progression.
-2. **Action commands** (astro-skill): `/astro:audit`, `/astro:scaffold`. Independent, each does one thing.
-3. **Workshop commands** (plugin-forge): `/forge:design`. Interactive, multi-step conversation.
+2. **Action commands** (astro-skill): `/scd:astro-audit`, `/scd:astro-scaffold`. Independent, each does one thing.
+3. **Workshop commands** (plugin-forge): `/scd:design`. Interactive, multi-step conversation.
 
 ### The inactive cost principle
 
@@ -237,5 +237,5 @@ Every installed plugin has an inactive cost (metadata loaded at session start). 
 4. Write a SKILL.md body that indexes the sections
 5. Test: ask about each topic, verify Claude loads the right section
 
-Use `/forge:distill` for guided assistance with this migration.
+Use `/scd:distill` for guided assistance with this migration.
 </migration_patterns>

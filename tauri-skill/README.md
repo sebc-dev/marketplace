@@ -21,9 +21,9 @@ This skill uses a **hybrid approach**: lean reference files containing rules, an
 
 | Command | Description |
 |---------|-------------|
-| `/tauri:audit` | Audit a project against security best practices and anti-patterns |
-| `/tauri:debug` | Diagnose errors using troubleshooting tables and official docs |
-| `/tauri:scaffold` | Create a new Tauri v2 project with secure defaults |
+| `/scd:tauri-audit` | Audit a project against security best practices and anti-patterns |
+| `/scd:tauri-debug` | Diagnose errors using troubleshooting tables and official docs |
+| `/scd:tauri-scaffold` | Create a new Tauri v2 project with secure defaults |
 
 ## Install
 

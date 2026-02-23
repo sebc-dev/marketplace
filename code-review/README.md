@@ -4,13 +4,13 @@ Interactive guided code review on the current branch. Reviews file by file in op
 
 ## Commands
 
-### `/code-review:review-init`
+### `/scd:review-init`
 
 Bootstrap the code review environment. Detects whether `jq` is available for optimized JSON updates (falls back to read/write strategy), creates the configuration file, installs scripts and sessions directory.
 
 Run this once before your first review.
 
-### `/code-review:code-review [base-branch]`
+### `/scd:code-review [base-branch]`
 
 Full interactive review workflow. Walks through all changes on the current branch compared to the base branch (default: `main`).
 
@@ -21,7 +21,7 @@ Features:
 - **Categorized observations** — each change gets rated as good, question, or attention
 - **Cross-platform** — works with or without `jq` installed
 
-### `/code-review:review-continue`
+### `/scd:review-continue`
 
 Quick resume shortcut for the current branch. Finds the active session and jumps straight to the next pending file.
 
@@ -42,7 +42,7 @@ Specialized subagent for deep test file analysis. Automatically triggered during
 - The structured report is integrated into the file's review observations (green/yellow/red counts)
 
 **Prerequisites:**
-- Testing principles rule installed via `/code-review:review-init` (automatic)
+- Testing principles rule installed via `/scd:review-init` (automatic)
 
 ## Scripts
 
@@ -74,7 +74,7 @@ Add `.claude/review/sessions/` and `.claude/review/scripts/` to your `.gitignore
 
 ## Configuration
 
-`config.json` is created by `/code-review:review-init` with sensible defaults. You can customize:
+`config.json` is created by `/scd:review-init` with sensible defaults. You can customize:
 
 - `category_priority` — order in which file categories are reviewed
 - `review_criteria` — what aspects to analyze (architecture, security, performance, etc.)

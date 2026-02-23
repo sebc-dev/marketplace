@@ -24,7 +24,7 @@ Reprendre rapidement une code review interrompue sur la branche courante, sans a
 
 Lire `.claude/review/config.json`. Si absent :
 ```
-Config absente. Lancez /code-review:review-init d'abord.
+Config absente. Lancez /scd:review-init d'abord.
 ```
 
 ## 2. Trouver la session
@@ -36,13 +36,13 @@ Config absente. Lancez /code-review:review-init d'abord.
 Si aucune session trouvee :
 ```
 Aucune review en cours pour la branche <branche>.
-Lancez /code-review:code-review pour demarrer une nouvelle review.
+Lancez /scd:code-review pour demarrer une nouvelle review.
 ```
 
 Si session trouvee mais `status` == `"completed"` :
 ```
 La review de <branche> est deja terminee (X fichiers, 🟢G 🟡Y 🔴R).
-Lancez /code-review:code-review pour demarrer une nouvelle review.
+Lancez /scd:code-review pour demarrer une nouvelle review.
 ```
 
 ## 3. Afficher la progression
@@ -67,8 +67,8 @@ Reprise de la review — <branche> (base: <base-branch>)
 
 ## 4. Reprendre la review
 
-Continuer avec l'Etape 3 du workflow `/code-review:code-review` a partir du prochain fichier `pending`. Suivre exactement le meme processus : en-tete, diff, observations, mise a jour JSON, conversation libre.
+Continuer avec l'Etape 3 du workflow `/scd:code-review` a partir du prochain fichier `pending`. Suivre exactement le meme processus : en-tete, diff, observations, mise a jour JSON, conversation libre.
 
-Quand tous les fichiers sont termines, executer l'Etape 4 (synthese) de `/code-review:code-review`.
+Quand tous les fichiers sont termines, executer l'Etape 4 (synthese) de `/scd:code-review`.
 
 </process>

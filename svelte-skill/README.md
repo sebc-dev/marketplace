@@ -22,10 +22,10 @@ The Svelte MCP server handles official API reference: exact signatures, config o
 
 | Command | Description |
 |---------|-------------|
-| `/svelte:audit` | Audit a project against best practices and anti-patterns |
-| `/svelte:debug` | Diagnose errors using troubleshooting tables |
-| `/svelte:migrate` | Generate a Svelte 4 to 5 migration plan |
-| `/svelte:scaffold` | Create a new SvelteKit 2 project with correct defaults |
+| `/scd:svelte-audit` | Audit a project against best practices and anti-patterns |
+| `/scd:svelte-debug` | Diagnose errors using troubleshooting tables |
+| `/scd:migrate` | Generate a Svelte 4 to 5 migration plan |
+| `/scd:svelte-scaffold` | Create a new SvelteKit 2 project with correct defaults |
 
 ## Install
 

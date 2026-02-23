@@ -19,9 +19,9 @@ Architectural design patterns for Claude Code plugins. Covers component selectio
 
 | Command | Description | Human/AI |
 |---------|-------------|----------|
-| `/forge:design` | Guided design workshop for a new plugin | 60/40 |
-| `/forge:audit` | Quality audit of an existing plugin | 20/80 |
-| `/forge:distill` | Transform a document into an optimized reference file | 20/80 |
+| `/scd:design` | Guided design workshop for a new plugin | 60/40 |
+| `/scd:forge-audit` | Quality audit of an existing plugin | 20/80 |
+| `/scd:distill` | Transform a document into an optimized reference file | 20/80 |
 
 ## Installation
 
