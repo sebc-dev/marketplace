@@ -9,6 +9,8 @@ allowed-tools:
   - Bash(git branch:*)
   - Bash(git show:*)
   - Bash(bash .claude/review/scripts/*)
+  - Bash(gh pr *)
+  - Bash(glab mr *)
   - Read
   - Write
   - Glob
@@ -333,6 +335,28 @@ Puis dans les deux cas, fournir le verdict :
 - Patterns d'architecture et de design utilises
 - Preoccupations transversales identifiees
 - Questions ouvertes ou suggestions d'amelioration
+
+## Etape 4-bis — Poster sur la plateforme (si configure)
+
+Lire `platform` dans config.json. Si `type == null` ou `auto_post == false` : passer silencieusement.
+
+**Strategie jq** :
+```bash
+bash .claude/review/scripts/post-review-comments.sh .claude/review/sessions/<slug>.json .claude/review/config.json
+```
+Afficher le resultat retourne (POSTED/SKIP/WARN).
+
+**Strategie readwrite** :
+1. Lire `platform` dans config.json. Si `type == null` ou `auto_post == false` : passer silencieusement.
+2. Detecter le PR/MR :
+   - GitHub : `gh pr list --head <branch> --json number --jq '.[0].number'`
+   - GitLab : `glab mr list --source-branch <branch> -o json`
+3. Si aucun PR/MR ouvert → "Aucun PR/MR ouvert. Publication sautee."
+4. Construire le corps markdown (meme format que le script : en-tete avec counts, observations bloquantes, suggestions en `<details>`, verdict)
+5. Poster :
+   - GitHub : `gh pr review <number> --request-changes --body "<body>"` si bloquants > 0, sinon `--comment`
+   - GitLab : `glab mr note <iid> --message "<body>"`
+6. Afficher confirmation ou message d'erreur
 
 </process>
 

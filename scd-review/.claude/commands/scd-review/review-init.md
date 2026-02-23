@@ -5,9 +5,13 @@ allowed-tools:
   - Bash(jq *)
   - Bash(bash .claude/review/scripts/*)
   - Bash(chmod +x *)
+  - Bash(gh *)
+  - Bash(glab *)
+  - Bash(uname *)
   - Read
   - Write
   - Glob
+  - AskUserQuestion
 ---
 
 <objective>
@@ -55,6 +59,10 @@ Creer `.claude/review/config.json` avec Write :
   "options": {
     "default_base_branch": "main",
     "language": "fr"
+  },
+  "platform": {
+    "type": null,
+    "auto_post": false
   }
 }
 ```
@@ -96,18 +104,86 @@ Lire `json_strategy` dans la config. Si la valeur est `null` :
 
 Si `json_strategy` est deja defini (`"jq"` ou `"readwrite"`), ne rien changer.
 
-## 6. Rappel gitignore
+## 6. Choix plateforme
+
+Proposer l'integration PR/MR :
+
+```
+AskUserQuestion(
+  questions: [{
+    question: "Poster automatiquement les resultats de review sur vos PR/MR ?",
+    header: "Plateforme",
+    options: [
+      { label: "GitHub", description: "Poster sur les Pull Requests via gh CLI" },
+      { label: "GitLab", description: "Poster sur les Merge Requests via glab CLI" },
+      { label: "Aucune", description: "Review locale uniquement, pas de publication" }
+    ],
+    multiSelect: false
+  }]
+)
+```
+
+**Si "Aucune"** → ecrire `platform.type = null` dans config.json, sauter a l'etape 8.
+
+**Si GitHub ou GitLab** → passer a l'etape 6-bis.
+
+## 6-bis. Detection et installation CLI
+
+1. Detecter l'outil : `gh --version` (GitHub) ou `glab --version` (GitLab)
+2. Si absent → detecter l'OS via `uname -s` (si `uname` echoue → assumer Windows) et afficher le guide :
+
+| Plateforme | macOS (Darwin) | Debian/Ubuntu (Linux) | Fedora/RHEL (Linux) | Windows (PowerShell) |
+|------------|----------------|----------------------|---------------------|---------------------|
+| GitHub CLI | `brew install gh` | `sudo apt install gh` | `sudo dnf install gh` | `winget install GitHub.cli` |
+| GitLab CLI | `brew install glab` | `sudo apt install glab` | `sudo dnf install glab` | `winget install GLab.glab` |
+
+Puis proposer :
+```
+AskUserQuestion(
+  questions: [{
+    question: "CLI installe ou continuer sans integration ?",
+    header: "CLI",
+    options: [
+      { label: "Verifier a nouveau", description: "Je viens de l'installer, re-verifier" },
+      { label: "Continuer sans", description: "Desactiver l'integration plateforme" }
+    ],
+    multiSelect: false
+  }]
+)
+```
+
+Si "Continuer sans" → ecrire `platform.type = null`, sauter a l'etape 8.
+Si "Verifier a nouveau" → re-executer la detection. Si toujours absent, re-proposer.
+
+3. Si present → verifier l'auth : `gh auth status` / `glab auth status`
+4. Si non authentifie → afficher `gh auth login` / `glab auth login` et re-proposer la verification
+
+## 6-ter. Persister la config plateforme
+
+Ecrire dans config.json :
+- `platform.type` : `"github"` ou `"gitlab"`
+- `platform.auto_post` : `true`
+
+**Strategie `jq`** :
+```bash
+jq '.platform.type = "github" | .platform.auto_post = true' .claude/review/config.json > .claude/review/config.json.tmp && mv .claude/review/config.json.tmp .claude/review/config.json
+```
+
+**Strategie `readwrite`** : Read + Write pour mettre a jour les champs.
+
+## 7. Rappel gitignore
 
 Indiquer a l'utilisateur d'ajouter au `.gitignore` si ce n'est pas deja fait :
 - `.claude/review/sessions/` — fichiers de session temporaires
 - `.claude/review/scripts/` — scripts installes depuis le plugin
 
-## 7. Resume
+## 8. Resume
 
 Afficher un resume :
 ```
 Configuration code-review initialisee
   Strategie JSON : jq | readwrite
+  Plateforme     : GitHub (gh) | GitLab (glab) | Aucune
   Config         : .claude/review/config.json
   Sessions       : .claude/review/sessions/
   Scripts        : .claude/review/scripts/ [installes | deja presents]

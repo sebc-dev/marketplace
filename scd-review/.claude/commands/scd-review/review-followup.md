@@ -10,6 +10,8 @@ allowed-tools:
   - Bash(git rev-parse:*)
   - Bash(git cat-file:*)
   - Bash(bash .claude/review/scripts/*)
+  - Bash(gh pr *)
+  - Bash(glab mr *)
   - Read
   - Write
   - Glob
@@ -298,6 +300,28 @@ Le script genere le tableau recapitulatif par section (corrections/non adresses/
 Verdict final :
 - "Pret a merger" si 0 bloquants non resolus
 - "Encore X bloquants a adresser" sinon, avec la liste des fichiers concernes
+
+## Etape 4-bis — Poster sur la plateforme (si configure)
+
+Lire `platform` dans config.json. Si `type == null` ou `auto_post == false` : passer silencieusement.
+
+**Strategie jq** :
+```bash
+bash .claude/review/scripts/post-review-comments.sh .claude/review/sessions/<slug>-followup.json .claude/review/config.json
+```
+Afficher le resultat retourne (POSTED/SKIP/WARN).
+
+**Strategie readwrite** :
+1. Lire `platform` dans config.json. Si `type == null` ou `auto_post == false` : passer silencieusement.
+2. Detecter le PR/MR :
+   - GitHub : `gh pr list --head <branch> --json number --jq '.[0].number'`
+   - GitLab : `glab mr list --source-branch <branch> -o json`
+3. Si aucun PR/MR ouvert → "Aucun PR/MR ouvert. Publication sautee."
+4. Construire le corps markdown (format followup : en-tete avec resolution counts, observations bloquantes restantes, verdict)
+5. Poster avec le bon statut :
+   - GitHub : `gh pr review <number> --approve --body "<body>"` si tout est resolu, sinon `--request-changes`
+   - GitLab : `glab mr note <iid> --message "<body>"`
+6. Afficher confirmation ou message d'erreur
 
 </process>
 

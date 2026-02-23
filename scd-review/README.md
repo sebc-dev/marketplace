@@ -30,6 +30,15 @@ Followup review after corrections. Finds the last completed review session, comp
 
 Each correction file gets a resolution verdict (resolved / partially resolved / unresolved). Supports chained followups (round 2, 3, ...).
 
+### `/scd-review:review-post`
+
+Manually post (or re-post) review results to GitHub/GitLab. Useful when:
+- The PR/MR didn't exist at the time of review
+- Re-posting after a network error
+- Posting to a different PR
+
+Requires platform to be configured via `review-init`.
+
 ### `/scd-review:review-continue`
 
 Quick resume shortcut for the current branch. Finds the active session (followup or original review) and jumps straight to the next pending file.
@@ -53,6 +62,23 @@ Specialized subagent for deep test file analysis. Automatically triggered during
 **Prerequisites:**
 - Testing principles rule installed via `/scd-review:review-init` (automatic)
 
+## GitHub / GitLab Integration
+
+Optionally post review results directly on your PRs (GitHub) or MRs (GitLab). Configured during `review-init`.
+
+**How it works:**
+- After `code-review` or `review-followup` completes, results are automatically posted as a review comment
+- GitHub: uses `gh pr review` with `--request-changes` (blocking observations) or `--approve` (all resolved)
+- GitLab: uses `glab mr note` to post a comment
+- The posted comment includes blocking observations, suggestions (collapsible), and a verdict
+- Comments are localized based on `options.language` in config.json (`fr` or `en`)
+
+**Requirements:**
+- GitHub: [GitHub CLI](https://cli.github.com) (`gh`) installed and authenticated (`gh auth login`)
+- GitLab: [GitLab CLI](https://gitlab.com/gitlab-org/cli) (`glab`) installed and authenticated (`glab auth login`)
+
+**Error handling:** posting never blocks the review. If the CLI is missing, no PR/MR is open, or the network fails, a warning is displayed and the review continues normally.
+
 ## Scripts
 
 When `jq` is available, the plugin uses pre-written bash/jq scripts instead of generating jq filters inline. Scripts are installed from the plugin into `.claude/review/scripts/` during `review-init`.
@@ -70,6 +96,7 @@ When `jq` is available, the plugin uses pre-written bash/jq scripts instead of g
 | `get-file-context.sh` | Extract single file context from session | review-followup (step 3) |
 | `update-followup-file.sh` | Update followup file with resolution verdict | review-followup (step 3) |
 | `followup-summary.sh` | Generate followup recap + mark completed | review-followup (step 4) |
+| `post-review-comments.sh` | Format + post review to GitHub/GitLab | code-review (step 4-bis), review-followup (step 4-bis), review-post |
 
 ## Runtime files
 
@@ -94,10 +121,14 @@ Add `.claude/review/sessions/` and `.claude/review/scripts/` to your `.gitignore
 - `category_priority` — order in which file categories are reviewed
 - `review_criteria` — what aspects to analyze (architecture, security, performance, etc.)
 - `options.default_base_branch` — default base branch (default: `main`)
+- `platform.type` — `"github"`, `"gitlab"`, or `null` (disabled)
+- `platform.auto_post` — `true` to auto-post after review, `false` to disable
 
 ## Requirements
 
 - **jq** (optional) — enables atomic JSON updates via pre-written scripts. If not available, falls back to full read/write cycles. Install: `brew install jq` / `apt install jq` / `choco install jq`
+- **gh** (optional) — GitHub CLI for posting reviews on PRs. Install: `brew install gh` / `apt install gh` / `winget install GitHub.cli`
+- **glab** (optional) — GitLab CLI for posting reviews on MRs. Install: `brew install glab` / `apt install glab` / `winget install GLab.glab`
 
 ## Install
 
