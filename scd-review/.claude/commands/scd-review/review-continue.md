@@ -72,14 +72,29 @@ Reprise de la review — <branche> (base: <base-branch>)
   Prochain fichier : X+1/N fichier.ext [Categorie]
 ```
 
-## 4. Reprendre la review
+## 4. Relancer les agents pour les fichiers pending
+
+Les agents du batch precedent sont perdus (nouvelle session Claude). Il faut relancer les agents pour les prochains fichiers pending.
+
+1. Lire `agent_tasks` dans la session JSON (peut etre absent ou vide si la session est ancienne)
+2. Identifier les fichiers `pending` dans l'ordre
+3. Lancer les agents pour les **5 premiers fichiers pending** qui necessitent un agent :
+   - **Review originale** : chaque fichier pending (sauf supprimes) obtient un agent (code-reviewer ou test-reviewer selon la categorie)
+   - **Followup** : fichiers `correction` et `new` obtiennent un agent, les `unaddressed` sont exclus
+4. Stocker les task IDs dans `agent_tasks` :
+   - **Strategie `jq`** : `bash .claude/review/scripts/add-agent-tasks.sh <session> '<json>'`
+   - **Strategie `readwrite`** : Read + Write
+
+Meme logique de lancement que l'etape 2-bis de code-review / review-followup.
+
+## 5. Reprendre la review
 
 **Si la session est une review originale** (`<slug>.json`) :
-Continuer avec l'Etape 3 du workflow `/scd-review:code-review` a partir du prochain fichier `pending`. Suivre exactement le meme processus : en-tete, diff, observations, mise a jour JSON, conversation libre.
+Continuer avec l'Etape 3 du workflow `/scd-review:code-review` a partir du prochain fichier `pending`. Suivre exactement le meme processus : en-tete, recuperation rapport agent, metriques, mise a jour JSON, checkpoint utilisateur, pipeline glissant.
 Quand tous les fichiers sont termines, executer l'Etape 4 (synthese) de `/scd-review:code-review`.
 
 **Si la session est un followup** (`<slug>-followup.json`) :
-Continuer avec l'Etape 3 du workflow `/scd-review:review-followup` a partir du prochain fichier `pending`. Suivre exactement le meme processus : contexte original, diff cible, verdict de resolution, conversation libre.
+Continuer avec l'Etape 3 du workflow `/scd-review:review-followup` a partir du prochain fichier `pending`. Suivre exactement le meme processus : contexte original, rapport agent, verdict de resolution, pipeline glissant.
 Quand tous les fichiers sont termines, executer l'Etape 4 (synthese) de `/scd-review:review-followup`.
 
 </process>

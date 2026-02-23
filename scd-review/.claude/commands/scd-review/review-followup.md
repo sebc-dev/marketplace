@@ -154,7 +154,44 @@ Ordre des fichiers : corrections (triees par `original_red` descendant) → unad
 
 Les fichiers `correction` avec `resolution: "auto_resolved_deleted"` sont pre-marques `status: "completed"` (fichier supprime = correction auto-resolue).
 
-Lancer les agents test-reviewer en differe pour les fichiers test de type `correction` et `new` (meme logique que code-review etape 2-bis).
+### 2-bis. Lancer le premier batch d'agents (pipeline de 5)
+
+Apres la persistance de la session, lancer les agents pour les **5 premiers fichiers qui necessitent un agent** (exclure les fichiers `unaddressed` et les fichiers supprimes auto-resolus) :
+
+**Pour chaque fichier eligible, dans l'ordre, jusqu'a 5 agents lances :**
+
+- **Fichiers `correction`** → lancer un agent en **mode CORRECTION** :
+  - Si categorie == `tests` → **test-reviewer** avec contexte correction
+  - Sinon → **code-reviewer** en mode CORRECTION :
+    ```
+    Task(
+      subagent_type: "general-purpose",
+      run_in_background: true,
+      description: "Correction review: <nom-fichier>",
+      prompt: "Tu es un code-reviewer specialise. Lis la definition d'agent dans ${CLAUDE_PLUGIN_ROOT}/.claude/agents/code-reviewer.md et suis ses instructions en MODE CORRECTION pour le fichier <chemin>.
+    Contexte git : previous_head=<sha>, diff depuis previous_head.
+    Observations bloquantes originales :
+    - <liste formatee des observations bloquantes originales>
+    Commentaires du revieweur :
+    - <liste des commentaires originaux>"
+    )
+    ```
+
+- **Fichiers `new`** → lancer un agent en **mode FULL** :
+  - Si categorie == `tests` → **test-reviewer**
+  - Sinon → **code-reviewer** en mode FULL :
+    ```
+    Task(
+      subagent_type: "general-purpose",
+      run_in_background: true,
+      description: "Code review: <nom-fichier>",
+      prompt: "Tu es un code-reviewer specialise. Lis la definition d'agent dans ${CLAUDE_PLUGIN_ROOT}/.claude/agents/code-reviewer.md et suis ses instructions en MODE FULL pour le fichier <chemin>. Contexte git : previous_head=<sha> (utiliser comme merge-base), base branch=<base>."
+    )
+    ```
+
+Stocker les task IDs dans la session JSON :
+- **Strategie `jq`** : `bash .claude/review/scripts/add-agent-tasks.sh .claude/review/sessions/<slug>-followup.json '<json>'`
+- **Strategie `readwrite`** : Read + Write pour ajouter `agent_tasks` dans le JSON.
 
 Ecrire le JSON avec Write.
 
@@ -182,10 +219,10 @@ Commentaires du revieweur :
 - "Verifier aussi le endpoint /api/admin"
 ```
 
-Puis :
-1. `git diff <previous_head>..HEAD -- <file>` (uniquement ce qui a change depuis la review)
-2. Pour chaque observation bloquante originale : verifier si elle est adressee par le diff
-3. Nouvelles observations sur les corrections (avec le systeme bloquant/suggestion)
+Puis recuperer le rapport de l'agent :
+1. `TaskOutput(task_id: agent_tasks["chemin/fichier.ext"], block: true)`
+2. Afficher le rapport retourne par l'agent (inclut la verification des bloquants originaux + nouvelles observations)
+3. Extraire les metriques et observations JSON du rapport
 4. Point de controle :
 
 ```
@@ -252,9 +289,11 @@ Fichier X/Y : chemin/fichier.ext [NOUVEAU]
 
 Si `original_observations` est present (fichier etait dans la review precedente avec 🟢/suggestions) : afficher le contexte en information.
 
-1. `git diff <previous_head>..HEAD -- <file>`
-2. Review complete avec le systeme bloquant/suggestion (meme processus que code-review etape 3c)
-3. Point de controle standard :
+Recuperer le rapport de l'agent :
+1. `TaskOutput(task_id: agent_tasks["chemin/fichier.ext"], block: true)`
+2. Afficher le rapport retourne par l'agent (review complete avec systeme bloquant/suggestion)
+3. Extraire les metriques et observations JSON du rapport
+4. Point de controle standard :
 
 ```
 AskUserQuestion(
@@ -273,6 +312,17 @@ AskUserQuestion(
 ```
 
 Mise a jour JSON : `update-followup-file.sh` avec `resolution: "null"` (pas de resolution pour les nouveaux fichiers).
+
+### Pipeline glissant (tous types sauf unaddressed)
+
+Apres que l'utilisateur avance au fichier suivant, alimenter le pipeline :
+
+```
+Chercher le prochain fichier eligible (correction ou new, pas unaddressed) qui n'a pas
+encore d'agent lance. S'il existe et qu'il reste de la capacite (< 5 agents en vol) :
+  Lancer l'agent appropriate (code-reviewer ou test-reviewer) en background
+  Stocker le task_id dans agent_tasks via add-agent-tasks.sh
+```
 
 ### Observations et persistance (tous types)
 
@@ -327,9 +377,10 @@ Afficher le resultat retourne (POSTED/SKIP/WARN).
 
 <guidelines>
 - Toujours communiquer en francais
-- Etre concis dans les explications — le contexte est deja connu de la review initiale
-- Se concentrer sur le diff depuis la review, pas sur le fichier entier
-- Pour les corrections, verifier explicitement chaque observation bloquante originale
-- Ne pas re-reviewer les aspects deja valides (suggestions de la review initiale)
+- La conversation principale ne lit PAS les fichiers ni les diffs directement — c'est le role des agents
+- Presenter le rapport de l'agent tel quel, sans re-analyser le code
+- Les fichiers `unaddressed` ne necessitent pas d'agent — afficher le contexte original directement
+- Si l'utilisateur choisit "Approfondir un point", la conversation peut lire des fichiers supplementaires a la demande
+- Economiser le contexte : chaque fichier ne devrait consommer que ~100-200 tokens dans la conversation principale
 - Si un fichier est supprime comme correction, le marquer auto-resolved sans discussion
 </guidelines>

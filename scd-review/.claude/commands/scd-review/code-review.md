@@ -44,7 +44,7 @@ Si `json_strategy == "jq"`, utiliser les scripts pour toutes les operations JSON
 - Mise a jour fichier : `bash .claude/review/scripts/update-file.sh <session> <idx> <g> <y> <r> "<note>" <blocking>`
 - Ajout observations : `echo '<json_array>' | bash .claude/review/scripts/add-observations.sh <session> <idx>`
 - Ajout commentaire : `bash .claude/review/scripts/add-comment.sh <session> "<file>" "<comment>"`
-- Ajout test tasks : `bash .claude/review/scripts/add-test-tasks.sh <session> '<json>'`
+- Ajout agent tasks : `bash .claude/review/scripts/add-agent-tasks.sh <session> '<json>'`
 - Synthese + cloture : `bash .claude/review/scripts/session-summary.sh <session>`
 
 Si `json_strategy == "readwrite"`, utiliser Read + Write pour toutes les operations JSON.
@@ -137,112 +137,77 @@ Presenter un resume initial :
 
 Ecrire le JSON avec Write.
 
-### 2-bis. Preparer les agents test-reviewer (lancement differe)
+### 2-bis. Lancer le premier batch d'agents (pipeline de 5)
 
-Apres la persistance du fichier session, identifier tous les fichiers de categorie `tests` dans la session et noter leur position dans l'ordre de review. **Ne PAS lancer les agents maintenant.** Le lancement se fera a l'etape 3a, quand un fichier de test se trouve dans les 3 prochains fichiers.
+Apres la persistance du fichier session, lancer les agents pour les **5 premiers fichiers** (ou tous si < 5). Chaque fichier obtient un agent dedie lance en background :
 
-Si aucun fichier n'est de categorie `tests`, rien a preparer.
+**Pour chaque fichier de index 1 a min(5, total_files) :**
+
+- **Si le fichier est supprime (status D dans git)** → pas d'agent, sera traite directement
+- **Si categorie == `tests`** → lancer un **test-reviewer** :
+  ```
+  Task(
+    subagent_type: "general-purpose",
+    run_in_background: true,
+    description: "Test review: <nom-fichier>",
+    prompt: "Tu es un test-reviewer specialise. Lis la definition d'agent dans ${CLAUDE_PLUGIN_ROOT}/.claude/agents/test-reviewer.md et suis ses instructions pour analyser le fichier <chemin>. Contexte git : merge-base=<sha>, base branch=<base>."
+  )
+  ```
+- **Sinon** → lancer un **code-reviewer** :
+  ```
+  Task(
+    subagent_type: "general-purpose",
+    run_in_background: true,
+    description: "Code review: <nom-fichier>",
+    prompt: "Tu es un code-reviewer specialise. Lis la definition d'agent dans ${CLAUDE_PLUGIN_ROOT}/.claude/agents/code-reviewer.md et suis ses instructions en MODE FULL pour analyser le fichier <chemin>. Contexte git : merge-base=<sha>, base branch=<base>."
+  )
+  ```
+
+Stocker tous les task IDs dans la session JSON :
+
+- **Strategie `jq`** : `bash .claude/review/scripts/add-agent-tasks.sh .claude/review/sessions/<slug>.json '<json>'`
+  ou `<json>` est un objet `{"chemin/fichier1": "task_id_1", "chemin/fichier2": "task_id_2", ...}`
+- **Strategie `readwrite`** : Read + Write pour ajouter/mettre a jour `agent_tasks` dans le JSON.
+
+**Objectif** : les agents finissent pendant que l'utilisateur review les premiers fichiers. Maximum 5 agents en parallele a tout moment.
 
 ## Etape 3 — Review fichier par fichier
 
 Pour chaque fichier `pending` dans l'ordre :
 
-### 3a. En-tete + lancement anticipe des test-reviewers
+### 3a. En-tete
 
 Afficher :
 ```
 Fichier X/Y : chemin/du/fichier [CATEGORIE]
 ```
 
-**Lancement anticipe des agents test-reviewer :** Verifier si un fichier de categorie `tests` se trouve parmi les 3 prochains fichiers dans l'ordre de review (positions courante+1 a courante+3) ET que son agent n'a pas encore ete lance. Si oui, lancer l'agent en background :
+**Si le fichier est supprime (status D dans git)** : Indiquer "Fichier supprime" et passer directement a 3d (marquer completed avec 0 observations, note "Fichier supprime").
+
+### 3b. Recuperer le rapport de l'agent
+
+Recuperer le resultat de l'agent background pour ce fichier :
 
 ```
-Task(
-  subagent_type: "general-purpose",
-  run_in_background: true,
-  description: "Test review: <nom-fichier>",
-  prompt: "Tu es un test-reviewer specialise. Lis la definition d'agent dans ${CLAUDE_PLUGIN_ROOT}/.claude/agents/test-reviewer.md et suis ses instructions pour analyser le fichier <chemin-du-fichier>. Contexte git : merge-base=<sha>, base branch=<base>."
-)
+TaskOutput(task_id: agent_tasks["chemin/du/fichier"], block: true)
 ```
 
-Stocker le task ID retourne dans la session JSON :
+En pratique, l'agent aura eu le temps de finir pendant la review des fichiers precedents (lance au moins 1 fichier en avance).
 
-- **Strategie `jq`** : `bash .claude/review/scripts/add-test-tasks.sh .claude/review/sessions/<slug>.json '<json>'`
-  ou `<json>` est un objet `{"fichier_test": "task_id"}`
-- **Strategie `readwrite`** : Read + Write pour ajouter/mettre a jour `test_agent_tasks` dans le JSON.
+Afficher le rapport retourne par l'agent tel quel. Le rapport contient :
+- **Changements** : description de ce qui a change, pourquoi, contexte
+- **Observations** : liste classee des observations avec niveaux et severites
+- Pour les fichiers de test : le rapport test-reviewer inclut egalement l'execution des tests, la qualite et la couverture
 
-### 3b. Expliquer les changements
+La conversation principale ne lit PAS les fichiers ni les diffs elle-meme. Elle se contente de presenter le rapport de l'agent. Cela economise le contexte de la conversation principale.
 
-- `git diff <merge-base>..HEAD -- <fichier>` pour le diff specifique
-- Lire le fichier complet avec Read si le contexte est necessaire
-- Pour chaque modification :
-  - **Ce qui a change** : decrire precisement
-  - **Pourquoi** : la decision de design derriere l'approche
-  - **Contexte** : comment ce changement s'articule avec les autres fichiers de la review
+### 3c. Extraire les metriques du rapport
 
-### 3c. Observations de review
+Parser le rapport de l'agent pour extraire :
+- La section `### Metriques` → valeurs green, yellow, red, blocking, note
+- La section `### Observations JSON` → le tableau JSON des observations
 
-Analyser selon les criteres definis dans `review_criteria` du config :
-
-- **architecture** — Separation des couches, structure des modules, patterns utilises, coherence avec l'existant
-- **security** — Injection, XSS, donnees sensibles, authentification, autorisation, validation des inputs
-- **performance** — N+1 queries, chargements inutiles, pagination, mise en cache, complexite algorithmique
-- **conventions** — Nommage, structure, style de code, idiomes du langage, coherence avec le reste du projet
-- **error-handling** — Gestion des erreurs, cas limites, resilience, messages d'erreur clairs
-- **test-coverage** — Tests presents et adequats, cas couverts, qualite des assertions
-
-Pour chaque observation, classifier le niveau :
-- 🟢 **Bon** : Pattern ou choix remarquable
-- 🟡 **Question** : Point a clarifier ou discuter
-- 🔴 **Attention** : Probleme potentiel a adresser
-
-Puis pour chaque observation 🟡/🔴, classifier la severite :
-
-**Bloquant** (impact reel sur production ou maintenabilite) :
-- Vulnerabilite securite confirmee (injection, XSS, auth bypass)
-- Bug ou perte de donnees non geree
-- Violation d'architecture qui cause un couplage fort ou dette technique majeure
-- Erreur non geree sur un chemin critique
-- Test absent pour un chemin critique de logique metier
-
-**Suggestion** (amelioration sans risque immediat) :
-- Style, nommage, preferences de formatage
-- Optimisation de performance mineure sans impact mesurable
-- Amelioration structurelle nice-to-have
-- Tests supplementaires sur du code trivial
-- Message d'erreur ameliorable
-
-**Format d'affichage** (toutes les observations inline, dans l'ordre des criteres) :
-```
-### Observations
-
-🔴 **security** [BLOQUANT] — Injection SQL dans le parametre `userId`...
-🟡 **error-handling** [BLOQUANT] — Le catch ignore l'erreur silencieusement...
-🟡 **conventions** [SUGGESTION] — Le nommage `getData` pourrait etre plus specifique...
-🟡 **performance** [SUGGESTION] — Ce `.map().filter()` pourrait etre un seul `.reduce()`...
-🟢 **architecture** — Bonne separation des responsabilites dans le service...
-```
-
-Les observations bloquantes sont listees en premier, suivies des suggestions, puis des 🟢. Chaque observation est stockee dans le tableau `observations` du fichier (criterion, severity, level, text) pour etre recuperee lors du followup.
-
-### 3c-bis. Integrer le rapport test-reviewer (si categorie = tests)
-
-Si le fichier en cours est de categorie `tests` ET que `test_agent_tasks` contient une entree pour ce fichier :
-
-1. Recuperer le resultat de l'agent background :
-   ```
-   TaskOutput(task_id: "<id du test_agent_tasks>", block: true)
-   ```
-   En pratique, l'agent aura eu le temps de finir pendant la review des fichiers precedents.
-
-2. Afficher le rapport structure retourne par l'agent sous le titre `### Rapport test-reviewer`
-
-3. Integrer les counts du rapport dans les observations :
-   - Les 🟢 du rapport s'ajoutent au count green du fichier
-   - Les 🟡 du rapport s'ajoutent au count yellow du fichier
-   - Les 🔴 du rapport s'ajoutent au count red du fichier
-
-4. Si l'agent a trouve des tests en echec, les signaler en 🔴 dans les observations
+Ces valeurs sont utilisees pour la persistance session (3d) et les checkpoints (3e).
 
 ### 3d. Mettre a jour la session JSON
 
@@ -305,6 +270,19 @@ Cette boucle garantit que Claude ne peut PAS avancer au fichier suivant tant que
 - **Strategie `jq`** : `bash .claude/review/scripts/add-comment.sh .claude/review/sessions/<slug>.json "<file>" "<comment>"`
 - **Strategie `readwrite`** : Read + Write pour appender dans `user_comments`.
 
+### 3f. Lancer l'agent suivant (pipeline glissant)
+
+Apres que l'utilisateur choisit "Fichier suivant", alimenter le pipeline :
+
+```
+next_to_launch = fichier_courant.index + 5
+Si next_to_launch <= total_files ET agent_tasks ne contient pas ce fichier :
+  Lancer l'agent appropriate (code-reviewer ou test-reviewer) en background
+  Stocker le task_id dans agent_tasks via add-agent-tasks.sh
+```
+
+Cela maintient une fenetre glissante de 5 agents : quand on consomme le resultat d'un fichier, on lance l'agent du fichier 5 positions plus loin. Le max de 5 agents en parallele est ainsi garanti.
+
 ## Etape 4 — Synthese
 
 Apres le dernier fichier :
@@ -362,10 +340,9 @@ Afficher le resultat retourne (POSTED/SKIP/WARN).
 
 <guidelines>
 - Toujours communiquer en francais
-- Etre detaille mais concis dans les explications
-- Si un fichier est volumineux, se concentrer sur les changements les plus significatifs
-- Utiliser des extraits de code du diff pour illustrer les points
-- Adapter le niveau de detail a la complexite du fichier
-- Ne pas hesiter a lire d'autres fichiers du projet pour donner du contexte
-- Les criteres de review sont generiques — les adapter au langage et framework du projet (analyser les fichiers pour detecter le stack technique)
+- La conversation principale ne lit PAS les fichiers ni les diffs directement — c'est le role des agents
+- Presenter le rapport de l'agent tel quel, sans re-analyser le code
+- Si l'utilisateur choisit "Approfondir un point", la conversation peut lire des fichiers supplementaires a la demande (deep-dive exceptionnel)
+- Economiser le contexte : chaque fichier ne devrait consommer que ~100-200 tokens dans la conversation principale (affichage du rapport + checkpoint)
+- Le pipeline de 5 agents garantit zero temps d'attente : les agents finissent pendant que l'utilisateur review les fichiers precedents
 </guidelines>
