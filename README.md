@@ -24,6 +24,10 @@ Tauri v2 desktop and mobile skill. Architecture, security model (capabilities, p
 
 Architectural design patterns for Claude Code plugins. Component selection (skill vs command vs agent vs hook vs CLAUDE.md vs MCP), plugin sizing, context budget architecture, multi-component orchestration, and quality validation. 3 slash commands (`/scd-forge:design`, `/scd-forge:audit`, `/scd-forge:distill`).
 
+### [scd-review](./scd-review/) `v0.7.0`
+
+Interactive guided code review on the current branch. Reviews file by file in optimal order with dedicated background agents (code-reviewer + test-reviewer) for each file, JSON-based progress tracking, and blocking/suggestion classification. 5 slash commands (`/scd-review:review-init`, `/scd-review:code-review`, `/scd-review:review-followup`, `/scd-review:review-continue`, `/scd-review:review-post`). GitHub/GitLab PR posting integration.
+
 ## Installation
 
 ```bash
@@ -36,6 +40,7 @@ Architectural design patterns for Claude Code plugins. Component selection (skil
 /plugin install scd-svelte@sebc-dev-marketplace
 /plugin install scd-tauri@sebc-dev-marketplace
 /plugin install scd-forge@sebc-dev-marketplace
+/plugin install scd-review@sebc-dev-marketplace
 ```
 
 ## License
