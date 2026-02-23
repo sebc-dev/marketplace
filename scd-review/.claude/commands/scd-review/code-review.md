@@ -39,7 +39,8 @@ Lire `json_strategy` dans `.claude/review/config.json`.
 
 Si `json_strategy == "jq"`, utiliser les scripts pour toutes les operations JSON session :
 - Status session : `bash .claude/review/scripts/session-status.sh <session>`
-- Mise a jour fichier : `bash .claude/review/scripts/update-file.sh <session> <idx> <g> <y> <r> "<note>"`
+- Mise a jour fichier : `bash .claude/review/scripts/update-file.sh <session> <idx> <g> <y> <r> "<note>" <blocking>`
+- Ajout observations : `echo '<json_array>' | bash .claude/review/scripts/add-observations.sh <session> <idx>`
 - Ajout commentaire : `bash .claude/review/scripts/add-comment.sh <session> "<file>" "<comment>"`
 - Ajout test tasks : `bash .claude/review/scripts/add-test-tasks.sh <session> '<json>'`
 - Synthese + cloture : `bash .claude/review/scripts/session-summary.sh <session>`
@@ -111,7 +112,8 @@ Presenter un resume initial :
     "completed": 0,
     "green": 0,
     "yellow": 0,
-    "red": 0
+    "red": 0,
+    "blocking": 0
   },
   "files": [
     {
@@ -122,6 +124,8 @@ Presenter un resume initial :
       "green": 0,
       "yellow": 0,
       "red": 0,
+      "blocking": 0,
+      "observations": [],
       "note": ""
     }
   ],
@@ -185,10 +189,39 @@ Analyser selon les criteres definis dans `review_criteria` du config :
 - **error-handling** — Gestion des erreurs, cas limites, resilience, messages d'erreur clairs
 - **test-coverage** — Tests presents et adequats, cas couverts, qualite des assertions
 
-Pour chaque observation, classifier :
+Pour chaque observation, classifier le niveau :
 - 🟢 **Bon** : Pattern ou choix remarquable
 - 🟡 **Question** : Point a clarifier ou discuter
 - 🔴 **Attention** : Probleme potentiel a adresser
+
+Puis pour chaque observation 🟡/🔴, classifier la severite :
+
+**Bloquant** (impact reel sur production ou maintenabilite) :
+- Vulnerabilite securite confirmee (injection, XSS, auth bypass)
+- Bug ou perte de donnees non geree
+- Violation d'architecture qui cause un couplage fort ou dette technique majeure
+- Erreur non geree sur un chemin critique
+- Test absent pour un chemin critique de logique metier
+
+**Suggestion** (amelioration sans risque immediat) :
+- Style, nommage, preferences de formatage
+- Optimisation de performance mineure sans impact mesurable
+- Amelioration structurelle nice-to-have
+- Tests supplementaires sur du code trivial
+- Message d'erreur ameliorable
+
+**Format d'affichage** (toutes les observations inline, dans l'ordre des criteres) :
+```
+### Observations
+
+🔴 **security** [BLOQUANT] — Injection SQL dans le parametre `userId`...
+🟡 **error-handling** [BLOQUANT] — Le catch ignore l'erreur silencieusement...
+🟡 **conventions** [SUGGESTION] — Le nommage `getData` pourrait etre plus specifique...
+🟡 **performance** [SUGGESTION] — Ce `.map().filter()` pourrait etre un seul `.reduce()`...
+🟢 **architecture** — Bonne separation des responsabilites dans le service...
+```
+
+Les observations bloquantes sont listees en premier, suivies des suggestions, puis des 🟢. Chaque observation est stockee dans le tableau `observations` du fichier (criterion, severity, level, text) pour etre recuperee lors du followup.
 
 ### 3c-bis. Integrer le rapport test-reviewer (si categorie = tests)
 
@@ -214,15 +247,24 @@ Si le fichier en cours est de categorie `tests` ET que `test_agent_tasks` contie
 Mettre a jour le fichier en cours dans la session :
 - `status` → `"completed"`
 - `green`, `yellow`, `red` → les decomptes d'observations
+- `blocking` → nombre d'observations bloquantes (🟡/🔴 classees bloquant)
 - `note` → resume en 120 caracteres max
 
-**Strategie `jq`** :
+**Strategie `jq`** (2 commandes sequentielles) :
+
+1. Counts + status :
 ```bash
-bash .claude/review/scripts/update-file.sh .claude/review/sessions/<slug>.json <index> <green> <yellow> <red> "<note>"
+bash .claude/review/scripts/update-file.sh .claude/review/sessions/<slug>.json <index> <green> <yellow> <red> "<note>" <blocking>
 ```
+
+2. Observations (pipe le JSON array directement) :
+```bash
+echo '[{"criterion":"security","severity":"bloquant","level":"red","text":"Injection SQL..."},{"criterion":"conventions","severity":"suggestion","level":"yellow","text":"Nommage generique..."}]' | bash .claude/review/scripts/add-observations.sh .claude/review/sessions/<slug>.json <index>
+```
+
 Le script recalcule automatiquement le summary par agregation et affiche le summary mis a jour.
 
-**Strategie `readwrite`** : Read complet du JSON + Write complet avec les valeurs mises a jour (1 seul cycle lecture/ecriture par fichier).
+**Strategie `readwrite`** : Read complet du JSON + Write complet avec les valeurs mises a jour + observations + blocking (1 seul cycle lecture/ecriture par fichier).
 
 ### 3e. Point de controle utilisateur (barriere programmatique)
 
@@ -235,6 +277,7 @@ AskUserQuestion(
     header: "Fichier X/Y",
     options: [
       { label: "Fichier suivant", description: "Passer au prochain fichier de la review" },
+      { label: "Promouvoir une suggestion", description: "Passer une suggestion en bloquant" },
       { label: "Ajouter un commentaire", description: "Enregistrer un commentaire de review pour ce fichier" },
       { label: "Approfondir un point", description: "Poser des questions ou discuter d'un aspect du fichier" }
     ],
@@ -248,6 +291,7 @@ L'option "Other" est automatiquement disponible pour du texte libre.
 **Comportement en boucle :**
 
 - **"Fichier suivant"** → passer au fichier suivant (sortir de la boucle 3e)
+- **"Promouvoir une suggestion"** → lister les suggestions du fichier, demander laquelle promouvoir, mettre a jour l'observation (severity → "bloquant"), incrementer `blocking` du fichier dans la session, puis re-afficher le AskUserQuestion
 - **"Ajouter un commentaire"** → demander le commentaire, l'enregistrer (voir ci-dessous), puis re-afficher le AskUserQuestion
 - **"Approfondir un point"** → traiter la demande de l'utilisateur, puis re-afficher le AskUserQuestion
 - **"Other" / texte libre** → traiter comme "Approfondir un point", puis re-afficher le AskUserQuestion
@@ -275,16 +319,17 @@ Le script genere le tableau recapitulatif, liste les commentaires, et marque la 
    ```
    Recapitulatif de la review — <branche>
 
-   | # | Fichier | Categorie | 🟢 | 🟡 | 🔴 |
-   |---|---------|-----------|----|----|-----|
-   | 1 | ...     | ...       |  X |  Y |  Z  |
-   |   | TOTAL   |           | XX | YY | ZZ  |
+   | # | Fichier | Categorie | 🟢 | 🟡 | 🔴 | B |
+   |---|---------|-----------|----|----|-----|---|
+   | 1 | ...     | ...       |  X |  Y |  Z  | B |
+   |   | TOTAL   |           | XX | YY | ZZ  | BB|
    ```
 3. Lister les commentaires utilisateur si presents
-4. Marquer la session `status: "completed"` dans le JSON
+4. Marquer la session `status: "completed"` + `head_at_completion: <git rev-parse HEAD>` dans le JSON
 
 Puis dans les deux cas, fournir le verdict :
 - Resume de ce que la branche accomplit
+- Nombre de bloquants restants (si > 0, mentionner qu'un followup est recommande)
 - Patterns d'architecture et de design utilises
 - Preoccupations transversales identifiees
 - Questions ouvertes ou suggestions d'amelioration

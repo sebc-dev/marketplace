@@ -18,12 +18,12 @@ jq -r --arg g "🟢" --arg y "🟡" --arg r "🔴" '
   .summary as $s |
 
   "Recapitulatif de la review — \($branch)\n",
-  "| # | Fichier | Categorie | \($g) | \($y) | \($r) |",
-  "|---|---------|-----------|-----|-----|-----|",
+  "| # | Fichier | Categorie | \($g) | \($y) | \($r) | B |",
+  "|---|---------|-----------|-----|-----|-----|---|",
   (.files[] |
-    "| \(.index) | \(.path) | \(.category) | \(.green) | \(.yellow) | \(.red) |"
+    "| \(.index) | \(.path) | \(.category) | \(.green) | \(.yellow) | \(.red) | \(.blocking // 0) |"
   ),
-  "|   | **TOTAL** |           | **\($s.green)** | **\($s.yellow)** | **\($s.red)** |",
+  "|   | **TOTAL** |           | **\($s.green)** | **\($s.yellow)** | **\($s.red)** | **\($s.blocking // 0)** |",
   "",
   if (.user_comments | length) > 0 then
     "### Commentaires\n",
@@ -33,6 +33,7 @@ jq -r --arg g "🟢" --arg y "🟡" --arg r "🔴" '
   end
 ' "$session"
 
-# Mark session as completed (atomic write)
+# Mark session as completed with head_at_completion (atomic write)
 tmp="${session}.tmp"
-jq '.status = "completed"' "$session" > "$tmp" && mv "$tmp" "$session"
+head_sha=$(git rev-parse HEAD)
+jq --arg h "$head_sha" '.status = "completed" | .head_at_completion = $h' "$session" > "$tmp" && mv "$tmp" "$session"

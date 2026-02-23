@@ -18,12 +18,21 @@ Features:
 - **Resumable** — progress is tracked in JSON session files, pick up where you left off
 - **Interactive** — pause after each file to discuss, ask questions, or add comments
 - **Architecture-aware** — review order follows dependency flow for better comprehension
-- **Categorized observations** — each change gets rated as good, question, or attention
+- **Blocking/Suggestion** — observations are classified as blocking (must fix) or suggestion (informational), preventing infinite correction loops
 - **Cross-platform** — works with or without `jq` installed
+
+### `/scd-review:review-followup`
+
+Followup review after corrections. Finds the last completed review session, computes the diff since closure, and classifies files into three categories:
+- **Corrections** — files with blocking observations that were modified
+- **Unaddressed** — files with blocking observations that were not modified
+- **New** — other modified files
+
+Each correction file gets a resolution verdict (resolved / partially resolved / unresolved). Supports chained followups (round 2, 3, ...).
 
 ### `/scd-review:review-continue`
 
-Quick resume shortcut for the current branch. Finds the active session and jumps straight to the next pending file.
+Quick resume shortcut for the current branch. Finds the active session (followup or original review) and jumps straight to the next pending file.
 
 ## Agents
 
@@ -51,11 +60,16 @@ When `jq` is available, the plugin uses pre-written bash/jq scripts instead of g
 | Script | Purpose | Used in |
 |---|---|---|
 | `init-strategy.sh` | Set `json_strategy` in config.json | review-init (step 5) |
-| `update-file.sh` | Mark file completed, recalculate summary | code-review (step 3d) |
+| `update-file.sh` | Mark file completed, recalculate summary (with blocking count) | code-review (step 3d) |
+| `add-observations.sh` | Store observation details via stdin pipe | code-review (step 3d) |
 | `add-comment.sh` | Append user comment to session | code-review (step 3e) |
 | `session-status.sh` | Read-only session status display | code-review (step 0), review-continue (step 3) |
-| `session-summary.sh` | Generate recap table + mark completed | code-review (step 4) |
+| `session-summary.sh` | Generate recap table + mark completed with `head_at_completion` | code-review (step 4) |
 | `add-test-tasks.sh` | Store test-reviewer agent task IDs | code-review (step 2-bis) |
+| `classify-followup.sh` | Classify files for followup (corrections/unaddressed/new) | review-followup (step 1) |
+| `get-file-context.sh` | Extract single file context from session | review-followup (step 3) |
+| `update-followup-file.sh` | Update followup file with resolution verdict | review-followup (step 3) |
+| `followup-summary.sh` | Generate followup recap + mark completed | review-followup (step 4) |
 
 ## Runtime files
 
@@ -63,11 +77,12 @@ The plugin creates files under `.claude/review/` in your project:
 
 ```
 .claude/review/
-  config.json          # Review configuration (criteria, categories, jq strategy)
+  config.json                  # Review configuration (criteria, categories, jq strategy)
   sessions/
-    feature-auth.json  # Session file per branch (slug of branch name)
+    feature-auth.json          # Session file per branch (slug of branch name)
+    feature-auth-followup.json # Followup session (created by review-followup)
   scripts/
-    *.sh               # jq scripts installed from the plugin
+    *.sh                       # jq scripts installed from the plugin
 ```
 
 Add `.claude/review/sessions/` and `.claude/review/scripts/` to your `.gitignore` — session files are temporary and scripts are installed from the plugin.
