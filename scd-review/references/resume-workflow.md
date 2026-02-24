@@ -41,13 +41,7 @@ Reprise de <type> — <branche> (base: <base-branch>) | X/Y traites
   - Categorie `tests` → `Task(subagent_type: "test-reviewer", run_in_background: true, prompt: "Fichier: <chemin>. merge_base=<sha>, base_branch=<base>.")`
   - Sinon → `Task(subagent_type: "code-reviewer", run_in_background: true, prompt: "MODE FULL. Fichier: <chemin>. merge_base=<sha>, base_branch=<base>.")`
 
-- **Followup** : 5 prochains fichiers eligible (exclure `unaddressed` et auto-resolus) :
-  - Fichiers `correction` → mode CORRECTION :
-    - Categorie `tests` → `Task(subagent_type: "test-reviewer", run_in_background: true, prompt: "MODE CORRECTION. Fichier: <chemin>. previous_head=<sha>.")`
-    - Sinon → `Task(subagent_type: "code-reviewer", run_in_background: true, prompt: "MODE CORRECTION. Fichier: <chemin>. previous_head=<sha>. Observations bloquantes originales : [...] Commentaires : [...]")`
-  - Fichiers `new` → mode FULL :
-    - Categorie `tests` → `Task(subagent_type: "test-reviewer", ...)`
-    - Sinon → `Task(subagent_type: "code-reviewer", ...)`
+- **Followup** : meme logique que @references/followup-workflow.md etape 2-bis (5 prochains fichiers eligible, exclure `unaddressed` et auto-resolus)
 
 Stocker task IDs via @references/session-protocol.md (add agent tasks).
 
@@ -64,25 +58,7 @@ Suivre @references/apply-workflow.md a partir de l'etape 3 (boucle observation p
 
 ### Si followup (`<slug>-followup.json`)
 
-Boucle fichiers pending par type :
-1. En-tete + contexte original (depuis la session followup) + rapport agent + checkpoint type-specifique
-   - `correction` → verdict resolution (Resolu / Partiellement / Non resolu / Commentaire / Approfondir)
-   - `unaddressed` → choix (Accepte tel quel / Reste a corriger / Commentaire)
-   - `new` → checkpoint standard (Fichier suivant / Promouvoir / Commentaire / Approfondir)
-2. Pipeline glissant : apres chaque avancement, lancer l'agent du prochain fichier eligible si < 5 en vol
-   - `Task(subagent_type: "code-reviewer"/"test-reviewer", ...)` selon categorie et type
-   - Stocker task_id via @references/session-protocol.md (add agent tasks)
-3. Synthese : `followup-summary.sh` (jq) ou Read+Write (readwrite)
-
-### Etape 4-bis — Poster sur la plateforme (followup uniquement)
-
-Lire `platform` dans config.json. Si `type == null` ou `auto_post == false` : passer silencieusement.
-
-**Strategie jq** :
-```bash
-bash .claude/review/scripts/post-review-comments.sh .claude/review/sessions/<session-file> .claude/review/config.json
-```
-
-**Strategie readwrite** : detecter PR/MR, construire markdown, poster avec `gh pr review` ou `glab mr note`.
+Suivre @references/followup-workflow.md etapes 3-4 a partir du prochain fichier `pending`.
+Format agents : @references/agent-output-format.md.
 
 </resume_workflow>

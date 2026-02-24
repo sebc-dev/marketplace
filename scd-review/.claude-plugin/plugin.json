@@ -1,13 +1,24 @@
 {
   "name": "scd-review",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "description": "Interactive guided code review on the current branch. Reviews file by file in optimal order with JSON-based progress tracking, jq-optimized state updates, and cross-platform design.",
   "author": {
     "name": "sebc.dev"
   },
   "license": "MIT",
-  "repository": "https://github.com/sebc-dev/marketplace",
-  "keywords": ["code-review", "review", "git", "branch", "interactive"],
+  "keywords": [
+    "code-review",
+    "review",
+    "git",
+    "branch",
+    "interactive"
+  ],
   "commands": "./.claude/commands/",
-  "agents": ["./.claude/agents/test-reviewer.md", "./.claude/agents/code-reviewer.md", "./.claude/agents/fix-applier.md", "./.claude/agents/scout-alpha.md"]
+  "agents": [
+    "./.claude/agents/test-reviewer.md",
+    "./.claude/agents/code-reviewer.md",
+    "./.claude/agents/fix-applier.md",
+    "./.claude/agents/scout-alpha.md"
+  ],
+  "repository": "https://github.com/sebc-dev/marketplace"
 }
