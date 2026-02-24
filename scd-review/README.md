@@ -39,9 +39,19 @@ Manually post (or re-post) review results to GitHub/GitLab. Useful when:
 
 Requires platform to be configured via `review-init`.
 
+### `/scd-review:review-apply`
+
+Apply corrections from a completed review interactively. For each observation (blocking or suggestion), choose to:
+- **Apply** — launch an isolated fix-applier agent to make the correction
+- **Skip** — leave untouched for now
+- **Dismiss** — mark as false positive
+- **Discuss** — talk about it before deciding
+
+The fix-applier agent makes minimal, surgical edits targeting only the specific observation. Files with blocking observations are processed first. After completion, run `review-followup` to verify the corrections.
+
 ### `/scd-review:review-continue`
 
-Quick resume shortcut for the current branch. Finds the active session (followup or original review) and jumps straight to the next pending file.
+Quick resume shortcut for the current branch. Finds the active session (apply, followup, or original review) and jumps straight to the next pending item.
 
 ## Agents
 
@@ -69,6 +79,19 @@ Specialized subagent for test file analysis. Automatically used when files are c
 
 **Prerequisites:**
 - Testing principles rule installed via `/scd-review:review-init` (automatic)
+
+### `fix-applier`
+
+Isolated correction agent used by `review-apply`. For each observation, it:
+
+1. **Understand** — reads the file and surrounding context to identify the exact code area
+2. **Fix** — applies minimal, surgical edits using Edit (never Write) targeting only what the observation describes
+3. **Verify** — re-reads the modified zone and checks syntax coherence
+
+Key constraints:
+- **Minimal correction** — no refactoring, no adjacent improvements, no cleanup
+- If the observation is ambiguous or the fix is risky, it reports `skipped_ambiguous` instead of guessing
+- Returns a structured Fix Report with changes made and verification status
 
 ### Agent pipeline
 
@@ -115,6 +138,9 @@ When `jq` is available, the plugin uses pre-written bash/jq scripts instead of g
 | `update-followup-file.sh` | Update followup file with resolution verdict | review-followup (step 3) |
 | `followup-summary.sh` | Generate followup recap + mark completed | review-followup (step 4) |
 | `post-review-comments.sh` | Format + post review to GitHub/GitLab | code-review (step 4-bis), review-followup (step 4-bis), review-post |
+| `create-apply-session.sh` | Extract observations from completed session for apply | review-apply (step 1) |
+| `update-apply-observation.sh` | Update single observation status in apply session | review-apply (step 3) |
+| `apply-summary.sh` | Generate apply recap table + mark completed | review-apply (step 4) |
 
 ## Runtime files
 
@@ -126,6 +152,7 @@ The plugin creates files under `.claude/review/` in your project:
   sessions/
     feature-auth.json          # Session file per branch (slug of branch name)
     feature-auth-followup.json # Followup session (created by review-followup)
+    feature-auth-apply.json    # Apply session (created by review-apply)
   scripts/
     *.sh                       # jq scripts installed from the plugin
 ```

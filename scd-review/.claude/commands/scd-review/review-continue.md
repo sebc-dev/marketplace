@@ -33,11 +33,15 @@ Config absente. Lancez /scd-review:review-init d'abord.
 
 1. `git branch --show-current`
 2. Calculer le slug de branche (remplacer `/` par `-`)
-3. Chercher les sessions via Glob (priorite : followup d'abord) :
+3. Chercher les sessions via Glob (priorite : apply > followup > review) :
+   - `.claude/review/sessions/<slug>-apply.json`
    - `.claude/review/sessions/<slug>-followup.json`
    - `.claude/review/sessions/<slug>.json`
 
-**Priorite : followup `in_progress` > review originale `in_progress`.**
+**Priorite : apply `in_progress` > followup `in_progress` > review originale `in_progress`.**
+
+Si `<slug>-apply.json` existe et `status == "in_progress"` :
+→ Reprendre l'apply (aller a Etape 3 apply ci-dessous).
 
 Si `<slug>-followup.json` existe et `status == "in_progress"` :
 → Reprendre le followup (aller a Etape 3 followup ci-dessous).
@@ -48,8 +52,9 @@ Si `<slug>.json` existe et `status == "in_progress"` :
 Si aucune session `in_progress` trouvee :
 ```
 Aucune review en cours pour la branche <branche>.
-Lancez /scd-review:code-review pour demarrer une nouvelle review
-ou /scd-review:review-followup pour un followup.
+Lancez /scd-review:code-review pour demarrer une nouvelle review,
+/scd-review:review-followup pour un followup,
+ou /scd-review:review-apply pour appliquer des corrections.
 ```
 
 ## 3. Afficher la progression
@@ -80,10 +85,15 @@ Lire les definitions d'agents pour les injecter dans les prompts des subagents :
 
 1. Read `<plugin_root>/.claude/agents/code-reviewer.md` → retenir comme `CODE_REVIEWER_INSTRUCTIONS`
 2. Read `<plugin_root>/.claude/agents/test-reviewer.md` → retenir comme `TEST_REVIEWER_INSTRUCTIONS`
-3. Si l'un des fichiers est introuvable → erreur : `Agents introuvables dans <plugin_root>. Relancez /scd-review:review-init pour re-detecter le plugin root.`
+3. Read `<plugin_root>/.claude/agents/fix-applier.md` → retenir comme `FIX_APPLIER_INSTRUCTIONS`
+4. Si l'un des fichiers est introuvable → erreur : `Agents introuvables dans <plugin_root>. Relancez /scd-review:review-init pour re-detecter le plugin root.`
 
-## 5. Relancer les agents pour les fichiers pending
+## 5. Relancer les agents / preparer la reprise
 
+**Si la session est un apply** (`<slug>-apply.json`) :
+Pas d'agents a relancer — le fix-applier est lance en foreground observation par observation. Passer directement a l'etape 6.
+
+**Sinon (review ou followup)** :
 Les agents du batch precedent sont perdus (nouvelle session Claude). Il faut relancer les agents pour les prochains fichiers pending.
 
 1. Lire `agent_tasks` dans la session JSON (peut etre absent ou vide si la session est ancienne)
@@ -98,6 +108,10 @@ Les agents du batch precedent sont perdus (nouvelle session Claude). Il faut rel
 Meme logique de lancement que l'etape 2-bis de code-review / review-followup.
 
 ## 6. Reprendre la review
+
+**Si la session est un apply** (`<slug>-apply.json`) :
+Continuer avec l'Etape 3 du workflow `/scd-review:review-apply` a partir de la premiere observation `pending`. Suivre exactement le meme processus : afficher l'observation, AskUserQuestion (appliquer/sauter/rejeter/discuter), lancer le fix-applier si necessaire, mise a jour JSON.
+Quand toutes les observations sont traitees, executer l'Etape 4 (synthese) de `/scd-review:review-apply`.
 
 **Si la session est une review originale** (`<slug>.json`) :
 Continuer avec l'Etape 3 du workflow `/scd-review:code-review` a partir du prochain fichier `pending`. Suivre exactement le meme processus : en-tete, recuperation rapport agent, metriques, mise a jour JSON, checkpoint utilisateur, pipeline glissant.
