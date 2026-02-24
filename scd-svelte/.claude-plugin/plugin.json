@@ -6,14 +6,8 @@
     "name": "sebc.dev"
   },
   "license": "MIT",
-  "keywords": [
-    "svelte",
-    "sveltekit",
-    "runes",
-    "ssr",
-    "typescript"
-  ],
+  "repository": "https://github.com/sebc-dev/marketplace",
+  "keywords": ["svelte", "sveltekit", "runes", "ssr", "typescript"],
   "commands": "./.claude/commands/",
-  "skills": "./.claude/skills/",
-  "repository": "https://github.com/sebc-dev/marketplace"
+  "skills": "./.claude/skills/"
 }

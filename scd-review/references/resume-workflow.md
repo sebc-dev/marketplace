@@ -60,12 +60,7 @@ Format agents : @references/agent-output-format.md.
 
 ### Si apply (`<slug>-apply.json`)
 
-Boucle observations pending :
-1. Afficher l'observation (format structure : emoji level + criterion + severity + fichier + texte + detail + suggestion)
-2. `AskUserQuestion` : Appliquer / Sauter / Rejeter / Discuter
-3. **Appliquer** → `Task(subagent_type: "fix-applier", run_in_background: false, description: "Fix: <criterion> in <filename>", prompt: "Corrige l'observation suivante : fichier=<chemin>, categorie=<category>, observation=<criterion/severity/level/text/detail/suggestion>")`
-4. Mise a jour JSON via @references/session-protocol.md (update apply observation)
-5. Synthese : `apply-summary.sh` (jq) ou Read+Write (readwrite)
+Suivre @references/apply-workflow.md a partir de l'etape 3 (boucle observation par observation) puis etape 4 (synthese).
 
 ### Si followup (`<slug>-followup.json`)
 

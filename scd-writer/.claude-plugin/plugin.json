@@ -6,16 +6,8 @@
     "name": "sebc.dev"
   },
   "license": "MIT",
-  "keywords": [
-    "writing",
-    "article",
-    "blog",
-    "ai-detection",
-    "voice",
-    "workflow",
-    "human-first"
-  ],
+  "repository": "https://github.com/sebc-dev/marketplace",
+  "keywords": ["writing", "article", "blog", "ai-detection", "voice", "workflow", "human-first"],
   "commands": "./commands/",
-  "skills": "./skills/",
-  "repository": "https://github.com/sebc-dev/marketplace"
+  "skills": "./skills/"
 }
