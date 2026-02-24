@@ -91,15 +91,16 @@ Lire `plugin_root` dans la config.
 
 **Si `plugin_root` est deja defini et valide** → indiquer `Plugin root : <chemin>`
 
-## 4. Installer les scripts
+## 4. Installer ou mettre a jour les scripts
 
-1. Verifier si `.claude/review/scripts/` existe (Glob)
-2. Si absent :
-   - Lister les scripts source : `Glob("<plugin_root>/scripts/*.sh")`
-   - Lire chaque script avec Read, ecrire dans `.claude/review/scripts/` avec Write
-   - Rendre les scripts executables : `chmod +x .claude/review/scripts/*.sh`
-   - Confirmer : `Scripts installes dans .claude/review/scripts/`
-3. Si present : indiquer `Scripts deja installes dans .claude/review/scripts/`
+1. Lister les scripts source : `Glob("<plugin_root>/scripts/*.sh")` → extraire les noms de fichiers
+2. Lister les scripts installes : `Glob(".claude/review/scripts/*.sh")` → extraire les noms de fichiers
+3. Comparer les deux listes :
+   - **Si le repertoire n'existe pas** → copier tous les scripts source avec Read + Write
+   - **Si des scripts source sont absents du projet** → copier uniquement les manquants avec Read + Write
+   - **Si tout est a jour** → indiquer `Scripts a jour dans .claude/review/scripts/`
+4. Si des scripts ont ete copies : `chmod +x .claude/review/scripts/*.sh`
+5. Confirmer avec la liste des scripts installes/mis a jour (ou "a jour" si rien a copier)
 
 ## 5. Installer la rule testing-principles
 
