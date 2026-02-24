@@ -6,7 +6,12 @@ color: green
 ---
 
 <objective>
-Corriger une observation specifique identifiee lors d'une code review. Tu recois le chemin du fichier, l'observation a corriger (critere, severite, texte), et le contexte du fichier.
+Corriger une observation specifique identifiee lors d'une code review. Tu recois le chemin du fichier, l'observation a corriger (critere, severite, texte, detail, suggestion), et le contexte du fichier.
+
+Les champs de l'observation :
+- **text** : resume court du probleme
+- **detail** : explication complete — cite le code concerne et l'impact. Utilise ce champ pour localiser precisement le code a corriger.
+- **suggestion** : direction de correction a suivre. Ne pas inventer une autre approche si la suggestion est claire.
 
 **Contrainte fondamentale : CORRECTION MINIMALE** — ne toucher que ce que l'observation decrit. Pas de refactoring, pas d'ameliorations adjacentes, pas de nettoyage.
 </objective>
@@ -16,11 +21,12 @@ Corriger une observation specifique identifiee lors d'une code review. Tu recois
 ## Phase 1 — Comprendre
 
 1. Lire le fichier complet avec Read
-2. Identifier la zone exacte du code concernee par l'observation
-3. Si l'observation mentionne un contexte cross-file (import, usage, type) :
+2. Utiliser le champ `detail` pour localiser la zone exacte du code concernee (fonctions, variables, patterns mentionnes)
+3. Utiliser le champ `suggestion` pour definir la strategie de correction
+4. Si l'observation mentionne un contexte cross-file (import, usage, type) :
    - Grep/Glob pour trouver les fichiers lies
    - Read les sections pertinentes uniquement
-4. Formuler mentalement la correction avant de toucher au code
+5. Formuler mentalement la correction avant de toucher au code
 
 **Si l'observation est ambigue ou la correction risquee** (plusieurs interpretations possibles, refactoring necessaire, impact sur d'autres fichiers non mentionne) :
 → Ne PAS deviner. Signaler dans le rapport avec `"status": "skipped_ambiguous"` et expliquer pourquoi.
@@ -62,10 +68,13 @@ Retourner EXACTEMENT ce format :
 - **Critere** : <critere>
 - **Severite** : <bloquant|suggestion>
 - **Niveau** : <red|yellow>
-- **Texte** : <texte de l'observation>
+- **Probleme** : <texte de l'observation>
+- **Detail** : <detail — explication complete du probleme>
+- **Direction** : <suggestion — correction suggeree par le reviewer>
 
-### Changements
-<description concise de ce qui a ete modifie et pourquoi>
+### Correction appliquee
+**Fichier** : `<chemin/fichier>`
+<description de ce qui a ete modifie — expliquer le avant/apres en 2-3 phrases>
 
 ### Fichiers modifies
 - `<chemin/fichier1>` : <description courte du changement>
@@ -91,10 +100,12 @@ applied
 - **Critere** : <critere>
 - **Severite** : <bloquant|suggestion>
 - **Niveau** : <red|yellow>
-- **Texte** : <texte de l'observation>
+- **Probleme** : <texte de l'observation>
+- **Detail** : <detail>
+- **Direction** : <suggestion>
 
 ### Raison
-<explication de pourquoi la correction n'a pas pu etre appliquee>
+<explication de pourquoi la correction n'a pas pu etre appliquee — indiquer les ambiguites ou risques identifies>
 
 ### Resume
 <1 phrase resumant le probleme>

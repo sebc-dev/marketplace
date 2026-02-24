@@ -127,7 +127,8 @@ body=$(jq -r --arg lang "$lang" --arg session_type "$session_type" '
         (map(
           "**\(.path)**\n" +
           ([.observations[] | select(.severity == "bloquant") |
-            "- \(if .level == "red" then "🔴" elif .level == "yellow" then "🟡" else "🟢" end) **\(.criterion)** — \(.text)"
+            "- \(if .level == "red" then "🔴" elif .level == "yellow" then "🟡" else "🟢" end) **\(.criterion)** — \(.text)" +
+            (if .detail then "\n  > \(.detail)" else "" end)
           ] | join("\n"))
         ) | join("\n\n")) + "\n\n"
       else ""
@@ -161,7 +162,8 @@ body=$(jq -r --arg lang "$lang" --arg session_type "$session_type" '
         (map(
           "**\(.path)**\n" +
           ([.observations[] | select(.severity == "bloquant") |
-            "- \(if .level == "red" then "🔴" elif .level == "yellow" then "🟡" else "🟢" end) **\(.criterion)** — \(.text)"
+            "- \(if .level == "red" then "🔴" elif .level == "yellow" then "🟡" else "🟢" end) **\(.criterion)** — \(.text)" +
+            (if .detail then "\n  > \(.detail)" else "" end)
           ] | join("\n"))
         ) | join("\n\n")) + "\n\n"
       else ""
@@ -169,13 +171,14 @@ body=$(jq -r --arg lang "$lang" --arg session_type "$session_type" '
     ) +
 
     # Suggestions in collapsible
-    ([.files[] | .path as $p | .observations[] | select(.severity == "suggestion") | {path: $p, obs: .}] |
+    ([.files[] | .path as $p | .observations[] | select(.severity == "suggestion" and .level != "green") | {path: $p, obs: .}] |
       if length > 0 then
         "<details>\n<summary>\($l.suggestions_title) (\(length))</summary>\n\n" +
         (group_by(.path) | map(
           "**\(.[0].path)**\n" +
           ([.[].obs |
-            "- \(if .level == "red" then "🔴" elif .level == "yellow" then "🟡" else "🟢" end) **\(.criterion)** — \(.text)"
+            "- \(if .level == "red" then "🔴" elif .level == "yellow" then "🟡" else "🟢" end) **\(.criterion)** — \(.text)" +
+            (if .detail then "\n  > \(.detail)" else "" end)
           ] | join("\n"))
         ) | join("\n\n")) + "\n\n</details>\n\n"
       else ""

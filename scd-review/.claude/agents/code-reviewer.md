@@ -66,6 +66,20 @@ Pour chaque observation, classifier la severite puis en deduire le niveau :
 
 **Bon** → 🟢 : Pattern ou choix remarquable
 
+### Redaction des observations
+
+Chaque observation doit etre suffisamment detaillee pour etre actionnable sans relire le diff :
+
+- **text** : Resume court (1 phrase, ~15-30 mots). Identifie le probleme et sa localisation dans le code.
+- **detail** : Explication du probleme (2-4 phrases). Cite le code ou pattern concerne, explique pourquoi c'est un probleme et quel est l'impact concret.
+- **suggestion** : Direction de correction (1-2 phrases). Indique comment corriger sans dicter le code exact.
+
+Exemples :
+- ❌ `text: "Pas de validation"` — trop vague
+- ✅ `text: "Pas de validation sur userId dans updateProfile()"` — localisé
+- ✅ `detail: "La fonction updateProfile() utilise req.params.userId directement dans la requete SQL sans validation ni sanitization. Un attaquant peut injecter du SQL via ce parametre."` — impact clair
+- ✅ `suggestion: "Valider userId comme entier positif avant usage et utiliser des requetes parametrees."` — actionnable
+
 ## Phase 3 — Rapport structure
 
 Compter les observations par niveau (green, yellow, red) et le nombre de bloquants.
@@ -86,17 +100,27 @@ Retourner EXACTEMENT ce format :
 
 ### Observations
 
-🔴 **security** [BLOQUANT] — Description detaillee...
-🔴 **error-handling** [BLOQUANT] — Description detaillee...
-🟡 **conventions** [SUGGESTION] — Description detaillee...
-🟢 **architecture** — Description detaillee...
+🔴 **security** [BLOQUANT] — Resume court du probleme
+> Detail : explication du probleme avec reference au code concerne et impact.
+> Suggestion : direction de correction.
+
+🔴 **error-handling** [BLOQUANT] — Resume court du probleme
+> Detail : explication du probleme avec reference au code concerne et impact.
+> Suggestion : direction de correction.
+
+🟡 **conventions** [SUGGESTION] — Resume court du probleme
+> Detail : explication du probleme.
+> Suggestion : direction de correction.
+
+🟢 **architecture** — Ce qui est bien fait
+> Detail : pourquoi c'est un bon pattern.
 
 ### Metriques
 - green: X | yellow: Y | red: Z | blocking: B
 - note: "resume en 120 caracteres max"
 
 ### Observations JSON
-[{"criterion":"security","severity":"bloquant","level":"red","text":"Description..."},{"criterion":"error-handling","severity":"bloquant","level":"red","text":"Description..."},{"criterion":"conventions","severity":"suggestion","level":"yellow","text":"Description..."},{"criterion":"architecture","severity":"suggestion","level":"green","text":"Description..."}]
+[{"criterion":"security","severity":"bloquant","level":"red","text":"Resume court","detail":"Explication du probleme avec code concerne et impact","suggestion":"Direction de correction"},{"criterion":"error-handling","severity":"bloquant","level":"red","text":"Resume court","detail":"Explication","suggestion":"Correction"},{"criterion":"conventions","severity":"suggestion","level":"yellow","text":"Resume court","detail":"Explication","suggestion":"Correction"},{"criterion":"architecture","severity":"suggestion","level":"green","text":"Ce qui est bien fait","detail":"Pourquoi c'est un bon pattern","suggestion":null}]
 ```
 
 **Regles de formatage :**
@@ -104,6 +128,11 @@ Retourner EXACTEMENT ce format :
 - Le JSON doit etre sur une seule ligne, valide, et correspondre exactement aux observations listees
 - La note doit resumer l'etat du fichier (ex: "Service auth solide, manque validation CSRF sur endpoint admin")
 - Pour les 🟢, `severity` = `"suggestion"` dans le JSON (pas de severite specifique pour les bons points)
+- Champs obligatoires : `criterion`, `severity`, `level`, `text`, `detail`
+- Champ `suggestion` : obligatoire pour red/yellow, `null` pour green
+- `text` : resume court (~15-30 mots), identifie le probleme et sa localisation
+- `detail` : 2-4 phrases, cite le code, explique le probleme et l'impact
+- `suggestion` : 1-2 phrases, direction de correction (pas le code exact)
 </output_format>
 
 <correction_mode>

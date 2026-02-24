@@ -109,10 +109,20 @@ Pour chaque observation pending dans le fichier :
 
 ### 3a. Afficher l'observation
 
+Presenter chaque observation avec un bloc structure extrait du fichier de suivi :
+
 ```
-Observation X.Y : <level_emoji> **<criterion>** [<SEVERITE>]
-<texte de l'observation>
+---
+📋 Observation X.Y — <level_emoji> **<criterion>** [<SEVERITE>]
+
+📁 Fichier : `<chemin/fichier.ext>`
+🔍 Probleme : <texte de l'observation>
+   <detail de l'observation — explication complete du probleme>
+💡 Correction suggeree : <suggestion de l'observation — direction de correction>
+---
 ```
+
+Les champs `detail` et `suggestion` proviennent directement du JSON de la session. Si ces champs sont absents (anciennes sessions), afficher uniquement le `text`.
 
 ### 3b. Demander l'action
 
@@ -147,13 +157,22 @@ Task(
 {FIX_APPLIER_INSTRUCTIONS}
 </agent_instructions>
 
-Corrige l'observation suivante dans le fichier <chemin> :
+Corrige l'observation suivante :
+
+📁 Fichier : <chemin>
+Categorie : <category>
+
+🔍 Observation :
 - Critere : <criterion>
 - Severite : <severity>
 - Niveau : <level>
-- Texte : <texte>
+- Resume : <text>
+- Detail : <detail>
+- Correction suggeree : <suggestion>
 
-Contexte du fichier : categorie <category>."
+Le champ 'detail' explique le probleme precis et le code concerne.
+Le champ 'suggestion' indique la direction de correction a suivre.
+Applique une correction chirurgicale en suivant cette direction."
 )
 ```
 

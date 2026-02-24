@@ -52,7 +52,7 @@
     },
     {
       "name": "scd-review",
-      "version": "0.8.0",
+      "version": "0.8.1",
       "source": "./scd-review",
       "description": "Interactive guided code review on the current branch. Reviews file by file in optimal order with JSON-based progress tracking, jq-optimized state updates, and cross-platform design.",
       "author": {
