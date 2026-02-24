@@ -48,6 +48,18 @@ Si `json_strategy == "jq"`, utiliser les scripts pour toutes les operations JSON
 
 Si `json_strategy == "readwrite"`, utiliser Read + Write pour toutes les operations JSON.
 
+## Charger les definitions d'agents
+
+Lire `plugin_root` dans `.claude/review/config.json`. Si `null` → erreur : `Plugin root non configure. Lancez /scd-review:review-init d'abord.`
+
+Lire les definitions d'agents pour les injecter dans les prompts des subagents :
+
+1. Read `<plugin_root>/.claude/agents/code-reviewer.md` → retenir comme `CODE_REVIEWER_INSTRUCTIONS`
+2. Read `<plugin_root>/.claude/agents/test-reviewer.md` → retenir comme `TEST_REVIEWER_INSTRUCTIONS`
+3. Si l'un des fichiers est introuvable → erreur : `Agents introuvables dans <plugin_root>. Relancez /scd-review:review-init pour re-detecter le plugin root.`
+
+Ces contenus seront passes directement dans les prompts Task (etapes 2-bis et pipeline glissant).
+
 ## Etape 0 — Trouver la session precedente
 
 1. Lire `.claude/review/config.json` pour connaitre `json_strategy`
@@ -168,7 +180,11 @@ Apres la persistance de la session, lancer les agents pour les **5 premiers fich
       subagent_type: "general-purpose",
       run_in_background: true,
       description: "Correction review: <nom-fichier>",
-      prompt: "Tu es un code-reviewer specialise. Lis la definition d'agent dans ${CLAUDE_PLUGIN_ROOT}/.claude/agents/code-reviewer.md et suis ses instructions en MODE CORRECTION pour le fichier <chemin>.
+      prompt: "Tu es un code-reviewer specialise. Voici ta definition d'agent :
+<agent_instructions>
+{CODE_REVIEWER_INSTRUCTIONS}
+</agent_instructions>
+Suis ces instructions en MODE CORRECTION pour le fichier <chemin>.
     Contexte git : previous_head=<sha>, diff depuis previous_head.
     Observations bloquantes originales :
     - <liste formatee des observations bloquantes originales>
@@ -185,7 +201,11 @@ Apres la persistance de la session, lancer les agents pour les **5 premiers fich
       subagent_type: "general-purpose",
       run_in_background: true,
       description: "Code review: <nom-fichier>",
-      prompt: "Tu es un code-reviewer specialise. Lis la definition d'agent dans ${CLAUDE_PLUGIN_ROOT}/.claude/agents/code-reviewer.md et suis ses instructions en MODE FULL pour le fichier <chemin>. Contexte git : previous_head=<sha> (utiliser comme merge-base), base branch=<base>."
+      prompt: "Tu es un code-reviewer specialise. Voici ta definition d'agent :
+<agent_instructions>
+{CODE_REVIEWER_INSTRUCTIONS}
+</agent_instructions>
+Suis ces instructions en MODE FULL pour le fichier <chemin>. Contexte git : previous_head=<sha> (utiliser comme merge-base), base branch=<base>."
     )
     ```
 

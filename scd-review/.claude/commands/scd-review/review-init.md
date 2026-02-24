@@ -30,6 +30,7 @@ Creer `.claude/review/config.json` avec Write :
 
 ```json
 {
+  "plugin_root": null,
   "json_strategy": null,
   "category_priority": [
     "build-config",
@@ -75,26 +76,42 @@ Utiliser Read pour afficher le contenu de la config.
 
 Verifier si `.claude/review/sessions/` existe (Glob). Si absent, le creer.
 
-## 3. Installer les scripts
+## 3. Detecter la racine du plugin
+
+Lire `plugin_root` dans la config.
+
+**Si `null` ou si le chemin ne contient plus de fichiers** (verifier avec `Glob("<plugin_root>/scripts/init-strategy.sh")`) :
+
+1. Localiser le plugin : `Glob("**/scd-review/scripts/init-strategy.sh")`
+2. Si aucun resultat → erreur : `Impossible de localiser le plugin scd-review. Verifiez l'installation.`
+3. Si plusieurs resultats → privilegier le chemin le plus court (installation principale)
+4. Deduire la racine : retirer `/scripts/init-strategy.sh` du chemin trouve (ex: `/home/user/.claude/plugins/scd-review/scripts/init-strategy.sh` → `/home/user/.claude/plugins/scd-review`)
+5. Persister dans config.json avec Read + Write (la strategie jq n'est pas encore detectee a ce stade)
+6. Confirmer : `Plugin root detecte : <chemin>`
+
+**Si `plugin_root` est deja defini et valide** → indiquer `Plugin root : <chemin>`
+
+## 4. Installer les scripts
 
 1. Verifier si `.claude/review/scripts/` existe (Glob)
 2. Si absent :
-   - Copier tous les fichiers de `${CLAUDE_PLUGIN_ROOT}/scripts/*.sh` vers `.claude/review/scripts/` avec Write (lire chaque script avec Read puis ecrire dans le projet)
+   - Lister les scripts source : `Glob("<plugin_root>/scripts/*.sh")`
+   - Lire chaque script avec Read, ecrire dans `.claude/review/scripts/` avec Write
    - Rendre les scripts executables : `chmod +x .claude/review/scripts/*.sh`
    - Confirmer : `Scripts installes dans .claude/review/scripts/`
 3. Si present : indiquer `Scripts deja installes dans .claude/review/scripts/`
 
-## 4. Installer la rule testing-principles
+## 5. Installer la rule testing-principles
 
 1. Verifier si `.claude/rules/testing-principles.md` existe dans le projet (Glob)
 2. Si absent :
-   - Lire `${CLAUDE_PLUGIN_ROOT}/rules/testing-principles.md` avec Read
+   - Lire `<plugin_root>/rules/testing-principles.md` avec Read
    - Creer le repertoire `.claude/rules/` si necessaire
    - Ecrire le contenu vers `.claude/rules/testing-principles.md` du projet avec Write
    - Confirmer l'installation : `Rule testing-principles installee dans .claude/rules/`
 3. Si present : indiquer `Rule testing-principles deja presente`
 
-## 5. Detecter la strategie JSON
+## 6. Detecter la strategie JSON
 
 Lire `json_strategy` dans la config. Si la valeur est `null` :
 
@@ -104,7 +121,7 @@ Lire `json_strategy` dans la config. Si la valeur est `null` :
 
 Si `json_strategy` est deja defini (`"jq"` ou `"readwrite"`), ne rien changer.
 
-## 6. Choix plateforme
+## 7. Choix plateforme
 
 Proposer l'integration PR/MR :
 
@@ -123,11 +140,11 @@ AskUserQuestion(
 )
 ```
 
-**Si "Aucune"** → ecrire `platform.type = null` dans config.json, sauter a l'etape 8.
+**Si "Aucune"** → ecrire `platform.type = null` dans config.json, sauter a l'etape 9.
 
-**Si GitHub ou GitLab** → passer a l'etape 6-bis.
+**Si GitHub ou GitLab** → passer a l'etape 7-bis.
 
-## 6-bis. Detection et installation CLI
+## 7-bis. Detection et installation CLI
 
 1. Detecter l'outil : `gh --version` (GitHub) ou `glab --version` (GitLab)
 2. Si absent → detecter l'OS via `uname -s` (si `uname` echoue → assumer Windows) et afficher le guide :
@@ -152,13 +169,13 @@ AskUserQuestion(
 )
 ```
 
-Si "Continuer sans" → ecrire `platform.type = null`, sauter a l'etape 8.
+Si "Continuer sans" → ecrire `platform.type = null`, sauter a l'etape 9.
 Si "Verifier a nouveau" → re-executer la detection. Si toujours absent, re-proposer.
 
 3. Si present → verifier l'auth : `gh auth status` / `glab auth status`
 4. Si non authentifie → afficher `gh auth login` / `glab auth login` et re-proposer la verification
 
-## 6-ter. Persister la config plateforme
+## 7-ter. Persister la config plateforme
 
 Ecrire dans config.json :
 - `platform.type` : `"github"` ou `"gitlab"`
@@ -171,17 +188,18 @@ jq '.platform.type = "github" | .platform.auto_post = true' .claude/review/confi
 
 **Strategie `readwrite`** : Read + Write pour mettre a jour les champs.
 
-## 7. Rappel gitignore
+## 8. Rappel gitignore
 
 Indiquer a l'utilisateur d'ajouter au `.gitignore` si ce n'est pas deja fait :
 - `.claude/review/sessions/` — fichiers de session temporaires
 - `.claude/review/scripts/` — scripts installes depuis le plugin
 
-## 8. Resume
+## 9. Resume
 
 Afficher un resume :
 ```
 Configuration code-review initialisee
+  Plugin root    : <plugin_root>
   Strategie JSON : jq | readwrite
   Plateforme     : GitHub (gh) | GitLab (glab) | Aucune
   Config         : .claude/review/config.json

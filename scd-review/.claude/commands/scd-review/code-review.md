@@ -49,6 +49,18 @@ Si `json_strategy == "jq"`, utiliser les scripts pour toutes les operations JSON
 
 Si `json_strategy == "readwrite"`, utiliser Read + Write pour toutes les operations JSON.
 
+## Charger les definitions d'agents
+
+Lire `plugin_root` dans `.claude/review/config.json`. Si `null` → erreur : `Plugin root non configure. Lancez /scd-review:review-init d'abord.`
+
+Lire les definitions d'agents pour les injecter dans les prompts des subagents :
+
+1. Read `<plugin_root>/.claude/agents/code-reviewer.md` → retenir comme `CODE_REVIEWER_INSTRUCTIONS`
+2. Read `<plugin_root>/.claude/agents/test-reviewer.md` → retenir comme `TEST_REVIEWER_INSTRUCTIONS`
+3. Si l'un des fichiers est introuvable → erreur : `Agents introuvables dans <plugin_root>. Relancez /scd-review:review-init pour re-detecter le plugin root.`
+
+Ces contenus seront passes directement dans les prompts Task (etapes 2-bis et 3f).
+
 ## Etape 0 — Initialiser ou reprendre
 
 1. Lire `.claude/review/config.json` pour connaitre `json_strategy`
@@ -150,7 +162,11 @@ Apres la persistance du fichier session, lancer les agents pour les **5 premiers
     subagent_type: "general-purpose",
     run_in_background: true,
     description: "Test review: <nom-fichier>",
-    prompt: "Tu es un test-reviewer specialise. Lis la definition d'agent dans ${CLAUDE_PLUGIN_ROOT}/.claude/agents/test-reviewer.md et suis ses instructions pour analyser le fichier <chemin>. Contexte git : merge-base=<sha>, base branch=<base>."
+    prompt: "Tu es un test-reviewer specialise. Voici ta definition d'agent :
+<agent_instructions>
+{TEST_REVIEWER_INSTRUCTIONS}
+</agent_instructions>
+Suis ces instructions pour analyser le fichier <chemin>. Contexte git : merge-base=<sha>, base branch=<base>."
   )
   ```
 - **Sinon** → lancer un **code-reviewer** :
@@ -159,7 +175,11 @@ Apres la persistance du fichier session, lancer les agents pour les **5 premiers
     subagent_type: "general-purpose",
     run_in_background: true,
     description: "Code review: <nom-fichier>",
-    prompt: "Tu es un code-reviewer specialise. Lis la definition d'agent dans ${CLAUDE_PLUGIN_ROOT}/.claude/agents/code-reviewer.md et suis ses instructions en MODE FULL pour analyser le fichier <chemin>. Contexte git : merge-base=<sha>, base branch=<base>."
+    prompt: "Tu es un code-reviewer specialise. Voici ta definition d'agent :
+<agent_instructions>
+{CODE_REVIEWER_INSTRUCTIONS}
+</agent_instructions>
+Suis ces instructions en MODE FULL pour analyser le fichier <chemin>. Contexte git : merge-base=<sha>, base branch=<base>."
   )
   ```
 

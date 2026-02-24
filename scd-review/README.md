@@ -45,22 +45,40 @@ Quick resume shortcut for the current branch. Finds the active session (followup
 
 ## Agents
 
+Every file in the review is analyzed by a dedicated background agent, keeping the main conversation lightweight and enabling longer reviews without context exhaustion.
+
+### `code-reviewer`
+
+Specialized subagent for code file analysis (all categories except tests). Performs a 3-phase analysis:
+
+1. **Context & diff** — reads the file diff, understands what changed and why, identifies cross-file context
+2. **Observations** — analyzes against 6 criteria (architecture, security, performance, conventions, error-handling, test-coverage), classifies each as blocking or suggestion
+3. **Structured report** — returns a formatted report with human-readable observations and extractable JSON for session persistence
+
+Supports two modes:
+- **FULL** — complete review from merge-base (used in `code-review` and `review-followup` for new files)
+- **CORRECTION** — targeted verification from previous HEAD, checks whether original blocking observations are addressed (used in `review-followup` for correction files)
+
 ### `test-reviewer`
 
-Specialized subagent for deep test file analysis. Automatically triggered during code review when files are categorized as `tests`.
+Specialized subagent for test file analysis. Automatically used when files are categorized as `tests`.
 
-**What it does:**
 1. **Runs tests** — detects the test framework and executes the test suite scoped to the file
 2. **Quality analysis** — evaluates each test against principles (AAA structure, naming, test doubles, FIRST properties, anti-patterns)
 3. **Coverage analysis** — runs coverage if supported and evaluates pertinence using Khorikov's code classification
 
-**How it works:**
-- Launched in background during Step 2 (planning) — one agent per test file, all in parallel
-- Results collected in Step 3 (review) when the test file is reviewed — typically zero wait time since agents finish during the review of non-test files
-- The structured report is integrated into the file's review observations (green/yellow/red counts)
-
 **Prerequisites:**
 - Testing principles rule installed via `/scd-review:review-init` (automatic)
+
+### Agent pipeline
+
+Both agents are managed through a sliding window pipeline (max 5 concurrent):
+
+- **Step 2-bis** — launch agents for the first 5 files in the review order
+- **Step 3** — after each file review, launch the agent for file N+5 (replacing the consumed slot)
+- **Resume** — when resuming via `review-continue`, agents are re-launched for the next 5 pending files
+
+This ensures zero wait time (agents finish while the user reviews earlier files) and minimal main context usage (~100-200 tokens per file instead of ~500-1000).
 
 ## GitHub / GitLab Integration
 
@@ -91,7 +109,7 @@ When `jq` is available, the plugin uses pre-written bash/jq scripts instead of g
 | `add-comment.sh` | Append user comment to session | code-review (step 3e) |
 | `session-status.sh` | Read-only session status display | code-review (step 0), review-continue (step 3) |
 | `session-summary.sh` | Generate recap table + mark completed with `head_at_completion` | code-review (step 4) |
-| `add-test-tasks.sh` | Store test-reviewer agent task IDs | code-review (step 2-bis) |
+| `add-agent-tasks.sh` | Store agent task IDs (code-reviewer + test-reviewer) | code-review (step 2-bis), review-followup (step 2-bis), review-continue (step 4) |
 | `classify-followup.sh` | Classify files for followup (corrections/unaddressed/new) | review-followup (step 1) |
 | `get-file-context.sh` | Extract single file context from session | review-followup (step 3) |
 | `update-followup-file.sh` | Update followup file with resolution verdict | review-followup (step 3) |

@@ -72,7 +72,17 @@ Reprise de la review — <branche> (base: <base-branch>)
   Prochain fichier : X+1/N fichier.ext [Categorie]
 ```
 
-## 4. Relancer les agents pour les fichiers pending
+## 4. Charger les definitions d'agents
+
+Lire `plugin_root` dans `.claude/review/config.json`. Si `null` → erreur : `Plugin root non configure. Lancez /scd-review:review-init d'abord.`
+
+Lire les definitions d'agents pour les injecter dans les prompts des subagents :
+
+1. Read `<plugin_root>/.claude/agents/code-reviewer.md` → retenir comme `CODE_REVIEWER_INSTRUCTIONS`
+2. Read `<plugin_root>/.claude/agents/test-reviewer.md` → retenir comme `TEST_REVIEWER_INSTRUCTIONS`
+3. Si l'un des fichiers est introuvable → erreur : `Agents introuvables dans <plugin_root>. Relancez /scd-review:review-init pour re-detecter le plugin root.`
+
+## 5. Relancer les agents pour les fichiers pending
 
 Les agents du batch precedent sont perdus (nouvelle session Claude). Il faut relancer les agents pour les prochains fichiers pending.
 
@@ -87,7 +97,7 @@ Les agents du batch precedent sont perdus (nouvelle session Claude). Il faut rel
 
 Meme logique de lancement que l'etape 2-bis de code-review / review-followup.
 
-## 5. Reprendre la review
+## 6. Reprendre la review
 
 **Si la session est une review originale** (`<slug>.json`) :
 Continuer avec l'Etape 3 du workflow `/scd-review:code-review` a partir du prochain fichier `pending`. Suivre exactement le meme processus : en-tete, recuperation rapport agent, metriques, mise a jour JSON, checkpoint utilisateur, pipeline glissant.
