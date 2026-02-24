@@ -7,7 +7,10 @@ allowed-tools:
   - Bash(git merge-base:*)
   - Bash(git branch:*)
   - Bash(git show:*)
+  - Bash(git rev-parse:*)
   - Bash(bash .claude/review/scripts/*)
+  - Bash(gh pr *)
+  - Bash(glab mr *)
   - Read
   - Write
   - Glob
@@ -17,91 +20,29 @@ allowed-tools:
 ---
 
 <objective>
-Reprendre rapidement une code review interrompue sur la branche courante, sans avoir a re-specifier la branche de base ni reconfigurer quoi que ce soit.
+Reprendre rapidement une review/followup/apply interrompue sur la branche courante.
 </objective>
 
 <process>
 
-## 1. Verification environnement
+## 0. Verification environnement
 
 Suivre la procedure @references/ensure-env.md pour charger la config et verifier l'env_cache.
 Si config absente → indiquer de lancer `/scd-review:review-init` et STOP.
 
-## 2. Trouver la session
+## 1. Strategie JSON
 
-1. `git branch --show-current`
-2. Calculer le slug de branche (remplacer `/` par `-`)
-3. Chercher les sessions via Glob (priorite : apply > followup > review) :
-   - `.claude/review/sessions/<slug>-apply.json`
-   - `.claude/review/sessions/<slug>-followup.json`
-   - `.claude/review/sessions/<slug>.json`
+Resoudre la strategie selon @references/session-protocol.md.
 
-**Priorite : apply `in_progress` > followup `in_progress` > review originale `in_progress`.**
+## 2. Executer le workflow de reprise
 
-Si `<slug>-apply.json` existe et `status == "in_progress"` :
-→ Reprendre l'apply (aller a Etape 3 apply ci-dessous).
-
-Si `<slug>-followup.json` existe et `status == "in_progress"` :
-→ Reprendre le followup (aller a Etape 3 followup ci-dessous).
-
-Si `<slug>.json` existe et `status == "in_progress"` :
-→ Reprendre la review originale (aller a Etape 3 review ci-dessous).
-
-Si aucune session `in_progress` trouvee :
-```
-Aucune review en cours pour la branche <branche>.
-Lancez /scd-review:code-review pour demarrer une nouvelle review,
-/scd-review:review-followup pour un followup,
-ou /scd-review:review-apply pour appliquer des corrections.
-```
-
-## 3. Afficher la progression
-
-Lire `json_strategy` dans la config.
-
-**Strategie `jq`** :
-```bash
-bash .claude/review/scripts/session-status.sh .claude/review/sessions/<session-file>
-```
-Afficher le resultat tel quel.
-
-**Strategie `readwrite`** : Read du fichier session JSON et afficher :
-```
-Reprise de la review — <branche> (base: <base-branch>)
-  X/N fichiers reviewes
-  Fichiers termines :
-    1/N fichier.ext [Categorie] — note
-    ...
-  Prochain fichier : X+1/N fichier.ext [Categorie]
-```
-
-## 4. Relancer les agents / preparer la reprise
-
-**Si la session est un apply** (`<slug>-apply.json`) :
-Pas d'agents a relancer — le fix-applier est lance en foreground observation par observation. Passer directement a l'etape 5.
-
-**Sinon (review ou followup)** :
-Les agents du batch precedent sont perdus (nouvelle session Claude). Il faut relancer les agents pour les prochains fichiers pending.
-
-Lancer agents pour les 5 premiers fichiers pending.
-Meme logique que @references/review-workflow.md etape 2-bis :
-- Categorie tests → Task(subagent_type: "test-reviewer", run_in_background: true, ...)
-- Sinon → Task(subagent_type: "code-reviewer", run_in_background: true, ...)
-- **Followup** : fichiers `correction` et `new` obtiennent un agent, les `unaddressed` sont exclus
-
-Stocker task IDs : @references/session-protocol.md (add agent tasks)
-
-## 5. Reprendre la review
-
-**Si la session est un apply** (`<slug>-apply.json`) :
-Continuer avec l'Etape 3 du workflow `/scd-review:review-apply` a partir de la premiere observation `pending`. Suivre exactement le meme processus : afficher l'observation, AskUserQuestion (appliquer/sauter/rejeter/discuter), lancer le fix-applier si necessaire, mise a jour JSON.
-Quand toutes les observations sont traitees, executer l'Etape 4 (synthese) de `/scd-review:review-apply`.
-
-**Si la session est une review originale** (`<slug>.json`) :
-Suivre @references/review-workflow.md etapes 3-4 a partir du prochain fichier `pending`. Format de retour agents : @references/agent-output-format.md.
-
-**Si la session est un followup** (`<slug>-followup.json`) :
-Continuer avec l'Etape 3 du workflow `/scd-review:review-followup` a partir du prochain fichier `pending`. Suivre exactement le meme processus : contexte original, rapport agent, verdict de resolution, pipeline glissant.
-Quand tous les fichiers sont termines, executer l'Etape 4 (synthese) de `/scd-review:review-followup`.
+Suivre @references/resume-workflow.md avec la json_strategy resolue.
+Format agents : @references/agent-output-format.md.
 
 </process>
+
+<guidelines>
+- Toujours communiquer en francais
+- Economiser le contexte : deleguer aux references
+- Agents en subagent_type natif (code-reviewer, test-reviewer, fix-applier)
+</guidelines>

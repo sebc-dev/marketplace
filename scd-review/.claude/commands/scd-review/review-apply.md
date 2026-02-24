@@ -24,11 +24,7 @@ Apres une code review completee, traiter les observations (bloquantes et suggest
 Suivre la procedure @references/ensure-env.md pour charger la config et verifier l'env_cache.
 Si config absente → indiquer de lancer `/scd-review:review-init` et STOP.
 
-Lire `json_strategy` et `plugin_root` depuis la config chargee.
-Si `plugin_root` est `null` → erreur : `Plugin root non configure. Lancez /scd-review:review-init d'abord.`
-
-Lire `<plugin_root>/.claude/agents/fix-applier.md` → retenir comme `FIX_APPLIER_INSTRUCTIONS`
-Si introuvable → erreur : `Agent fix-applier introuvable dans <plugin_root>. Relancez /scd-review:review-init pour mettre a jour.`
+Lire `json_strategy` depuis la config chargee.
 
 ## Etape 0 — Trouver la session source
 
@@ -146,30 +142,14 @@ Lancer le fix-applier en foreground (on attend le resultat) :
 
 ```
 Task(
-  subagent_type: "general-purpose",
+  subagent_type: "fix-applier",
   run_in_background: false,
   description: "Fix: <criterion> in <filename>",
-  prompt: "Tu es un agent de correction de code. Voici ta definition :
-<agent_instructions>
-{FIX_APPLIER_INSTRUCTIONS}
-</agent_instructions>
-
-Corrige l'observation suivante :
-
+  prompt: "Corrige l'observation suivante :
 📁 Fichier : <chemin>
 Categorie : <category>
-
-🔍 Observation :
-- Critere : <criterion>
-- Severite : <severity>
-- Niveau : <level>
-- Resume : <text>
-- Detail : <detail>
-- Correction suggeree : <suggestion>
-
-Le champ 'detail' explique le probleme precis et le code concerne.
-Le champ 'suggestion' indique la direction de correction a suivre.
-Applique une correction chirurgicale en suivant cette direction."
+🔍 Observation : criterion=<criterion>, severity=<severity>, level=<level>,
+text=<text>, detail=<detail>, suggestion=<suggestion>"
 )
 ```
 
