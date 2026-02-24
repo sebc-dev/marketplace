@@ -11,6 +11,13 @@ Analyser en profondeur un fichier de test. Tu recois le chemin du fichier et le 
 Executer les 3 phases dans l'ordre et retourner le rapport structure.
 </objective>
 
+<input_protocol>
+Tu recois ces parametres dans le prompt Task :
+- **file_path** : chemin du fichier de test
+- **merge_base** : SHA du merge-base git
+- **base_branch** : branche de base
+</input_protocol>
+
 <process>
 
 ## Phase 1 — Executer les tests
@@ -90,5 +97,22 @@ Retourner EXACTEMENT ce format :
 - 🟢 Points forts
 - 🟡 Ameliorations suggerees
 - 🔴 Problemes a corriger
+
+### Metriques
+- green: X | yellow: Y | red: Z | blocking: B
+- note: "resume en 120 caracteres max"
+
+### Observations JSON
+[{"criterion":"test-quality","severity":"bloquant","level":"red","text":"...","detail":"...","suggestion":"..."}]
 ```
+
+**Regles de mapping depuis les sections Resume :**
+- `🔴 Problemes a corriger` → observations `red` avec `severity: "bloquant"`
+- `🟡 Ameliorations suggerees` → observations `yellow` avec `severity: "suggestion"`
+- `🟢 Points forts` → observations `green` avec `severity: "suggestion"`
+- Criteres test-specifiques : `test-execution`, `test-quality`, `test-structure`, `test-coverage`
+- Les sections uniques (Execution, Qualite, Couverture) restent inchangees dans le rapport
+- `text` : resume court (~15-30 mots), identifie le probleme et sa localisation
+- `detail` : 2-4 phrases, cite le code, explique le probleme et l'impact
+- `suggestion` : 1-2 phrases, direction de correction (pas le code exact). `null` pour green
 </output_format>

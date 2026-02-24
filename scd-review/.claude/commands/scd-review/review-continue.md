@@ -75,45 +75,30 @@ Reprise de la review — <branche> (base: <base-branch>)
   Prochain fichier : X+1/N fichier.ext [Categorie]
 ```
 
-## 4. Charger les definitions d'agents
-
-Lire `plugin_root` dans `.claude/review/config.json`. Si `null` → erreur : `Plugin root non configure. Lancez /scd-review:review-init d'abord.`
-
-Lire les definitions d'agents pour les injecter dans les prompts des subagents :
-
-1. Read `<plugin_root>/.claude/agents/code-reviewer.md` → retenir comme `CODE_REVIEWER_INSTRUCTIONS`
-2. Read `<plugin_root>/.claude/agents/test-reviewer.md` → retenir comme `TEST_REVIEWER_INSTRUCTIONS`
-3. Read `<plugin_root>/.claude/agents/fix-applier.md` → retenir comme `FIX_APPLIER_INSTRUCTIONS`
-4. Si l'un des fichiers est introuvable → erreur : `Agents introuvables dans <plugin_root>. Relancez /scd-review:review-init pour re-detecter le plugin root.`
-
-## 5. Relancer les agents / preparer la reprise
+## 4. Relancer les agents / preparer la reprise
 
 **Si la session est un apply** (`<slug>-apply.json`) :
-Pas d'agents a relancer — le fix-applier est lance en foreground observation par observation. Passer directement a l'etape 6.
+Pas d'agents a relancer — le fix-applier est lance en foreground observation par observation. Passer directement a l'etape 5.
 
 **Sinon (review ou followup)** :
 Les agents du batch precedent sont perdus (nouvelle session Claude). Il faut relancer les agents pour les prochains fichiers pending.
 
-1. Lire `agent_tasks` dans la session JSON (peut etre absent ou vide si la session est ancienne)
-2. Identifier les fichiers `pending` dans l'ordre
-3. Lancer les agents pour les **5 premiers fichiers pending** qui necessitent un agent :
-   - **Review originale** : chaque fichier pending (sauf supprimes) obtient un agent (code-reviewer ou test-reviewer selon la categorie)
-   - **Followup** : fichiers `correction` et `new` obtiennent un agent, les `unaddressed` sont exclus
-4. Stocker les task IDs dans `agent_tasks` :
-   - **Strategie `jq`** : `bash .claude/review/scripts/add-agent-tasks.sh <session> '<json>'`
-   - **Strategie `readwrite`** : Read + Write
+Lancer agents pour les 5 premiers fichiers pending.
+Meme logique que @references/review-workflow.md etape 2-bis :
+- Categorie tests → Task(subagent_type: "test-reviewer", run_in_background: true, ...)
+- Sinon → Task(subagent_type: "code-reviewer", run_in_background: true, ...)
+- **Followup** : fichiers `correction` et `new` obtiennent un agent, les `unaddressed` sont exclus
 
-Meme logique de lancement que l'etape 2-bis de code-review / review-followup.
+Stocker task IDs : @references/session-protocol.md (add agent tasks)
 
-## 6. Reprendre la review
+## 5. Reprendre la review
 
 **Si la session est un apply** (`<slug>-apply.json`) :
 Continuer avec l'Etape 3 du workflow `/scd-review:review-apply` a partir de la premiere observation `pending`. Suivre exactement le meme processus : afficher l'observation, AskUserQuestion (appliquer/sauter/rejeter/discuter), lancer le fix-applier si necessaire, mise a jour JSON.
 Quand toutes les observations sont traitees, executer l'Etape 4 (synthese) de `/scd-review:review-apply`.
 
 **Si la session est une review originale** (`<slug>.json`) :
-Continuer avec l'Etape 3 du workflow `/scd-review:code-review` a partir du prochain fichier `pending`. Suivre exactement le meme processus : en-tete, recuperation rapport agent, metriques, mise a jour JSON, checkpoint utilisateur, pipeline glissant.
-Quand tous les fichiers sont termines, executer l'Etape 4 (synthese) de `/scd-review:code-review`.
+Suivre @references/review-workflow.md etapes 3-4 a partir du prochain fichier `pending`. Format de retour agents : @references/agent-output-format.md.
 
 **Si la session est un followup** (`<slug>-followup.json`) :
 Continuer avec l'Etape 3 du workflow `/scd-review:review-followup` a partir du prochain fichier `pending`. Suivre exactement le meme processus : contexte original, rapport agent, verdict de resolution, pipeline glissant.

@@ -16,6 +16,13 @@ Les champs de l'observation :
 **Contrainte fondamentale : CORRECTION MINIMALE** — ne toucher que ce que l'observation decrit. Pas de refactoring, pas d'ameliorations adjacentes, pas de nettoyage.
 </objective>
 
+<input_protocol>
+Tu recois ces parametres dans le prompt Task :
+- **file_path** : chemin du fichier a corriger
+- **category** : categorie du fichier
+- **observation** : objet JSON {criterion, severity, level, text, detail, suggestion}
+</input_protocol>
+
 <process>
 
 ## Phase 1 — Comprendre

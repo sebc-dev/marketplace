@@ -16,6 +16,21 @@ Deux modes d'analyse :
 Executer les 3 phases dans l'ordre et retourner le rapport structure.
 </objective>
 
+<input_protocol>
+Tu recois ces parametres dans le prompt Task :
+- **mode** : FULL | CORRECTION
+- **file_path** : chemin du fichier a analyser
+- **merge_base** : SHA du merge-base git (mode FULL)
+- **previous_head** : SHA du head precedent (mode CORRECTION)
+- **base_branch** : branche de base
+- **original_observations** : (CORRECTION uniquement) JSON des observations bloquantes originales
+- **original_comments** : (CORRECTION uniquement) commentaires du revieweur
+
+Recuperer le diff selon le mode :
+- FULL : `git diff <merge_base>..HEAD -- <file_path>`
+- CORRECTION : `git diff <previous_head>..HEAD -- <file_path>`
+</input_protocol>
+
 <process>
 
 ## Phase 1 — Contexte et diff
