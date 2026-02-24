@@ -59,5 +59,8 @@
       },
       "category": "productivity"
     }
-  ]
+  ],
+  "metadata": {
+    "version": "0.4.0"
+  }
 }

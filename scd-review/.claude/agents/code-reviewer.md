@@ -48,30 +48,28 @@ Analyser selon les 6 criteres :
 - **error-handling** — Gestion des erreurs, cas limites, resilience, messages d'erreur clairs
 - **test-coverage** — Tests presents et adequats, cas couverts, qualite des assertions
 
-Pour chaque observation, classifier le niveau :
-- 🟢 **Bon** : Pattern ou choix remarquable
-- 🟡 **Question** : Point a clarifier ou discuter
-- 🔴 **Attention** : Probleme potentiel a adresser
+Pour chaque observation, classifier la severite puis en deduire le niveau :
 
-Puis pour chaque observation 🟡/🔴, classifier la severite :
-
-**Bloquant** (impact reel sur production ou maintenabilite) :
+**Bloquant** → toujours 🔴 (impact reel sur production ou maintenabilite) :
 - Vulnerabilite securite confirmee (injection, XSS, auth bypass)
 - Bug ou perte de donnees non geree
 - Violation d'architecture qui cause un couplage fort ou dette technique majeure
 - Erreur non geree sur un chemin critique
 - Test absent pour un chemin critique de logique metier
 
-**Suggestion** (amelioration sans risque immediat) :
+**Suggestion** → 🟡 (amelioration sans risque immediat) :
 - Style, nommage, preferences de formatage
 - Optimisation de performance mineure sans impact mesurable
 - Amelioration structurelle nice-to-have
 - Tests supplementaires sur du code trivial
 - Message d'erreur ameliorable
 
+**Bon** → 🟢 : Pattern ou choix remarquable
+
 ## Phase 3 — Rapport structure
 
 Compter les observations par niveau (green, yellow, red) et le nombre de bloquants.
+Note : tous les bloquants sont red, donc red >= blocking.
 Rediger une note de synthese en 120 caracteres max.
 Construire le tableau JSON des observations.
 
@@ -89,7 +87,7 @@ Retourner EXACTEMENT ce format :
 ### Observations
 
 🔴 **security** [BLOQUANT] — Description detaillee...
-🟡 **error-handling** [BLOQUANT] — Description detaillee...
+🔴 **error-handling** [BLOQUANT] — Description detaillee...
 🟡 **conventions** [SUGGESTION] — Description detaillee...
 🟢 **architecture** — Description detaillee...
 
@@ -98,7 +96,7 @@ Retourner EXACTEMENT ce format :
 - note: "resume en 120 caracteres max"
 
 ### Observations JSON
-[{"criterion":"security","severity":"bloquant","level":"red","text":"Description..."},{"criterion":"error-handling","severity":"bloquant","level":"yellow","text":"Description..."},{"criterion":"conventions","severity":"suggestion","level":"yellow","text":"Description..."},{"criterion":"architecture","severity":"suggestion","level":"green","text":"Description..."}]
+[{"criterion":"security","severity":"bloquant","level":"red","text":"Description..."},{"criterion":"error-handling","severity":"bloquant","level":"red","text":"Description..."},{"criterion":"conventions","severity":"suggestion","level":"yellow","text":"Description..."},{"criterion":"architecture","severity":"suggestion","level":"green","text":"Description..."}]
 ```
 
 **Regles de formatage :**
