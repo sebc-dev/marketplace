@@ -27,17 +27,14 @@ Branche de base : $ARGUMENTS (defaut: lire `options.default_base_branch` dans co
 
 <process>
 
-## Pre-requis
+## 0. Verification environnement
 
-Verifier que `.claude/review/config.json` existe (Glob). Si absent, indiquer :
-```
-Config absente. Lancez /scd-review:review-init d'abord.
-```
-Et s'arreter.
+Suivre la procedure @references/ensure-env.md pour charger la config et verifier l'env_cache.
+Si config absente → indiquer de lancer `/scd-review:review-init` et STOP.
 
 ## Strategie JSON
 
-Lire `json_strategy` dans `.claude/review/config.json`.
+Lire `json_strategy` dans la config chargee.
 
 Si `json_strategy == "jq"`, utiliser les scripts pour toutes les operations JSON session :
 - Status session : `bash .claude/review/scripts/session-status.sh <session>`

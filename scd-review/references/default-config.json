@@ -1,0 +1,52 @@
+{
+  "plugin_root": null,
+  "json_strategy": null,
+  "category_priority": [
+    "build-config",
+    "database-migrations",
+    "domain-models",
+    "infrastructure",
+    "business-logic",
+    "controllers-api",
+    "views-ui",
+    "integration-wiring",
+    "tests",
+    "i18n-docs"
+  ],
+  "review_criteria": [
+    "architecture",
+    "security",
+    "performance",
+    "conventions",
+    "error-handling",
+    "test-coverage"
+  ],
+  "severity": {
+    "good": "Pattern ou choix remarquable",
+    "question": "Point a clarifier ou discuter",
+    "attention": "Probleme potentiel a adresser"
+  },
+  "options": {
+    "default_base_branch": "main",
+    "language": "fr"
+  },
+  "platform": {
+    "type": null,
+    "auto_post": false
+  },
+  "state": {
+    "last_init": null,
+    "plugin_version": null,
+    "scripts_hash": null,
+    "env_cache": null,
+    "steps_status": {
+      "config": "pending",
+      "sessions_dir": "pending",
+      "plugin_root": "pending",
+      "scripts": "pending",
+      "rules": "pending",
+      "json_strategy": "pending",
+      "platform": "pending"
+    }
+  }
+}

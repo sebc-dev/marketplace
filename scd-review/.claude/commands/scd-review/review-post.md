@@ -15,9 +15,14 @@ Poster manuellement les resultats d'une review completee sur le PR/MR de la bran
 
 <process>
 
+## 0. Verification environnement
+
+Suivre la procedure @references/ensure-env.md pour charger la config et verifier l'env_cache.
+Si config absente → indiquer de lancer `/scd-review:review-init` et STOP.
+
 ## 1. Verifier la configuration plateforme
 
-Lire `.claude/review/config.json` avec Read.
+Lire `platform` dans la config chargee.
 
 Si `platform.type == null` :
 ```

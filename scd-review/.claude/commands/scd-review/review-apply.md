@@ -19,19 +19,16 @@ Apres une code review completee, traiter les observations (bloquantes et suggest
 
 <process>
 
-## Pre-requis
+## 0. Verification environnement
 
-1. Verifier que `.claude/review/config.json` existe (Glob). Si absent :
-   ```
-   Config absente. Lancez /scd-review:review-init d'abord.
-   ```
-   Et s'arreter.
+Suivre la procedure @references/ensure-env.md pour charger la config et verifier l'env_cache.
+Si config absente → indiquer de lancer `/scd-review:review-init` et STOP.
 
-2. Lire `.claude/review/config.json` pour connaitre `json_strategy` et `plugin_root`.
-   Si `plugin_root` est `null` → erreur : `Plugin root non configure. Lancez /scd-review:review-init d'abord.`
+Lire `json_strategy` et `plugin_root` depuis la config chargee.
+Si `plugin_root` est `null` → erreur : `Plugin root non configure. Lancez /scd-review:review-init d'abord.`
 
-3. Lire `<plugin_root>/.claude/agents/fix-applier.md` → retenir comme `FIX_APPLIER_INSTRUCTIONS`
-   Si introuvable → erreur : `Agent fix-applier introuvable dans <plugin_root>. Relancez /scd-review:review-init pour mettre a jour.`
+Lire `<plugin_root>/.claude/agents/fix-applier.md` → retenir comme `FIX_APPLIER_INSTRUCTIONS`
+Si introuvable → erreur : `Agent fix-applier introuvable dans <plugin_root>. Relancez /scd-review:review-init pour mettre a jour.`
 
 ## Etape 0 — Trouver la session source
 

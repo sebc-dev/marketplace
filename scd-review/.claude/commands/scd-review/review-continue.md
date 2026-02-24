@@ -22,12 +22,10 @@ Reprendre rapidement une code review interrompue sur la branche courante, sans a
 
 <process>
 
-## 1. Charger la config
+## 1. Verification environnement
 
-Lire `.claude/review/config.json`. Si absent :
-```
-Config absente. Lancez /scd-review:review-init d'abord.
-```
+Suivre la procedure @references/ensure-env.md pour charger la config et verifier l'env_cache.
+Si config absente → indiquer de lancer `/scd-review:review-init` et STOP.
 
 ## 2. Trouver la session
 

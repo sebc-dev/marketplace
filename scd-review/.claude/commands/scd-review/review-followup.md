@@ -26,17 +26,14 @@ Verifier les corrections apportees apres une code review completee. Classifier l
 
 <process>
 
-## Pre-requis
+## 0. Verification environnement
 
-Verifier que `.claude/review/config.json` existe (Glob). Si absent, indiquer :
-```
-Config absente. Lancez /scd-review:review-init d'abord.
-```
-Et s'arreter.
+Suivre la procedure @references/ensure-env.md pour charger la config et verifier l'env_cache.
+Si config absente → indiquer de lancer `/scd-review:review-init` et STOP.
 
 ## Strategie JSON
 
-Lire `json_strategy` dans `.claude/review/config.json`.
+Lire `json_strategy` dans la config chargee.
 
 Si `json_strategy == "jq"`, utiliser les scripts pour toutes les operations JSON session :
 - Classification : `bash .claude/review/scripts/classify-followup.sh <previous_session> <diff_file>`
