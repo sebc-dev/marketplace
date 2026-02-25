@@ -1,13 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Usage: post-review-comments.sh <session> <config>
+# Usage: post-review-comments.sh <session> <config> [manual]
 # Reads platform config, formats review observations as markdown, posts to GitHub/GitLab
+# Pass "manual" as 3rd arg to bypass auto_post check (used by /review-post)
 # Stdout: POSTED/SKIP/WARN message
 # Exit 0 always (never blocks the review)
 
-session="${1:?Usage: post-review-comments.sh <session> <config>}"
-config="${2:?Usage: post-review-comments.sh <session> <config>}"
+session="${1:?Usage: post-review-comments.sh <session> <config> [manual]}"
+config="${2:?Usage: post-review-comments.sh <session> <config> [manual]}"
+mode="${3:-auto}"
 
 if [[ ! -f "$session" ]]; then
   echo "WARN: session file not found: $session"
@@ -28,7 +30,7 @@ if [[ -z "$platform_type" || "$platform_type" == "null" ]]; then
   exit 0
 fi
 
-if [[ "$auto_post" != "true" ]]; then
+if [[ "$auto_post" != "true" && "$mode" != "manual" ]]; then
   echo "SKIP: auto_post disabled"
   exit 0
 fi
