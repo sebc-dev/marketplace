@@ -37,6 +37,8 @@ Presenter un resume initial :
 
 ## Etape 2 — Planifier et persister
 
+**Filtrage par review_scope** : si un `review_scope` est fourni (par auto-review etape 0.5), filtrer la liste de fichiers de l'etape 1 pour ne garder que ceux presents dans `review_scope`. Les fichiers exclus ne sont ni planifies ni inclus dans la session JSON.
+
 1. Classifier chaque fichier selon `category_priority` du config :
 
    | Categorie | Patterns typiques |

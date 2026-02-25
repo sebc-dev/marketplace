@@ -11,8 +11,6 @@ allowed-tools:
   - Bash(git rev-parse:*)
   - Bash(git cat-file:*)
   - Bash(git status:*)
-  - Bash(git add:*)
-  - Bash(git commit:*)
   - Bash(bash .claude/review/scripts/*)
   - Bash(gh pr *)
   - Bash(glab mr *)
@@ -39,48 +37,39 @@ Branche de base : $ARGUMENTS (defaut: lire `options.default_base_branch` dans co
 Suivre la procedure @references/ensure-env.md pour charger la config et verifier l'env_cache.
 Si config absente → indiquer de lancer `/scd-review:review-init` et STOP.
 
-## 0.5. Selection des fichiers et commit
+## 0.5. Selection du perimetre de review
 
-1. Verifier les changements non commites : `git status --porcelain`
-2. Si aucun changement non commite → passer directement a l'etape 1
-3. Si des changements existent :
-   a. Afficher la liste numerotee des fichiers modifies/ajoutes/supprimes avec leur statut (M/A/D/??)
-   b. Demander a l'utilisateur :
-      ```
-      AskUserQuestion(
-        questions: [{
-          question: "Des fichiers non commites ont ete detectes. Souhaitez-vous en committer avant la review ?",
-          header: "Pre-commit",
-          options: [
-            { label: "Tous les fichiers", description: "Stager et committer tous les fichiers modifies" },
-            { label: "Continuer sans commit", description: "Lancer la review uniquement sur les commits existants" }
-          ],
-          multiSelect: false
-        }]
-      )
-      ```
-   c. **"Tous les fichiers"** → `git add -A`
-   d. **"Continuer sans commit"** → passer a l'etape 1
-   e. **"Other"** → l'utilisateur saisit les numeros ou chemins des fichiers a inclure (ex: "1,3,5" ou "src/app.ts, lib/utils.ts"). Stager uniquement ces fichiers : `git add <fichiers>`
-   f. Apres le staging, demander le message de commit :
-      ```
-      AskUserQuestion(
-        questions: [{
-          question: "Message de commit ?",
-          header: "Commit msg",
-          options: [
-            { label: "Message auto", description: "Generer un message base sur les fichiers stages" },
-            { label: "wip", description: "Utiliser 'wip' comme message de commit" }
-          ],
-          multiSelect: false
-        }]
-      )
-      ```
-   g. **"Message auto"** → generer un message concis a partir du `git diff --cached --stat`
-   h. **"wip"** → utiliser "wip" comme message
-   i. **"Other"** → utiliser le texte saisi par l'utilisateur
-   j. Committer : `git commit -m "<message>"`
-   k. Afficher confirmation : nombre de fichiers commites et hash du commit
+Cette etape est OBLIGATOIRE — elle ne peut pas etre sautee.
+
+1. Calculer le merge-base : `git merge-base <base_branch> HEAD`
+2. Lister les fichiers modifies : `git diff --name-status <merge-base>..HEAD`
+3. Afficher un resume : nombre de fichiers par statut (A/M/D) et par categorie
+4. Demander a l'utilisateur :
+   ```
+   AskUserQuestion(
+     questions: [{
+       question: "X fichiers modifies sur cette branche. Quel perimetre pour la review ?",
+       header: "Perimetre",
+       options: [
+         { label: "Tous les fichiers", description: "Reviewer l'ensemble des X fichiers" },
+         { label: "Exclure des patterns", description: "Exclure par pattern glob (ex: *.xml, grails-app/domain/**)" },
+         { label: "Selection manuelle", description: "Choisir les fichiers a inclure par numeros ou chemins" }
+       ],
+       multiSelect: false
+     }]
+   )
+   ```
+5. **"Tous les fichiers"** → `review_scope` = liste complete, continuer
+6. **"Exclure des patterns"** → demander les patterns a exclure, filtrer la liste, afficher le resultat et confirmer
+7. **"Selection manuelle"** → afficher la liste numerotee complete, l'utilisateur saisit les numeros (ex: "1-5,8,12-20") ou chemins
+8. **"Other"** → traiter comme un pattern d'exclusion ou une liste de fichiers selon le contenu
+
+Stocker la liste finale dans `review_scope`. Afficher :
+```
+Perimetre confirme : Y fichiers selectionnes sur X total
+```
+
+Le `review_scope` est transmis au pipeline. Lors de la creation de la session JSON (Etape 2 du review-workflow), seuls les fichiers presents dans `review_scope` sont inclus.
 
 ## 1. Strategie JSON
 
