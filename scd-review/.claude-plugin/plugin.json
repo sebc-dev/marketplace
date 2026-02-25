@@ -1,6 +1,6 @@
 {
   "name": "scd-review",
-  "version": "0.12.0",
+  "version": "0.12.1",
   "description": "Interactive and automatic code review on the current branch. Reviews file by file in optimal order with validator arbitration, auto-review pipeline, JSON-based progress tracking, jq-optimized state updates, and cross-platform design.",
   "author": {
     "name": "sebc.dev"
