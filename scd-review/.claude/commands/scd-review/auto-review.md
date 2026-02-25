@@ -10,6 +10,9 @@ allowed-tools:
   - Bash(git show:*)
   - Bash(git rev-parse:*)
   - Bash(git cat-file:*)
+  - Bash(git status:*)
+  - Bash(git add:*)
+  - Bash(git commit:*)
   - Bash(bash .claude/review/scripts/*)
   - Bash(gh pr *)
   - Bash(glab mr *)
@@ -35,6 +38,49 @@ Branche de base : $ARGUMENTS (defaut: lire `options.default_base_branch` dans co
 
 Suivre la procedure @references/ensure-env.md pour charger la config et verifier l'env_cache.
 Si config absente → indiquer de lancer `/scd-review:review-init` et STOP.
+
+## 0.5. Selection des fichiers et commit
+
+1. Verifier les changements non commites : `git status --porcelain`
+2. Si aucun changement non commite → passer directement a l'etape 1
+3. Si des changements existent :
+   a. Afficher la liste numerotee des fichiers modifies/ajoutes/supprimes avec leur statut (M/A/D/??)
+   b. Demander a l'utilisateur :
+      ```
+      AskUserQuestion(
+        questions: [{
+          question: "Des fichiers non commites ont ete detectes. Souhaitez-vous en committer avant la review ?",
+          header: "Pre-commit",
+          options: [
+            { label: "Tous les fichiers", description: "Stager et committer tous les fichiers modifies" },
+            { label: "Continuer sans commit", description: "Lancer la review uniquement sur les commits existants" }
+          ],
+          multiSelect: false
+        }]
+      )
+      ```
+   c. **"Tous les fichiers"** → `git add -A`
+   d. **"Continuer sans commit"** → passer a l'etape 1
+   e. **"Other"** → l'utilisateur saisit les numeros ou chemins des fichiers a inclure (ex: "1,3,5" ou "src/app.ts, lib/utils.ts"). Stager uniquement ces fichiers : `git add <fichiers>`
+   f. Apres le staging, demander le message de commit :
+      ```
+      AskUserQuestion(
+        questions: [{
+          question: "Message de commit ?",
+          header: "Commit msg",
+          options: [
+            { label: "Message auto", description: "Generer un message base sur les fichiers stages" },
+            { label: "wip", description: "Utiliser 'wip' comme message de commit" }
+          ],
+          multiSelect: false
+        }]
+      )
+      ```
+   g. **"Message auto"** → generer un message concis a partir du `git diff --cached --stat`
+   h. **"wip"** → utiliser "wip" comme message
+   i. **"Other"** → utiliser le texte saisi par l'utilisateur
+   j. Committer : `git commit -m "<message>"`
+   k. Afficher confirmation : nombre de fichiers commites et hash du commit
 
 ## 1. Strategie JSON
 
