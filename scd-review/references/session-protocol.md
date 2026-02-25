@@ -28,6 +28,22 @@ Lire `json_strategy` dans config.json. Toutes les operations suivent cette strat
 | Add comment | `bash .claude/review/scripts/add-comment.sh <session> "<file>" "<comment>"` | Read + append + Write |
 | Summary | `bash .claude/review/scripts/followup-summary.sh <session>` | Read + table + mark completed + Write |
 
+## Operations — Validation
+
+| Operation | jq | readwrite |
+|---|---|---|
+| Update validation | `bash .claude/review/scripts/update-validation.sh <session> <file-path> '<decisions-json>'` | Read + enrich observations + Write |
+
+Le champ `validation` est optionnel sur chaque observation :
+```json
+{"validation": {"decision": "apply|skip|escalate", "confidence": 0.XX, "reason": "justification"}}
+```
+
+Le summary agrega les decisions dans `summary.validation` :
+```json
+{"validation": {"apply": X, "skip": Y, "escalate": Z, "total": N}}
+```
+
 ## Operations — Apply
 
 | Operation | jq | readwrite |

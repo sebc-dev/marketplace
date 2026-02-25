@@ -1,5 +1,9 @@
 <review_workflow>
 
+## Mode auto detection
+
+Lire `auto_mode` dans config.json. Si `auto_mode.enabled == true`, les checkpoints utilisateur sont remplaces par des actions par defaut. La variable `is_auto` est utilisee dans les etapes suivantes.
+
 ## Etape 0 — Initialiser ou reprendre
 
 1. Identifier la branche courante : `git branch --show-current`
@@ -49,7 +53,8 @@ Presenter un resume initial :
    | i18n-docs | *.md, messages.properties, locales/, i18n/, *.po |
 
 2. Presenter l'ordre avec justification
-3. Apres confirmation utilisateur → creer le fichier session JSON
+3. **Si auto_mode.enabled** → pas de confirmation, continuer directement
+   **Sinon** → confirmation utilisateur avant de creer le fichier session JSON
 
 **Structure du fichier session** `.claude/review/sessions/<slug>.json` :
 ```json
@@ -151,6 +156,13 @@ Persister via @references/session-protocol.md :
 2. Add observations (pipe le JSON array)
 
 ### 3e. Point de controle utilisateur (barriere programmatique)
+
+**Si auto_mode.enabled :**
+- action = `auto_mode.review_action` (defaut: "next")
+- Logger `[AUTO] review fichier X/Y — action: next` via add-comment.sh
+- Continuer sans pause au fichier suivant
+
+**Sinon (mode interactif — comportement v0.11.0 inchange) :**
 
 ```
 AskUserQuestion(

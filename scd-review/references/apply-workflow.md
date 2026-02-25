@@ -1,5 +1,9 @@
 <apply_workflow>
 
+## Mode auto detection
+
+Lire `auto_mode` dans config.json. Si `auto_mode.enabled == true`, les checkpoints utilisateur sont remplaces par des decisions automatiques basees sur `validation.decision` des observations.
+
 ## Etape 0 — Trouver la session source
 
 1. `git branch --show-current`, calculer le slug (remplacer `/` par `-`)
@@ -82,7 +86,28 @@ Pour chaque observation pending dans le fichier :
 
 Si `detail` et `suggestion` absents (anciennes sessions), afficher uniquement le `text`.
 
-### 3b. Demander l'action
+### 3b. Resolution pre-apply (si validation disponible)
+
+Si l'observation possede un champ `validation` (enrichi par le review-validator) :
+
+**Mode interactif (auto_mode.enabled == false) :**
+Afficher la recommandation du validator avant le AskUserQuestion :
+```
+🤖 Recommandation validator : <decision> (confiance: <confidence>)
+   Raison : <reason>
+```
+
+**Mode auto (auto_mode.enabled == true) :**
+- `validation.decision == "apply"` et `confidence >= confidence_threshold` → action = Appliquer, pas de AskUserQuestion
+- `validation.decision == "skip"` → action = Sauter, pas de AskUserQuestion
+- `validation.decision == "escalate"` → si `auto_mode.escalate_to_user == true` : AskUserQuestion standard, sinon action = Sauter
+- Logger `[AUTO] <decision> obs <X.Y> — <reason>` via add-comment.sh
+
+### 3b-bis. Demander l'action
+
+**Si auto_mode.enabled et decision resolue en 3b** → sauter ce checkpoint, aller a 3c.
+
+**Sinon (mode interactif — comportement v0.11.0 inchange) :**
 
 ```
 AskUserQuestion(
@@ -142,6 +167,26 @@ Afficher la progression :
 Apres la derniere observation, generer la synthese via @references/session-protocol.md (apply summary). Afficher le resultat.
 
 Recommander `/scd-review:review-followup` pour verifier les corrections.
+
+### Etape 4-bis — Lancer la validation (mode interactif, optionnel)
+
+Si `validator.enabled == true` et `auto_mode.enabled == false` et que la session source ne contient PAS de champ `validation` sur les observations :
+
+```
+AskUserQuestion(
+  questions: [{
+    question: "Voulez-vous lancer le validator avant d'appliquer les corrections ?",
+    header: "Validator",
+    options: [
+      { label: "Oui", description: "Analyser les observations avec le review-validator pour obtenir des recommandations" },
+      { label: "Non", description: "Appliquer sans validation automatique" }
+    ],
+    multiSelect: false
+  }]
+)
+```
+
+Si "Oui" → lancer la validation par fichier (meme logique que auto-review-workflow phase 2), puis reprendre la boucle.
 
 <constraints>
 - fix-applier en foreground — attendre son resultat avant de continuer

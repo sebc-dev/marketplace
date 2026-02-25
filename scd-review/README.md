@@ -1,6 +1,6 @@
 # code-review
 
-Interactive guided code review on the current branch. Reviews file by file in optimal order with JSON-based progress tracking, jq-optimized state updates, and cross-platform design.
+Interactive and automatic code review on the current branch. Reviews file by file in optimal order with validator arbitration, auto-review pipeline, JSON-based progress tracking, jq-optimized state updates, and cross-platform design.
 
 ## Commands
 
@@ -49,6 +49,18 @@ Apply corrections from a completed review interactively. For each observation (b
 
 The fix-applier agent makes minimal, surgical edits targeting only the specific observation. Files with blocking observations are processed first. After completion, run `review-followup` to verify the corrections.
 
+### `/scd-review:auto-review [base-branch]`
+
+Fully automatic review pipeline. Runs 5 phases without user interaction:
+
+1. **Review** — full code review with auto-advancing between files
+2. **Validate** — review-validator arbitrates each observation (apply/skip/escalate)
+3. **Apply** — fix-applier runs on validated observations, skips noise
+4. **Followup** — verifies corrections were properly applied
+5. **Report** — consolidated report with verdict (ready to merge / attention required / blocked)
+
+Only `escalate` observations pause for user input (when `auto_mode.escalate_to_user` is enabled).
+
 ### `/scd-review:review-continue`
 
 Quick resume shortcut for the current branch. Finds the active session (apply, followup, or original review) and jumps straight to the next pending item.
@@ -79,6 +91,19 @@ Specialized subagent for test file analysis. Automatically used when files are c
 
 **Prerequisites:**
 - Testing principles rule installed via `/scd-review:review-init` (automatic)
+
+### `review-validator`
+
+Arbitration agent that evaluates each observation factually. Used by `auto-review` (phase 2) and optionally by `review-apply` in interactive mode. For each observation:
+
+1. **Verify** — checks whether the problem described actually exists in the code
+2. **Evaluate** — determines if the suggested fix is surgical and safe
+3. **Decide** — classifies as `apply` (fix it), `skip` (false positive), or `escalate` (needs human)
+
+Key constraints:
+- **Read-only** — never modifies any file, never proposes alternative code
+- Green observations are automatically skipped (when `validator.skip_green` is enabled)
+- In case of doubt, always escalates rather than applying
 
 ### `fix-applier`
 
@@ -141,6 +166,8 @@ When `jq` is available, the plugin uses pre-written bash/jq scripts instead of g
 | `create-apply-session.sh` | Extract observations from completed session for apply | review-apply (step 1) |
 | `update-apply-observation.sh` | Update single observation status in apply session | review-apply (step 3) |
 | `apply-summary.sh` | Generate apply recap table + mark completed | review-apply (step 4) |
+| `update-validation.sh` | Persist validator decisions into session observations | auto-review (phase 2), review-apply (optional) |
+| `auto-report.sh` | Consolidated report from review + validation + apply + followup | auto-review (phase 5) |
 
 ## Runtime files
 
@@ -166,6 +193,16 @@ Add `.claude/review/sessions/` and `.claude/review/scripts/` to your `.gitignore
 - `category_priority` — order in which file categories are reviewed
 - `review_criteria` — what aspects to analyze (architecture, security, performance, etc.)
 - `options.default_base_branch` — default base branch (default: `main`)
+- `validator.enabled` — `true` to use the review-validator for arbitration (default: `true`)
+- `validator.confidence_threshold` — minimum confidence for auto-apply decisions (default: `0.75`)
+- `validator.skip_green` — skip green observations in validation (default: `true`)
+- `validator.batch_size` — number of files to validate in parallel (default: `5`)
+- `auto_mode.enabled` — `true` to run in auto mode (set by `auto-review`, default: `false`)
+- `auto_mode.review_action` — default action after each file in auto review (default: `"next"`)
+- `auto_mode.apply_action` — how to handle validated observations in auto apply (default: `"apply_validated"`)
+- `auto_mode.post_on_complete` — post to platform after auto-review completes (default: `true`)
+- `auto_mode.generate_report` — generate consolidated report (default: `true`)
+- `auto_mode.escalate_to_user` — pause for user on escalated observations (default: `true`)
 - `platform.type` — `"github"`, `"gitlab"`, or `null` (disabled)
 - `platform.auto_post` — `true` to auto-post after review, `false` to disable
 

@@ -1,5 +1,9 @@
 <followup_workflow>
 
+## Mode auto detection
+
+Lire `auto_mode` dans config.json. Si `auto_mode.enabled == true`, les checkpoints utilisateur sont remplaces par des decisions automatiques.
+
 ## Etape 0 — Trouver la session precedente
 
 1. `git branch --show-current`, calculer le slug (remplacer `/` par `-`)
@@ -49,7 +53,8 @@ Proposer la reprise (afficher progression), puis aller a Etape 3.
    - Non adresses : Y fichiers (fichiers avec bloquants non modifies)
    - Nouveaux : Z fichiers (fichiers modifies sans bloquants precedents)
    ```
-6. Confirmer avec l'utilisateur avant de continuer
+6. **Si auto_mode.enabled** → pas de confirmation, continuer directement
+   **Sinon** → confirmer avec l'utilisateur avant de continuer
 
 ## Etape 2 — Creer la session followup
 
@@ -154,6 +159,13 @@ Puis recuperer le rapport de l'agent :
 2. Afficher le rapport retourne par l'agent (inclut la verification des bloquants originaux + nouvelles observations)
 3. Extraire les metriques et observations JSON du rapport
 4. Point de controle :
+
+**Si auto_mode.enabled :**
+- Deduire le verdict automatiquement depuis le rapport agent (section "Resolution suggeree")
+- Logger `[AUTO] followup fichier X/Y — verdict: <resolution>` via add-comment.sh
+- Continuer sans pause
+
+**Sinon (mode interactif — comportement v0.11.0 inchange) :**
 
 ```
 AskUserQuestion(

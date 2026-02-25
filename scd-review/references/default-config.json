@@ -30,6 +30,20 @@
     "default_base_branch": "main",
     "language": "fr"
   },
+  "validator": {
+    "enabled": true,
+    "confidence_threshold": 0.75,
+    "skip_green": true,
+    "batch_size": 5
+  },
+  "auto_mode": {
+    "enabled": false,
+    "review_action": "next",
+    "apply_action": "apply_validated",
+    "post_on_complete": true,
+    "generate_report": true,
+    "escalate_to_user": true
+  },
   "platform": {
     "type": null,
     "auto_post": false
