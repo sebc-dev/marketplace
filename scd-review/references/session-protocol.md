@@ -57,4 +57,14 @@ Le summary agrega les decisions dans `summary.validation` :
 | Operation | jq | readwrite |
 |---|---|---|
 | Update state | `bash .claude/review/scripts/update-config-state.sh <config> <field> <value>` | Read + update + Write |
+
+## Platform Integration
+
+| Operation | Command |
+|---|---|
+| Post summary | `bash .claude/review/scripts/post-review-comments.sh <session> <config> [manual]` |
+| Post inline | `bash .claude/review/scripts/post-inline-comments.sh <session> <config> [filter]` |
+
+Filtres inline : `blocking` (defaut), `all`, `red`, `yellow`.
+Les deux scripts sont complementaires — inline ajoute des commentaires par observation, summary poste le resume global.
 </session_protocol>

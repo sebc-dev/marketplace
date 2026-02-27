@@ -41,8 +41,33 @@ AskUserQuestion(
 )
 ```
 
-- **Poster** → continuer vers etape 4
+- **Poster** → continuer vers etape 3b
 - **Annuler** → "Publication annulee." → STOP
+
+## Etape 3b — Commentaires inline (optionnel)
+
+Proposer les commentaires inline sur les fichiers du PR/MR :
+
+```
+AskUserQuestion(
+  questions: [{
+    question: "Poster aussi les observations en commentaires inline sur les fichiers ?",
+    header: "Inline",
+    options: [
+      { label: "Bloquants", description: "Poster uniquement les observations bloquantes en inline" },
+      { label: "Tous", description: "Poster toutes les observations en inline" },
+      { label: "Non", description: "Passer — poster uniquement le resume global" }
+    ],
+    multiSelect: false
+  }]
+)
+```
+
+- **Bloquants** → `bash .claude/review/scripts/post-inline-comments.sh <session> .claude/review/config.json blocking`
+- **Tous** → `bash .claude/review/scripts/post-inline-comments.sh <session> .claude/review/config.json all`
+- **Non** → continuer directement vers etape 4
+
+Afficher le resultat retourne par le script, puis continuer vers etape 4 dans tous les cas.
 
 ## Etape 4 — Publication
 
