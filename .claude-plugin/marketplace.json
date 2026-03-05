@@ -60,6 +60,15 @@
       "category": "development"
     },
     {
+      "name": "scd-qmd",
+      "source": "./scd-qmd",
+      "description": "On-device search engine for project docs and crawled technical documentation. Hybrid search (BM25 + vector + LLM re-ranking) via qmd with MCP integration, collection management, web doc crawling, and progressive search workflows.",
+      "author": {
+        "name": "sebc.dev"
+      },
+      "category": "productivity"
+    },
+    {
       "name": "scd-review",
       "version": "0.13.0",
       "source": "./scd-review",
@@ -71,6 +80,6 @@
     }
   ],
   "metadata": {
-    "version": "0.5.0"
+    "version": "0.6.0"
   }
 }

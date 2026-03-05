@@ -1,0 +1,22 @@
+{
+  "name": "scd-qmd",
+  "version": "0.1.0",
+  "description": "On-device search engine for project docs and crawled technical documentation using qmd",
+  "author": {
+    "name": "sebc.dev"
+  },
+  "license": "MIT",
+  "keywords": [
+    "qmd",
+    "search",
+    "indexing",
+    "documentation",
+    "knowledge-base",
+    "mcp",
+    "semantic-search",
+    "vector-search"
+  ],
+  "skills": "./.claude/skills/",
+  "commands": "./.claude/commands/",
+  "repository": "https://github.com/sebc-dev/marketplace"
+}
