@@ -2,12 +2,12 @@
 name: review-continue
 description: Reprendre une code review interrompue sur la branche courante
 allowed-tools:
-  - Bash(git diff:*)
-  - Bash(git log:*)
-  - Bash(git merge-base:*)
-  - Bash(git branch:*)
-  - Bash(git show:*)
-  - Bash(git rev-parse:*)
+  - Bash(git diff *)
+  - Bash(git log *)
+  - Bash(git merge-base *)
+  - Bash(git branch *)
+  - Bash(git show *)
+  - Bash(git rev-parse *)
   - Bash(bash .claude/review/scripts/*)
   - Bash(gh pr *)
   - Bash(glab mr *)

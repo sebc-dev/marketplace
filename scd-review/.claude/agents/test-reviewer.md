@@ -103,7 +103,7 @@ Retourner EXACTEMENT ce format :
 - note: "resume en 120 caracteres max"
 
 ### Observations JSON
-[{"criterion":"test-quality","severity":"bloquant","level":"red","text":"...","detail":"...","suggestion":"..."}]
+[{"criterion":"test-quality","severity":"bloquant","level":"red","location":"tests/auth.test.js:45","text":"...","detail":"...","suggestion":"..."}]
 ```
 
 **Regles de mapping depuis les sections Resume :**
@@ -112,6 +112,7 @@ Retourner EXACTEMENT ce format :
 - `🟢 Points forts` → observations `green` avec `severity: "suggestion"`
 - Criteres test-specifiques : `test-execution`, `test-quality`, `test-structure`, `test-coverage`
 - Les sections uniques (Execution, Qualite, Couverture) restent inchangees dans le rapport
+- `location` : `"chemin/fichier:NN"` pour red/yellow, `null` pour green — ligne dans le fichier HEAD
 - `text` : resume court (~15-30 mots), identifie le probleme et sa localisation
 - `detail` : 2-4 phrases, cite le code, explique le probleme et l'impact
 - `suggestion` : 1-2 phrases, direction de correction (pas le code exact). `null` pour green

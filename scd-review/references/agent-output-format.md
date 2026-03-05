@@ -11,7 +11,7 @@ se terminant par ces sections machine-parseables :
 
 ### Observations JSON
 [{"criterion":"...","severity":"bloquant|suggestion","level":"red|yellow|green",
-  "text":"resume 15-30 mots","detail":"2-4 phrases","suggestion":"1-2 phrases ou null"}]
+  "location":"chemin/fichier:NN ou null","text":"resume 15-30 mots","detail":"2-4 phrases","suggestion":"1-2 phrases ou null"}]
 ```
 
 ## Regles de parsing

@@ -53,8 +53,8 @@ lang=$(jq -r '.options.language // "fr"' "$config" 2>/dev/null || echo "fr")
 # ---------------------------------------------------------------------------
 # Extract filtered observations with resolved line numbers
 # Line resolution priority:
-#   1. diff_position.new_line  (future enrichment by code-reviewer agent)
-#   2. location field with :NN (if present on observation)
+#   1. location field with :NN (structured field from code-reviewer/test-reviewer)
+#   2. diff_position.new_line  (future enrichment)
 #   3. :NN pattern in text/detail (e.g. "UserService.java:92")
 #   4. :NN-MM range — takes start line (e.g. ":38-61" → 38)
 #   5. "line NN" / "ligne NN" in text/detail
@@ -71,10 +71,10 @@ observations=$(jq --arg filter "$filter" '
     # Resolve line number (best effort)
     ((.text // "") + " " + (.detail // "")) as $content |
     (
-      if .diff_position.new_line then
-        {n: .diff_position.new_line, resolved: true}
-      elif (.location // null) and ((.location | tostring) | test(":[0-9]+")) then
+      if (.location // null) and ((.location | tostring) | test(":[0-9]+")) then
         {n: ((.location | tostring) | capture(":(?<n>[0-9]+)") | .n | tonumber), resolved: true}
+      elif .diff_position.new_line then
+        {n: .diff_position.new_line, resolved: true}
       elif ($content | test(":[0-9]+")) then
         {n: ($content | capture(":(?<n>[0-9]+)") | .n | tonumber), resolved: true}
       elif ($content | test("(?:line|ligne)\\s+[0-9]+"; "i")) then
@@ -103,6 +103,10 @@ if [[ "$obs_count" -eq 0 ]]; then
   echo "SKIP: no observations match filter '$filter'"
   exit 0
 fi
+
+resolved_count=$(echo "$observations" | jq '[.[] | select(.line_resolved)] | length')
+fallback_count=$((obs_count - resolved_count))
+echo "INFO: $obs_count observation(s) — $resolved_count with precise line, $fallback_count fallback to line 1"
 
 # ---------------------------------------------------------------------------
 # Comment body builder (shared jq fragment)

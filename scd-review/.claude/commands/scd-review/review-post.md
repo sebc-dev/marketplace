@@ -2,7 +2,7 @@
 name: review-post
 description: Poster ou re-poster les resultats d'une review completee sur GitHub/GitLab
 allowed-tools:
-  - Bash(git branch:*)
+  - Bash(git branch *)
   - Bash(bash .claude/review/scripts/*)
   - Read
   - Glob

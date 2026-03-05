@@ -2,8 +2,8 @@
 name: review-apply
 description: Appliquer les corrections d'une code review — traiter chaque observation interactivement (appliquer, sauter, rejeter, discuter)
 allowed-tools:
-  - Bash(git branch:*)
-  - Bash(git rev-parse:*)
+  - Bash(git branch *)
+  - Bash(git rev-parse *)
   - Bash(bash .claude/review/scripts/*)
   - Read
   - Write

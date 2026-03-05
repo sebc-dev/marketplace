@@ -3,11 +3,12 @@ name: code-review
 description: Review guidee interactive du diff entre la branche courante et la branche de base
 argument-hint: "[base-branch]"
 allowed-tools:
-  - Bash(git diff:*)
-  - Bash(git log:*)
-  - Bash(git merge-base:*)
-  - Bash(git branch:*)
-  - Bash(git show:*)
+  - Bash(git diff *)
+  - Bash(git log *)
+  - Bash(git merge-base *)
+  - Bash(git branch *)
+  - Bash(git show *)
+  - Bash(git rev-parse *)
   - Bash(bash .claude/review/scripts/*)
   - Bash(gh pr *)
   - Bash(glab mr *)

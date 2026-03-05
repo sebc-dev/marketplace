@@ -10,7 +10,8 @@ tools:
   - Bash(gh --version)
   - Bash(gh auth status)
   - Bash(glab --version)
-  - Bash(glab auth status)
+  - Bash(glab auth status 2>&1)
+  - Bash(glab api user 2>&1)
   - Bash(uname -s)
 ---
 
@@ -33,7 +34,13 @@ Execute TOUTES ces verifications en parallele (lance tous les outils en meme tem
 - `Bash("gh --version")` → capturer version ou erreur
 - `Bash("gh auth status")` → capturer statut auth ou erreur
 - `Bash("glab --version")` → capturer version ou erreur
-- `Bash("glab auth status")` → capturer statut auth ou erreur
+- `Bash("glab auth status 2>&1")` → capturer statut auth (stdout + stderr combines)
+  **IMPORTANT — Bug glab connu** : `glab auth status` peut retourner un exit code non-zero MEME quand l'utilisateur est authentifie. Ne PAS se fier uniquement au code de sortie.
+  Regles d'interpretation :
+  - Si la sortie contient "Logged in" ou "Token:" ou un nom d'utilisateur → `authenticated: true`
+  - Si la sortie contient "not logged" ou "no token" → `authenticated: false`
+  - Si exit code non-zero MAIS la sortie contient des indicateurs d'auth → lancer le fallback ci-dessous
+- **Fallback** : `Bash("glab api user 2>&1")` → executer UNIQUEMENT si `glab auth status` retourne une erreur. Si la reponse contient du JSON avec un champ `"id"` ou `"username"`, l'authentification fonctionne → `authenticated: true`
 - `Bash("uname -s")` → capturer OS
 
 ### 4. Scripts
@@ -65,7 +72,7 @@ Retourne EXACTEMENT un bloc JSON (pas de texte avant/apres) :
   },
   "platform_cli": {
     "gh": { "installed": true, "authenticated": true },
-    "glab": { "installed": false, "authenticated": false }
+    "glab": { "installed": false, "authenticated": false, "auth_method": "status|fallback_api|none" }
   },
   "os": "linux",
   "scripts": {
@@ -82,3 +89,5 @@ Retourne EXACTEMENT un bloc JSON (pas de texte avant/apres) :
 ```
 
 Remplace les valeurs par les resultats reels de tes verifications. Si un outil echoue, marque le champ correspondant comme `false` / `null` avec un commentaire dans le JSON.
+
+**`auth_method`** pour glab : `"status"` si `glab auth status` a confirme l'auth, `"fallback_api"` si `glab auth status` a echoue mais `glab api user` a confirme l'auth, `"none"` si non authentifie.

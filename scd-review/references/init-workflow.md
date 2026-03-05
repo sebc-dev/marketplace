@@ -68,7 +68,9 @@ Construire un resume intelligent base sur le probe.
   - "Continuer sans" : `platform.type = null`
 
 - `probe.platform_cli.glab.authenticated == true` →
-  Meme logique que GitHub, avec GitLab
+  Meme logique que GitHub, avec GitLab.
+  Si `auth_method == "fallback_api"`, mentionner dans le resume :
+  "GitLab detecte (auth verifiee via API — `glab auth status` a retourne une erreur, mais l'authentification fonctionne)."
 
 - `probe.platform_cli.glab.installed == true` mais `authenticated == false` →
   Meme logique, avec instructions depuis `<gitlab_cli>`

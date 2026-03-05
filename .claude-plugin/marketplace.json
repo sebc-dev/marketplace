@@ -1,9 +1,6 @@
 {
   "name": "sebc-dev-marketplace",
   "description": "Marketplace de plugins Claude Code pour developpeurs. Skills, commands et workflows pour le developpement web et l'ecriture technique.",
-  "metadata": {
-    "version": "0.4.0"
-  },
   "owner": {
     "name": "sebc.dev"
   },
@@ -55,7 +52,7 @@
     },
     {
       "name": "scd-review",
-      "version": "0.12.2",
+      "version": "0.13.0",
       "source": "./scd-review",
       "description": "Interactive and automatic code review on the current branch. Reviews file by file in optimal order with validator arbitration, auto-review pipeline, JSON-based progress tracking, jq-optimized state updates, and cross-platform design.",
       "author": {
@@ -63,5 +60,8 @@
       },
       "category": "productivity"
     }
-  ]
+  ],
+  "metadata": {
+    "version": "0.4.0"
+  }
 }

@@ -140,6 +140,29 @@ Lire les 4 sessions et construire le rapport manuellement.
 ### 5d. Post sur la plateforme (si configure)
 
 Si `auto_mode.post_on_complete == true` et `platform.type != null` :
+
+**Guard confirmation** : Si `auto_mode.confirm_before_post == true` :
+1. Afficher un apercu des commentaires qui seront postes (resume + inline si applicable)
+2. Demander confirmation :
+   ```
+   AskUserQuestion(
+     questions: [{
+       question: "Poster ces commentaires sur le PR/MR ?",
+       header: "Confirmation post",
+       options: [
+         { label: "Poster tout", description: "Poster le resume et les commentaires inline" },
+         { label: "Resume seul", description: "Poster uniquement le resume global (pas d'inline)" },
+         { label: "Annuler", description: "Ne pas poster" }
+       ],
+       multiSelect: false
+     }]
+   )
+   ```
+3. **Poster tout** → poster via post-review-comments.sh + post-inline-comments.sh
+4. **Resume seul** → poster uniquement via post-review-comments.sh (pas d'inline)
+5. **Annuler** → log `[AUTO] post skipped by user` et continuer
+
+Si `auto_mode.confirm_before_post == false` (defaut) :
 - Poster le rapport consolide via post-review-comments.sh
 - Le rapport auto inclut le tag `[AUTO-REVIEW]` dans l'en-tete
 

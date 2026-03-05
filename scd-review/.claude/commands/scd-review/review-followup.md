@@ -2,13 +2,13 @@
 name: review-followup
 description: Followup de review — verifier les corrections apres une review completee
 allowed-tools:
-  - Bash(git diff:*)
-  - Bash(git log:*)
-  - Bash(git merge-base:*)
-  - Bash(git branch:*)
-  - Bash(git show:*)
-  - Bash(git rev-parse:*)
-  - Bash(git cat-file:*)
+  - Bash(git diff *)
+  - Bash(git log *)
+  - Bash(git merge-base *)
+  - Bash(git branch *)
+  - Bash(git show *)
+  - Bash(git rev-parse *)
+  - Bash(git cat-file *)
   - Bash(bash .claude/review/scripts/*)
   - Bash(gh pr *)
   - Bash(glab mr *)

@@ -63,7 +63,12 @@ Analyser selon les 6 criteres :
 - **error-handling** — Gestion des erreurs, cas limites, resilience, messages d'erreur clairs
 - **test-coverage** — Tests presents et adequats, cas couverts, qualite des assertions
 
-Pour chaque observation, classifier la severite puis en deduire le niveau :
+Pour chaque observation, noter la **localisation precise** :
+- **`location`** : `"chemin/fichier.ext:NN"` — ligne dans le fichier HEAD (pas le numero de ligne du diff)
+- Si l'observation concerne un bloc (fonction, classe), utiliser la premiere ligne du bloc
+- Obligatoire pour red/yellow, `null` pour green (les bons points ne ciblent pas une ligne specifique)
+
+Puis classifier la severite et en deduire le niveau :
 
 **Bloquant** → toujours 🔴 (impact reel sur production ou maintenabilite) :
 - Vulnerabilite securite confirmee (injection, XSS, auth bypass)
@@ -135,7 +140,7 @@ Retourner EXACTEMENT ce format :
 - note: "resume en 120 caracteres max"
 
 ### Observations JSON
-[{"criterion":"security","severity":"bloquant","level":"red","text":"Resume court","detail":"Explication du probleme avec code concerne et impact","suggestion":"Direction de correction"},{"criterion":"error-handling","severity":"bloquant","level":"red","text":"Resume court","detail":"Explication","suggestion":"Correction"},{"criterion":"conventions","severity":"suggestion","level":"yellow","text":"Resume court","detail":"Explication","suggestion":"Correction"},{"criterion":"architecture","severity":"suggestion","level":"green","text":"Ce qui est bien fait","detail":"Pourquoi c'est un bon pattern","suggestion":null}]
+[{"criterion":"security","severity":"bloquant","level":"red","location":"src/auth/UserService.java:92","text":"Resume court","detail":"Explication du probleme avec code concerne et impact","suggestion":"Direction de correction"},{"criterion":"error-handling","severity":"bloquant","level":"red","location":"src/auth/UserService.java:145","text":"Resume court","detail":"Explication","suggestion":"Correction"},{"criterion":"conventions","severity":"suggestion","level":"yellow","location":"src/auth/UserService.java:30","text":"Resume court","detail":"Explication","suggestion":"Correction"},{"criterion":"architecture","severity":"suggestion","level":"green","location":null,"text":"Ce qui est bien fait","detail":"Pourquoi c'est un bon pattern","suggestion":null}]
 ```
 
 **Regles de formatage :**
@@ -143,7 +148,8 @@ Retourner EXACTEMENT ce format :
 - Le JSON doit etre sur une seule ligne, valide, et correspondre exactement aux observations listees
 - La note doit resumer l'etat du fichier (ex: "Service auth solide, manque validation CSRF sur endpoint admin")
 - Pour les 🟢, `severity` = `"suggestion"` dans le JSON (pas de severite specifique pour les bons points)
-- Champs obligatoires : `criterion`, `severity`, `level`, `text`, `detail`
+- Champs obligatoires : `criterion`, `severity`, `level`, `location`, `text`, `detail`
+- Champ `location` : `"chemin/fichier:NN"` pour red/yellow, `null` pour green — ligne dans le fichier HEAD
 - Champ `suggestion` : obligatoire pour red/yellow, `null` pour green
 - `text` : resume court (~15-30 mots), identifie le probleme et sa localisation
 - `detail` : 2-4 phrases, cite le code, explique le probleme et l'impact

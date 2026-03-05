@@ -6,7 +6,13 @@
     "name": "sebc.dev"
   },
   "license": "MIT",
-  "keywords": ["plugin", "architecture", "design", "context-engineering", "orchestration"],
+  "keywords": [
+    "plugin",
+    "architecture",
+    "design",
+    "context-engineering",
+    "orchestration"
+  ],
   "commands": "./commands/",
   "skills": "./skills/",
   "repository": "https://github.com/sebc-dev/marketplace"

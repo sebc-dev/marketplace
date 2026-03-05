@@ -3,14 +3,14 @@ name: auto-review
 description: Pipeline de code review automatique complet (review, validation, apply, followup, rapport) sans interaction utilisateur
 argument-hint: "[base-branch]"
 allowed-tools:
-  - Bash(git diff:*)
-  - Bash(git log:*)
-  - Bash(git merge-base:*)
-  - Bash(git branch:*)
-  - Bash(git show:*)
-  - Bash(git rev-parse:*)
-  - Bash(git cat-file:*)
-  - Bash(git status:*)
+  - Bash(git diff *)
+  - Bash(git log *)
+  - Bash(git merge-base *)
+  - Bash(git branch *)
+  - Bash(git show *)
+  - Bash(git rev-parse *)
+  - Bash(git cat-file *)
+  - Bash(git status *)
   - Bash(bash .claude/review/scripts/*)
   - Bash(gh pr *)
   - Bash(glab mr *)

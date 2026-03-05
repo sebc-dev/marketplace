@@ -41,12 +41,17 @@
     "review_action": "next",
     "apply_action": "apply_validated",
     "post_on_complete": true,
+    "confirm_before_post": false,
     "generate_report": true,
     "escalate_to_user": true
   },
   "platform": {
     "type": null,
-    "auto_post": false
+    "auto_post": false,
+    "inline_comments": {
+      "enabled": true,
+      "filter": "blocking"
+    }
   },
   "state": {
     "last_init": null,
