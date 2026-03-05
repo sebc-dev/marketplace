@@ -1,0 +1,21 @@
+{
+  "name": "scd-vuejs",
+  "version": "0.1.0",
+  "description": "Vue 3 (3.4+/3.5+) production expertise. Composition API, Pinia, Vue Router v4, TypeScript, Vite, Vitest. Best practices, pitfalls, anti-patterns, architectural decisions.",
+  "author": {
+    "name": "sebc.dev"
+  },
+  "license": "MIT",
+  "keywords": [
+    "vue",
+    "vue3",
+    "pinia",
+    "vue-router",
+    "composition-api",
+    "typescript",
+    "vite"
+  ],
+  "commands": "./.claude/commands/",
+  "skills": "./.claude/skills/",
+  "repository": "https://github.com/sebc-dev/marketplace"
+}

@@ -93,6 +93,11 @@ Chaque observation doit etre suffisamment detaillee pour etre actionnable sans r
 - **text** : Resume court (1 phrase, ~15-30 mots). Identifie le probleme et sa localisation dans le code.
 - **detail** : Explication du probleme (2-4 phrases). Cite le code ou pattern concerne, explique pourquoi c'est un probleme et quel est l'impact concret.
 - **suggestion** : Direction de correction (1-2 phrases). Indique comment corriger sans dicter le code exact.
+- **fix_prompt** : (red/yellow uniquement) Objet structure pour agents IA. Cles obligatoires :
+  - `file` : chemin du fichier (ex: `src/auth/UserService.java`)
+  - `line` : numero de ligne ou range (ex: `"92"` ou `"38-61"`)
+  - `action` : verbe parmi `add`, `replace`, `remove`, `refactor`, `move`
+  - `description` : description concise de la correction a effectuer
 
 Exemples :
 - ❌ `text: "Pas de validation"` — trop vague
@@ -140,7 +145,7 @@ Retourner EXACTEMENT ce format :
 - note: "resume en 120 caracteres max"
 
 ### Observations JSON
-[{"criterion":"security","severity":"bloquant","level":"red","location":"src/auth/UserService.java:92","text":"Resume court","detail":"Explication du probleme avec code concerne et impact","suggestion":"Direction de correction"},{"criterion":"error-handling","severity":"bloquant","level":"red","location":"src/auth/UserService.java:145","text":"Resume court","detail":"Explication","suggestion":"Correction"},{"criterion":"conventions","severity":"suggestion","level":"yellow","location":"src/auth/UserService.java:30","text":"Resume court","detail":"Explication","suggestion":"Correction"},{"criterion":"architecture","severity":"suggestion","level":"green","location":null,"text":"Ce qui est bien fait","detail":"Pourquoi c'est un bon pattern","suggestion":null}]
+[{"criterion":"security","severity":"bloquant","level":"red","location":"src/auth/UserService.java:92","text":"Resume court","detail":"Explication du probleme avec code concerne et impact","suggestion":"Direction de correction","fix_prompt":{"file":"src/auth/UserService.java","line":"92","action":"replace","description":"Use parameterized query instead of string concatenation"}},{"criterion":"error-handling","severity":"bloquant","level":"red","location":"src/auth/UserService.java:145","text":"Resume court","detail":"Explication","suggestion":"Correction","fix_prompt":{"file":"src/auth/UserService.java","line":"145","action":"add","description":"Add try-catch block around database call with proper error propagation"}},{"criterion":"conventions","severity":"suggestion","level":"yellow","location":"src/auth/UserService.java:30","text":"Resume court","detail":"Explication","suggestion":"Correction","fix_prompt":{"file":"src/auth/UserService.java","line":"30","action":"refactor","description":"Rename method to follow camelCase convention"}},{"criterion":"architecture","severity":"suggestion","level":"green","location":null,"text":"Ce qui est bien fait","detail":"Pourquoi c'est un bon pattern","suggestion":null,"fix_prompt":null}]
 ```
 
 **Regles de formatage :**
@@ -151,6 +156,7 @@ Retourner EXACTEMENT ce format :
 - Champs obligatoires : `criterion`, `severity`, `level`, `location`, `text`, `detail`
 - Champ `location` : `"chemin/fichier:NN"` pour red/yellow, `null` pour green — ligne dans le fichier HEAD
 - Champ `suggestion` : obligatoire pour red/yellow, `null` pour green
+- Champ `fix_prompt` : obligatoire pour red/yellow (objet avec file, line, action, description), `null` pour green
 - `text` : resume court (~15-30 mots), identifie le probleme et sa localisation
 - `detail` : 2-4 phrases, cite le code, explique le probleme et l'impact
 - `suggestion` : 1-2 phrases, direction de correction (pas le code exact)

@@ -49,6 +49,7 @@ fi
 [[ -z "$pr_number" ]] && { echo "SKIP: no open PR/MR for branch $branch"; exit 0; }
 
 lang=$(jq -r '.options.language // "fr"' "$config" 2>/dev/null || echo "fr")
+ai_fix_prompt=$(jq -r '.platform.inline_comments.ai_fix_prompt // false' "$config" 2>/dev/null || echo "false")
 
 # ---------------------------------------------------------------------------
 # Extract filtered observations with resolved line numbers
@@ -93,7 +94,8 @@ observations=$(jq --arg filter "$filter" '
       severity: .severity,
       text: .text,
       detail: (.detail // ""),
-      suggestion: (.suggestion // null)
+      suggestion: (.suggestion // null),
+      fix_prompt: (.fix_prompt // null)
     }
   ]
 ' "$session")
@@ -122,7 +124,10 @@ body_jq='
   (if .suggestion then
      (if $lang == "en" then "\n\n> 💡 **Suggestion**: " else "\n\n> 💡 **Suggestion** : " end) + .suggestion
    else "" end) as $sug |
-  "\($emoji) **\(.criterion)**\($tag) — \(.text)\n\n\(.detail)\($sug)"
+  (if ($ai_fix == "true") and .fix_prompt then
+     "\n\n<details>\n<summary>🤖 AI Fix</summary>\n\n```ai-fix\nfile: \(.fix_prompt.file)\nline: \(.fix_prompt.line)\naction: \(.fix_prompt.action)\ndescription: \(.fix_prompt.description)\n```\n\n</details>"
+   else "" end) as $ai |
+  "\($emoji) **\(.criterion)**\($tag) — \(.text)\n\n\(.detail)\($sug)\($ai)"
 '
 
 # ---------------------------------------------------------------------------
@@ -131,7 +136,7 @@ body_jq='
 # Falls back to individual comments if batch fails
 # ---------------------------------------------------------------------------
 if [[ "$platform_type" == "github" ]]; then
-  payload=$(echo "$observations" | jq --arg lang "$lang" '
+  payload=$(echo "$observations" | jq --arg lang "$lang" --arg ai_fix "$ai_fix_prompt" '
     {
       event: "COMMENT",
       body: "",
@@ -145,9 +150,12 @@ if [[ "$platform_type" == "github" ]]; then
         (if .suggestion then
            (if $lang == "en" then "\n\n> 💡 **Suggestion**: " else "\n\n> 💡 **Suggestion** : " end) + .suggestion
          else "" end) as $sug |
+        (if ($ai_fix == "true") and .fix_prompt then
+           "\n\n<details>\n<summary>🤖 AI Fix</summary>\n\n```ai-fix\nfile: \(.fix_prompt.file)\nline: \(.fix_prompt.line)\naction: \(.fix_prompt.action)\ndescription: \(.fix_prompt.description)\n```\n\n</details>"
+         else "" end) as $ai |
         {
           path: .path,
-          body: "\($emoji) **\(.criterion)**\($tag) — \(.text)\n\n\(.detail)\($sug)"
+          body: "\($emoji) **\(.criterion)**\($tag) — \(.text)\n\n\(.detail)\($sug)\($ai)"
         } + (if .line_resolved then
           {line: .line, side: "RIGHT"}
         else
@@ -214,7 +222,7 @@ elif [[ "$platform_type" == "gitlab" ]]; then
   while IFS= read -r obs; do
     path=$(echo "$obs" | jq -r '.path')
     line=$(echo "$obs" | jq '.line')
-    body=$(echo "$obs" | jq -r --arg lang "$lang" "
+    body=$(echo "$obs" | jq -r --arg lang "$lang" --arg ai_fix "$ai_fix_prompt" "
       $body_jq
     ")
 

@@ -11,7 +11,8 @@ se terminant par ces sections machine-parseables :
 
 ### Observations JSON
 [{"criterion":"...","severity":"bloquant|suggestion","level":"red|yellow|green",
-  "location":"chemin/fichier:NN ou null","text":"resume 15-30 mots","detail":"2-4 phrases","suggestion":"1-2 phrases ou null"}]
+  "location":"chemin/fichier:NN ou null","text":"resume 15-30 mots","detail":"2-4 phrases","suggestion":"1-2 phrases ou null",
+  "fix_prompt":{"file":"chemin/fichier.ext","line":"NN ou NN-MM","action":"add|replace|remove|refactor|move","description":"quoi changer"} ou null}]
 ```
 
 ## Regles de parsing
@@ -20,6 +21,7 @@ se terminant par ces sections machine-parseables :
 - `note` : extraire la valeur entre guillemets
 - Observations JSON : parser le tableau JSON sur une seule ligne
 - Les sections AVANT Metriques sont le rapport libre (afficher tel quel)
+- `fix_prompt` : objet structuré pour red/yellow, `null` pour green. Clés : `file`, `line`, `action` (add|replace|remove|refactor|move), `description`
 
 ## Criteres
 

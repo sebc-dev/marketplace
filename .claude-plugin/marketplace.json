@@ -51,6 +51,15 @@
       "category": "development"
     },
     {
+      "name": "scd-vuejs",
+      "source": "./scd-vuejs",
+      "description": "Skill Vue 3 (3.4+/3.5+) production. Composition API, Pinia, Vue Router v4, TypeScript, Vite. Bonnes pratiques, pieges, anti-patterns, decisions architecturales.",
+      "author": {
+        "name": "sebc.dev"
+      },
+      "category": "development"
+    },
+    {
       "name": "scd-review",
       "version": "0.13.0",
       "source": "./scd-review",
@@ -62,6 +71,6 @@
     }
   ],
   "metadata": {
-    "version": "0.4.0"
+    "version": "0.5.0"
   }
 }

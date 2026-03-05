@@ -50,7 +50,8 @@
     "auto_post": false,
     "inline_comments": {
       "enabled": true,
-      "filter": "blocking"
+      "filter": "blocking",
+      "ai_fix_prompt": false
     }
   },
   "state": {

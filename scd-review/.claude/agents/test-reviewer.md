@@ -103,7 +103,7 @@ Retourner EXACTEMENT ce format :
 - note: "resume en 120 caracteres max"
 
 ### Observations JSON
-[{"criterion":"test-quality","severity":"bloquant","level":"red","location":"tests/auth.test.js:45","text":"...","detail":"...","suggestion":"..."}]
+[{"criterion":"test-quality","severity":"bloquant","level":"red","location":"tests/auth.test.js:45","text":"...","detail":"...","suggestion":"...","fix_prompt":{"file":"tests/auth.test.js","line":"45","action":"replace","description":"..."}}]
 ```
 
 **Regles de mapping depuis les sections Resume :**
@@ -116,4 +116,5 @@ Retourner EXACTEMENT ce format :
 - `text` : resume court (~15-30 mots), identifie le probleme et sa localisation
 - `detail` : 2-4 phrases, cite le code, explique le probleme et l'impact
 - `suggestion` : 1-2 phrases, direction de correction (pas le code exact). `null` pour green
+- `fix_prompt` : objet structuré pour red/yellow (`file`, `line`, `action`, `description`), `null` pour green
 </output_format>

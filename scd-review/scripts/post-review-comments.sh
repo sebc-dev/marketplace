@@ -72,12 +72,13 @@ fi
 
 # Read language for localized labels
 lang=$(jq -r '.options.language // "fr"' "$config" 2>/dev/null || echo "fr")
+ai_fix_prompt=$(jq -r '.platform.inline_comments.ai_fix_prompt // false' "$config" 2>/dev/null || echo "false")
 
 # Determine session type (review or followup)
 session_type=$(jq -r '.type // "review"' "$session")
 
 # Build the comment body via jq
-body=$(jq -r --arg lang "$lang" --arg session_type "$session_type" '
+body=$(jq -r --arg lang "$lang" --arg session_type "$session_type" --arg ai_fix "$ai_fix_prompt" '
   # Localized labels
   (if $lang == "en" then
     {
@@ -130,7 +131,10 @@ body=$(jq -r --arg lang "$lang" --arg session_type "$session_type" '
           "**\(.path)**\n" +
           ([.observations[] | select(.severity == "bloquant") |
             "- \(if .level == "red" then "🔴" elif .level == "yellow" then "🟡" else "🟢" end) **\(.criterion)** — \(.text)" +
-            (if .detail then "\n  > \(.detail)" else "" end)
+            (if .detail then "\n  > \(.detail)" else "" end) +
+            (if ($ai_fix == "true") and .fix_prompt then
+               "\n  <details><summary>🤖 AI Fix</summary>\n\n  ```ai-fix\n  file: \(.fix_prompt.file)\n  line: \(.fix_prompt.line)\n  action: \(.fix_prompt.action)\n  description: \(.fix_prompt.description)\n  ```\n  </details>"
+             else "" end)
           ] | join("\n"))
         ) | join("\n\n")) + "\n\n"
       else ""
@@ -165,7 +169,10 @@ body=$(jq -r --arg lang "$lang" --arg session_type "$session_type" '
           "**\(.path)**\n" +
           ([.observations[] | select(.severity == "bloquant") |
             "- \(if .level == "red" then "🔴" elif .level == "yellow" then "🟡" else "🟢" end) **\(.criterion)** — \(.text)" +
-            (if .detail then "\n  > \(.detail)" else "" end)
+            (if .detail then "\n  > \(.detail)" else "" end) +
+            (if ($ai_fix == "true") and .fix_prompt then
+               "\n  <details><summary>🤖 AI Fix</summary>\n\n  ```ai-fix\n  file: \(.fix_prompt.file)\n  line: \(.fix_prompt.line)\n  action: \(.fix_prompt.action)\n  description: \(.fix_prompt.description)\n  ```\n  </details>"
+             else "" end)
           ] | join("\n"))
         ) | join("\n\n")) + "\n\n"
       else ""
@@ -180,7 +187,10 @@ body=$(jq -r --arg lang "$lang" --arg session_type "$session_type" '
           "**\(.[0].path)**\n" +
           ([.[].obs |
             "- \(if .level == "red" then "🔴" elif .level == "yellow" then "🟡" else "🟢" end) **\(.criterion)** — \(.text)" +
-            (if .detail then "\n  > \(.detail)" else "" end)
+            (if .detail then "\n  > \(.detail)" else "" end) +
+            (if ($ai_fix == "true") and .fix_prompt then
+               "\n  <details><summary>🤖 AI Fix</summary>\n\n  ```ai-fix\n  file: \(.fix_prompt.file)\n  line: \(.fix_prompt.line)\n  action: \(.fix_prompt.action)\n  description: \(.fix_prompt.description)\n  ```\n  </details>"
+             else "" end)
           ] | join("\n"))
         ) | join("\n\n")) + "\n\n</details>\n\n"
       else ""
