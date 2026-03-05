@@ -14,7 +14,7 @@ description: |
   deployment (Docker, Cloudflare Pages, CI/CD).
   Use when working with .vue files, vite.config.ts, vue.config.*, pinia stores,
   router files, composables, or Vue 3 projects.
-  No MCP -- use official Vue docs via WebFetch for API signatures.
+  Documentation: scd-qmd collection vuejs.org for indexed official docs + WebFetch fallback for API signatures.
 ---
 
 ## Critical Rules (Vue 3 Composition API)
@@ -66,7 +66,19 @@ These cause the most common code generation errors. Apply before writing any Vue
 
 ## Official Docs Integration
 
-No MCP server available. Use WebFetch for official documentation when you need exact API signatures, config option lists, or directive syntax:
+### Primary: qmd indexed docs (scd-qmd plugin)
+
+Use qmd MCP tools to search the `vuejs.org` collection for official documentation:
+
+| Need | Tool | Usage |
+|------|------|-------|
+| Known API name | `mcp__qmd__qmd_search` | `query="defineModel", collection="vuejs.org"` |
+| Conceptual question | `mcp__qmd__qmd_deep_search` | `query="how to handle form validation", collection="vuejs.org"` |
+| Full page content | `mcp__qmd__qmd_get` | Retrieve by path from search results |
+
+### Fallback: WebFetch for live docs
+
+If qmd collection is unavailable or for the latest API changes not yet indexed:
 
 | Domain | URL |
 |--------|-----|

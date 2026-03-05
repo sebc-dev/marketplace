@@ -1,6 +1,6 @@
 {
   "name": "scd-vuejs",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Vue 3 (3.4+/3.5+) production expertise. Composition API, Pinia, Vue Router v4, TypeScript, Vite, Vitest. Best practices, pitfalls, anti-patterns, architectural decisions.",
   "author": {
     "name": "sebc.dev"
