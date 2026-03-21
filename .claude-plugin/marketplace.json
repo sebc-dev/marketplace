@@ -4,9 +4,6 @@
   "owner": {
     "name": "sebc.dev"
   },
-  "metadata": {
-    "version": "0.6.0"
-  },
   "plugins": [
     {
       "name": "scd-astro",
@@ -81,5 +78,8 @@
       },
       "category": "productivity"
     }
-  ]
+  ],
+  "metadata": {
+    "version": "0.6.0"
+  }
 }
