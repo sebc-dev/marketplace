@@ -9,6 +9,7 @@
 6. Server Islands require the Cloudflare adapter, `server:defer` directive, and a fallback slot with fixed dimensions
 7. Keep Server Island props serializable -- no functions, no circular refs; props > 2048 bytes trigger POST (uncacheable)
 8. Implement `getStaticPaths()` for every dynamic `[param].astro` route in prerender mode
+9. Access Cloudflare bindings via `import { env } from 'cloudflare:workers'` -- not `Astro.locals.runtime`
 </quick_reference>
 <output_modes>
 | Aspect | `output: 'static'` (default) | `output: 'server'` |
@@ -85,6 +86,7 @@ import ProductPrice from '../components/ProductPrice.astro';
 ```astro
 ---
 // src/components/ProductPrice.astro (Server Island component)
+import { env } from 'cloudflare:workers';
 interface Props { productId: string; }
 const { productId } = Astro.props;
 const country = Astro.request.headers.get('cf-ipcountry') || 'US';
@@ -118,27 +120,30 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=3600');
 <feature_compatibility>
 | Feature | SSG (`static`) | SSR (`server`) | Server Islands |
 |---------|:--------------:|:--------------:|:--------------:|
-| Sessions (`Astro.session`) | No | Yes | Yes |
+| Sessions (`Astro.session`) | No | Auto-configured | Yes |
 | Actions (`astro:actions`) | Endpoints only | Full support | Callable |
 | Content Layer | Build-time | Build + runtime | Yes |
+| Live Collections | No | Yes | Yes |
 | Cookies (`Astro.cookies`) | Build-time only | Yes | Yes |
 | Middleware | Yes | Yes | Yes |
 | Image optimization | `sharp` at build | `compile` or `cloudflare` | `compile` mode |
 | Cache CDN | Automatic | Manual headers | Cacheable on GET |
 | HTML Streaming | N/A | Enabled by default | Yes |
+| Route Caching (experimental) | N/A | Per-route TTL | N/A |
 </feature_compatibility>
 <anti_patterns>
 | Don't | Do | Impact |
 |-------|-----|--------|
 | `output: 'hybrid'` | Use `'static'` or `'server'` | Config error -- hybrid removed in Astro 5.0 |
 | `export const prerender = import.meta.env.VAR` | Use `astro:route:setup` hook with `loadEnv()` | `InvalidPrerenderExport` build error |
-| `process.env.VAR` in components on Workers | `Astro.locals.runtime.env.VAR` | Returns `undefined` in production |
+| `Astro.locals.runtime.env.VAR` or `process.env.VAR` | `import { env } from 'cloudflare:workers'` then `env.VAR` | `locals.runtime` removed in Astro 6; `process.env` undefined on Workers |
 | Server Island without `slot="fallback"` | Add fallback with matching dimensions | High CLS, degraded user experience |
 | Non-serializable props to Server Island | Pass ID and fetch inside island | Props silently ignored |
 | `prerender: true` on `404.astro` with `output: 'server'` | Use `prerender: false` or remove the export | Cloudflare error 1042/522 on missing routes |
 | Auto Minify enabled + Server Islands | Disable Auto Minify in Cloudflare dashboard | Minification removes `<!--server-island-start-->` markers, islands break |
 | `getStaticPaths()` on `prerender: false` page | Remove `getStaticPaths`, use `Astro.params` directly | Warning logged, confusing behavior |
 | Only Server Islands with `output: 'static'` (no SSR pages) | Add a dummy SSR page with `prerender: false` | Adapter skips Worker generation (bug #12744) |
+| Using `platformProxy` in adapter config | Remove it -- Cloudflare adapter auto-detects bindings in Astro 6 | Deprecated option, causes warnings |
 </anti_patterns>
 <troubleshooting>
 | Symptom | Cause | Fix |
@@ -152,4 +157,5 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=3600');
 | `Astro.url` returns `/_server-islands/Name` | Normal behavior inside Server Island | Use `Astro.request.headers.get('Referer')` for parent page URL |
 | 404 on dynamic SSR routes after deploy | `_routes.json` missing route pattern | Add pattern to `routes.extend.include` in adapter config |
 | Cache stale after redeployment | CDN or browser cache not purged | Purge Cloudflare cache from dashboard and check `Cache-Control` headers |
+| `Astro.locals.runtime` is undefined | Removed in Astro 6 with `@astrojs/cloudflare` v13+ | Use `import { env } from 'cloudflare:workers'` for bindings |
 </troubleshooting>

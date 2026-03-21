@@ -1,5 +1,5 @@
 ---
-description: Diagnose common Astro 5.x / Cloudflare Workers errors using skill troubleshooting tables
+description: Diagnose common Astro 6.x / Cloudflare Workers errors using skill troubleshooting tables
 disable-model-invocation: true
 argument-hint: "[error message or symptom description]"
 allowed-tools:
@@ -11,7 +11,7 @@ allowed-tools:
 
 # Debug Astro/Cloudflare Errors
 
-Diagnose Astro 5.x and Cloudflare Workers errors by routing symptoms to the correct skill reference file and presenting structured fixes.
+Diagnose Astro 6.x and Cloudflare Workers errors by routing symptoms to the correct skill reference file and presenting structured fixes.
 
 ## Step 1: Accept Symptom
 
@@ -34,12 +34,16 @@ Match the user's symptom against this routing table to identify which reference 
 | Sitemap missing / SEO tags not rendering / OpenGraph | `seo-i18n.md` |
 | Server Island not rendering / `server:defer` issues | `components-islands.md` + `rendering-modes.md` |
 | Binding not available in dev / KV/D1/R2 undefined | `cloudflare-platform.md` |
-| ViewTransitions errors / navigation glitches | `routing-navigation.md` |
+| `ClientRouter` navigation glitches / history issues | `routing-navigation.md` |
 | `CPU time exceeded` / Worker CPU limit | `cloudflare-platform.md` |
 | `KV namespace not bound` / binding errors in production | `cloudflare-platform.md` |
 | `compatibility_date` / compat flag errors | `cloudflare-platform.md` |
 | `node_compat` / Node.js API not available on Workers | `cloudflare-platform.md` |
 | Wrangler deploy fails / `wrangler pages deploy` errors | `build-deploy.md` |
+| `Astro.locals.runtime removed` / `runtime is undefined` | `cloudflare-platform.md` |
+| `require is not defined` / CJS in workerd | `cloudflare-platform.md` |
+| `z.string().email is not a function` / Zod 4 API changes | `data-content.md` |
+| `createSchema` silent failure | `data-content.md` |
 
 If the symptom matches multiple patterns, route to ALL matched reference files.
 
@@ -69,25 +73,13 @@ If no direct match was found in the Troubleshooting table, check the Anti-patter
 
 ## Step 5: Check Critical Rules
 
-Read the Critical Rules section from SKILL.md to check if the symptom matches any of the 10 breaking change violations:
+Read the Critical Rules section from SKILL.md to check if the symptom matches any of the 14 breaking change violations:
 
 ```
 grep -n "## Critical Rules" .claude/skills/astro-cloudflare/SKILL.md
 ```
 
-The 10 Critical Rules cover the most common Astro 5.x breaking changes:
-1. `content.config.ts` path (`src/` not `src/content/`)
-2. `entry.id` not `entry.slug`
-3. `render(entry)` not `entry.render()`
-4. `loader: glob()` not `type: 'content'`
-5. `<ClientRouter />` not `<ViewTransitions />`
-6. `Astro.locals.runtime.env.VAR` not `process.env.VAR`
-7. `imageService: 'compile'` not Sharp
-8. `output: 'static'` or `'server'` not `'hybrid'`
-9. `decodeURIComponent(Astro.params.slug)` for decoded params
-10. `import { z } from 'astro/zod'` not from `'zod'`
-
-Many errors trace back to one of these violations.
+The 14 Critical Rules cover the most common Astro 6.x breaking changes. Many errors trace back to one of these violations.
 
 ## Step 6: Read Relevant Project Files
 
@@ -155,5 +147,5 @@ If the user confirms, apply the fix and verify it resolves the issue (re-run the
 
 - ALWAYS read from reference files for diagnosis. Never diagnose from memory alone.
 - Route to MULTIPLE reference files if the symptom spans domains (e.g., Server Island issues touch both `components-islands.md` and `rendering-modes.md`).
-- Check Critical Rules for EVERY diagnosis -- many Astro 5.x errors trace back to breaking change violations.
+- Check Critical Rules for EVERY diagnosis -- many Astro 6.x errors trace back to breaking change violations.
 - Present the fix before applying it. The user decides whether to proceed.

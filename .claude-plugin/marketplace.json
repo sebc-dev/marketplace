@@ -4,11 +4,14 @@
   "owner": {
     "name": "sebc.dev"
   },
+  "metadata": {
+    "version": "0.6.0"
+  },
   "plugins": [
     {
       "name": "scd-astro",
       "source": "./scd-astro",
-      "description": "Skill Astro 5.x on Cloudflare Workers/Pages. Rendering modes, Content Layer, Cloudflare bindings, breaking-change prevention.",
+      "description": "Skill Astro 6.x on Cloudflare Workers. Rendering modes, Content Layer, Live Collections, Cloudflare bindings via cloudflare:workers, Zod 4, Fonts API, workerd dev, breaking-change prevention.",
       "author": {
         "name": "sebc.dev"
       },
@@ -78,8 +81,5 @@
       },
       "category": "productivity"
     }
-  ],
-  "metadata": {
-    "version": "0.6.0"
-  }
+  ]
 }

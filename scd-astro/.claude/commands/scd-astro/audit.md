@@ -1,5 +1,5 @@
 ---
-description: Audit an existing Astro 5.x / Cloudflare Workers project against skill best practices and anti-patterns
+description: Audit an existing Astro 6.x / Cloudflare Workers project against skill best practices and anti-patterns
 disable-model-invocation: true
 allowed-tools:
   - Read
@@ -10,7 +10,7 @@ allowed-tools:
 
 # Audit Astro/Cloudflare Project
 
-Perform a comprehensive audit of the current Astro 5.x / Cloudflare Workers project against the astro-cloudflare skill best practices and anti-patterns.
+Perform a comprehensive audit of the current Astro 6.x / Cloudflare Workers project against the astro-cloudflare skill best practices and anti-patterns.
 
 ## Current Project State
 
@@ -46,13 +46,13 @@ Run the audit in four stages, from most critical to least. For each check, inspe
 
 ### Stage 1: Critical Rules Check (CRITICAL severity)
 
-Read the 10 Critical Rules from `.claude/skills/astro-cloudflare/SKILL.md`:
+Read the 14 Critical Rules from `.claude/skills/astro-cloudflare/SKILL.md`:
 
 ```bash
 grep -n "## Critical Rules" .claude/skills/astro-cloudflare/SKILL.md
 ```
 
-Then read the section (lines after that heading until the next `##`). Check the project against ALL 10 rules:
+Then read the section (lines after that heading until the next `##`). Check the project against ALL 14 rules:
 
 **Rule 1 -- Content config location:**
 Check if `src/content/config.ts` exists (the WRONG location). Content config must be at `src/content.config.ts`.
@@ -73,7 +73,7 @@ grep -rn "\.render()" src/ --include="*.astro" --include="*.ts" --include="*.tsx
 Flag any `entry.render()` method calls. Should use `import { render } from 'astro:content'` then `render(entry)`.
 
 **Rule 4 -- loader: glob() or loader: file() syntax:**
-Check the content config for `type: 'content'` or `type: 'data'` (deprecated Astro v4 syntax).
+Check the content config for `type: 'content'` or `type: 'data'` (legacy collections removed in v6).
 ```bash
 grep -n "type:" src/content.config.ts 2>/dev/null | grep -E "'content'|'data'|\"content\"|\"data\""
 ```
@@ -83,27 +83,29 @@ Should use `loader: glob({ pattern, base })` or `loader: file()` instead.
 ```bash
 grep -rn "ViewTransitions" src/ --include="*.astro" --include="*.ts" --include="*.tsx" 2>/dev/null
 ```
-Flag any `ViewTransitions` import or usage. Should use `<ClientRouter />` from `astro:transitions`.
+Flag any `ViewTransitions` import or usage. `<ViewTransitions />` was removed in v6. Must use `<ClientRouter />` from `astro:transitions`.
 
-**Rule 6 -- Astro.locals.runtime.env, not process.env:**
+**Rule 6 -- `import { env } from 'cloudflare:workers'`, not Astro.locals.runtime.env:**
 ```bash
+grep -rn "locals\.runtime" src/ --include="*.astro" --include="*.ts" --include="*.tsx" 2>/dev/null | grep -v node_modules
 grep -rn "process\.env\." src/ --include="*.astro" --include="*.ts" --include="*.tsx" 2>/dev/null | grep -v node_modules | grep -v "env\.d\.ts"
 ```
-Flag any `process.env.VAR` usage in src/. Should use `Astro.locals.runtime.env.VAR` on Workers runtime. Note: `process.env` in `astro.config.mjs` is acceptable (build-time only).
+Flag any `Astro.locals.runtime.env` usage — this pattern was removed in v6. Flag any `process.env.VAR` usage in src/. Should use `import { env } from 'cloudflare:workers'` then `env.VAR`. Note: `process.env` in `astro.config.mjs` is acceptable (build-time only).
 
-**Rule 7 -- imageService: 'compile', not Sharp:**
+**Rule 7 -- imageService: 'cloudflare-binding' as default:**
 Check the pre-loaded package.json for `sharp` in dependencies. Check astro.config for `imageService` setting.
 ```bash
 grep -n "sharp" package.json 2>/dev/null
+grep -n "imageService" astro.config.mjs 2>/dev/null || grep -n "imageService" astro.config.ts 2>/dev/null
 ```
-Should use `imageService: 'compile'` in the adapter config, not Sharp (incompatible with Workers).
+Default should be `imageService: 'cloudflare-binding'`. Use `'compile'` for build-only, or `{ build: 'compile', runtime: 'cloudflare-binding' }` for dual-mode. Sharp is incompatible with Workers.
 
 **Rule 8 -- No output: 'hybrid':**
 Check the pre-loaded astro.config for `output: 'hybrid'`.
 ```bash
 grep -n "hybrid" astro.config.mjs 2>/dev/null || grep -n "hybrid" astro.config.ts 2>/dev/null
 ```
-Should use `output: 'static'` or `output: 'server'`, never `output: 'hybrid'` (removed in v5).
+Should use `output: 'static'` or `output: 'server'`, never `output: 'hybrid'` (removed in v5, use per-page `prerender` instead).
 
 **Rule 9 -- decodeURIComponent on dynamic params:**
 Check if dynamic routes exist, then verify they decode params.
@@ -116,12 +118,44 @@ grep -rn "Astro.params" src/ --include="*.astro" 2>/dev/null
 ```
 Flag any raw `Astro.params.slug` usage without `decodeURIComponent()` wrapping.
 
-**Rule 10 -- import { z } from 'astro/zod':**
+**Rule 10 -- Zod 4 syntax with `import { z } from 'astro/zod'`:**
 ```bash
 grep -rn "from 'zod'" src/ --include="*.ts" --include="*.tsx" --include="*.astro" 2>/dev/null | grep -v node_modules
 grep -rn "from \"zod\"" src/ --include="*.ts" --include="*.tsx" --include="*.astro" 2>/dev/null | grep -v node_modules
 ```
 Flag any direct `import { z } from 'zod'`. Should use `import { z } from 'astro/zod'`.
+Also check for Zod 3 syntax patterns:
+```bash
+grep -rn "z\.string()\.email()" src/ --include="*.ts" --include="*.tsx" --include="*.astro" 2>/dev/null | grep -v node_modules
+grep -rn '{ message:' src/ --include="*.ts" --include="*.tsx" --include="*.astro" 2>/dev/null | grep -v node_modules | head -10
+```
+Zod 4 uses `z.email()` NOT `z.string().email()`, and `{ error: "..." }` NOT `{ message: "..." }`.
+
+**Rule 11 -- Node 22.12.0+ required:**
+Check the pre-loaded package.json for `engines` field and any `.node-version` or `.nvmrc` file.
+```bash
+grep -n "node" package.json 2>/dev/null | grep -i "engine\|version"
+cat .node-version 2>/dev/null || cat .nvmrc 2>/dev/null || echo "NO_NODE_VERSION_FILE"
+```
+Node 18 and 20 are dropped in Astro v6. Must use Node 22.12.0+.
+
+**Rule 12 -- getStaticPaths params must be strings:**
+```bash
+grep -rn "getStaticPaths" src/ --include="*.astro" --include="*.ts" --include="*.tsx" -A 10 2>/dev/null | grep "params:"
+```
+Flag any numeric params like `{ id: 123 }`. Must be strings: `{ id: '123' }`.
+
+**Rule 13 -- No Astro.glob():**
+```bash
+grep -rn "Astro\.glob(" src/ --include="*.astro" --include="*.ts" --include="*.tsx" 2>/dev/null | grep -v node_modules
+```
+`Astro.glob()` was removed in v6. Should use `import.meta.glob()` or content collections instead.
+
+**Rule 14 -- security.csp stable (not experimental):**
+```bash
+grep -rn "experimental" astro.config.mjs 2>/dev/null || grep -rn "experimental" astro.config.ts 2>/dev/null
+```
+Flag any `experimental: { csp: true }`. CSP was stabilized in v6. Should use `security: { csp: true }`.
 
 ### Stage 2: Cloudflare Compatibility Check (CRITICAL severity)
 
@@ -133,8 +167,13 @@ grep -n "## Anti-patterns" .claude/skills/astro-cloudflare/references/cloudflare
 
 Read that section (from the heading to the next `##` or end of file). Then check:
 
+- **Astro.locals.runtime usage (ANTI-PATTERN):**
+  Already checked in Rule 6 above. Any `Astro.locals.runtime` access is an error in v6 — this API was removed. Must use `import { env } from 'cloudflare:workers'`.
+
 - **process.env in src/:** Already checked in Rule 6 above. Confirm no runtime `process.env` usage.
+
 - **Sharp in dependencies:** Already checked in Rule 7 above. Confirm no Sharp dependency.
+
 - **Missing nodejs_compat flag:**
   Check the pre-loaded wrangler config for `nodejs_compat` in `compatibility_flags`.
   ```bash
@@ -151,6 +190,13 @@ Read that section (from the heading to the next `##` or end of file). Then check
 - **.env alongside .dev.vars:**
   Check the pre-loaded environment files section. If both `.env` and `.dev.vars` exist, flag as conflict. Cloudflare uses `.dev.vars` for local secrets, not `.env`.
 
+- **cloudflare:workers import present:**
+  Verify that server-side code uses `import { env } from 'cloudflare:workers'` for bindings access.
+  ```bash
+  grep -rn "cloudflare:workers" src/ --include="*.astro" --include="*.ts" --include="*.tsx" 2>/dev/null | grep -v node_modules
+  ```
+  If the project accesses bindings but does not use this import, flag as CRITICAL.
+
 ### Stage 3: Config Correctness Checks (HIGH severity)
 
 Read Anti-patterns sections from these reference files dynamically:
@@ -164,12 +210,12 @@ grep -n "## Anti-patterns" .claude/skills/astro-cloudflare/references/build-depl
 
 For each file, read the Anti-patterns section (from the heading to the next `##` or end of file) and check the project against each listed anti-pattern. Key checks include:
 
-- **platformProxy not enabled:**
-  Check astro.config for `platformProxy` if an adapter is present.
+- **platformProxy presence (ANTI-PATTERN in v6):**
+  Check astro.config for `platformProxy`. Its presence is an error in v6 — bindings are accessed via `import { env } from 'cloudflare:workers'` and `astro preview` runs on workerd natively.
   ```bash
   grep -n "platformProxy" astro.config.mjs 2>/dev/null || grep -n "platformProxy" astro.config.ts 2>/dev/null
   ```
-  If adapter is configured, `platformProxy: { enabled: true }` should be present for local binding access.
+  If `platformProxy` is found, flag as error. It should be removed entirely.
 
 - **tsconfig extends incorrect base:**
   Check the pre-loaded tsconfig.json for `extends` field. Should extend `astro/tsconfigs/strict` or `astro/tsconfigs/strictest`.
@@ -191,6 +237,12 @@ For each file, read the Anti-patterns section (from the heading to the next `##`
   Check astro.config for the adapter import. Should be `@astrojs/cloudflare`.
   ```bash
   grep -n "cloudflare" astro.config.mjs 2>/dev/null || grep -n "cloudflare" astro.config.ts 2>/dev/null
+  ```
+
+- **imageService check:**
+  Verify `imageService: 'cloudflare-binding'` is the default. Flag `imageService: 'compile'` if used as sole option (should be `'cloudflare-binding'` or dual-mode).
+  ```bash
+  grep -n "imageService" astro.config.mjs 2>/dev/null || grep -n "imageService" astro.config.ts 2>/dev/null
   ```
 
 ### Stage 4: Best Practices Checks (MEDIUM severity)
@@ -221,8 +273,11 @@ For each file, read the Anti-patterns section and check the project. Key checks 
   grep -n "site:" astro.config.mjs 2>/dev/null || grep -n "site:" astro.config.ts 2>/dev/null
   ```
 
-- **ViewTransitions import:**
-  Already checked in Rule 5. Confirm no `ViewTransitions` usage anywhere.
+- **ViewTransitions import (removed in v6):**
+  Already checked in Rule 5. `<ViewTransitions />` was removed, not just deprecated. Any usage is a build error.
+
+- **Astro.glob() usage (removed in v6):**
+  Already checked in Rule 13. Any `Astro.glob()` call is a build error. Must use `import.meta.glob()` or content collections.
 
 - **Inline styles that should be scoped:**
   ```bash

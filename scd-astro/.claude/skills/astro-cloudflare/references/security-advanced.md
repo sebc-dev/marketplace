@@ -5,25 +5,24 @@ CSP, auth middleware, Actions security, secrets management, and MDX/Markdoc adva
 <quick_reference>
 1. Add security headers via middleware for SSR routes -- `_headers` file is ignored for dynamic Worker responses
 2. Never use `set:html` on user-provided content -- bypasses all escaping, use `xss` library to sanitize first
-3. Access secrets via `locals.runtime.env.SECRET` on Workers -- `import.meta.env.SECRET` is undefined at SSR runtime
+3. Access secrets via `import { env } from 'cloudflare:workers'` -- `import.meta.env.SECRET` is undefined at SSR runtime
 4. Use `xss` (js-xss) library for HTML sanitization on Workers -- DOMPurify requires jsdom, incompatible with workerd
-5. `checkOrigin: true` is default in Astro 5 but does NOT protect JSON API endpoints -- only form submissions
-6. `experimental.csp` config is incompatible with ClientRouter (View Transitions) -- use middleware CSP instead
+5. `checkOrigin: true` is default in Astro 6 but does NOT protect JSON API endpoints -- only form submissions
+6. `security.csp` config (stable in Astro 6) is incompatible with ClientRouter (View Transitions) -- use middleware CSP instead
 7. `frame-ancestors` directive only works via HTTP header, not `<meta>` CSP tag -- set in middleware
-8. Guard `runtime.env` access in middleware: `if (!locals.runtime?.env) return next()` -- undefined during prerender
-9. Configure remark/rehype plugins in `markdown.*` only -- MDX inherits automatically, do NOT duplicate in `mdx()` config
-10. Place `rehypeHeadingIds` before `rehypeAutolinkHeadings` in plugin array -- IDs must exist before autolink runs
-11. Set `defaultColor: false` in shikiConfig for CSS-driven dual theme switching -- not `'dark'` or `'light'`
-12. Target `.astro-code` not `.shiki` for Shiki code block CSS styling in Astro 5
-13. Use `file.data.astro.frontmatter` in remark plugins to access/modify frontmatter -- not `file.data.matter`
-14. Use `{/* JSX comment */}` in MDX files -- HTML comments `<!-- -->` cause parsing errors
+8. Configure remark/rehype plugins in `markdown.*` only -- MDX inherits automatically, do NOT duplicate in `mdx()` config
+9. Place `rehypeHeadingIds` before `rehypeAutolinkHeadings` in plugin array -- IDs must exist before autolink runs
+10. Set `defaultColor: false` in shikiConfig for CSS-driven dual theme switching -- not `'dark'` or `'light'`
+11. Target `.astro-code` not `.shiki` for Shiki code block CSS styling in Astro 6 (Shiki v4)
+12. Use `file.data.astro.frontmatter` in remark plugins to access/modify frontmatter -- not `file.data.matter`
+13. Use `{/* JSX comment */}` in MDX files -- HTML comments `<!-- -->` cause parsing errors
 </quick_reference>
 <security_decision_matrix>
 | Deployment Mode | CSP | CSRF | Headers | Secrets |
 |-----------------|-----|------|---------|---------|
-| SSG (pure static) | `experimental.csp` + `_headers` for `frame-ancestors` | N/A (no mutations) | `_headers` file | Build-time `import.meta.env` |
-| Static default + SSR opt-out | `experimental.csp` + middleware for SSR pages | `checkOrigin` (default) | `_headers` static + middleware SSR | `astro:env` + `locals.runtime.env` |
-| Full SSR | Middleware header or `experimental.csp` | `checkOrigin` + session auth for Actions | Middleware exclusively | `locals.runtime.env` |
+| SSG (pure static) | `security.csp` + `_headers` for `frame-ancestors` | N/A (no mutations) | `_headers` file | Build-time `import.meta.env` |
+| Static default + SSR opt-out | `security.csp` + middleware for SSR pages | `checkOrigin` (default) | `_headers` static + middleware SSR | `astro:env` + `import { env } from 'cloudflare:workers'` |
+| Full SSR | Middleware header or `security.csp` | `checkOrigin` + session auth for Actions | Middleware exclusively | `import { env } from 'cloudflare:workers'` |
 </security_decision_matrix>
 <security_headers_middleware>
 ```typescript
@@ -59,12 +58,12 @@ const securityHeaders = defineMiddleware(async (context, next) => {
 <auth_middleware_pattern>
 ```typescript
 // src/middleware.ts -- cookie-based session auth (extends routing-navigation.md stub)
-const auth = defineMiddleware(async ({ locals, cookies, url, redirect }, next) => {
-  if (!locals.runtime?.env) return next(); // Prerender guard
+import { env } from 'cloudflare:workers';
 
+const auth = defineMiddleware(async ({ locals, cookies, url, redirect }, next) => {
   const token = cookies.get('session')?.value;
   if (token) {
-    locals.user = await verifySession(token, locals.runtime.env.SESSION);
+    locals.user = await verifySession(token, env.SESSION);
   } else {
     locals.user = null;
   }
@@ -81,10 +80,11 @@ export const onRequest = sequence(securityHeaders, auth);
 </auth_middleware_pattern>
 <actions_security_pattern>
 ```typescript
-// src/actions/index.ts -- Zod validation + xss sanitization for Workers
+// src/actions/index.ts -- Zod 4 validation + xss sanitization for Workers
 import { defineAction } from 'astro:actions';
 import { z } from 'astro/zod';
 import xss from 'xss';
+import { env } from 'cloudflare:workers';
 
 const sanitize = (str: string) => xss(str, { whiteList: {}, stripIgnoreTag: true });
 
@@ -92,11 +92,11 @@ export const server = {
   submitContact: defineAction({
     accept: 'form',
     input: z.object({
-      email: z.string().email(),
+      email: z.email({ error: "Invalid email address" }),
       message: z.string().min(10).max(1000).transform(sanitize),
     }),
     handler: async (input, ctx) => {
-      const db = ctx.locals.runtime.env.DB;
+      const db = env.DB;
       // input.message is validated AND sanitized
       return { success: true };
     },
@@ -124,13 +124,15 @@ export default defineConfig({
 ```
 
 ```typescript
-// src/pages/api/charge.ts -- accessing secrets on Workers
+// src/pages/api/charge.ts -- accessing secrets on Workers via cloudflare:workers
 import type { APIContext } from 'astro';
+import { env } from 'cloudflare:workers';
+
 export const prerender = false;
 
-export async function POST({ locals }: APIContext) {
-  // Use locals.runtime.env for Cloudflare secrets, not import.meta.env
-  const stripeKey = locals.runtime.env.STRIPE_SECRET;
+export async function POST({ request }: APIContext) {
+  // Use cloudflare:workers env for runtime secrets, not import.meta.env
+  const stripeKey = env.STRIPE_SECRET;
   // .dev.vars for local dev, wrangler secret put for production
   // See cloudflare-platform.md for .dev.vars setup
   return Response.json({ ok: true });
@@ -141,9 +143,16 @@ export async function POST({ locals }: APIContext) {
 </secrets_management>
 <csp_config>
 ```javascript
-// astro.config.mjs -- experimental CSP (Astro 5.9+)
+// astro.config.mjs -- stable CSP config (Astro 6)
 export default defineConfig({
-  experimental: {
+  security: {
+    csp: true, // Auto-hashes scripts/styles, generates CSP headers
+  },
+});
+
+// For fine-grained control:
+export default defineConfig({
+  security: {
     csp: {
       algorithm: 'SHA-256',
       directives: [
@@ -159,6 +168,7 @@ export default defineConfig({
   },
 });
 
+// Note: CSP is NOT enforced in dev mode.
 // INCOMPATIBLE with ClientRouter (View Transitions).
 // If using ClientRouter, set CSP via middleware headers instead.
 // frame-ancestors only works via HTTP header, not <meta> CSP tag.
@@ -166,7 +176,7 @@ export default defineConfig({
 </csp_config>
 <remark_rehype_plugin_config>
 ```javascript
-// astro.config.mjs -- markdown.* config with correct plugin ordering
+// astro.config.mjs -- markdown.* config with correct plugin ordering (Shiki v4)
 import { defineConfig } from 'astro/config';
 import mdx from '@astrojs/mdx';
 import { rehypeHeadingIds } from '@astrojs/markdown-remark';
@@ -296,14 +306,16 @@ export function remarkReadingTime() {
 <anti_patterns>
 | Don't | Do | Severity |
 |-------|-----|----------|
-| `import.meta.env.SECRET` on Workers SSR | `locals.runtime.env.SECRET` | CRITICAL |
+| `import.meta.env.SECRET` on Workers SSR | `import { env } from 'cloudflare:workers'` | CRITICAL |
 | `set:html` on user-provided content | Sanitize with `xss` library first | CRITICAL |
-| `unsafe-inline` in CSP script-src | Use `experimental.csp` for automatic hashes | CRITICAL |
+| `unsafe-inline` in CSP script-src | Use `security.csp` for automatic hashes | CRITICAL |
+| `locals.runtime.env.SECRET` (Astro 5 pattern) | `import { env } from 'cloudflare:workers'` | HIGH |
 | `_headers` for SSR security headers | Middleware -- `_headers` ignored for Worker responses | HIGH |
 | DOMPurify or sanitize-html on Workers | `xss` (js-xss) -- no jsdom dependency | HIGH |
 | Duplicate remarkPlugins in `markdown.*` AND `mdx()` | Configure in `markdown.*` only -- MDX inherits | HIGH |
 | HTML comments `<!-- -->` in MDX files | `{/* JSX comment */}` -- avoids parsing errors | HIGH |
-| `.shiki` CSS class target | `.astro-code` class in Astro 5 | HIGH |
+| `.shiki` CSS class target | `.astro-code` class in Astro 6 | HIGH |
+| `experimental: { csp: true }` (Astro 5) | `security: { csp: true }` (Astro 6 stable) | HIGH |
 | `CORS: *` with `credentials: 'include'` | Specific origin in `Access-Control-Allow-Origin` | MEDIUM |
 | Sourcemaps enabled in production | `sourcemap: false` (default) -- exposes source code | MEDIUM |
 | `defaultColor: 'dark'` for Shiki dual themes | `defaultColor: false` for CSS variable switching | MEDIUM |
@@ -319,7 +331,8 @@ export function remarkReadingTime() {
 | MDX parsing error on `<Component />` | Missing import or HTML comment syntax `<!-- -->` | Add import statement or use `{/* comment */}` |
 | Markdoc `{% tag %}` not rendering | Tag not defined in markdoc.config.mjs | Add tag definition with `component()` helper |
 | Heading autolinks broken | `rehypeHeadingIds` not before `rehypeAutolinkHeadings` | Reorder: `rehypeHeadingIds` first in rehypePlugins array |
-| `import.meta.env.SECRET` is undefined | On Workers SSR, secrets not in `import.meta.env` | Use `locals.runtime.env.SECRET` instead |
+| `import.meta.env.SECRET` is undefined | On Workers SSR, secrets not in `import.meta.env` | Use `import { env } from 'cloudflare:workers'` |
 | `xss is not a function` | Wrong import syntax | Use `import xss from 'xss'` (default export) |
 | `checkOrigin` error on JSON POST from another origin | `checkOrigin` only validates form submissions | Add manual CSRF token verification for JSON endpoints |
+| `locals.runtime` is undefined | Astro 6 removed `locals.runtime` pattern | Use `import { env } from 'cloudflare:workers'` instead |
 </troubleshooting>

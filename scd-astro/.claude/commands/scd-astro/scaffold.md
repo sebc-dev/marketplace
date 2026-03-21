@@ -1,5 +1,5 @@
 ---
-description: Create a new Astro 5.x project on Cloudflare Workers with recommended structure, configs, and best practices
+description: Create a new Astro 6.x project on Cloudflare Workers with recommended structure, configs, and best practices
 disable-model-invocation: true
 argument-hint: "[project-name]"
 allowed-tools:
@@ -12,7 +12,7 @@ allowed-tools:
 
 # Scaffold Astro/Cloudflare Project
 
-Create a new Astro 5.x project targeting Cloudflare Workers with correct defaults and best practices from the astro-cloudflare skill.
+Create a new Astro 6.x project targeting Cloudflare Workers with correct defaults and best practices from the astro-cloudflare skill.
 
 ## Step 1: Project Name
 
@@ -99,18 +99,20 @@ Create the project directory and generate all files, adapting the templates from
 1. **Create project directory** at the specified name
 2. **Create directory structure** per the File Organization section (adapt simple vs complex based on scope)
 3. **Write `astro.config.mjs`** from the matched template (SSG or SSR variant)
-   - Use `imageService: 'compile'` in adapter config (NOT Sharp)
+   - Use `imageService: 'cloudflare-binding'` in adapter config (NOT Sharp, NOT `'compile'`)
    - Use `output: 'static'` or `output: 'server'` (NEVER `output: 'hybrid'`)
 4. **Write `tsconfig.json`** from the template
-5. **Write `src/env.d.ts`** from the template -- add binding types if bindings selected
+5. **Write `src/env.d.ts`** from the template -- simplified typing with `App.Locals { cfContext: ExecutionContext; }` (NOT `Runtime<Env>`)
 6. **Write `src/content.config.ts`** from the template -- place at `src/content.config.ts` (NOT `src/content/config.ts`)
 7. **Write `wrangler.jsonc`** from the template
+   - No `main` field (Astro handles the entry point)
    - Add binding entries if bindings selected (KV, D1, R2 sections)
    - Workers target (NOT Pages)
 8. **Write `.dev.vars`** from the template
 9. **Write `package.json`** with:
    - Correct scripts from build-deploy.md Package Scripts section
-   - Include `wrangler types` in the dev/build pipeline
+   - `preview: "astro preview"` script
+   - Prefix build-related scripts with `wrangler types &&` for type generation
    - Correct dependencies for chosen options
 10. **Write `.gitignore`** including: `.wrangler/`, `.dev.vars`, `dist/`, `node_modules/`, `.astro/`
 11. **Write `.vscode/extensions.json`** and `.vscode/settings.json`** from build-deploy.md VS Code Configuration section
@@ -124,21 +126,25 @@ Create the project directory and generate all files, adapting the templates from
 3. Print a summary:
    - List of created files
    - Selected configuration choices
-   - Next steps (e.g., `cd <project>`, `npm run dev`, how to deploy)
+   - Next steps (e.g., `cd <project>`, `npm run dev`, `astro preview` for local preview, how to deploy)
 
 ## Critical Rules (MUST apply)
 
-Before generating ANY file, ensure compliance with ALL 10 Critical Rules from the astro-cloudflare SKILL.md:
+Before generating ANY file, ensure compliance with ALL 14 Critical Rules from the astro-cloudflare SKILL.md:
 
 1. `src/content.config.ts` -- NOT `src/content/config.ts`
 2. `entry.id` -- NOT `entry.slug`
 3. `import { render } from 'astro:content'` then `render(entry)` -- NOT `entry.render()`
 4. `loader: glob({ pattern, base })` -- NOT `type: 'content'`
 5. `<ClientRouter />` from `astro:transitions` -- NOT `<ViewTransitions />`
-6. `Astro.locals.runtime.env.VAR` -- NOT `process.env.VAR`
-7. `imageService: 'compile'` in adapter config -- NOT Sharp
+6. `import { env } from 'cloudflare:workers'` -- NOT `Astro.locals.runtime.env` or `process.env.VAR`
+7. `imageService: 'cloudflare-binding'` in adapter config -- NOT Sharp, NOT `'compile'`
 8. `output: 'static'` or `output: 'server'` -- NOT `output: 'hybrid'`
 9. `decodeURIComponent(Astro.params.slug)` for decoded params
-10. `import { z } from 'astro/zod'` -- NOT `import { z } from 'zod'`
+10. Zod 4 syntax: `import { z } from 'astro/zod'` -- use Zod 4 patterns (z.interface, z.optional, z.union)
+11. Node 22+ required -- set `engines.node >= 22` in package.json
+12. String params: `Astro.params` values are always strings -- parse numbers explicitly
+13. No `Astro.glob()` -- use `import.meta.glob()` or content collections instead
+14. `security.csp` -- use Astro's built-in CSP config, not manual headers
 
 NEVER inline config patterns from memory. Always read them from the reference files in Step 3.

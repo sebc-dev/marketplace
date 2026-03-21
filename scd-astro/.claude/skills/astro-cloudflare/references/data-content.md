@@ -1,20 +1,23 @@
 # Data and Content
 
-Content Layer API, loaders, collections, Astro Actions, MDX/Markdoc on Cloudflare Workers.
+Content Layer API, loaders, collections, Live Collections, Astro Actions, MDX/Markdoc on Cloudflare Workers.
 
 <quick_reference>
 1. Place config at `src/content.config.ts` -- not `src/content/config.ts` (first migration error)
-2. Use `loader: glob({ pattern, base })` -- not `type: 'content'` (deprecated v5)
+2. Use `loader: glob({ pattern, base })` -- not `type: 'content'` (removed in v6)
 3. Use `entry.id` -- not `entry.slug` (removed in v5)
 4. Import render separately: `import { render } from 'astro:content'` then `render(entry)` -- not `entry.render()`
 5. Use `z` from `astro/zod` -- not from `zod` package (types incompatible)
-6. Always `export const prerender = true` on content collection pages for Cloudflare -- Workers has no filesystem at runtime
-7. Use `file()` loader for single JSON/YAML files -- supports custom `parser` option for CSV
-8. Use inline async loader for external API data -- return array with `id` property on each item
-9. Use `reference('collection')` for inter-collection relationships
-10. Use `z.coerce.date()` for frontmatter dates -- converts ISO strings to Date objects
-11. Run `npx astro sync` after schema changes to regenerate types
-12. Filter drafts manually: `getCollection("posts", ({data}) => !data.draft)` -- no automatic filtering in v5
+6. Use `createSchema` -- not `schema` function in loaders (v6 breaking change)
+7. Always `export const prerender = true` on content collection pages for Cloudflare -- Workers has no filesystem at runtime
+8. Use `file()` loader for single JSON/YAML files -- supports custom `parser` option for CSV
+9. Use inline async loader for external API data -- return array with `id` property on each item
+10. Use `reference('collection')` for inter-collection relationships
+11. Zod 4 syntax: `z.email()` not `z.string().email()`, `{ error: "..." }` not `{ message: "..." }`
+12. Run `npx astro sync` after schema changes to regenerate types
+13. Filter drafts manually: `getCollection("posts", ({data}) => !data.draft)` -- no automatic filtering
+14. `Astro.glob()` is removed -- use `import.meta.glob()` or Content Collections
+15. Live Collections (`defineLiveCollection`) for real-time SSR content -- requires `prerender = false`
 </quick_reference>
 <loader_selection_matrix>
 | Data Source | Loader | Reason |
@@ -42,16 +45,17 @@ Content Layer API, loaders, collections, Astro Actions, MDX/Markdoc on Cloudflar
 </actions_vs_api_routes>
 <content_layer_config>
 ```typescript
-// src/content.config.ts -- Astro 5 Content Layer API
+// src/content.config.ts -- Astro 6 Content Layer API
 import { defineCollection, reference } from 'astro:content';
 import { glob, file } from 'astro/loaders';
 import { z } from 'astro/zod';
 
 const blog = defineCollection({
   loader: glob({ pattern: '**/*.{md,mdx}', base: './src/data/blog' }),
-  schema: ({ image }) => z.object({
+  // v6: use createSchema instead of schema for image() and other helpers
+  createSchema: ({ image }) => z.object({
     title: z.string(),
-    description: z.string().max(160),
+    description: z.string().check(z.maxLength(160)),
     pubDate: z.coerce.date(),
     updatedDate: z.coerce.date().optional(),
     cover: image(),
@@ -65,8 +69,8 @@ const authors = defineCollection({
   loader: file('./src/data/authors.json'),
   schema: z.object({
     name: z.string(),
-    email: z.string().email(),
-    bio: z.string().max(500),
+    email: z.email(),
+    bio: z.string().check(z.maxLength(500)),
   }),
 });
 
@@ -137,18 +141,18 @@ export const collections = { countries };
 // src/actions/index.ts
 import { defineAction } from 'astro:actions';
 import { z } from 'astro/zod';
+import { env } from 'cloudflare:workers';
 
 export const server = {
   addToCart: defineAction({
     accept: 'form',
     input: z.object({
       productId: z.string(),
-      quantity: z.number().int().positive().default(1),
+      quantity: z.number().int().check(z.positive()).default(1),
     }),
-    handler: async (input, ctx) => {
-      // Access Cloudflare bindings via ctx.locals.runtime.env
-      const db = ctx.locals.runtime.env.DB;
-      // ctx.cookies available for session management
+    handler: async (input) => {
+      // Astro 6: import { env } from 'cloudflare:workers' at module level
+      const db = env.DB;
       return { success: true, productId: input.productId };
     },
   }),
@@ -216,15 +220,73 @@ const post = await getEntry('blog', 'my-first-post');
 const author = await getEntry(post.data.author);
 ```
 </querying_collections>
+<live_collections>
+## Live Collections (Astro 6)
+
+Live Collections fetch content at request time (SSR) instead of build time. Requires `prerender = false`.
+
+```typescript
+// src/live.config.ts -- separate config for live collections
+import { defineLiveCollection } from 'astro:content';
+import { z } from 'astro/zod';
+
+const announcements = defineLiveCollection({
+  // No loader -- data fetched at request time via getLiveCollection/getLiveEntry
+  schema: z.object({
+    title: z.string(),
+    body: z.string(),
+    publishedAt: z.coerce.date(),
+  }),
+});
+
+export const collections = { announcements };
+```
+
+```astro
+---
+// src/pages/announcements.astro -- SSR page using live collection
+import { getLiveCollection } from 'astro:content';
+
+export const prerender = false; // Required for live collections
+
+const { entries, error } = await getLiveCollection('announcements');
+if (error) {
+  // Handle error gracefully -- entries may be stale or empty
+  console.error('Live collection error:', error);
+}
+---
+<ul>
+  {entries.map(entry => <li>{entry.data.title}</li>)}
+</ul>
+```
+
+```typescript
+// Single entry fetch
+import { getLiveEntry } from 'astro:content';
+
+const { entry, error } = await getLiveEntry('announcements', 'welcome');
+if (error) {
+  // entry may be undefined if not found
+}
+```
+
+Key rules:
+- Config goes in `src/live.config.ts` (separate from `src/content.config.ts`)
+- Always destructure `{ entries, error }` or `{ entry, error }` -- never assume success
+- Pages using live collections MUST set `export const prerender = false`
+- Compatible with Cloudflare Workers SSR
+</live_collections>
 <ssr_data_fetching_on_cloudflare>
 ```typescript
 // src/pages/api/products.ts -- API route with timeout and cache
 import type { APIContext } from 'astro';
+import { env } from 'cloudflare:workers';
 
 export const prerender = false;
 
-export async function GET({ locals }: APIContext) {
-  const { env } = locals.runtime;
+export async function GET() {
+  // Astro 6: use 'cloudflare:workers' import instead of locals.runtime.env
+  const kv = env.MY_KV;
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 8000);
 
@@ -255,18 +317,21 @@ export async function GET({ locals }: APIContext) {
 <anti_patterns>
 | Don't | Do | Severity |
 |-------|-----|----------|
+| `Astro.glob()` | `import.meta.glob()` or Content Collections | CRITICAL (removed v6) |
 | `type: 'content'` in defineCollection | `loader: glob({ pattern, base })` | CRITICAL |
+| `schema: ({ image }) =>` with helpers | `createSchema: ({ image }) =>` | CRITICAL (v6 silent failure) |
+| `locals.runtime.env` / `Astro.locals.runtime.env` | `import { env } from 'cloudflare:workers'` | CRITICAL |
 | `entry.slug` | `entry.id` | CRITICAL |
 | `entry.render()` | `import { render } from 'astro:content'` | CRITICAL |
 | `import { z } from 'zod'` | `import { z } from 'astro/zod'` | CRITICAL |
+| `z.string().email()` | `z.email()` (Zod 4) | HIGH |
+| `{ message: "..." }` in Zod refinements | `{ error: "..." }` (Zod 4) | HIGH |
 | Read filesystem in SSR on Cloudflare | Prerender with `export const prerender = true` | HIGH |
 | `fetch()` SSR without timeout | `AbortController` with 5-10s `setTimeout` | HIGH |
 | `image().refine()` for dimension validation | Validate at runtime in component (removed v5) | HIGH |
 | Duplicate remarkPlugins in markdown AND mdx config | Configure in `markdown.*` only, MDX inherits | HIGH |
-| `Astro.glob()` for content | `import.meta.glob()` or Content Collections | MEDIUM |
 | Schema too permissive (`z.any()`) | Type explicitly with `.default()` fallbacks | MEDIUM |
 | Community loaders >1 year without update | Check for maintained fork or use inline loader | MEDIUM |
-| `compiledContent()` called synchronously | `await compiledContent()` (async since v5) | MEDIUM |
 </anti_patterns>
 <troubleshooting>
 | Symptom | Cause | Fix |
@@ -276,8 +341,12 @@ export async function GET({ locals }: APIContext) {
 | `entry.render is not a function` | v5 API change | `import { render } from 'astro:content'; await render(entry)` |
 | Collection empty without error | `glob()` base path invalid | Verify path is relative to project root |
 | `ENOENT` or file not found on SSR Cloudflare | Workers has no filesystem at runtime | Add `export const prerender = true` |
-| Frontmatter properties missing in `entry.data` | v5 filters undeclared fields | Add to schema or use `z.passthrough()` |
-| `reference()` fields break randomly in dev | Known bug #12680 | Comment field, restart dev, uncomment |
+| Frontmatter properties missing in `entry.data` | v6 filters undeclared fields | Add to schema or use `z.passthrough()` |
+| `image()` helper returns undefined | Using `schema` instead of `createSchema` | Change to `createSchema: ({ image }) =>` (v6 breaking) |
+| Zod validation `error` field not recognized | Zod 4 renamed `message` to `error` | Update all `{ message: "..." }` to `{ error: "..." }` |
+| `z.string().email()` type error | Zod 4 API change | Use `z.email()` directly (top-level validators) |
+| `Astro.locals.runtime` is undefined | Removed in Astro 6 Cloudflare adapter | `import { env } from 'cloudflare:workers'` at module level |
+| `Astro.glob is not a function` | Removed in Astro 6 | Use `import.meta.glob()` or Content Collections |
 | Shiki theme unchanged after config change | Content Collections cache | Delete `.astro/data-store.json` and restart |
 | Types `astro:content` disappear after save | Dev server bug | Restart dev server or run `npx astro sync` |
 | `fetch()` timeout on SSR | CPU time exceeded or no error handling | `AbortController` + `try/catch` with 5-10s limit |

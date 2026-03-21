@@ -1,6 +1,6 @@
 # SEO and Internationalization
 
-Meta tags, sitemap, OpenGraph, JSON-LD structured data, i18n routing, hreflang, and language detection for Astro 5.x on Cloudflare Workers.
+Meta tags, sitemap, OpenGraph, JSON-LD structured data, i18n routing, hreflang, and language detection for Astro 6.x on Cloudflare Workers.
 
 <quick_reference>
 1. Always define `site` in astro.config.mjs -- required by sitemap, RSS, canonical URLs, and absolute og:image
@@ -11,7 +11,7 @@ Meta tags, sitemap, OpenGraph, JSON-LD structured data, i18n routing, hreflang, 
 6. Use `workers-og` for dynamic OG images on Cloudflare Workers -- Sharp and resvg are incompatible with workerd runtime
 7. Always use absolute HTTPS URLs for og:image -- social crawlers do not resolve relative URLs
 8. Set `prefixDefaultLocale: true` for consistent URL structure across all locales (`/en/about`, `/fr/about`)
-9. Set `redirectToDefaultLocale: false` to prevent redirect loops on Cloudflare (`/en/en/en/...`)
+9. Set `redirectToDefaultLocale: false` to prevent redirect loops on Cloudflare -- now the default in Astro 6 (was `true` in v5)
 10. Use `Astro.currentLocale` to detect locale in pages -- `Astro.preferredLocale` returns Accept-Language header value, not URL locale
 11. Generate `x-default` hreflang manually -- no Astro library generates it automatically
 12. Use Paraglide (Inlang) for translations on Workers -- astro-i18next abandoned 3 years, fs-backend incompatible
@@ -44,7 +44,7 @@ const imageURL = new URL(image, Astro.site);
 <meta name="twitter:card" content="summary_large_image" />
 ```
 
-Build this manually instead of using `astro-seo` (unmaintained 2+ years, not tested with Astro 5.x). The manual component provides equivalent type-safety with zero dependency risk.
+Build this manually instead of using `astro-seo` (unmaintained 2+ years, not tested with Astro 6.x). The manual component provides equivalent type-safety with zero dependency risk.
 </seo_component>
 <sitemap_config>
 ```javascript
@@ -131,13 +131,13 @@ Filter drafts with `({ data }) => !data.draft` in `getCollection`. Use `post.id`
 export default defineConfig({
   site: 'https://example.com',
   output: 'server',
-  adapter: cloudflare({ platformProxy: { enabled: true } }),
+  adapter: cloudflare(),
   i18n: {
     defaultLocale: 'en',
     locales: ['en', 'fr'],
     routing: {
       prefixDefaultLocale: true,       // /en/about and /fr/about
-      redirectToDefaultLocale: false,   // Prevents redirect loops
+      redirectToDefaultLocale: false,   // Default in Astro 6 (was true in v5)
       fallbackType: 'rewrite',         // Show fallback content without visible redirect
     },
     fallback: {
@@ -147,7 +147,7 @@ export default defineConfig({
 });
 ```
 
-The `prefixDefaultLocale: true` + `redirectToDefaultLocale: false` combo prevents 90% of documented redirect loop bugs. The `redirectToDefaultLocale` default will change to `false` in Astro 6.
+The `prefixDefaultLocale: true` + `redirectToDefaultLocale: false` combo prevents redirect loop bugs. In Astro 6, `redirectToDefaultLocale` defaults to `false` (changed from `true` in v5), so this is now the default behavior when `prefixDefaultLocale` is enabled.
 </i18n_config>
 <hreflang>
 ```astro
@@ -220,7 +220,7 @@ Use SSR middleware for language detection -- Cloudflare `_redirects` does not su
 | Don't | Do | Severity |
 |-------|-----|----------|
 | Omit `site` in astro.config.mjs | Always define `site: 'https://...'` | CRITICAL |
-| `redirectToDefaultLocale: true` with prefix config | `redirectToDefaultLocale: false` | CRITICAL |
+| `redirectToDefaultLocale: true` with prefix config | `redirectToDefaultLocale: false` (Astro 6 default) | CRITICAL |
 | Use `astro-seo` package | Build manual `<SEOHead />` component | HIGH |
 | Relative og:image URLs (`/og.png`) | `new URL('/og.png', Astro.site).href` | HIGH |
 | `Astro.preferredLocale` for page routing | `Astro.currentLocale` (URL-based) | HIGH |
@@ -239,6 +239,6 @@ Use SSR middleware for language detection -- Cloudflare `_redirects` does not su
 | Wrong language served on Cloudflare | CDN caching ignores Accept-Language header | Use URL-prefixed locales, not same-URL language switching |
 | 404 not displayed with i18n SSR | Root 404.astro routing bug with i18n | Create `/pages/[locale]/404.astro` explicitly |
 | OG image not rendering on social platforms | Relative URL or Sharp used on Workers | Use absolute HTTPS URL, use `workers-og` for dynamic images |
-| Redirect loop on locale switch | `redirectToDefaultLocale: true` with `prefixDefaultLocale: true` | Set `redirectToDefaultLocale: false` |
+| Redirect loop on locale switch | `redirectToDefaultLocale: true` (v5 default) with `prefixDefaultLocale: true` | Set `redirectToDefaultLocale: false` (v6 default) |
 | RSS feed returns empty items | `getCollection` not filtering drafts, or missing prerender | Filter with `({ data }) => !data.draft`, add `prerender = true` |
 </troubleshooting>

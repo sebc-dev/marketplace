@@ -15,6 +15,8 @@ Hydration directives, Server Islands, nanostores cross-island state, and compone
 10. Use nanostores for cross-island state -- import same store module path in all islands
 11. Never write to nanostores from `.astro` frontmatter -- it does not affect client-side components
 12. Always destructure `class` before spread: `const { class: className, ...rest } = Astro.props` -- pass `{...rest}` to include `data-astro-cid-*`
+13. Astro 6: script/style source order may be inversed compared to v5 -- verify rendering order if styles appear before scripts or vice versa
+14. Use the built-in `<Font />` component for optimized font loading: `import { Font } from 'astro:assets'` -- replaces manual preload link tags
 </quick_reference>
 <hydration_directives>
 | Scenario | Directive | Why |
@@ -132,6 +134,7 @@ import ProductPrice from '../components/server/ProductPrice.astro';
 ```astro
 ---
 // src/components/server/ProductPrice.astro -- Server Island component
+import { env } from 'cloudflare:workers';
 interface Props { productId: string; }
 const { productId } = Astro.props;
 
@@ -153,6 +156,8 @@ const parentUrl = Astro.request.headers.get('Referer') || '/';
 **Props constraints:** Strings, numbers, booleans, plain objects, arrays only. No functions, class instances, or circular references. Props > 2048 bytes switch from GET to POST (uncacheable).
 
 **Cache strategy:** Set `Cache-Control` on `Astro.response.headers` inside the Server Island. GET requests with small props are cacheable at the CDN edge. See rendering-modes.md for full Server Islands rendering context.
+
+**Cloudflare env access:** Use `import { env } from 'cloudflare:workers'` to access bindings (KV, D1, R2, etc.) -- `Astro.locals.runtime.env` is removed in Astro 6.
 </server_island>
 <slots_and_rendering>
 ```astro
@@ -232,11 +237,14 @@ const { as: Tag = 'button', variant = 'primary', class: className, ...rest } = A
 |-------|-----|----------|
 | `client:load` on all components | Use `client:visible` / `client:idle` by default | CRITICAL |
 | Pass functions as Server Island props | Pass IDs, fetch data inside the island | CRITICAL |
+| Enable `security.csp` with hydrated islands | CSP blocks inline styles injected by island hydration -- use external stylesheets or disable CSP for island routes | CRITICAL |
 | Nest islands (island inside island) | Single island with child components inside | HIGH |
 | Place Server Island in named slot | Use as direct child only (bug #13969) | HIGH |
 | Use `Astro.url` inside Server Island | Use `Astro.request.headers.get('Referer')` | HIGH |
 | Write to nanostores from `.astro` frontmatter | Initialize and write client-side only | HIGH |
 | DOM manipulation between islands | Use nanostores or `CustomEvent` dispatch | HIGH |
+| Use `<ViewTransitions />` (removed in Astro 6) | Use `<ClientRouter />` from `astro:transitions` | HIGH |
+| Use `Astro.locals.runtime.env` for Cloudflare bindings | Use `import { env } from 'cloudflare:workers'` | HIGH |
 | `client:only` without fallback HTML | Always provide fallback content for SEO/a11y | MEDIUM |
 | Map `client:load` over arrays | One controller island managing N static items | MEDIUM |
 | Use 3+ framework runtimes in one project | One primary framework + vanilla JS for simple interactions | MEDIUM |
@@ -256,4 +264,7 @@ const { as: Tag = 'button', variant = 'primary', class: className, ...rest } = A
 | Props undefined in component | Missing `interface Props` definition in frontmatter | Define `interface Props { ... }` with explicit types |
 | Server Island returns wrong URL via `Astro.url` | Normal behavior: `Astro.url` = `/_server-islands/Name` | Use `Astro.request.headers.get('Referer')` for parent page URL |
 | `Cannot bundle node:stream` (Vue SSR on Cloudflare) | Vue SSR uses Node APIs not available in Workers | Add to `vite.ssr.external` and enable `nodejs_compat` flag |
+| Inline styles missing on hydrated islands | `security.csp` enabled blocks inline style injection | Disable CSP for routes with islands, or move styles to external CSS files and configure CSP `style-src` accordingly |
+| `ViewTransitions is not exported` after upgrade | `<ViewTransitions />` removed in Astro 6 | Replace with `<ClientRouter />` from `astro:transitions` |
+| `Astro.locals.runtime` is undefined | API removed in Astro 6 Cloudflare adapter | Use `import { env } from 'cloudflare:workers'` for bindings access |
 </troubleshooting>

@@ -2,65 +2,96 @@
 
 <quick_reference>
 1. Add `nodejs_compat` to `compatibility_flags` -- required for most npm packages
-2. Access bindings via `Astro.locals.runtime.env`, never import `cloudflare:workers` directly
+2. Access bindings via `import { env } from 'cloudflare:workers'` -- NOT `Astro.locals.runtime.env` (removed in v6)
 3. Use `.dev.vars` for local secrets (not `.env`) -- `.dev.vars` takes full precedence
 4. Use `node:` prefix for all Node.js imports (`node:buffer`, `node:crypto`, etc.)
-5. Workers is the default platform -- Pages deprecated April 2025, no new features
-6. Run `npx wrangler types` before `astro dev` to generate binding types
-7. Never use Sharp image service -- use `imageService: 'compile'` (default)
+5. Workers is the only deployment target -- Pages deprecated, adapter v13 defaults to Workers
+6. Run `npx wrangler types` before `astro dev` to generate binding types (`worker-configuration.d.ts`)
+7. Default image service is `cloudflare-binding` -- NOT Sharp, NOT `compile` (v13 default changed)
 8. Never store binding references in global scope -- access fresh per request
-9. Avoid expensive initialization in global scope -- 1-second startup timeout
+9. Dev server runs in `workerd` natively -- `astro dev` and `astro preview` use real Workers runtime
+10. Wrangler config is optional -- auto-generated if absent. Only needed for custom bindings
+11. No `main` field needed in wrangler.jsonc -- adapter handles entrypoint automatically
+12. CJS dependencies break in workerd -- pre-compile via `optimizeDeps.include` if `require is not defined`
 </quick_reference>
 <bindings_access>
-Access KV, D1, R2, and other bindings through `locals.runtime.env` in every Astro context.
+Access KV, D1, R2, and other bindings via `import { env } from 'cloudflare:workers'` in every server-side context.
 
 **In .astro pages:**
 ```astro
 ---
-const { env } = Astro.locals.runtime;
+import { env } from 'cloudflare:workers';
+
+export const prerender = false;
+
 const data = await env.DB.prepare('SELECT * FROM items WHERE id = ?').bind(id).first();
+const country = Astro.request.cf?.country;
+
+// Background work via execution context
+Astro.locals.cfContext.waitUntil(
+  env.MY_KV.put('last-visit', new Date().toISOString())
+);
 ---
 ```
 
 **In API endpoints:**
 ```typescript
-export async function GET({ locals }: APIContext) {
-  const { env } = locals.runtime;
+import type { APIContext } from 'astro';
+import { env } from 'cloudflare:workers';
+
+export const prerender = false;
+
+export async function GET(context: APIContext) {
   const cached = await env.CACHE.get('key', 'json');
+  context.locals.cfContext.waitUntil(env.CACHE.put('last-read', Date.now().toString()));
   return Response.json(cached);
 }
 ```
 
-**In middleware** (guard for prerendering):
+**In middleware:**
 ```typescript
+import { defineMiddleware } from 'astro:middleware';
+import { env } from 'cloudflare:workers';
+
 export const onRequest = defineMiddleware(async (context, next) => {
-  if (!context.locals.runtime) return next(); // Prerender guard
-  const { env } = context.locals.runtime;
-  // Use env.CACHE, env.DB, etc.
+  const token = context.request.headers.get('Authorization')?.replace('Bearer ', '');
+  if (token) {
+    const session = await env.DB.prepare('SELECT * FROM sessions WHERE token = ?')
+      .bind(token).first();
+    if (session) context.locals.user = session;
+  }
   return next();
 });
 ```
 
 **In Actions:**
 ```typescript
-handler: async (input, context) => {
-  const { env } = context.locals.runtime;
-  return env.DB.prepare('INSERT INTO items (name) VALUES (?)').bind(input.name).first();
-}
+import { defineAction } from 'astro:actions';
+import { z } from 'astro/zod';
+import { env } from 'cloudflare:workers';
+
+export const server = {
+  addItem: defineAction({
+    input: z.object({ name: z.string() }),
+    handler: async (input) => {
+      return env.DB.prepare('INSERT INTO items (name) VALUES (?)').bind(input.name).first();
+    },
+  }),
+};
 ```
 
-**Deep function access via AsyncLocalStorage:**
+**Deep function access -- no AsyncLocalStorage needed:**
 ```typescript
-// src/lib/env-store.ts
-import { AsyncLocalStorage } from 'node:async_hooks';
-export const envStore = new AsyncLocalStorage<Env>();
-export const getEnv = () => envStore.getStore()!;
+// In any server-side module -- just import directly
+import { env } from 'cloudflare:workers';
 
-// In middleware: envStore.run(context.locals.runtime.env, next);
-// In any function: const env = getEnv();
+export async function getUser(id: string) {
+  return env.DB.prepare('SELECT * FROM users WHERE id = ?').bind(id).first();
+}
+// No middleware workaround needed in Astro 6 -- cloudflare:workers works everywhere
 ```
 
-> Note: `Astro.locals.runtime` is the Astro 5.x pattern. This changes in Astro 6.
+> **Note:** `cloudflare:workers` env is only available in request context (SSR pages, endpoints, middleware, actions). Not available in prerendered pages or at module top-level outside of request handling.
 
 > **Cloudflare MCP:** For complete KV/D1/R2 binding method signatures, query `mcp__cloudflare__search_cloudflare_documentation`
 > Queries: `"Workers KV namespace put get delete API"` | `"Cloudflare D1 prepare bind SQL API"`
@@ -74,6 +105,10 @@ export const getEnv = () => envStore.getStore()!;
 | Subrequests | 50 | 1,000 | Service Bindings (uncounted) |
 | KV ops/request | 1,000 | 1,000 | Batch operations |
 | Daily requests | 100K | Unlimited | Upgrade to Paid |
+| Static asset files | 20,000 | 100,000 | per version |
+| Static asset file size | 25 MiB | 25 MiB | |
+| D1 database size | 10 GB | 10 GB | |
+| Env variables | 64 (5 KB each) | 128 (5 KB each) | |
 
 > **Cloudflare MCP:** For current limits and pricing details, query `mcp__cloudflare__search_cloudflare_documentation` with `"Cloudflare Workers platform limits and pricing"`.
 </workers_limits>
@@ -91,6 +126,9 @@ export const getEnv = () => envStore.getStore()!;
 | `node:util` | Full | |
 | `node:dns` | Full | Uses 1.1.1.1 DoH |
 | `node:net` | Full | Workers Sockets API |
+| `node:http` | Full | Client APIs (compat_date ≥ 2025-08-15) |
+| `node:https` | Full | Client APIs (compat_date ≥ 2025-08-15) |
+| `node:fs` | Virtual | In-memory filesystem (compat_date ≥ 2025-08-15) |
 | `node:tls` | Partial | Basic support only |
 | `node:child_process` | Stub | Non-functional |
 | `node:cluster` | Stub | Non-functional |
@@ -101,9 +139,13 @@ export const getEnv = () => envStore.getStore()!;
 
 | Flag | Min Date | Purpose |
 |------|----------|---------|
-| `nodejs_compat` | (manual) | Enables all Node.js APIs |
-| `nodejs_compat_v2` | 2024-09-23 | Enhanced polyfills (auto on this date) |
-| `nodejs_compat_populate_process_env` | 2025-04-01 | `process.env` in global scope for `astro:env` |
+| `nodejs_compat` | (manual) | **Required.** Umbrella flag for Node.js APIs |
+| `nodejs_compat_v2` | 2024-09-23 | Auto-enabled with `nodejs_compat`. Full polyfills + native APIs |
+| `enable_nodejs_http_modules` | 2025-08-15 | `node:http`/`node:https` client APIs |
+| `enable_nodejs_fs_module` | 2025-08-15 | Virtual in-memory filesystem |
+| `enable_nodejs_http_server_modules` | 2025-09-01 | `http.createServer()` — Express/Koa support |
+| `enable_nodejs_process_v2` | 2025-09-01 | Comprehensive `process` implementation |
+| `nodejs_compat_populate_process_env` | (manual) | Auto-populates `process.env` with text bindings |
 
 > **Cloudflare MCP:** For per-module compatibility details, query `mcp__cloudflare__search_cloudflare_documentation` with `"Workers nodejs_compat Node.js API support"`.
 </nodejs_compatibility>
@@ -126,42 +168,43 @@ npx wrangler secret put DATABASE_URL
 
 **Key rules:**
 - Never put secrets in `wrangler.jsonc` `vars` -- they are plaintext
-- `process.env` does NOT work on Workers -- use `locals.runtime.env` or `astro:env`
+- `process.env` does NOT work on Workers by default -- use `import { env } from 'cloudflare:workers'` or `astro:env`
+- `import.meta.env` is always inlined at build time in Astro 6 -- never use for runtime secrets
+- Use `cloudflare:workers` or `astro:env/server` for runtime-only values on Cloudflare
 - Add `nodejs_compat_populate_process_env` flag if using `astro:env` secrets
 - Use `keep_vars = true` if managing secrets via Cloudflare Dashboard
 </environment_variables>
 <config_templates>
-## wrangler.jsonc
+## wrangler.jsonc (Astro 6 / @astrojs/cloudflare v13)
 
 ```jsonc
 {
-  "$schema": "./node_modules/wrangler/config-schema.json",
+  "$schema": "node_modules/wrangler/config-schema.json",
   "name": "my-astro-app",
-  "main": "./dist/_worker.js",
+  // No "main" needed -- adapter handles entrypoint automatically
 
   // Compatibility (required for Node.js support)
-  "compatibility_date": "2025-01-01",
-  "compatibility_flags": [
-    "nodejs_compat",
-    "nodejs_compat_populate_process_env"
-  ],
+  "compatibility_date": "2026-03-13",
+  "compatibility_flags": ["nodejs_compat"],
 
   // Static assets (Workers deployment)
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",
-    "not_found_handling": "none"
+    "not_found_handling": "404-page"
   },
+
+  // Observability
+  "observability": { "enabled": true },
 
   // Resource limits
   "limits": {
     "cpu_ms": 50000
   },
 
-  // KV Namespaces
+  // KV Namespaces -- SESSION is auto-provisioned if not declared
   "kv_namespaces": [
-    { "binding": "CACHE", "id": "<KV_NAMESPACE_ID>" },
-    { "binding": "SESSIONS", "id": "<SESSIONS_KV_ID>" }
+    { "binding": "CACHE", "id": "<KV_NAMESPACE_ID>" }
   ],
 
   // D1 Databases
@@ -215,24 +258,39 @@ STRIPE_KEY=sk_test_xxx
 
 | Don't | Do | Impact |
 |-------|-----|--------|
-| `import { env } from 'cloudflare:workers'` | `const { env } = locals.runtime` | `Cannot find module` error in `astro dev` |
+| `Astro.locals.runtime.env.X` | `import { env } from 'cloudflare:workers'` | Runtime error -- API removed in adapter v13 |
+| `Astro.locals.runtime.cf` | `Astro.request.cf` | Runtime error -- API removed |
+| `Astro.locals.runtime.ctx.waitUntil()` | `Astro.locals.cfContext.waitUntil()` | Runtime error -- API removed |
+| `Astro.locals.runtime.caches` | Global `caches` object directly | Runtime error -- API removed |
+| `process.env.SECRET` on Workers | `import { env } from 'cloudflare:workers'` or `astro:env/server` | `undefined` -- process.env not populated |
+| `import.meta.env.SECRET_KEY` for runtime | `import { env } from 'cloudflare:workers'` | Secret baked into bundle at build time |
 | `import fs from 'fs'` (no prefix) | `import fs from 'node:fs'` | Package resolution failure at build |
-| Use Sharp image service | Use `imageService: 'compile'` or `'cloudflare'` | Build fails: "adapter not compatible with Sharp" |
-| Store bindings in global variables | Access `locals.runtime.env` fresh per request | Stale references after code-only deploys |
+| Use Sharp image service | Use `imageService: 'cloudflare-binding'` (default) | Build fails: Sharp incompatible with Workers |
+| Store bindings in global variables | Access `env` fresh per request | Stale references after code-only deploys |
 | Use KV for high-write counters | Use Durable Objects | 1 write/sec limit, 60s eventual consistency |
-| `process.env.SECRET` on Workers | Use `locals.runtime.env` or `astro:env` | `undefined` -- process.env not populated |
 | Put secrets in `wrangler.jsonc` `vars` | Use `wrangler secret put` | Secrets in plaintext, committed to git |
 | Expensive code in global scope | Move initialization into request handlers | 1-second startup timeout exceeded |
+| `require('package')` in server code | Use ESM imports, or add to `optimizeDeps.include` | `require is not defined` in workerd runtime |
+| `platformProxy: { enabled: true }` | Remove -- workerd native in dev | Config error -- option removed in v13 |
+| `cloudflareModules: true` | Remove -- workerd handles imports natively | Config error -- option removed in v13 |
+| `main: "dist/_worker.js/index.js"` in wrangler | Remove `main` field (auto-handled) | Entrypoint error |
+| Deploy to Cloudflare Pages | Deploy to Workers (default) | Pages deprecated for new projects |
 </anti_patterns>
 <troubleshooting>
 | Symptom | Cause | Fix |
 |---------|-------|-----|
-| `Cannot bundle Node.js built-in "node:stream"` | CJS package using non-prefixed imports | Add package to `vite.ssr.external` in astro config |
+| `Astro.locals.runtime.env has been removed` | API removed in adapter v13 / Astro 6 | Replace with `import { env } from 'cloudflare:workers'` |
+| `require is not defined` during dev | CJS modules in workerd dev server | Add to `optimizeDeps.include` via Vite plugin |
+| `module is not defined` in dev | CJS package loaded in workerd | Dev-only; add to `optimizeDeps.include` or wait for upstream fix |
+| Build fails: `No such module "sharp"` during prerender | Default workerd prerender can't load native modules | Set `prerenderEnvironment: 'node'` in adapter config |
+| `WebAssembly.instantiate` fails during build | workerd disallows dynamic WASM during prerender | Set `prerenderEnvironment: 'node'` |
+| Error 1042 / 522 for non-existent routes | CF routes unknown URLs to worker | Add `"not_found_handling": "404-page"` to assets in wrangler.jsonc |
 | `Worker exceeded size limit of 3 MiB` | Bundle too large for Free plan | Upgrade to Paid (10MB) or split via Service Bindings |
-| `Cannot read properties of undefined (reading 'env')` | Accessing runtime during prerendering | Guard with `if (!context.locals.runtime) return next()` |
 | `_worker.js` exposed as static asset | Missing assetsignore file | Create `public/.assetsignore` containing `_worker.js` |
-| Bindings undefined in local dev | platformProxy not enabled | Set `platformProxy: { enabled: true }` in adapter config |
 | Hydration mismatch errors | Cloudflare Auto Minify enabled | Disable Auto Minify in Cloudflare Dashboard |
 | `astro:env` secrets undefined in Actions | Missing compat flag | Add `nodejs_compat_populate_process_env` to flags |
-| `ReferenceError: FinalizationRegistry` | Old compatibility_date | Set `compatibility_date` to `2025-05-05` or later |
+| Pages return `[object Object]` instead of HTML | `enable_nodejs_process_v2` flag issue | Update Wrangler ≥4.42.0; or add `disable_nodejs_process_v2` flag |
+| Styles not applied in dev mode | Early adapter v13 CSS issue | Update adapter to latest v13.1.1+ |
+| `SessionStorageInitError` on deploy | KV namespace not configured | Let auto-provision work with `wrangler deploy`, or add KV binding manually |
+| `dist/server/wrangler.json` missing | Adapter + `output: 'static'` conflict | Remove adapter for purely static sites |
 </troubleshooting>

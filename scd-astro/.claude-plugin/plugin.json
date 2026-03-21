@@ -1,20 +1,13 @@
 {
   "name": "scd-astro",
-  "version": "0.3.0",
-  "description": "Astro 5.x on Cloudflare Workers/Pages. Rendering modes (SSG, SSR, hybrid, Server Islands), Content Layer, Cloudflare bindings (KV, D1, R2, Durable Objects), breaking-change prevention.",
+  "version": "0.4.0",
+  "description": "Astro 6.x on Cloudflare Workers. Rendering modes (SSG, SSR, Server Islands), Content Layer, Live Collections, Cloudflare bindings via cloudflare:workers (KV, D1, R2, Durable Objects), Zod 4, Fonts API, workerd dev server, breaking-change prevention.",
   "author": {
     "name": "sebc.dev"
   },
   "license": "MIT",
-  "keywords": [
-    "astro",
-    "cloudflare",
-    "workers",
-    "pages",
-    "ssr",
-    "ssg"
-  ],
+  "repository": "https://github.com/sebc-dev/marketplace",
+  "keywords": ["astro", "astro6", "cloudflare", "workers", "workerd", "ssr", "ssg", "vite7"],
   "commands": "./.claude/commands/",
-  "skills": "./.claude/skills/",
-  "repository": "https://github.com/sebc-dev/marketplace"
+  "skills": "./.claude/skills/"
 }
