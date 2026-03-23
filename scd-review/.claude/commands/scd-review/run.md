@@ -1,0 +1,75 @@
+---
+name: run
+description: Pipeline de code review automatique v2 — review, validation chaînée, et dispatch selon les flags
+argument-hint: "[--fix] [--post] [--context ticket:X] [--context file:Y] [base-branch]"
+allowed-tools:
+  - Bash(git diff *)
+  - Bash(git log *)
+  - Bash(git merge-base *)
+  - Bash(git branch *)
+  - Bash(git show *)
+  - Bash(git rev-parse *)
+  - Bash(git status *)
+  - Bash(bash .claude/review/scripts/scd.sh *)
+  - Bash(jq *)
+  - Bash(gh pr *)
+  - Bash(glab mr *)
+  - Bash(glab api *)
+  - Read
+  - Write
+  - Glob
+  - Grep
+  - Task
+  - AskUserQuestion
+---
+
+<objective>
+Exécuter le pipeline de code review v2 sur la branche courante.
+
+Flags disponibles :
+- `--fix`   : appliquer les corrections via fix-applier (défaut si aucun flag)
+- `--post`  : poster les observations en commentaires inline sur PR/MR
+- `--context ticket:X` : injecter le ticket comme contexte métier
+- `--context file:Y`   : injecter un fichier local comme contexte métier
+- `--context url:Z`    : injecter une URL comme contexte métier
+- `base-branch`        : branche de base (défaut : config.options.default_base_branch ou "main")
+
+Comportement par défaut (sans flag) : --fix
+Flags combinables : --fix --post = corriger puis poster
+
+Zéro checkpoint humain sauf mid-run optionnel (configurable) et escalations (observations ambiguës).
+</objective>
+
+<process>
+
+## 0. Vérification environnement
+
+Suivre la procédure @references/ensure-env.md.
+Si config absente ou init incomplète → indiquer de lancer `/scd-review:init` et STOP.
+
+## 1. Parser les flags
+
+Depuis $ARGUMENTS :
+- `flags.fix = true` si `--fix` présent OU si aucun flag output fourni (défaut)
+- `flags.post = true` si `--post` présent
+- `flags.context = []` liste des `--context <type>:<value>` fournis
+- `base_branch` = premier argument non-flag, ou config.options.default_base_branch, ou "main"
+
+## 2. Exécuter le pipeline
+
+Suivre @references/run-workflow.md avec :
+- `base_branch` = valeur résolue
+- `flags` = valeurs parsées
+- Format agents : @references/agent-output-format.md
+- Résolution contexte : @references/context-resolution.md (si --context)
+
+</process>
+
+<guidelines>
+- Toujours communiquer en français
+- La conversation principale ne lit PAS les fichiers ni les diffs directement — rôle des agents
+- Agents lancés en background via Task avec subagent_type natif
+- Pipeline chaîné : review-validator démarre dès qu'un fichier est reviewé (pas de batch Phase 2)
+- Seule interaction : escalations (observations ambiguës) + mid-run optionnel
+- Rapport consolidé via scd.sh validation report à la fin
+</guidelines>

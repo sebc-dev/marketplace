@@ -1,8 +1,12 @@
 <followup_workflow>
 
-## Mode auto detection
+## Version v2
 
-Lire `auto_mode` dans config.json. Si `auto_mode.enabled == true`, les checkpoints utilisateur sont remplaces par des decisions automatiques.
+Les observations dans la session followup incluent les champs v2 : `correction_prompt`, `line_start`, `line_end`, `validator_decision`, `resolution`.
+Les scripts de mise à jour utilisent `scd.sh followup *` (dispatcher v2) au lieu des anciens scripts séparés.
+
+Pas de `auto_mode` en v2 — le followup est toujours interactif (contrairement à auto-review qui était séparé).
+Les checkpoints utilisateur restent pour les décisions de verdict (résolu/partiellement/non résolu).
 
 ## Etape 0 — Trouver la session precedente
 
@@ -17,7 +21,7 @@ Proposer la reprise (afficher progression), puis aller a Etape 3.
 **Trouver la derniere session completee :**
 - Si `<slug>-followup.json` existe et `status == "completed"` → utiliser comme session precedente (round N+1)
 - Sinon si `<slug>.json` existe et `status == "completed"` → utiliser comme session precedente (round 2)
-- Sinon → erreur : "Aucune review completee pour cette branche. Lancez /scd-review:code-review d'abord."
+- Sinon → erreur : "Aucune review completée pour cette branche. Lancez /scd-review:run d'abord."
 
 **Valider `head_at_completion` :**
 - Si le champ est absent → erreur : "Session sans `head_at_completion`. Relancez une review complete avec /scd-review:code-review pour generer ce champ."
@@ -34,7 +38,7 @@ Proposer la reprise (afficher progression), puis aller a Etape 3.
 
 4. **Strategie `jq`** — classification automatique :
    ```bash
-   bash .claude/review/scripts/classify-followup.sh <previous_session> /tmp/followup-diff.txt
+   bash .claude/review/scripts/scd.sh followup classify <previous_session> /tmp/followup-diff.txt
    ```
    Le script lit la session precedente, le diff, classe les fichiers (blocking > 0 + modifie → correction, blocking > 0 + non modifie → unaddressed, reste → new), extrait les contextes originaux (observations, notes, comments), gere renommages et suppressions, retourne un JSON structure.
 
@@ -125,7 +129,7 @@ Apres la persistance de la session, lancer les agents pour les **5 premiers fich
   - Sinon → `Task(subagent_type: "code-reviewer", run_in_background: true, description: "Code review: <nom-fichier>", prompt: "MODE FULL. Fichier: <chemin>. merge_base=<sha>, base_branch=<base>.")`
 
 Stocker les task IDs dans la session JSON :
-- **Strategie `jq`** : `bash .claude/review/scripts/add-agent-tasks.sh .claude/review/sessions/<slug>-followup.json '<json>'`
+- **Strategie `jq`** : `bash .claude/review/scripts/scd.sh session add-agent-tasks .claude/review/sessions/<slug>-followup.json '<json>'`
 - **Strategie `readwrite`** : Read + Write pour ajouter `agent_tasks` dans le JSON.
 
 Ecrire le JSON avec Write.
@@ -187,7 +191,7 @@ AskUserQuestion(
 Comportement en boucle : "Ajouter un commentaire" et "Approfondir un point" re-affichent le checkpoint. Les trois premiers choix avancent au fichier suivant.
 
 Mise a jour JSON :
-- **Strategie `jq`** : `bash .claude/review/scripts/update-followup-file.sh <session> <idx> <g> <y> <r> "<note>" "<resolution>"`
+- **Strategie `jq`** : `bash .claude/review/scripts/scd.sh followup update-file <session> <idx> <g> <y> <r> "<note>" "<resolution>"`
 - **Strategie `readwrite`** : Read + Write
 
 ### Fichiers `unaddressed`
@@ -270,7 +274,7 @@ encore d'agent lance. S'il existe et qu'il reste de la capacite (< 5 agents en v
 
 Apres la mise a jour du fichier, pipe les observations au script :
 ```bash
-echo '<json_array>' | bash .claude/review/scripts/add-observations.sh <session> <idx>
+echo '<json_array>' | bash .claude/review/scripts/scd.sh session add-observations <session> <idx>
 ```
 
 ## Etape 4 — Synthese followup
@@ -279,7 +283,7 @@ Apres le dernier fichier :
 
 **Strategie `jq`** :
 ```bash
-bash .claude/review/scripts/followup-summary.sh .claude/review/sessions/<slug>-followup.json
+bash .claude/review/scripts/scd.sh followup summary .claude/review/sessions/<slug>-followup.json
 ```
 Le script genere le tableau recapitulatif par section (corrections/non adresses/nouveaux), marque la session `completed` + `head_at_completion`. Afficher la sortie telle quelle.
 

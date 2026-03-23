@@ -1,216 +1,201 @@
-# code-review
+# scd-review
 
-Interactive and automatic code review on the current branch. Reviews file by file in optimal order with validator arbitration, auto-review pipeline, JSON-based progress tracking, jq-optimized state updates, and cross-platform design.
+Automated code review pipeline on the current branch. Chained review+validation pipeline, `correction_prompt` for precise fixes, business context injection, model profiles, and inline-only PR/MR comments.
 
 ## Commands
 
-### `/scd-review:review-init`
+### `/scd-review:init [--force]`
 
-Bootstrap the code review environment. Detects whether `jq` is available for optimized JSON updates (falls back to read/write strategy), creates the configuration file, installs scripts and sessions directory.
+Bootstrap the code review environment. Detects `jq`, installs the `scd.sh` script dispatcher, and configures your platform (GitHub / GitLab / local). Migrates automatically from v0.x configurations.
 
-Run this once before your first review.
+Run this once before your first review. Use `--force` to re-probe the environment (bypasses the 24h cache).
 
-### `/scd-review:code-review [base-branch]`
+### `/scd-review:run [--fix] [--post] [--context ...] [base-branch]`
 
-Full interactive review workflow. Walks through all changes on the current branch compared to the base branch (default: `main`).
+The main pipeline. Runs a chained review+validation workflow on the current branch with zero human checkpoints (except optional mid-run and escalations).
 
-Features:
-- **Resumable** — progress is tracked in JSON session files, pick up where you left off
-- **Interactive** — pause after each file to discuss, ask questions, or add comments
-- **Architecture-aware** — review order follows dependency flow for better comprehension
-- **Blocking/Suggestion** — observations are classified as blocking (must fix) or suggestion (informational), preventing infinite correction loops
-- **Cross-platform** — works with or without `jq` installed
+**Flags:**
 
-### `/scd-review:review-followup`
+| Flag | Behavior |
+|---|---|
+| *(none)* | Same as `--fix` (default) |
+| `--fix` | Apply corrections via fix-applier after review |
+| `--post` | Post inline comments on the open PR/MR |
+| `--fix --post` | Apply corrections, then post remaining observations |
+| `--context ticket:PROJ-123` | Inject a ticket (GitHub/GitLab/Jira) as business context |
+| `--context file:specs/auth.md` | Inject a local file as business context |
+| `--context url:https://...` | Inject a URL as business context |
 
-Followup review after corrections. Finds the last completed review session, computes the diff since closure, and classifies files into three categories:
+**Pipeline phases:**
+
+1. **Context resolution** — resolves `--context` sources into a markdown file injected into reviewer agents
+2. **Review** — `code-reviewer` / `test-reviewer` agents in a sliding window (max N parallel), produce observations with `correction_prompt`
+3. **Validation (chained)** — `review-validator` starts on each file as soon as its review finishes (not a separate batch phase)
+4. **Dispatch** — fix-applier applies corrections (`--fix`), or inline comments are posted (`--post`)
+5. **Consolidated report** — verdict with escalation list and resolution summary
+
+**Circuit breaker:** if the diff exceeds `pipeline.max_files_per_run` (default: 20), the most critical files are processed first and `continue` handles the rest. An optional checkpoint at 50% gives a progress summary.
+
+### `/scd-review:followup`
+
+Followup review after corrections. Finds the last completed session, computes the diff since closure, and classifies files:
+
 - **Corrections** — files with blocking observations that were modified
-- **Unaddressed** — files with blocking observations that were not modified
+- **Unaddressed** — files with blocking observations not modified
 - **New** — other modified files
 
-Each correction file gets a resolution verdict (resolved / partially resolved / unresolved). Supports chained followups (round 2, 3, ...).
+Each file gets a resolution verdict (resolved / partially resolved / unresolved). Supports chained rounds.
 
-### `/scd-review:review-post`
+### `/scd-review:continue`
 
-Manually post (or re-post) review results to GitHub/GitLab. Useful when:
-- The PR/MR didn't exist at the time of review
-- Re-posting after a network error
-- Posting to a different PR
+Resume an interrupted review or followup. Files pending are re-scored by risk before relaunching agents — critical files are processed first regardless of original order.
 
-Requires platform to be configured via `review-init`.
+### `/scd-review:settings`
 
-### `/scd-review:review-apply`
-
-Apply corrections from a completed review interactively. For each observation (blocking or suggestion), choose to:
-- **Apply** — launch an isolated fix-applier agent to make the correction
-- **Skip** — leave untouched for now
-- **Dismiss** — mark as false positive
-- **Discuss** — talk about it before deciding
-
-The fix-applier agent makes minimal, surgical edits targeting only the specific observation. Files with blocking observations are processed first. After completion, run `review-followup` to verify the corrections.
-
-### `/scd-review:auto-review [base-branch]`
-
-Fully automatic review pipeline. Runs 5 phases without user interaction:
-
-1. **Review** — full code review with auto-advancing between files
-2. **Validate** — review-validator arbitrates each observation (apply/skip/escalate)
-3. **Apply** — fix-applier runs on validated observations, skips noise
-4. **Followup** — verifies corrections were properly applied
-5. **Report** — consolidated report with verdict (ready to merge / attention required / blocked)
-
-Only `escalate` observations pause for user input (when `auto_mode.escalate_to_user` is enabled).
-
-### `/scd-review:review-continue`
-
-Quick resume shortcut for the current branch. Finds the active session (apply, followup, or original review) and jumps straight to the next pending item.
+Interactive configuration wizard. Set model profiles, default pipeline behavior, validator threshold, and platform in one guided session.
 
 ## Agents
 
-Every file in the review is analyzed by a dedicated background agent, keeping the main conversation lightweight and enabling longer reviews without context exhaustion.
+All agents run as background subagents. The main conversation never reads files or diffs directly — it only orchestrates and displays results.
+
+### `scout-alpha` (haiku)
+
+Read-only environment scanner. Detects `jq`, OS, gh/glab availability, scripts installation, and sessions directory. Results are cached in `config.json` for 24h — re-used on subsequent `init` calls unless `--force` is passed.
 
 ### `code-reviewer`
 
-Specialized subagent for code file analysis (all categories except tests). Performs a 3-phase analysis:
+Analyzes one code file per invocation. Three phases:
 
-1. **Context & diff** — reads the file diff, understands what changed and why, identifies cross-file context
-2. **Observations** — analyzes against 6 criteria (architecture, security, performance, conventions, error-handling, test-coverage), classifies each as blocking or suggestion
-3. **Structured report** — returns a formatted report with human-readable observations and extractable JSON for session persistence
+1. **Context & diff** — reads the diff, identifies what changed and why, uses cross-file context when needed
+2. **Observations** — analyzes against 6 criteria: `architecture`, `security`, `performance`, `conventions`, `error-handling`, `test-coverage`. Classifies each as blocking (🔴) or suggestion (🟡)
+3. **Structured report** — returns observations with `correction_prompt` (autonomous fix instruction), `line_start`/`line_end` for inline posting, and human-readable analysis
 
-Supports two modes:
-- **FULL** — complete review from merge-base (used in `code-review` and `review-followup` for new files)
-- **CORRECTION** — targeted verification from previous HEAD, checks whether original blocking observations are addressed (used in `review-followup` for correction files)
+If `--context` was provided, the resolved context file is injected into the prompt: the agent evaluates whether the implementation matches the ticket's acceptance criteria and domain language.
+
+Supports two modes: **FULL** (review from merge-base) and **CORRECTION** (verify fixes from previous HEAD, used by `followup`).
 
 ### `test-reviewer`
 
-Specialized subagent for test file analysis. Automatically used when files are categorized as `tests`.
+Analyzes test files. Automatically used for files categorized as `tests`.
 
-1. **Runs tests** — detects the test framework and executes the test suite scoped to the file
-2. **Quality analysis** — evaluates each test against principles (AAA structure, naming, test doubles, FIRST properties, anti-patterns)
-3. **Coverage analysis** — runs coverage if supported and evaluates pertinence using Khorikov's code classification
+1. **Run tests** — detects the framework (vitest, jest, pytest, go test, cargo test...) and executes scoped to the file
+2. **Quality** — checks AAA structure, naming, test doubles, FIRST properties, anti-patterns
+3. **Coverage** — runs coverage if supported, evaluates pertinence using Khorikov's classification (domain code = must test; trivial code = don't bother)
 
-**Prerequisites:**
-- Testing principles rule installed via `/scd-review:review-init` (automatic)
+Requires the testing-principles rule, installed automatically by `init`.
 
 ### `review-validator`
 
-Arbitration agent that evaluates each observation factually. Used by `auto-review` (phase 2) and optionally by `review-apply` in interactive mode. For each observation:
+Arbitration agent. Called per-file as soon as the reviewer finishes (chained pipeline — no separate batch phase). For each observation:
 
-1. **Verify** — checks whether the problem described actually exists in the code
-2. **Evaluate** — determines if the suggested fix is surgical and safe
-3. **Decide** — classifies as `apply` (fix it), `skip` (false positive), or `escalate` (needs human)
+1. **Verify** — checks whether the problem actually exists in the diff
+2. **Evaluate** — assesses whether the `correction_prompt` describes a truly surgical fix (< 10 lines, no refactoring)
+3. **Decide** — `apply` (safe to fix), `skip` (false positive), or `escalate` (human decision needed)
 
-Key constraints:
-- **Read-only** — never modifies any file, never proposes alternative code
-- Green observations are automatically skipped (when `validator.skip_green` is enabled)
-- In case of doubt, always escalates rather than applying
+Constraints: **read-only**, never proposes alternative code, always escalates on doubt.
 
 ### `fix-applier`
 
-Isolated correction agent used by `review-apply`. For each observation, it:
+Correction agent for `--fix` mode. Uses `correction_prompt` as its primary instruction (v1 format):
 
-1. **Understand** — reads the file and surrounding context to identify the exact code area
-2. **Fix** — applies minimal, surgical edits using Edit (never Write) targeting only what the observation describes
-3. **Verify** — re-reads the modified zone and checks syntax coherence
+1. **Locate** — reads the file at `line_start`/`line_end` and verifies the code matches the prompt description
+2. **Fix** — applies a surgical Edit (never Write), touching only what the observation describes
+3. **Verify** — re-reads the modified zone, checks syntax, runs affected tests via `scd.sh test run-affected`
 
-Key constraints:
-- **Minimal correction** — no refactoring, no adjacent improvements, no cleanup
-- If the observation is ambiguous or the fix is risky, it reports `skipped_ambiguous` instead of guessing
-- Returns a structured Fix Report with changes made and verification status
+If tests fail after a fix, the agent can retry or report `skipped_ambiguous`. Never reformats, never adds comments, never fixes adjacent issues.
 
-### Agent pipeline
+### Pipeline
 
-Both agents are managed through a sliding window pipeline (max 5 concurrent):
+Agents run in a sliding window (max configured via `pipeline.max_parallel_agents`, default 5). The window covers both review and validation agents combined:
 
-- **Step 2-bis** — launch agents for the first 5 files in the review order
-- **Step 3** — after each file review, launch the agent for file N+5 (replacing the consumed slot)
-- **Resume** — when resuming via `review-continue`, agents are re-launched for the next 5 pending files
+```
+File 1: [==review==][=validate=][fix]
+File 2:    [==review==][=validate=][fix]
+File 3:       [==review==][=validate=][fix]
+```
 
-This ensures zero wait time (agents finish while the user reviews earlier files) and minimal main context usage (~100-200 tokens per file instead of ~500-1000).
+This eliminates wait time between phases. Observation persistence is normalized via `scd.sh agent validate-output` before writing to the session.
 
 ## GitHub / GitLab Integration
 
-Optionally post review results directly on your PRs (GitHub) or MRs (GitLab). Configured during `review-init`.
+Configure during `init` or `settings`. Use `--post` to post results inline on your PR/MR.
 
-**How it works:**
-- After `code-review` or `review-followup` completes, results are automatically posted as a review comment
-- GitHub: uses `gh pr review` with `--request-changes` (blocking observations) or `--approve` (all resolved)
-- GitLab: uses `glab mr note` to post a comment
-- The posted comment includes blocking observations, suggestions (collapsible), and a verdict
-- Comments are localized based on `options.language` in config.json (`fr` or `en`)
+**v1 inline-only model:** all observations are posted as inline diff comments at the exact line. Orphan observations (line outside diff) are grouped into a single general comment — never one comment per observation.
+
+The inline comment format includes:
+- Emoji + criterion + severity tag
+- Detail with line reference
+- Suggestion
+- `correction_prompt` in a collapsible `<details>` block (actionable by the next developer)
+
+**GitHub** — uses `POST /pulls/:id/reviews` to batch all comments in one API call. Falls back to individual comments if the batch fails.
+
+**GitLab** — uses `POST /merge_requests/:iid/discussions` with `diff_refs` for positioned comments. Falls back to non-positioned discussion if the line is outside the diff.
 
 **Requirements:**
-- GitHub: [GitHub CLI](https://cli.github.com) (`gh`) installed and authenticated (`gh auth login`)
-- GitLab: [GitLab CLI](https://gitlab.com/gitlab-org/cli) (`glab`) installed and authenticated (`glab auth login`)
+- GitHub: [GitHub CLI](https://cli.github.com) (`gh`) — `brew install gh` / `apt install gh`
+- GitLab: [GitLab CLI](https://gitlab.com/gitlab-org/cli) (`glab`) — `brew install glab` / `apt install glab`
 
-**Error handling:** posting never blocks the review. If the CLI is missing, no PR/MR is open, or the network fails, a warning is displayed and the review continues normally.
+Posting never blocks the review. Missing CLI, no open PR/MR, or network failure → warning displayed, review continues normally.
 
 ## Scripts
 
-When `jq` is available, the plugin uses pre-written bash/jq scripts instead of generating jq filters inline. Scripts are installed from the plugin into `.claude/review/scripts/` during `review-init`.
+All operations go through a single dispatcher: `.claude/review/scripts/scd.sh`
 
-| Script | Purpose | Used in |
-|---|---|---|
-| `init-strategy.sh` | Set `json_strategy` in config.json | review-init (step 5) |
-| `update-file.sh` | Mark file completed, recalculate summary (with blocking count) | code-review (step 3d) |
-| `add-observations.sh` | Store observation details via stdin pipe | code-review (step 3d) |
-| `add-comment.sh` | Append user comment to session | code-review (step 3e) |
-| `session-status.sh` | Read-only session status display | code-review (step 0), review-continue (step 3) |
-| `session-summary.sh` | Generate recap table + mark completed with `head_at_completion` | code-review (step 4) |
-| `add-agent-tasks.sh` | Store agent task IDs (code-reviewer + test-reviewer) | code-review (step 2-bis), review-followup (step 2-bis), review-continue (step 4) |
-| `classify-followup.sh` | Classify files for followup (corrections/unaddressed/new) | review-followup (step 1) |
-| `get-file-context.sh` | Extract single file context from session | review-followup (step 3) |
-| `update-followup-file.sh` | Update followup file with resolution verdict | review-followup (step 3) |
-| `followup-summary.sh` | Generate followup recap + mark completed | review-followup (step 4) |
-| `post-review-comments.sh` | Format + post review to GitHub/GitLab | code-review (step 4-bis), review-followup (step 4-bis), review-post |
-| `create-apply-session.sh` | Extract observations from completed session for apply | review-apply (step 1) |
-| `update-apply-observation.sh` | Update single observation status in apply session | review-apply (step 3) |
-| `apply-summary.sh` | Generate apply recap table + mark completed | review-apply (step 4) |
-| `update-validation.sh` | Persist validator decisions into session observations | auto-review (phase 2), review-apply (optional) |
-| `auto-report.sh` | Consolidated report from review + validation + apply + followup | auto-review (phase 5) |
+```bash
+scd.sh session  status | update-file | add-observations | add-comment | add-agent-tasks | summary | pending-files
+scd.sh followup classify | get-context | update-file | summary
+scd.sh post     inline-comments | orphan-summary
+scd.sh validation update | report
+scd.sh context  resolve <ticket|file|url> <value> ...
+scd.sh agent    capture-output | validate-output
+scd.sh test     run-affected
+scd.sh init     detect-env [--force]
+scd.sh config   update-state | get | resolve-model
+```
+
+Installed from the plugin into `.claude/review/scripts/` during `init`.
 
 ## Runtime files
 
-The plugin creates files under `.claude/review/` in your project:
-
 ```
 .claude/review/
-  config.json                  # Review configuration (criteria, categories, jq strategy)
+  config.json                  # Review configuration (v1.0.0)
   sessions/
-    feature-auth.json          # Session file per branch (slug of branch name)
-    feature-auth-followup.json # Followup session (created by review-followup)
-    feature-auth-apply.json    # Apply session (created by review-apply)
+    feature-auth.json          # Session per branch (review + validation + resolution in one file)
+    feature-auth-followup.json # Followup session
+    feature-auth-context.md    # Business context (created by --context)
   scripts/
-    *.sh                       # jq scripts installed from the plugin
+    scd.sh                     # Unified dispatcher
 ```
 
-Add `.claude/review/sessions/` and `.claude/review/scripts/` to your `.gitignore` — session files are temporary and scripts are installed from the plugin.
+Add `.claude/review/sessions/` and `.claude/review/scripts/` to your `.gitignore`.
 
 ## Configuration
 
-`config.json` is created by `/scd-review:review-init` with sensible defaults. You can customize:
+`config.json` is created by `init` with sensible defaults. Customize via `/scd-review:settings` or edit directly:
 
-- `category_priority` — order in which file categories are reviewed
-- `review_criteria` — what aspects to analyze (architecture, security, performance, etc.)
-- `options.default_base_branch` — default base branch (default: `main`)
-- `validator.enabled` — `true` to use the review-validator for arbitration (default: `true`)
-- `validator.confidence_threshold` — minimum confidence for auto-apply decisions (default: `0.75`)
-- `validator.skip_green` — skip green observations in validation (default: `true`)
-- `validator.batch_size` — number of files to validate in parallel (default: `5`)
-- `auto_mode.enabled` — `true` to run in auto mode (set by `auto-review`, default: `false`)
-- `auto_mode.review_action` — default action after each file in auto review (default: `"next"`)
-- `auto_mode.apply_action` — how to handle validated observations in auto apply (default: `"apply_validated"`)
-- `auto_mode.post_on_complete` — post to platform after auto-review completes (default: `true`)
-- `auto_mode.generate_report` — generate consolidated report (default: `true`)
-- `auto_mode.escalate_to_user` — pause for user on escalated observations (default: `true`)
-- `platform.type` — `"github"`, `"gitlab"`, or `null` (disabled)
-- `platform.auto_post` — `true` to auto-post after review, `false` to disable
+| Key | Default | Description |
+|---|---|---|
+| `model_profile` | `"balanced"` | `balanced` (Sonnet) / `quality` (Opus for review+fix) / `budget` (Haiku for validator) |
+| `model_overrides` | `{}` | Per-agent model override: `{"code-reviewer": "opus"}` |
+| `default_output` | `"fix"` | Default flag: `fix`, `post`, or `both` |
+| `pipeline.max_parallel_agents` | `5` | Max concurrent agents (review + validation combined) |
+| `pipeline.max_files_per_run` | `20` | Circuit breaker — files over this threshold go to `continue` |
+| `pipeline.midpoint_checkpoint` | `true` | Show progress summary at 50% |
+| `validator.confidence_threshold` | `0.75` | Minimum confidence for `apply` decisions |
+| `validator.skip_green` | `true` | Auto-skip green observations in validation |
+| `category_priority` | *(10 categories)* | Review order: build-config → database → domain → ... → tests → docs |
+| `platform.type` | `null` | `"github"`, `"gitlab"`, or `null` |
+| `platform.inline_only` | `true` | Post inline comments only (never a general summary) |
+| `context.jira_api_url` | `null` | Jira base URL for `--context ticket:` resolution |
+| `options.default_base_branch` | `"main"` | Default comparison base |
 
 ## Requirements
 
-- **jq** (optional) — enables atomic JSON updates via pre-written scripts. If not available, falls back to full read/write cycles. Install: `brew install jq` / `apt install jq` / `choco install jq`
-- **gh** (optional) — GitHub CLI for posting reviews on PRs. Install: `brew install gh` / `apt install gh` / `winget install GitHub.cli`
-- **glab** (optional) — GitLab CLI for posting reviews on MRs. Install: `brew install glab` / `apt install glab` / `winget install GLab.glab`
+- **jq** (optional) — atomic JSON updates via `scd.sh`. Without it, falls back to read/write cycles. `brew install jq` / `apt install jq` / `choco install jq`
+- **gh** (optional) — GitHub CLI for `--post`. `brew install gh`
+- **glab** (optional) — GitLab CLI for `--post`. `brew install glab`
 
 ## Install
 

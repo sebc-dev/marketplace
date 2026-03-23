@@ -1,6 +1,6 @@
 ---
 name: scout-alpha
-description: "Scan lecture seule de l'environnement de travail. Detecte la configuration review existante, la disponibilite des outils (jq, gh, glab), l'OS, l'etat des scripts installes et la racine du plugin. Retourne un JSON structure de l'etat complet."
+description: "Scan lecture seule de l'environnement de travail. Detecte la configuration review existante, la disponibilite des outils (jq, gh, glab), l'OS, l'etat des scripts installes et la racine du plugin. Verifie le cache environment (probed_at < 24h) avant de scanner. Retourne un JSON structure de l'etat complet."
 model: haiku
 tools:
   - Glob
@@ -16,6 +16,15 @@ tools:
 ---
 
 Tu es un agent de scan environnemental en lecture seule. Ta mission est de detecter l'etat complet de l'environnement de travail pour le systeme de code review.
+
+## Verification du cache environment (v2)
+
+Avant de scanner :
+1. `Glob(".claude/review/config.json")` → si existe, `Read` le champ `environment`
+2. Si `environment.probed_at` existe et est recent (< 24h) ET `--force` n'est pas fourni :
+   - Retourner immediatement `{"cache_hit": true, "environment": <environment depuis config>}` sans lancer les verifications ci-dessous
+3. Si `environment.scripts_hash` differe du hash actuel des scripts installes → re-probe force (version plugin mise a jour)
+4. Sinon → continuer le scan complet
 
 ## Instructions
 

@@ -12,7 +12,8 @@
       "author": {
         "name": "sebc.dev"
       },
-      "category": "development"
+      "category": "development",
+      "version": "0.4.0"
     },
     {
       "name": "scd-writer",
@@ -21,7 +22,8 @@
       "author": {
         "name": "sebc.dev"
       },
-      "category": "productivity"
+      "category": "productivity",
+      "version": "0.2.1"
     },
     {
       "name": "scd-forge",
@@ -30,7 +32,8 @@
       "author": {
         "name": "sebc.dev"
       },
-      "category": "development"
+      "category": "development",
+      "version": "0.1.0"
     },
     {
       "name": "scd-svelte",
@@ -39,7 +42,8 @@
       "author": {
         "name": "sebc.dev"
       },
-      "category": "development"
+      "category": "development",
+      "version": "0.1.0"
     },
     {
       "name": "scd-tauri",
@@ -48,7 +52,8 @@
       "author": {
         "name": "sebc.dev"
       },
-      "category": "development"
+      "category": "development",
+      "version": "0.1.0"
     },
     {
       "name": "scd-vuejs",
@@ -57,7 +62,8 @@
       "author": {
         "name": "sebc.dev"
       },
-      "category": "development"
+      "category": "development",
+      "version": "0.2.0"
     },
     {
       "name": "scd-qmd",
@@ -66,13 +72,14 @@
       "author": {
         "name": "sebc.dev"
       },
-      "category": "productivity"
+      "category": "productivity",
+      "version": "0.1.0"
     },
     {
       "name": "scd-review",
-      "version": "0.13.0",
+      "version": "1.0.0",
       "source": "./scd-review",
-      "description": "Interactive and automatic code review on the current branch. Reviews file by file in optimal order with validator arbitration, auto-review pipeline, JSON-based progress tracking, jq-optimized state updates, and cross-platform design.",
+      "description": "Automated code review pipeline on the current branch. Chained review+validation pipeline, correction_prompt for precise fixes, business context injection, model profiles, inline-only PR/MR comments, and JSON-based state tracking.",
       "author": {
         "name": "sebc.dev"
       },

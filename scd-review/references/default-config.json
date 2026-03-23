@@ -1,6 +1,12 @@
 {
+  "version": "2.0.0",
   "plugin_root": null,
   "json_strategy": null,
+
+  "model_profile": "balanced",
+  "model_overrides": {},
+  "default_output": "fix",
+
   "category_priority": [
     "build-config",
     "database-migrations",
@@ -13,6 +19,7 @@
     "tests",
     "i18n-docs"
   ],
+
   "review_criteria": [
     "architecture",
     "security",
@@ -21,44 +28,57 @@
     "error-handling",
     "test-coverage"
   ],
+
   "severity": {
-    "good": "Pattern ou choix remarquable",
-    "question": "Point a clarifier ou discuter",
-    "attention": "Probleme potentiel a adresser"
+    "blocking": "Problème avec impact réel sur production ou maintenabilité",
+    "suggestion": "Amélioration sans risque immédiat"
   },
+
   "options": {
     "default_base_branch": "main",
     "language": "fr"
   },
+
   "validator": {
     "enabled": true,
     "confidence_threshold": 0.75,
-    "skip_green": true,
-    "batch_size": 5
+    "skip_green": true
   },
-  "auto_mode": {
-    "enabled": false,
-    "review_action": "next",
-    "apply_action": "apply_validated",
-    "post_on_complete": true,
-    "confirm_before_post": false,
-    "generate_report": true,
-    "escalate_to_user": true
+
+  "pipeline": {
+    "max_parallel_agents": 5,
+    "max_files_per_run": 20,
+    "midpoint_checkpoint": true
   },
+
   "platform": {
     "type": null,
-    "auto_post": false,
-    "inline_comments": {
-      "enabled": true,
-      "filter": "blocking",
-      "ai_fix_prompt": false
-    }
+    "inline_only": true,
+    "orphan_summary": true
   },
+
+  "context": {
+    "jira_api_url": null,
+    "jira_auth_token_env": "JIRA_TOKEN",
+    "max_context_lines": 200
+  },
+
+  "environment": {
+    "os": null,
+    "jq_available": null,
+    "json_strategy": null,
+    "platform_cli": null,
+    "platform_cli_version": null,
+    "platform_cli_authenticated": null,
+    "scripts_installed": null,
+    "scripts_hash": null,
+    "rules_installed": null,
+    "probed_at": null
+  },
+
   "state": {
     "last_init": null,
     "plugin_version": null,
-    "scripts_hash": null,
-    "env_cache": null,
     "steps_status": {
       "config": "pending",
       "sessions_dir": "pending",

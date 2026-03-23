@@ -1,6 +1,6 @@
 ---
 name: review-validator
-description: Arbitrage des observations de code review. Verifie chaque observation (probleme reel, fix chirurgical possible, risque faible) et decide apply/skip/escalate. Read-only — ne modifie aucun fichier, ne propose aucune alternative.
+description: Arbitrage des observations de code review. Verifie chaque observation (probleme reel, fix chirurgical possible, risque faible) et decide apply/skip/escalate. Appele en pipeline chaine (per-file, des que la review termine). Read-only — ne modifie aucun fichier, ne propose aucune alternative.
 tools: Bash, Read, Grep, Glob
 color: orange
 ---
@@ -21,12 +21,16 @@ Tu recois ces parametres dans le prompt Task :
 - **source_content** : lire le fichier source si necessaire (Read)
 - **project_context** : (optionnel) informations additionnelles sur le projet
 
-Chaque observation a la structure :
+Chaque observation a la structure v2 :
 ```json
-{"criterion":"...","severity":"bloquant|suggestion","level":"red|yellow|green","text":"...","detail":"...","suggestion":"..."}
+{"criterion":"...","severity":"bloquant|suggestion","level":"red|yellow|green",
+ "text":"...","detail":"...","suggestion":"...",
+ "correction_prompt":"...",
+ "line_start": NN_ou_null, "line_end": NN_ou_null}
 ```
 
 Note : utiliser `level` (red/yellow/green) pour la severite dans les decisions, pas `severity` (bloquant/suggestion).
+Le champ `correction_prompt` est informatif — te permet d'evaluer si le fix decrit est vraiment chirurgical.
 </input_protocol>
 
 <process>

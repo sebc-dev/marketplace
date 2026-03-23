@@ -1,6 +1,6 @@
 ---
 name: test-reviewer
-description: Analyse approfondie des fichiers de test. Execution des tests, verification des principes de qualite (AAA, nommage, doubles, FIRST, anti-patterns), et analyse de couverture avec pertinence.
+description: Analyse approfondie des fichiers de test. Execution des tests, verification des principes de qualite (AAA, nommage, doubles, FIRST, anti-patterns), et analyse de couverture avec pertinence. Retourne observations JSON v2 (correction_prompt, line_start, line_end).
 tools: Bash, Read, Grep, Glob
 color: cyan
 ---
@@ -103,7 +103,7 @@ Retourner EXACTEMENT ce format :
 - note: "resume en 120 caracteres max"
 
 ### Observations JSON
-[{"criterion":"test-quality","severity":"bloquant","level":"red","location":"tests/auth.test.js:45","text":"...","detail":"...","suggestion":"...","fix_prompt":{"file":"tests/auth.test.js","line":"45","action":"replace","description":"..."}}]
+[{"criterion":"test-quality","severity":"bloquant","level":"red","location":"tests/auth.test.js:45","line_start":45,"line_end":52,"text":"...","detail":"...","suggestion":"...","correction_prompt":"File: tests/auth.test.js, lines 45-52. Replace mock setup with real database fixture. Remove jest.mock('./db'). Verify: test still passes without mock. Run: npx jest tests/auth.test.js."},{"criterion":"test-structure","severity":"suggestion","level":"yellow","location":"tests/auth.test.js:12","line_start":12,"line_end":15,"text":"...","detail":"...","suggestion":"...","correction_prompt":"File: tests/auth.test.js, lines 12-15. Add AAA comment separators: // Arrange, // Act, // Assert. No logic changes needed."}]
 ```
 
 **Regles de mapping depuis les sections Resume :**
@@ -113,8 +113,9 @@ Retourner EXACTEMENT ce format :
 - Criteres test-specifiques : `test-execution`, `test-quality`, `test-structure`, `test-coverage`
 - Les sections uniques (Execution, Qualite, Couverture) restent inchangees dans le rapport
 - `location` : `"chemin/fichier:NN"` pour red/yellow, `null` pour green — ligne dans le fichier HEAD
+- `line_start` / `line_end` : entiers pour red/yellow (si connus), `null` pour green
 - `text` : resume court (~15-30 mots), identifie le probleme et sa localisation
 - `detail` : 2-4 phrases, cite le code, explique le probleme et l'impact
 - `suggestion` : 1-2 phrases, direction de correction (pas le code exact). `null` pour green
-- `fix_prompt` : objet structuré pour red/yellow (`file`, `line`, `action`, `description`), `null` pour green
+- `correction_prompt` : string autonome pour red/yellow, `null` pour green
 </output_format>
