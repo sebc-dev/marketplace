@@ -37,6 +37,7 @@ Chaque observation contient les champs v2 :
 |---|---|---|
 | Status | `bash .claude/review/scripts/scd.sh session status <session>` | Read + afficher progression |
 | Update file | `bash .claude/review/scripts/scd.sh session update-file <session> <idx> <g> <y> <r> "<note>" <blocking> <risk_score>` | Read + update + Write |
+| Mark resolution | `bash .claude/review/scripts/scd.sh session mark-resolution <session> <obs_id> <fixed\|skipped\|posted\|escalated>` | Read + update obs + Write |
 | Add observations | `echo '<json_array>' \| bash .claude/review/scripts/scd.sh session add-observations <session> <idx>` | Read + append + Write |
 | Add comment | `bash .claude/review/scripts/scd.sh session add-comment <session> "<file>" "<comment>"` | Read + append + Write |
 | Add agent tasks | `bash .claude/review/scripts/scd.sh session add-agent-tasks <session> '<json>'` | Read + merge + Write |

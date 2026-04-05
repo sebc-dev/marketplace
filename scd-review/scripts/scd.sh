@@ -44,6 +44,7 @@ cmd_session() {
     add-agent-tasks)  _session_add_agent_tasks "$@" ;;
     summary)          _session_summary "$@" ;;
     pending-files)    _session_pending_files "$@" ;;
+    mark-resolution)  _session_mark_resolution "$@" ;;
     *) echo "Error: unknown session action: $action" >&2; exit 1 ;;
   esac
 }
@@ -154,6 +155,21 @@ _session_summary() {
   local head_sha
   head_sha=$(git rev-parse HEAD)
   jq --arg h "$head_sha" '.status = "completed" | .head_at_completion = $h' "$session" > "$tmp" && mv "$tmp" "$session"
+}
+
+_session_mark_resolution() {
+  # scd.sh session mark-resolution <session> <obs_id> <resolution>
+  # resolution: fixed | skipped | posted | escalated
+  local session="${1:?Usage: scd.sh session mark-resolution <session> <obs_id> <resolution>}"
+  local obs_id="${2:?}" resolution="${3:?}"
+  _check_session "$session"
+  _atomic_jq "$session" --arg id "$obs_id" --arg res "$resolution" '
+    (.files[].observations[] | select(.id == $id)) |= (.resolution = $res) |
+    .summary.fixed     = ([.files[].observations[] | select(.resolution == "fixed")]    | length) |
+    .summary.posted    = ([.files[].observations[] | select(.resolution == "posted")]   | length) |
+    .summary.skipped   = ([.files[].observations[] | select(.resolution == "skipped")]  | length) |
+    .summary.escalated = ([.files[].observations[] | select(.resolution == "escalated")]| length)
+  '
 }
 
 _session_pending_files() {
@@ -773,6 +789,16 @@ _validation_report() {
       verdict: $verdict
     }
   ' $(if [[ "$has_followup" == "true" ]]; then echo "$followup_session"; fi)
+
+  # Mark the review session as completed (idempotent)
+  local head_sha
+  head_sha=$(git rev-parse HEAD)
+  local tmp="${review_session}.tmp"
+  jq --arg h "$head_sha" '
+    if .status != "completed" then
+      .status = "completed" | .head_at_completion = $h
+    else . end
+  ' "$review_session" > "$tmp" && mv "$tmp" "$review_session"
 }
 
 # ── Domain: context ───────────────────────────────────────────────────────────

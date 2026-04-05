@@ -12,8 +12,7 @@
       "author": {
         "name": "sebc.dev"
       },
-      "category": "development",
-      "version": "0.4.0"
+      "category": "development"
     },
     {
       "name": "scd-writer",
@@ -22,8 +21,7 @@
       "author": {
         "name": "sebc.dev"
       },
-      "category": "productivity",
-      "version": "0.2.1"
+      "category": "productivity"
     },
     {
       "name": "scd-forge",
@@ -32,8 +30,7 @@
       "author": {
         "name": "sebc.dev"
       },
-      "category": "development",
-      "version": "0.1.0"
+      "category": "development"
     },
     {
       "name": "scd-svelte",
@@ -42,8 +39,7 @@
       "author": {
         "name": "sebc.dev"
       },
-      "category": "development",
-      "version": "0.1.0"
+      "category": "development"
     },
     {
       "name": "scd-tauri",
@@ -52,8 +48,7 @@
       "author": {
         "name": "sebc.dev"
       },
-      "category": "development",
-      "version": "0.1.0"
+      "category": "development"
     },
     {
       "name": "scd-vuejs",
@@ -62,8 +57,7 @@
       "author": {
         "name": "sebc.dev"
       },
-      "category": "development",
-      "version": "0.2.0"
+      "category": "development"
     },
     {
       "name": "scd-qmd",
@@ -72,8 +66,7 @@
       "author": {
         "name": "sebc.dev"
       },
-      "category": "productivity",
-      "version": "0.1.0"
+      "category": "productivity"
     },
     {
       "name": "scd-review",
@@ -85,8 +78,5 @@
       },
       "category": "productivity"
     }
-  ],
-  "metadata": {
-    "version": "0.6.0"
-  }
+  ]
 }

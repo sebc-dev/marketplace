@@ -1,19 +1,12 @@
 {
   "name": "scd-review",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Automated code review pipeline on the current branch. Chained review+validation pipeline, correction_prompt for precise fixes, business context injection, model profiles, inline-only PR/MR comments, and JSON-based state tracking.",
   "author": {
     "name": "sebc.dev"
   },
   "license": "MIT",
-  "keywords": [
-    "code-review",
-    "review",
-    "git",
-    "branch",
-    "automated",
-    "inline-comments"
-  ],
+  "keywords": ["code-review", "review", "git", "branch", "automated", "inline-comments"],
   "commands": "./.claude/commands/",
   "agents": [
     "./.claude/agents/scout-alpha.md",
@@ -21,6 +14,5 @@
     "./.claude/agents/test-reviewer.md",
     "./.claude/agents/review-validator.md",
     "./.claude/agents/fix-applier.md"
-  ],
-  "repository": "https://github.com/sebc-dev/marketplace"
+  ]
 }

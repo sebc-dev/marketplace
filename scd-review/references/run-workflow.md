@@ -309,11 +309,8 @@ Attendre chaque fix (séquentiel pour éviter les conflits) :
 
 Mise à jour via :
 ```bash
-# Après chaque fix (inline via jq ou readwrite)
-jq --arg path "<chemin>" --argjson obs_update '<{...}>' '
-  (.files[] | select(.path == $path)).observations[] |=
-    if .id == "<obs_id>" then . + $obs_update else . end
-' .claude/review/sessions/<slug>.json
+bash .claude/review/scripts/scd.sh session mark-resolution \
+  .claude/review/sessions/<slug>.json <obs_id> fixed|skipped
 ```
 
 ### 3d. Mode --post
@@ -341,12 +338,16 @@ Exécuter 3c (fix) PUIS 3d (post). Le post inclut les corrections déjà appliqu
 
 ## Phase 4 — Rapport consolidé
 
+Générer le rapport et clore la session (ordre impératif) :
+
+**1. Clore la session** (OBLIGATOIRE — persistance de status "completed") :
 ```bash
 bash .claude/review/scripts/scd.sh validation report \
   <slug> .claude/review/sessions
 ```
+Cette commande marque automatiquement la session `status: "completed"` avec `head_at_completion`.
 
-Afficher le rapport :
+**2. Afficher le rapport** (formaté depuis la sortie JSON ci-dessus) :
 
 ```
 # Run Report — <branch>
@@ -371,7 +372,7 @@ Utilisez /scd-review:followup pour vérifier les corrections.
 Utilisez /scd-review:continue si des fichiers restent à traiter.
 ```
 
-Clore la session :
+**3. Récapitulatif par fichier** (optionnel) :
 ```bash
 bash .claude/review/scripts/scd.sh session summary \
   .claude/review/sessions/<slug>.json

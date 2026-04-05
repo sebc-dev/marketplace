@@ -6,16 +6,7 @@
     "name": "sebc.dev"
   },
   "license": "MIT",
-  "keywords": [
-    "vue",
-    "vue3",
-    "pinia",
-    "vue-router",
-    "composition-api",
-    "typescript",
-    "vite"
-  ],
+  "keywords": ["vue", "vue3", "pinia", "vue-router", "composition-api", "typescript", "vite"],
   "commands": "./.claude/commands/",
-  "skills": "./.claude/skills/",
-  "repository": "https://github.com/sebc-dev/marketplace"
+  "skills": "./.claude/skills/"
 }
