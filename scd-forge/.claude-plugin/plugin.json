@@ -1,12 +1,19 @@
 {
   "name": "scd-forge",
-  "version": "0.1.0",
-  "description": "Architectural design patterns for Claude Code plugins. Component selection, context budget architecture, multi-component orchestration, skill description optimization, and quality validation. Complements plugin-dev (component syntax) with holistic design guidance.",
+  "version": "0.2.0",
+  "description": "Architectural design patterns for Claude Code plugins. Component selection (skill vs command anti-workflow guard), context budget architecture, multi-component orchestration, skill description optimization (TRIGGER/SKIP, eval methodology), correct references/ placement inside skill folder, hard spec limits, and quality validation. Complements plugin-dev (component syntax) with holistic design guidance.",
   "author": {
     "name": "sebc.dev"
   },
   "license": "MIT",
-  "keywords": ["plugin", "architecture", "design", "context-engineering", "orchestration"],
+  "keywords": [
+    "plugin",
+    "architecture",
+    "design",
+    "context-engineering",
+    "orchestration"
+  ],
   "commands": "./commands/",
-  "skills": "./skills/"
+  "skills": "./skills/",
+  "repository": "https://github.com/sebc-dev/marketplace"
 }

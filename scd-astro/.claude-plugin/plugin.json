@@ -6,7 +6,17 @@
     "name": "sebc.dev"
   },
   "license": "MIT",
-  "keywords": ["astro", "astro6", "cloudflare", "workers", "workerd", "ssr", "ssg", "vite7"],
+  "keywords": [
+    "astro",
+    "astro6",
+    "cloudflare",
+    "workers",
+    "workerd",
+    "ssr",
+    "ssg",
+    "vite7"
+  ],
   "commands": "./.claude/commands/",
-  "skills": "./.claude/skills/"
+  "skills": "./.claude/skills/",
+  "repository": "https://github.com/sebc-dev/marketplace"
 }

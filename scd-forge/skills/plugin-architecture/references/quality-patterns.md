@@ -3,19 +3,26 @@
 
 ### Critical (must fix before publishing)
 
-- [ ] **Description has activation keywords.** Include domain terms, file patterns, action verbs, and technology names that users will mention.
-- [ ] **Description has boundary markers.** "Do NOT use for X" and/or "Complements Y for Z" prevents activation conflicts.
-- [ ] **name field matches directory name.** `name: plugin-architecture` in `skills/plugin-architecture/SKILL.md`.
-- [ ] **name is kebab-case.** Lowercase, hyphens only. Max 64 characters.
+- [ ] **Single-purpose skill.** Not a multi-step orchestrator — those are commands.
+- [ ] **Description is activation conditions, NOT a workflow summary.** If the description reads "First X, then Y", convert to a command or rewrite the description.
+- [ ] **Description has TRIGGER markers.** Concrete activation signals (file patterns, imports, keywords).
+- [ ] **Description has SKIP / boundary markers.** "Do NOT use for X" and/or "Complements Y" prevents activation conflicts.
+- [ ] **Description ≤ 1024 chars** (or ≤ 1536 chars when combined with `when_to_use` for Claude Code).
+- [ ] **Description uses third-person, impératif.** Never "I will..." — POV inconsistency breaks discovery.
+- [ ] **`name` field matches directory name.** `name: plugin-architecture` in `skills/plugin-architecture/SKILL.md`.
+- [ ] **`name` is kebab-case, ≤ 64 chars.** Lowercase, hyphens only. Forbidden words: `anthropic`, `claude`.
+- [ ] **No invented frontmatter fields.** No `version`, `author`, or `tags` — they're silently ignored.
 - [ ] **SKILL.md starts with frontmatter.** No blank line before `---`. First three bytes must be `---`.
-- [ ] **Body under 500 lines.** Target 200. Move detailed content to reference files.
+- [ ] **Body under 500 lines (hard max).** Target 200.
+- [ ] **`references/`, `scripts/`, `assets/` live INSIDE the skill folder.** Never at the plugin root.
 
 ### Important (should fix)
 
 - [ ] **Decision matrices in body.** Quick-reference tables that apply to most activations belong in SKILL.md, not references.
 - [ ] **Reference file index present.** List each reference file with its XML sections so Claude knows what to load.
 - [ ] **References one level deep.** SKILL.md -> reference. Never reference -> reference.
-- [ ] **No time-sensitive information.** No versions, dates, or URLs that will become stale.
+- [ ] **No MUST / ALWAYS empilés without justification.** Anthropic yellow flag — explain *why* a rule matters.
+- [ ] **No time-sensitive information.** No versions, dates, or URLs that will become stale. Use `WebFetch` for fast-moving SDK docs instead of bundling.
 - [ ] **Concrete examples provided.** At least one input/output or decision example per major concept.
 
 ### Nice to have
@@ -23,7 +30,42 @@
 - [ ] **MCP integration documented.** If the skill domain has relevant MCP tools, document source routing.
 - [ ] **Quick troubleshooting index.** Table mapping symptoms to reference file sections.
 - [ ] **Complement declarations tested.** Verify that related skills don't conflict on activation.
+- [ ] **Eval set committed alongside the skill.** 16-20 queries (8-10 should-trigger, 8-10 near-miss should-NOT-trigger).
 </skill_checklist>
+
+<spec_limits>
+## Skill Spec — Hard Limits
+
+| Field / artifact | Limit | Source |
+|---|---|---|
+| `name` | 64 chars, kebab-case | docs.claude.com — overview |
+| `description` (API/spec) | 1024 chars | docs.claude.com — overview |
+| `description` + `when_to_use` (Claude Code listing) | 1536 chars combined | code.claude.com docs |
+| Total skills listing budget (Claude Code) | 1% of context window, 8000-char fallback | code.claude.com docs |
+| Override env var | `SLASH_COMMAND_TOOL_CHAR_BUDGET` | code.claude.com docs |
+| SKILL.md body recommended | < 500 lines, target 200 | skill-creator |
+| Body tokens loaded | < 5k tokens | overview |
+| Upload total (API) | 8 MB | API skills guide |
+| Skills per request (API) | 8 | API skills guide |
+| Skills per session (Managed Agents) | 20 | Managed Agents docs |
+
+### Frontmatter fields — what's actually recognized
+
+| Field | Required | Surfaces | Notes |
+|---|---|---|---|
+| `name` | Yes | All | Kebab-case, ≤ 64 chars |
+| `description` | Yes | All | ≤ 1024 chars, third-person impératif |
+| `license` | No | All | Convention only |
+| `allowed-tools` | No | **Claude Code only** | Not honored by Agent SDK |
+| `when_to_use` | No | **Claude Code only** | Concatenated with description, 1536-char combined cap |
+| `disable-model-invocation` | No | **Claude Code only** | bool, default false |
+| `user-invocable` | No | **Claude Code only** | bool, default true |
+| `paths`, `model`, `effort`, `agent`, `hooks`, `argument-hint` | No | **Claude Code only** | — |
+
+### Fields that are NOT in the spec
+
+`version`, `author`, `tags`, `metadata` (the standard-open `metadata` field is marked experimental). Adding them silently fails — they don't break the skill but provide nothing. Versioning is external: Git tags for source repos, epoch timestamps for `/v1/skills` API uploads.
+</spec_limits>
 
 <command_checklist>
 ## Command Quality Checklist
@@ -112,6 +154,24 @@ For each command:
 4. Re-run the same tasks WITH the plugin
 5. Compare: did the plugin improve the response?
 
+### Canonical eval methodology (skill-creator)
+
+Anthropic's `skill-creator` encodes a rigorous activation-reliability protocol. Apply it whenever description tweaks matter (skills shipped to teams, plugins published).
+
+1. **Build a 20-query eval set.**
+   - 8-10 *should-trigger* queries (positive cases).
+   - 8-10 *should-not-trigger* queries — these MUST be **near-misses** ("genuinely tricky"), not trivially unrelated. A PDF skill tested against "write a fibonacci function" is non-discriminant.
+2. **Use realistic query format.** File paths, personal context, column names, URLs, inconsistent casing, abbreviations, typos, spoken language.
+3. **3 runs per query.** Reduces variance, gives a real activation rate.
+4. **60/40 train/test split.** Iterate on description using the train set, but **score and select the version on the test set** — prevents overfit.
+5. **Cap iteration at 5 rounds.** Diminishing returns beyond that.
+6. **Test on the production model ID.** Activation behavior varies by model — testing on a different one gives misleading results.
+7. **Capture metrics at completion.** `total_tokens` and `duration_ms` from subagent notifications are not persisted afterward.
+
+### Lightweight pre-flight test
+
+Before running the full eval, paste the frontmatter into a fresh Claude conversation and ask: *"Generate 3 prompts that should trigger this skill, and 3 that should not."* If Claude struggles or generates obvious near-misses, the description needs work before formal eval.
+
 ### Activation reliability testing
 
 Skills auto-activate in ~50-80% of expected cases. Improve reliability:
@@ -119,6 +179,7 @@ Skills auto-activate in ~50-80% of expected cases. Improve reliability:
 - **Add more keywords:** Users say things differently than you expect
 - **Test across models:** Haiku, Sonnet, Opus may activate differently
 - **Check false positives:** Does the skill activate for unrelated queries?
+- **Check trivial-query under-trigger.** From `skill-creator`: "Claude only consults skills for tasks it can't easily handle on its own — simple, one-step queries like 'read this PDF' may not trigger a skill even if the description matches perfectly." Trivial queries are bad eval cases.
 
 ### Multi-model testing
 
@@ -140,35 +201,59 @@ After modifying a skill:
 <common_pitfalls>
 ## Common Plugin Pitfalls
 
-### 1. Description too vague -> poor activation
+### 1. The skill-as-workflow
+**Symptom:** Description summarizes "First X, then Y, then Z." Claude reads the summary, never opens SKILL.md, and the body sits unused.
+**Fix:** Skills hold expertise that activates contextually. Multi-step orchestrated workflows belong in commands. If the skill genuinely encodes a procedure, rewrite the description as activation conditions only and put the procedure in the body.
+
+### 2. `references/` at the plugin root
+**Symptom:** Files live at `<plugin>/references/...` instead of `<plugin>/skills/<skill>/references/...`. Claude can't load them through the SKILL.md index.
+**Fix:** Move `references/`, `scripts/`, and `assets/` INSIDE the skill folder. Each skill owns its own bundled resources.
+
+### 3. Description too vague -> poor activation
 **Symptom:** Skill doesn't activate when expected.
-**Fix:** Add specific keywords, file patterns, and trigger conditions. Test with actual user queries.
+**Fix:** Add specific keywords, file patterns, import names, and trigger conditions. Test with the eval methodology (16-20 queries, 3 runs each).
 
-### 2. Body too long -> slow loading, high token cost
+### 4. Body too long -> slow loading, high token cost
 **Symptom:** Simple questions consume too many tokens.
-**Fix:** Move detailed content to reference files. Keep body under 200 lines with decision matrices and rules.
+**Fix:** Move detailed content to reference files. Keep body under 200 lines with decision matrices and rules. Hard max 500.
 
-### 3. References too deep -> Claude can't find content
+### 5. References too deep -> Claude can't find content
 **Symptom:** Claude re-reads multiple files before finding the answer.
 **Fix:** Keep references one level from SKILL.md. Use XML tags for sections. Add index in SKILL.md.
 
-### 4. Missing boundary markers -> activation conflicts
+### 6. Missing boundary markers -> activation conflicts
 **Symptom:** Two skills compete to handle the same query.
-**Fix:** Add "Complements X" and "Do NOT use for Y" to both descriptions.
+**Fix:** Add "Complements X" and "SKIP / Do NOT use for Y" to both descriptions.
 
-### 5. Commands without output format -> inconsistent results
+### 7. Invented frontmatter fields
+**Symptom:** Author adds `version: 1.2.0` or `tags: [astro, cloudflare]` to skill frontmatter.
+**Fix:** Remove them — they're silently ignored. Versioning is external (Git tags or epoch timestamps from `/v1/skills`).
+
+### 8. `allowed-tools` in non-Claude-Code skill
+**Symptom:** Skill expected to restrict tools but works fine on Agent SDK / API.
+**Fix:** `allowed-tools` is honored ONLY by Claude Code. For SDK/API, restriction must happen at the agent or system-prompt level.
+
+### 9. Bundled large SDK docs
+**Symptom:** Skill ships with a 5000-line copy of an SDK README that goes stale within weeks.
+**Fix:** Use `WebFetch` to live README in the SKILL.md instead of bundling. Anthropic's own `mcp-builder` and `claude-api` use this pattern.
+
+### 10. MUST / ALWAYS empilés
+**Symptom:** SKILL.md filled with capitalized rules without explanation. Claude follows blindly and breaks on edge cases.
+**Fix:** Reframe as "explain the reasoning" — Anthropic's `skill-creator` calls this a yellow flag.
+
+### 11. Commands without output format -> inconsistent results
 **Symptom:** Same command produces different formats each time.
 **Fix:** Define explicit output format in the command body. Include an example.
 
-### 6. Duplicated content across components -> wasted tokens
+### 12. Duplicated content across components -> wasted tokens
 **Symptom:** Same table appears in SKILL.md, a reference file, and a command.
 **Fix:** Put information in one place. Reference it from others.
 
-### 7. Hooks blocking writes -> confused agent
+### 13. Hooks blocking writes -> confused agent
 **Symptom:** Claude keeps retrying writes that get blocked.
 **Fix:** Block at commit, not at write. Let the agent work, validate the output.
 
-### 8. Plugin.json listing unused components
+### 14. Plugin.json listing unused components
 **Symptom:** Validation warns about missing directories.
 **Fix:** Only include component types you actually use. No `agents` or `hooks` if you have none.
 </common_pitfalls>

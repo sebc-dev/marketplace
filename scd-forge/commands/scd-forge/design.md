@@ -26,10 +26,23 @@ Using the Component Selection Matrix from the plugin-architecture skill, walk th
 For each capability:
 - Is it always needed? -> CLAUDE.md
 - Is it deterministic? -> Hook
-- Is it user-triggered? -> Command
-- Is it context-dependent expertise? -> Skill
+- Is it a multi-step workflow with sequenced phases? -> Command
+- Is it context-dependent expertise (single-purpose, no orchestration)? -> Skill
 - Does it need isolated execution? -> Agent
 - Does it connect external services? -> MCP
+
+**Skill vs Command — apply the workflow test before assigning anything to a skill:**
+
+| Signal | Verdict |
+|---|---|
+| Description naturally reads "First X, then Y, then Z" | Command |
+| Has explicit phases the user controls progression through | Command |
+| Spawns agents or sequences tool calls deterministically | Command |
+| Answers "what are the rules / patterns / anti-patterns for X?" | Skill |
+| Activates because user mentioned a domain (file pattern, technology) | Skill |
+| Reusable across many different commands | Skill |
+
+If a piece of functionality is ambiguous, default to a command. A skill that orchestrates a workflow is the most common architectural mistake — its description ends up summarizing the steps, Claude reads the summary, and the SKILL.md is never opened.
 
 Present the proposed component inventory as a table.
 
@@ -70,14 +83,40 @@ Produce a structured design document:
 |-----------|------|---------|
 
 ## File Structure
-[Directory tree]
+
+Use this exact layout. `references/`, `scripts/`, `assets/` MUST live INSIDE
+the skill folder, never at the plugin root.
+
+`​`​`
+plugin-name/
+├── .claude-plugin/
+│   └── plugin.json
+├── skills/
+│   └── skill-name/
+│       ├── SKILL.md
+│       ├── references/        # on-demand docs (INSIDE skill folder)
+│       │   ├── topic-a.md
+│       │   └── topic-b.md
+│       ├── scripts/           # black-box executables (INSIDE skill folder)
+│       └── assets/            # output templates (INSIDE skill folder)
+├── commands/
+│   └── plugin-name/
+│       ├── action-a.md
+│       └── action-b.md
+└── README.md
+`​`​`
 
 ## Skill Description (draft)
-[Full description text]
+
+Use the TRIGGER / SKIP pattern. The description is activation conditions only,
+NEVER a workflow summary.
+
+[Full description text — ≤ 1024 chars, third-person, with TRIGGER and SKIP markers]
 
 ## Reference Files Plan
-| File | Sections | Source material |
-|------|----------|---------------|
+| File (path) | Sections | Source material |
+|-------------|----------|-----------------|
+| `skills/<skill>/references/<file>.md` | <xml_tags> | ... |
 
 ## Command Plan
 | Command | Description | H/AI ratio |
@@ -95,8 +134,11 @@ Does NOT cover: [explicit boundaries]
 ## After the workshop
 
 Suggest the implementation order:
-1. Create skeleton (plugin.json, directories)
-2. Write SKILL.md (the core)
-3. Write reference files
-4. Write commands
+1. Create skeleton: `plugin.json`, `skills/<skill-name>/`, `commands/<plugin-name>/`
+2. Write SKILL.md (the core) — body ≤ 200 lines target, ≤ 500 hard max
+3. Create `skills/<skill-name>/references/` (INSIDE the skill folder, NOT at plugin root) and write reference files with XML-tagged sections
+4. Write commands — these hold the orchestrated workflows
 5. Validate with `claude plugin validate`
+6. Build a 16-20 query eval set (8-10 should-trigger, 8-10 near-miss should-NOT-trigger) before promoting to production
+
+**Reminder:** if any "skill" you sketched is really a sequenced workflow, convert it to a command before implementing. See the Skill vs Command matrix in Phase 2.

@@ -1,6 +1,6 @@
 ---
 description: "Transform a large document into an optimized reference file with XML-tagged sections for selective loading."
-argument-hint: "[path to source document]"
+argument-hint: "[path to source document] [target skill folder]"
 ---
 
 ## Context
@@ -8,6 +8,8 @@ argument-hint: "[path to source document]"
 You are a context engineering specialist. The user has a document they want to convert into a plugin reference file optimized for selective loading by Claude.
 
 Ratio: 20% human / 80% AI. The AI performs the analysis and transformation. The human reviews the output.
+
+**Output location — non-negotiable:** the generated reference file goes inside the target skill folder at `<plugin>/skills/<skill-name>/references/<file>.md`. Never write it to a `references/` folder at the plugin root. If the user did not specify the target skill, ask before writing.
 
 ## Step 1: Analyze the source document
 
@@ -58,7 +60,7 @@ Write the complete reference file with all XML sections.
 
 ## Step 4: Generate SKILL.md index entry
 
-Output the index entry for the SKILL.md reference section:
+Output the index entry for the SKILL.md reference section. The path inside SKILL.md is relative to the skill folder (just `references/<file>.md`):
 
 ```markdown
 - `references/[filename].md` — [one-line description]
@@ -69,6 +71,7 @@ Output the index entry for the SKILL.md reference section:
 
 Before presenting the final file:
 
+- [ ] File written to `<plugin>/skills/<skill-name>/references/<file>.md` (INSIDE the skill folder)
 - [ ] Every section has opening and closing XML tags
 - [ ] No section exceeds 150 lines
 - [ ] No cross-references between sections (each is self-contained)
