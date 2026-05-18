@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# scd.sh — scd-review unified dispatcher v2.0.0
+# scd.sh — scd-review unified dispatcher v2.1.0
 # Usage: scd.sh <domain> <action> [args...]
 #
 # Domains:
 #   session    status | update-file | add-observations | add-comment | add-agent-tasks | summary | pending-files
+#              mark-resolution | set-decision | pending-decisions | decision-summary | seed-decisions
 #   followup   classify | get-context | update-file | summary
 #   post       inline-comments | orphan-summary
 #   validation update | report
@@ -37,14 +38,18 @@ _atomic_jq() {
 cmd_session() {
   local action="${1:?Usage: scd.sh session <action> [args...]}"; shift
   case "$action" in
-    status)           _session_status "$@" ;;
-    update-file)      _session_update_file "$@" ;;
-    add-observations) _session_add_observations "$@" ;;
-    add-comment)      _session_add_comment "$@" ;;
-    add-agent-tasks)  _session_add_agent_tasks "$@" ;;
-    summary)          _session_summary "$@" ;;
-    pending-files)    _session_pending_files "$@" ;;
-    mark-resolution)  _session_mark_resolution "$@" ;;
+    status)             _session_status "$@" ;;
+    update-file)        _session_update_file "$@" ;;
+    add-observations)   _session_add_observations "$@" ;;
+    add-comment)        _session_add_comment "$@" ;;
+    add-agent-tasks)    _session_add_agent_tasks "$@" ;;
+    summary)            _session_summary "$@" ;;
+    pending-files)      _session_pending_files "$@" ;;
+    mark-resolution)    _session_mark_resolution "$@" ;;
+    set-decision)       _session_set_decision "$@" ;;
+    pending-decisions)  _session_pending_decisions "$@" ;;
+    decision-summary)   _session_decision_summary "$@" ;;
+    seed-decisions)     _session_seed_decisions "$@" ;;
     *) echo "Error: unknown session action: $action" >&2; exit 1 ;;
   esac
 }
@@ -182,6 +187,113 @@ _session_pending_files() {
   else
     jq -c '[.files[] | select(.status == "pending")][] | {index, path, category}' "$session"
   fi
+}
+
+_session_set_decision() {
+  # scd.sh session set-decision <session> <obs_id> <decision> [reason]
+  # decision: apply | skip | defer
+  local session="${1:?Usage: scd.sh session set-decision <session> <obs_id> <decision> [reason]}"
+  local obs_id="${2:?}" decision="${3:?}" reason="${4:-}"
+  _check_session "$session"
+  case "$decision" in
+    apply|skip|defer) ;;
+    *) echo "Error: invalid decision '$decision' (expected: apply, skip, defer)" >&2; exit 1 ;;
+  esac
+  local now
+  now=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+  _atomic_jq "$session" \
+    --arg id "$obs_id" --arg dec "$decision" --arg reason "$reason" --arg now "$now" '
+    (.files[].observations[] | select(.id == $id)) |= (
+      .user_decision = $dec |
+      .user_decision_reason = (if $reason == "" then null else $reason end) |
+      .user_decision_at = $now
+    ) |
+    [.files[].observations[] | .user_decision? // empty] as $decs |
+    .summary.decisions = {
+      "apply":   ([$decs[] | select(. == "apply")]   | length),
+      "skip":    ([$decs[] | select(. == "skip")]    | length),
+      "defer":   ([$decs[] | select(. == "defer")]   | length),
+      "decided": ($decs | length)
+    }
+  '
+  jq --arg id "$obs_id" '.files[].observations[] | select(.id == $id) | {id, user_decision, user_decision_at}' "$session"
+}
+
+_session_pending_decisions() {
+  # scd.sh session pending-decisions <session>
+  # Lists observations awaiting user decision: user_decision == null AND validator_decision != "skip"
+  # Sorted by risk: red before yellow, blocking before suggestion, then by file risk_score desc
+  local session="${1:?Usage: scd.sh session pending-decisions <session>}"
+  _check_session "$session"
+  jq -c '
+    [ .files[] as $f | $f.observations[]
+      | select((.user_decision // null) == null)
+      | select((.validator_decision // null) != "skip")
+      | {
+          id, criterion, severity, level,
+          line_start, line_end, location,
+          text, detail, suggestion, correction_prompt,
+          validator_decision, validator_confidence, validator_reason,
+          file_path: $f.path,
+          file_category: $f.category,
+          file_risk_score: ($f.risk_score // 0)
+        }
+    ]
+    | sort_by(
+        (if .level == "red" then 0 elif .level == "yellow" then 1 else 2 end),
+        (if .severity == "blocking" then 0 else 1 end),
+        (-1 * (.file_risk_score // 0)),
+        .file_path,
+        (.line_start // 0)
+      )
+    | .[]
+  ' "$session"
+}
+
+_session_decision_summary() {
+  # scd.sh session decision-summary <session>
+  # Returns counts: total observations needing decision, decided (apply/skip/defer), pending
+  local session="${1:?Usage: scd.sh session decision-summary <session>}"
+  _check_session "$session"
+  jq '
+    [.files[].observations[] | select((.validator_decision // null) != "skip")] as $needs |
+    {
+      total: ($needs | length),
+      pending: ([$needs[] | select((.user_decision // null) == null)] | length),
+      apply:   ([$needs[] | select(.user_decision == "apply")]   | length),
+      skip:    ([$needs[] | select(.user_decision == "skip")]    | length),
+      defer:   ([$needs[] | select(.user_decision == "defer")]   | length)
+    }
+  ' "$session"
+}
+
+_session_seed_decisions() {
+  # scd.sh session seed-decisions <session>
+  # Auto-marks user_decision = "skip" for observations where validator_decision == "skip"
+  # (passes through the decision phase without prompting).
+  # Idempotent: only seeds observations where user_decision is null.
+  local session="${1:?Usage: scd.sh session seed-decisions <session>}"
+  _check_session "$session"
+  local now
+  now=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+  _atomic_jq "$session" --arg now "$now" '
+    (.files[].observations[] |
+      select((.validator_decision // null) == "skip") |
+      select((.user_decision // null) == null)
+    ) |= (
+      .user_decision = "skip" |
+      .user_decision_reason = "auto-seeded from validator skip" |
+      .user_decision_at = $now
+    ) |
+    [.files[].observations[] | .user_decision? // empty] as $decs |
+    .summary.decisions = {
+      "apply":   ([$decs[] | select(. == "apply")]   | length),
+      "skip":    ([$decs[] | select(. == "skip")]    | length),
+      "defer":   ([$decs[] | select(. == "defer")]   | length),
+      "decided": ($decs | length)
+    }
+  '
+  jq '.summary.decisions' "$session"
 }
 
 # ── Domain: followup ──────────────────────────────────────────────────────────
@@ -744,10 +856,17 @@ _validation_report() {
     ([$all_obs[] | select(.validator_decision == "skip")]     | length) as $val_skip |
     ([$all_obs[] | select(.validator_decision == "escalate")] | length) as $val_escalate |
 
+    # User decision stats (interactive mode — Phase 3.0)
+    ([$all_obs[] | select((.validator_decision // null) != "skip")] | length) as $needs_decision |
+    ([$all_obs[] | select(.user_decision == "apply")]   | length) as $usr_apply |
+    ([$all_obs[] | select(.user_decision == "skip")]    | length) as $usr_skip |
+    ([$all_obs[] | select(.user_decision == "defer")]   | length) as $usr_defer |
+    ([$all_obs[] | select((.validator_decision // null) != "skip") | select((.user_decision // null) == null)] | length) as $usr_pending |
+
     # Escalations detail
     [$rev.files[] | .path as $fp | .observations[] |
       select(.validator_decision == "escalate") |
-      {file: $fp, criterion, level, text, reason: .validator_reason}
+      {file: $fp, criterion, level, text, reason: .validator_reason, user_decision: (.user_decision // null)}
     ] as $escalations |
 
     # Resolution stats (v2: resolution stored in observation)
@@ -765,10 +884,13 @@ _validation_report() {
     else { resolved: 0, partially: 0, unresolved: 0 } end) as $followup_stats |
 
     # Verdict
-    (if ($val_escalate == 0) and ($skipped == 0 or $blocking_obs == 0) and
-        ($followup_stats.unresolved == 0) and ($followup_stats.partially == 0)
+    (if ($usr_pending > 0)
+     then "decisions_pending"
+     elif ($val_escalate == 0) and ($skipped == 0 or $blocking_obs == 0) and
+        ($followup_stats.unresolved == 0) and ($followup_stats.partially == 0) and
+        ($usr_defer == 0)
      then "ready_to_merge"
-     elif ($val_escalate > 0) or ($skipped > 0)
+     elif ($val_escalate > 0) or ($skipped > 0) or ($usr_defer > 0)
      then "attention_required"
      else "blocked" end) as $verdict |
 
@@ -783,6 +905,10 @@ _validation_report() {
       validation: {
         validated: $validated_count, apply: $val_apply,
         skip: $val_skip, escalate: $val_escalate, escalations: $escalations
+      },
+      decisions: {
+        needs_decision: $needs_decision,
+        apply: $usr_apply, skip: $usr_skip, defer: $usr_defer, pending: $usr_pending
       },
       resolution: { fixed: $fixed, posted: $posted_count, skipped: $skipped, escalated: $escalated },
       followup: $followup_stats,

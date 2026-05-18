@@ -2,17 +2,25 @@
 
 ## Vue d'ensemble
 
-Pipeline v2 en 4 phases enchaînées. Zéro checkpoint humain sauf mi-parcours optionnel et escalations.
+Pipeline v2.1 en 5 phases enchaînées. La phase de décision interactive (3.0) est le seul point d'interaction systématique en mode par défaut. Mi-parcours optionnel conservé.
 
 ```
-Phase 0 — Context Resolution  (script déterministe, si --context)
-Phase 1 — Review Pipeline     (code-reviewer / test-reviewer en pipeline glissant)
-Phase 2 — Validation chaînée  (review-validator dès qu'un fichier est reviewé)
-Phase 3 — Dispatch            (--fix → fix-applier | --post → inline | les deux)
-Phase 4 — Rapport consolidé
+Phase 0   — Context Resolution    (script déterministe, si --context)
+Phase 1   — Review Pipeline       (code-reviewer / test-reviewer en pipeline glissant)
+Phase 2   — Validation chaînée    (review-validator dès qu'un fichier est reviewé)
+Phase 3.0 — Décisions interactives (NOUVEAU défaut : @references/decision-workflow.md)
+Phase 3.5 — Fix batch              (fix-applier sur user_decision == "apply")
+Phase 3.6 — Post inline            (si --post)
+Phase 4   — Rapport consolidé
 ```
 
-Comportement par défaut (sans flag) : `--fix` — self-review avec application des corrections.
+**Comportement par défaut** (sans flag) : interactif — review → validate → **décisions une par une** → fix batch.
+
+**Modes alternatifs** (flags) :
+- `--auto-fix` : bypass de la Phase 3.0 — toutes les `validator_decision == "apply"` deviennent automatiquement `user_decision = "apply"`, fix-applier enchaîne (comportement v1.0).
+- `--post` : pas de décisions interactives, post inline des `apply`+`escalate`.
+- `--no-fix` : review + validate uniquement, pas de dispatch.
+- Combinaisons : `--auto-fix --post`, `--post` seul, etc.
 
 ## Phase 0 — Résolution du contexte (si --context)
 
@@ -257,39 +265,65 @@ Slots disponibles = max_parallel_agents - agents_review_actifs - agents_validati
 Tant que slots > 0 ET fichiers pending → lancer agents
 ```
 
-## Phase 3 — Dispatch selon flags
+## Phase 3.0 — Décisions interactives (mode par défaut)
 
-Après que tous les fichiers sont reviewés et validés :
+**Activée si** : `flags.auto_fix == false` ET `flags.no_fix == false`.
 
-### 3a. Résumé pré-dispatch
+Si `flags.auto_fix == true` → sauter directement en 3.0-bis (auto-apply).
+Si `flags.no_fix == true` ET `flags.post == false` → sauter directement en Phase 4.
+
+### 3.0 — Phase interactive
+
+Suivre **intégralement** la procédure de @references/decision-workflow.md avec :
+- `session` = `.claude/review/sessions/<slug>.json`
+- À la fin : toutes les observations à décider ont `user_decision != null` (ou l'utilisateur a interrompu)
+
+L'utilisateur peut interrompre à tout moment. Les décisions persistées sont safe.
+Pour reprendre : `/scd-review:continue`.
+
+### 3.0-bis — Auto-apply (si `--auto-fix`)
+
+Bypass de la phase interactive. Pour chaque observation `validator_decision == "apply"` :
+```bash
+bash .claude/review/scripts/scd.sh session set-decision \
+  .claude/review/sessions/<slug>.json <obs_id> apply "auto-fix mode"
 ```
-── Dispatch ──────────────────────────────────────────
-Apply : X observations  |  Skip : Y  |  Escalate : Z
-Mode  : <--fix | --post | --fix --post>
-──────────────────────────────────────────────────────
-```
 
-### 3b. Escalations (si présentes)
-
-Pour chaque observation avec `validator_decision == "escalate"` :
+Pour les escalations (`validator_decision == "escalate"`) en mode `--auto-fix`, demander quand même (impossible de trancher automatiquement) :
 ```
 AskUserQuestion(
   questions: [{
-    question: "Observation escaladée — décision requise",
+    question: "Observation escaladée — décision requise (auto-fix actif)",
     header: "Escalation",
     options: [
-      { label: "Appliquer", description: "fix-applier corrige cette observation" },
+      { label: "Appliquer", description: "Inclure dans le batch fix" },
       { label: "Sauter", description: "Ignorer cette observation" },
-      { label: "Discuter", description: "Analyser avant de décider" }
+      { label: "Différer", description: "Décision plus tard via /continue" }
     ]
   }]
 )
 ```
-Mettre à jour `validator_decision` selon la décision utilisateur.
+Persister via `set-decision`.
 
-### 3c. Mode --fix (défaut)
+### 3.0-ter — Résumé pré-dispatch
 
-Pour chaque observation avec `validator_decision == "apply"` :
+```bash
+bash .claude/review/scripts/scd.sh session decision-summary \
+  .claude/review/sessions/<slug>.json
+```
+
+```
+── Dispatch ──────────────────────────────────────────
+Apply : A  |  Skip : S  |  Defer : D
+Mode  : <interactif | --auto-fix | --post | combinaison>
+──────────────────────────────────────────────────────
+```
+
+## Phase 3.5 — Fix batch
+
+**Activée si** : `flags.no_fix == false` ET au moins une observation a `user_decision == "apply"`.
+
+Pour chaque observation avec `user_decision == "apply"` (ordre : fichier puis line_start) :
 
 ```
 Task(
@@ -313,9 +347,13 @@ bash .claude/review/scripts/scd.sh session mark-resolution \
   .claude/review/sessions/<slug>.json <obs_id> fixed|skipped
 ```
 
-### 3d. Mode --post
+**Note** : les observations `user_decision == "defer"` ne sont PAS traitées. Elles attendent un `/scd-review:continue` ou un followup.
 
-Pour chaque observation avec `validator_decision == "apply"` ou `"escalate"` avec décision finale :
+## Phase 3.6 — Post inline (si --post)
+
+Pour chaque observation à poster — critères :
+- Mode `--post` seul : `user_decision in ["apply", "defer"]` (decisions effectives non-skip non-traitées)
+- Mode `--post --auto-fix` ou `--post` après mode interactif : `user_decision == "apply"` non-`fixed` + escalations `defer`
 
 ```bash
 bash .claude/review/scripts/scd.sh post inline-comments \
@@ -332,22 +370,41 @@ bash .claude/review/scripts/scd.sh post orphan-summary \
 
 Marquer les observations postées `resolution: "posted"` + incrémenter `summary.posted`.
 
-### 3e. Mode --post --fix
-
-Exécuter 3c (fix) PUIS 3d (post). Le post inclut les corrections déjà appliquées (avec `resolution: "fixed"`) si filter = `all`, sinon seulement les bloquants restants.
-
 ## Phase 4 — Rapport consolidé
 
-Générer le rapport et clore la session (ordre impératif) :
+Générer le rapport et clore la session — **sauf si des observations sont `user_decision == "defer"`** (auquel cas la session reste `in_progress` pour reprise via `continue`).
 
-**1. Clore la session** (OBLIGATOIRE — persistance de status "completed") :
+### 4a. Vérification finale des décisions
+
+```bash
+bash .claude/review/scripts/scd.sh session decision-summary \
+  .claude/review/sessions/<slug>.json
+```
+
+Si `pending > 0` → l'utilisateur a interrompu la Phase 3.0. Ne PAS clore. Afficher :
+```
+── Session interrompue ───────────────────────────────
+P observation(s) restent à décider.
+Reprenez avec /scd-review:continue
+──────────────────────────────────────────────────────
+```
+Et sortir sans `validation report` (la session reste `in_progress`).
+
+### 4b. Clore et rapporter (cas nominal)
+
 ```bash
 bash .claude/review/scripts/scd.sh validation report \
   <slug> .claude/review/sessions
 ```
 Cette commande marque automatiquement la session `status: "completed"` avec `head_at_completion`.
 
-**2. Afficher le rapport** (formaté depuis la sortie JSON ci-dessus) :
+**Verdict possible** (issu de validation report) :
+- `ready_to_merge` : aucune escalation, aucun defer, pas de skipped bloquant
+- `attention_required` : skipped, defer, ou escalations non résolues
+- `blocked` : cas extrême
+- `decisions_pending` : ne devrait pas apparaître ici (filtré en 4a)
+
+### 4c. Afficher le rapport
 
 ```
 # Run Report — <branch>
@@ -355,11 +412,12 @@ Cette commande marque automatiquement la session `status: "completed"` avec `hea
 ## Résumé
 - Fichiers analysés : N (M filtrés par seuil)
 - Observations : T (B bloquantes, Y suggestions, G bonnes)
-- Validation : A apply | S skip | E escalate
-- Résolutions : F fixés | P postés | K sautés | E escaladés
+- Validation : A_v apply | S_v skip | E_v escalate
+- Décisions  : A apply | S skip | D defer
+- Résolutions : F fixés | P postés | K sautés (fix-applier) | E escaladés
 
-## Escalations (décision humaine utilisée)
-[Liste : fichier | critère | raison validator | décision finale]
+## Observations différées (à traiter plus tard)
+[Liste : fichier | critère | raison utilisateur]
 
 ## Corrections appliquées
 [Liste : fichier | critère | ligne(s)]
@@ -369,10 +427,11 @@ ready_to_merge | attention_required | blocked
 
 ---
 Utilisez /scd-review:followup pour vérifier les corrections.
-Utilisez /scd-review:continue si des fichiers restent à traiter.
+Utilisez /scd-review:continue si des observations restent différées.
 ```
 
-**3. Récapitulatif par fichier** (optionnel) :
+### 4d. Récapitulatif par fichier (optionnel)
+
 ```bash
 bash .claude/review/scripts/scd.sh session summary \
   .claude/review/sessions/<slug>.json

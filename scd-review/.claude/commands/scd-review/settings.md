@@ -15,7 +15,7 @@ Configurer le plugin scd-review de manière interactive. Présente un questionna
 
 Paramètres configurables :
 - Profil de modèles (balanced / quality / budget)
-- Output par défaut (fix / post / both)
+- Output par défaut (interactive / fix / post / both)
 - Seuil de confiance du validator
 - Agents parallèles maximum
 - Fichiers maximum par run

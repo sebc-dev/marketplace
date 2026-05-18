@@ -6,9 +6,9 @@ Lire `environment.json_strategy` (ou `json_strategy` racine) dans config.json. T
 - `jq` : utiliser `scd.sh` pour toutes les opérations JSON
 - `readwrite` : utiliser Read + Write
 
-## Observations v2 — Structure
+## Observations v2.1 — Structure
 
-Chaque observation contient les champs v2 :
+Chaque observation contient les champs v2.1 (les champs `user_decision*` sont nouveaux en v2.1) :
 ```json
 {
   "id": "obs_001",
@@ -25,9 +25,19 @@ Chaque observation contient les champs v2 :
   "validator_decision": "apply|skip|escalate|null",
   "validator_confidence": 0.92,
   "validator_reason": "justification",
+  "user_decision": "apply|skip|defer|null",
+  "user_decision_reason": "raison libre (optionnel)",
+  "user_decision_at": "2026-05-18T14:00:00Z",
   "resolution": "fixed|posted|skipped|escalated|null"
 }
 ```
+
+**Pipeline décisionnel** :
+- `validator_decision` = recommandation de l'agent review-validator (Phase 2)
+- `user_decision` = décision explicite de l'utilisateur (Phase 3.0 — défaut)
+- `resolution` = état final après fix-applier ou post (Phase 3.5/3.6)
+
+En mode `--auto-fix`, `user_decision` est auto-rempli depuis `validator_decision`.
 
 **Note :** plus de session de type `"apply"` en v2 — les résolutions sont stockées dans la session review directement.
 
@@ -43,6 +53,10 @@ Chaque observation contient les champs v2 :
 | Add agent tasks | `bash .claude/review/scripts/scd.sh session add-agent-tasks <session> '<json>'` | Read + merge + Write |
 | Summary | `bash .claude/review/scripts/scd.sh session summary <session>` | Read + table + mark completed + Write |
 | Pending files | `bash .claude/review/scripts/scd.sh session pending-files <session> [--sort-by=risk]` | Read + filter + sort |
+| Seed decisions | `bash .claude/review/scripts/scd.sh session seed-decisions <session>` | Read + marquer validator-skip → user-skip + Write |
+| Pending decisions | `bash .claude/review/scripts/scd.sh session pending-decisions <session>` | Read + filtrer obs sans user_decision (hors validator-skip) + sort |
+| Set decision | `bash .claude/review/scripts/scd.sh session set-decision <session> <obs_id> <apply\|skip\|defer> [reason]` | Read + update obs + Write |
+| Decision summary | `bash .claude/review/scripts/scd.sh session decision-summary <session>` | Read + agréger counts |
 
 ## Opérations — Followup
 

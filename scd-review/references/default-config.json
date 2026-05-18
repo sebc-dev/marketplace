@@ -1,11 +1,11 @@
 {
-  "version": "2.0.0",
+  "version": "2.1.0",
   "plugin_root": null,
   "json_strategy": null,
 
   "model_profile": "balanced",
   "model_overrides": {},
-  "default_output": "fix",
+  "default_output": "interactive",
 
   "category_priority": [
     "build-config",
@@ -43,6 +43,11 @@
     "enabled": true,
     "confidence_threshold": 0.75,
     "skip_green": true
+  },
+
+  "interactive": {
+    "auto_skip_validator_skipped": true,
+    "show_analysis_depth": "standard"
   },
 
   "pipeline": {

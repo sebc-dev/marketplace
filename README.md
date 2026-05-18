@@ -24,9 +24,9 @@ Tauri v2 desktop and mobile skill. Architecture, security model (capabilities, p
 
 Architectural design patterns for Claude Code plugins. Component selection (skill vs command vs agent vs hook vs CLAUDE.md vs MCP), plugin sizing, context budget architecture, multi-component orchestration, and quality validation. 3 slash commands (`/scd-forge:design`, `/scd-forge:audit`, `/scd-forge:distill`).
 
-### [scd-review](./scd-review/) `v0.7.0`
+### [scd-review](./scd-review/) `v1.1.0`
 
-Interactive guided code review on the current branch. Reviews file by file in optimal order with dedicated background agents (code-reviewer + test-reviewer) for each file, JSON-based progress tracking, and blocking/suggestion classification. 5 slash commands (`/scd-review:review-init`, `/scd-review:code-review`, `/scd-review:review-followup`, `/scd-review:review-continue`, `/scd-review:review-post`). GitHub/GitLab PR posting integration.
+Code review pipeline on the current branch with **interactive per-observation decisions** (apply/skip/defer/discuss) and persisted state for safe interruption/resume. Chained review+validation pipeline, `correction_prompt` for precise fixes, business context injection, model profiles, and inline-only PR/MR comments. 5 slash commands (`/scd-review:init`, `/scd-review:run`, `/scd-review:followup`, `/scd-review:continue`, `/scd-review:settings`). `--auto-fix` flag preserves the previous non-interactive behavior for CI use. GitHub/GitLab PR posting integration.
 
 ## Installation
 

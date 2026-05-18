@@ -1,6 +1,6 @@
 # scd-review
 
-Automated code review pipeline on the current branch. Chained review+validation pipeline, `correction_prompt` for precise fixes, business context injection, model profiles, and inline-only PR/MR comments.
+Code review pipeline on the current branch with **interactive per-observation decisions** (apply/skip/defer/discuss) and persisted state for safe interruption/resume. Chained review+validation pipeline, `correction_prompt` for precise fixes, business context injection, model profiles, and inline-only PR/MR comments.
 
 ## Commands
 
@@ -10,18 +10,19 @@ Bootstrap the code review environment. Detects `jq`, installs the `scd.sh` scrip
 
 Run this once before your first review. Use `--force` to re-probe the environment (bypasses the 24h cache).
 
-### `/scd-review:run [--fix] [--post] [--context ...] [base-branch]`
+### `/scd-review:run [--auto-fix] [--post] [--no-fix] [--context ...] [base-branch]`
 
-The main pipeline. Runs a chained review+validation workflow on the current branch with zero human checkpoints (except optional mid-run and escalations).
+The main pipeline. Runs a chained review+validation workflow on the current branch, then enters an **interactive decision phase** by default — each observation is presented one at a time for explicit action.
 
 **Flags:**
 
 | Flag | Behavior |
 |---|---|
-| *(none)* | Same as `--fix` (default) |
-| `--fix` | Apply corrections via fix-applier after review |
-| `--post` | Post inline comments on the open PR/MR |
-| `--fix --post` | Apply corrections, then post remaining observations |
+| *(none)* | **Interactive mode (default)** — decisions one-by-one per observation, then batched fixes |
+| `--auto-fix` | Skip the interactive phase — apply all validator-approved fixes (v1.0 behavior, for CI) |
+| `--post` | Post inline comments instead of fixing |
+| `--no-fix` | Review + validate only, no dispatch (audit mode) |
+| `--auto-fix --post` | Auto-fix then post remaining observations |
 | `--context ticket:PROJ-123` | Inject a ticket (GitHub/GitLab/Jira) as business context |
 | `--context file:specs/auth.md` | Inject a local file as business context |
 | `--context url:https://...` | Inject a URL as business context |
@@ -31,10 +32,19 @@ The main pipeline. Runs a chained review+validation workflow on the current bran
 1. **Context resolution** — resolves `--context` sources into a markdown file injected into reviewer agents
 2. **Review** — `code-reviewer` / `test-reviewer` agents in a sliding window (max N parallel), produce observations with `correction_prompt`
 3. **Validation (chained)** — `review-validator` starts on each file as soon as its review finishes (not a separate batch phase)
-4. **Dispatch** — fix-applier applies corrections (`--fix`), or inline comments are posted (`--post`)
-5. **Consolidated report** — verdict with escalation list and resolution summary
+4. **Decision phase (NEW, interactive default)** — each observation presented with explanation; you choose **Apply / Skip / Defer / Discuss**. Each decision is persisted immediately.
+5. **Fix batch** — `fix-applier` runs only on observations explicitly marked **Apply** (or all validator-approved in `--auto-fix` mode).
+6. **Consolidated report** — verdict with escalation list, deferred items, and resolution summary.
+
+**Interactive options per observation:**
+- **Apply** — fix-applier corrects it in Phase 5
+- **Skip** — ignore definitively
+- **Defer** — decide later (re-prompted by `/scd-review:continue`)
+- **Discuss** — Claude analyzes context deeper (impact, alternatives) before re-prompting
 
 **Circuit breaker:** if the diff exceeds `pipeline.max_files_per_run` (default: 20), the most critical files are processed first and `continue` handles the rest. An optional checkpoint at 50% gives a progress summary.
+
+**Interrupt-safe:** the interactive phase can be interrupted at any time (Ctrl+C, session end). Decisions already made are persisted in the session JSON. Resume with `/scd-review:continue`.
 
 ### `/scd-review:followup`
 
@@ -48,7 +58,13 @@ Each file gets a resolution verdict (resolved / partially resolved / unresolved)
 
 ### `/scd-review:continue`
 
-Resume an interrupted review or followup. Files pending are re-scored by risk before relaunching agents — critical files are processed first regardless of original order.
+Resume an interrupted review, decision phase, fix batch, or followup. Detects the stage automatically:
+
+- **Files pending review** → re-scored by risk, agents relaunched (critical files first)
+- **Decisions pending** → resume the interactive decision loop where you left off
+- **Fixes pending** → run fix-applier batch on the remaining `apply` decisions
+
+Decisions and fixes already persisted are never re-prompted.
 
 ### `/scd-review:settings`
 
@@ -144,6 +160,7 @@ All operations go through a single dispatcher: `.claude/review/scripts/scd.sh`
 
 ```bash
 scd.sh session  status | update-file | add-observations | add-comment | add-agent-tasks | summary | pending-files
+                mark-resolution | set-decision | pending-decisions | decision-summary | seed-decisions
 scd.sh followup classify | get-context | update-file | summary
 scd.sh post     inline-comments | orphan-summary
 scd.sh validation update | report
@@ -179,7 +196,8 @@ Add `.claude/review/sessions/` and `.claude/review/scripts/` to your `.gitignore
 |---|---|---|
 | `model_profile` | `"balanced"` | `balanced` (Sonnet) / `quality` (Opus for review+fix) / `budget` (Haiku for validator) |
 | `model_overrides` | `{}` | Per-agent model override: `{"code-reviewer": "opus"}` |
-| `default_output` | `"fix"` | Default flag: `fix`, `post`, or `both` |
+| `default_output` | `"interactive"` | Default mode: `interactive` (new default), `fix` (= `--auto-fix`), `post`, or `both` |
+| `interactive.auto_skip_validator_skipped` | `true` | Auto-mark `user_decision = "skip"` for observations the validator already skipped |
 | `pipeline.max_parallel_agents` | `5` | Max concurrent agents (review + validation combined) |
 | `pipeline.max_files_per_run` | `20` | Circuit breaker — files over this threshold go to `continue` |
 | `pipeline.midpoint_checkpoint` | `true` | Show progress summary at 50% |

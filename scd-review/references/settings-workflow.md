@@ -48,23 +48,27 @@ AskUserQuestion(
     header: "Default Output",
     options: [
       {
-        label: "Fix (Recommandé)",
-        description: "Appliquer les corrections directement — usage solo dev quotidien"
+        label: "Interactif (Recommandé)",
+        description: "Décider une par une (apply/skip/defer/discuss) avec persistance — usage solo dev quotidien"
+      },
+      {
+        label: "Auto-fix",
+        description: "Appliquer toutes les corrections validées sans interaction — usage CI / automation"
       },
       {
         label: "Post",
-        description: "Poster les commentaires inline sur PR/MR"
+        description: "Poster les commentaires inline sur PR/MR (pas de décisions ni fix)"
       },
       {
-        label: "Both",
-        description: "Corriger puis poster"
+        label: "Auto-fix + Post",
+        description: "Corriger automatiquement puis poster les restes"
       }
     ]
   }]
 )
 ```
 
-Mapping : Fix → "fix" | Post → "post" | Both → "both"
+Mapping : Interactif → "interactive" | Auto-fix → "fix" | Post → "post" | Auto-fix + Post → "both"
 
 ### Question 3 — Seuil de confiance du validator
 
@@ -261,7 +265,7 @@ Afficher un résumé des paramètres appliqués :
 | Paramètre | Valeur |
 |-----------|--------|
 | Profil modèles | balanced |
-| Output par défaut | fix |
+| Output par défaut | interactive |
 | Validator threshold | 0.75 |
 | Max agents parallèles | 5 |
 | Max fichiers / run | 20 |
