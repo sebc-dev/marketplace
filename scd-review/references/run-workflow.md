@@ -39,7 +39,32 @@ Si la commande reçoit un ou plusieurs `--context <type>:<value>` :
 
 ## Phase 1 — Review (pipeline glissant)
 
-### 1a. Contexte git
+### 1a. Mise à jour de la base branch
+
+La base (`main`/`master`) doit refléter l'état distant avant de calculer le `merge_base` — sinon la review compare contre une base obsolète.
+
+```bash
+# Récupérer les refs distantes (silencieux si offline ou pas de remote)
+git fetch origin "<base_branch>" 2>/dev/null \
+  || echo "WARN: fetch origin/<base_branch> impossible (offline ou remote absent) — review sur état local"
+
+current_branch=$(git branch --show-current)
+if [[ "$current_branch" == "<base_branch>" ]]; then
+  # Sur la base : fast-forward via pull
+  git pull --ff-only 2>/dev/null \
+    || echo "WARN: <base_branch> non avancée (divergence) — review sur état local"
+else
+  # Hors base : fast-forward du ref local sans checkout
+  git fetch . "origin/<base_branch>:<base_branch>" 2>/dev/null \
+    || echo "WARN: <base_branch> non avancée (divergence ou pas de remote) — review sur état local"
+fi
+```
+
+Base branch = argument fourni, sinon `options.default_base_branch` dans config.json, sinon `main`.
+
+En cas d'échec (offline, divergence locale, pas de remote `origin`), on continue avec l'état local et un WARN — la review reste fonctionnelle mais comparée à la base locale.
+
+### 1b. Contexte git
 
 ```bash
 git branch --show-current        # branche courante
@@ -48,9 +73,7 @@ git diff --name-status <merge_base>..HEAD  # fichiers modifiés
 git log --oneline --reverse <merge_base>..HEAD  # commits
 ```
 
-Base branch = argument fourni, sinon `options.default_base_branch` dans config.json, sinon `main`.
-
-### 1b. Sélection du périmètre
+### 1c. Sélection du périmètre
 
 Si `--context` fourni → afficher le contexte résolu comme information.
 
@@ -65,7 +88,7 @@ Calculer la liste des fichiers :
    ─────────────────────────────────────────────────────
    ```
 
-### 1c. Création de la session v2
+### 1d. Création de la session v2
 
 Fichier `.claude/review/sessions/<slug>.json` :
 ```json
@@ -131,7 +154,7 @@ risk_score = category_priority_index_inverted × 0.6 + diff_lines_normalized × 
 
 Écrire le JSON avec Write.
 
-### 1d. Résoudre les modèles
+### 1e. Résoudre les modèles
 
 Avant de lancer les agents, résoudre une fois les modèles depuis config :
 ```bash
@@ -141,7 +164,7 @@ MODEL_FIXER=$(bash .claude/review/scripts/scd.sh config resolve-model .claude/re
 MODEL_SCOUT=$(bash .claude/review/scripts/scd.sh config resolve-model .claude/review/config.json scout-alpha)
 ```
 
-### 1e. Lancer le premier batch (pipeline glissant)
+### 1f. Lancer le premier batch (pipeline glissant)
 
 Lancer les `min(max_parallel_agents, total_files)` premiers agents en background.
 
@@ -184,7 +207,7 @@ bash .claude/review/scripts/scd.sh session add-agent-tasks \
   .claude/review/sessions/<slug>.json '<{"chemin/fichier": "task_id", ...}>'
 ```
 
-### 1f. Boucle review + pipeline glissant
+### 1g. Boucle review + pipeline glissant
 
 Pour chaque fichier `pending` dans l'ordre (trié par `risk_score` descendant) :
 
