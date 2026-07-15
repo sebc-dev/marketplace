@@ -1,0 +1,22 @@
+{
+  "name": "scd-project-docs",
+  "version": "0.1.0",
+  "description": "Greenfield project kickoff workflow: produce the generic project-management documents once, at creation. Six user-invoked phases (kickoff, brief, prd, stack, adr, contract) drive a traceability chain Brief → PRD → Stack → foundational ADRs → CLAUDE.md. One-question-at-a-time interview for the upstream docs, justified options for the stack, immutable Nygard ADRs for the founding decisions. Per-feature specs (spec/plan/tasks) are OUT of scope — a separate workflow. Human decides the what; Claude drafts against templates and interviews to fill gaps.",
+  "author": {
+    "name": "sebc.dev"
+  },
+  "license": "MIT",
+  "keywords": [
+    "project-docs",
+    "kickoff",
+    "greenfield",
+    "brief",
+    "prd",
+    "adr",
+    "spec-driven",
+    "workflow"
+  ],
+  "commands": "./.claude/commands/",
+  "skills": "./.claude/skills/",
+  "repository": "https://github.com/sebc-dev/marketplace"
+}

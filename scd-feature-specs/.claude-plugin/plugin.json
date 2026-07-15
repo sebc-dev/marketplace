@@ -1,0 +1,27 @@
+{
+  "name": "scd-feature-specs",
+  "version": "0.1.0",
+  "description": "Purely documentary per-feature spec workflow: the downstream suite of scd-project-docs. Consumes the kickoff socle (prd/stack/adr/CLAUDE.md) and produces, for one or several features, the documents development will build on — spec → plan → tasks — then attests they are ready for optimal implementation. Six user-invoked phases (kickoff, specify, clarify, plan, tasks, analyze) plus a status dashboard, with EARS acceptance criteria, one-question-at-a-time interview, plan-mode planning and Kiro-style backreferences. The terminal analyze gate runs 11 checks (traceability, EARS conformance, verifiable verbs over adjectives, technology-agnostic spec, EXCLUDED scope, socle coherence) and returns a Critical/Major/Minor verdict, then loops to the next feature. Everything touching code is OUT of scope — neither writing it nor reviewing it afterwards; no test is ever executed here. Every command resolves its target feature from disk, so state survives /clear with no state file to drift, and documenting several features in parallel is safe. Ships an ADR-immutability PreToolUse hook, a format PostToolUse hook, a read-only contract-auditor subagent, OpenSpec brownfield deltas, a propose-only spec-drift maintenance loop and a Gherkin complement. Human decides the what; Claude drafts against templates, interviews to fill gaps, and adversarially audits the contract.",
+  "author": {
+    "name": "sebc.dev"
+  },
+  "license": "MIT",
+  "keywords": [
+    "feature-specs",
+    "spec-driven",
+    "ears",
+    "spec",
+    "plan",
+    "tasks",
+    "traceability",
+    "hooks",
+    "workflow"
+  ],
+  "commands": "./.claude/commands/",
+  "agents": [
+    "./.claude/agents/ears-verifier.md"
+  ],
+  "skills": "./.claude/skills/",
+  "hooks": "./hooks/hooks.json",
+  "repository": "https://github.com/sebc-dev/marketplace"
+}
