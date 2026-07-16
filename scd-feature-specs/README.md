@@ -6,13 +6,14 @@ Là où `scd-project-docs` pose **une fois** le socle d'un projet (`docs/prd.md`
 
 `specs/NNN-feature/spec.md → plan.md → tasks.md → analyze (gate terminale) → passage de main`
 
-L'humain décide du *quoi* ; Claude interroge, écrit en EARS, planifie contre le socle, découpe en tâches traçables, puis **valide le contrat de façon adverse**.
+L'humain décide du *quoi* ; Claude interroge, écrit en EARS, planifie contre le socle, découpe en **lots reviewables** et traçables, puis **valide le contrat de façon adverse**.
 
 ## Frontières
 
 - **En amont — `scd-project-docs`** = le socle projet, créé une fois au kickoff (Brief → PRD → Stack → ADR → CLAUDE.md). Ce plugin ne le crée pas : il le lit et signale s'il manque.
 - **`scd-feature-specs`** = les documents par feature, récurrents. **Périmètre strictement documentaire.**
 - **En aval — tout ce qui touche au code est HORS PÉRIMÈTRE.** Ni l'écriture du code, ni sa vérification post-implémentation (review et autres) : les deux relèvent d'un workflow séparé. Le cycle **s'arrête à `analyze`** et ne reprend pas. Aucun test n'est jamais exécuté ici.
+- **Une nuance, pas une exception** : le découpage est **dimensionné pour** que la review aval soit faisable par un humain. Décider de la taille d'une unité livrable est documentaire et se joue ici — après l'implémentation, redécouper coûte le prix du code déjà écrit. Mais on rend la review possible ; on ne la conduit pas.
 
 C'est la même frontière, répétée : chaque plugin livre un artefact et passe la main.
 
@@ -31,8 +32,8 @@ Chaque commande accepte `NNN` (ou le slug) en argument, et le **résout** toute 
 | 1 | `/scd-feature-specs:specify` | `spec.md` (EARS, FR, scope EXCLU) | 60/40 |
 | 2 | `/scd-feature-specs:clarify` | `spec.md` (résout `[NEEDS CLARIFICATION]`) | 60/40 |
 | 3 | `/scd-feature-specs:plan` | `plan.md` (**plan mode**, réutilise stack/ADR) | 50/50 |
-| 4 | `/scd-feature-specs:tasks` | `tasks.md` (TDD, `[P]`, backref `_Requirements:_`) | 40/60 |
-| 5 | `/scd-feature-specs:analyze` | **gate terminale** : contrat validé → **boucle vers la suivante** | 30/70 |
+| 4 | `/scd-feature-specs:tasks` | `tasks.md` (lots `Rn` reviewables, TDD, `[P]`, backref `_Requirements:_`) | 40/60 |
+| 5 | `/scd-feature-specs:analyze` | **gate terminale** : contrat + découpage validés → **boucle vers la suivante** | 30/70 |
 | — | *(implémentation + review)* | **hors périmètre — workflow séparé** | — |
 | ⟳ | `/scd-feature-specs:status` | tableau de bord : où en est chaque feature | 10/90 |
 
@@ -45,9 +46,22 @@ Chaque commande accepte `NNN` (ou le slug) en argument, et le **résout** toute 
 ## Ce qui rend le contrat implémentable
 
 - **EARS** : chaque critère d'acceptation est un `SHALL` → un test nommé. Traçabilité `FR` du PRD → `FR`/`SHALL` de la spec → tâche → test → code. Ce plugin produit et valide la chaîne **jusqu'à `tasks.md`** ; l'aval en écrit les deux derniers maillons.
-- **Deux gates** : `clarify` (aucune ambiguïté non résolue) et `analyze` (11 contrôles : traçabilité, EARS, verbe vérifiable, technology-agnostic, scope EXCLU, cohérence socle…). Attraper un trou ici coûte infiniment moins cher qu'après l'implémentation.
+- **Deux gates** : `clarify` (aucune ambiguïté non résolue) et `analyze` (14 contrôles : traçabilité, EARS, verbe vérifiable, technology-agnostic, scope EXCLU, cohérence socle, reviewability du découpage…). Attraper un trou ici coûte infiniment moins cher qu'après l'implémentation.
 - **Réutilisation du socle** : `plan` applique `stack.md`/`adr/`, ne les re-décide jamais ; une décision structurante nouvelle devient un **candidat ADR** dans `docs/adr/_candidates/`.
-- **Revue adverse des documents** : le subagent `ears-verifier` (contexte frais, lecture seule) audite le contrat — la session qui a rédigé les documents est mal placée pour les juger.
+- **Revue adverse des documents** : deux subagents en contexte frais et en lecture seule, aux mandats disjoints — `ears-verifier` juge le contrat, `slice-auditor` juge le découpage. La session qui a rédigé les documents est mal placée pour les juger.
+
+## Découper pour que la review humaine ait lieu
+
+`tasks.md` a **deux granularités** : le **lot `Rn`** est l'unité de *review* (une vertical slice livrant une capability vérifiable, unité de livraison recommandée — « un lot ≈ une PR reviewable ») ; la **tâche `Tn`** est l'unité de *progression* (un critère observable = un commit = un test vert). L'ordre TDD vit **dans** le lot, jamais entre les lots.
+
+Pourquoi : un contrat parfaitement tracé mais livrable en un seul bloc produit une review que personne ne fera vraiment — le reviewer skimme, et le défaut passe. La traçabilité garantit que tout est couvert ; le dimensionnement garantit que quelqu'un le lira.
+
+| | Critères | Effet si violé |
+|---|---|---|
+| **Bloquants** (qualitatifs) | un seul sujet · vertical slice (jamais « créer la table » / « créer l'API », qui ne se jugent qu'en assemblage) · compréhensible seul | **Critical** → redécouper |
+| **Signaux** (advisory) | ≈ 400 lignes estimées · ≈ 7 concepts · ≈ 5-7 critères par exigence | **Major** → scinder verticalement |
+
+> Les seuils chiffrés viennent d'études sur le **code** et l'inspection formelle, transposés aux documents par analogie ; aucun seuil n'est validé empiriquement pour des specs. Et le budget en lignes est une **estimation** dérivée du plan — ce plugin ne lit pas le code. D'où le choix : ils déclenchent une question, ils ne rendent jamais un verdict. Ce qui bloque est qualitatif.
 
 ## Couche déterministe (hooks livrés)
 
