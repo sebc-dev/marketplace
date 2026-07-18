@@ -1,6 +1,6 @@
 {
   "name": "scd-astro",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Astro 6.x on Cloudflare Workers. Rendering modes (SSG, SSR, Server Islands), Content Layer, Live Collections, Cloudflare bindings via cloudflare:workers (KV, D1, R2, Durable Objects), Zod 4, Fonts API, workerd dev server, breaking-change prevention.",
   "author": {
     "name": "sebc.dev"

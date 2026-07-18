@@ -1,6 +1,6 @@
 {
   "name": "scd-svelte",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Svelte 5 and SvelteKit 2. Runes, components, routing, data loading, state management, hooks, TypeScript, testing, deployment, ecosystem selection, anti-pattern prevention. Complements the Svelte MCP server.",
   "author": {
     "name": "sebc.dev"

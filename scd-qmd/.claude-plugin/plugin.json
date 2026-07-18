@@ -1,6 +1,6 @@
 {
   "name": "scd-qmd",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "On-device search engine for project docs and crawled technical documentation using qmd",
   "author": {
     "name": "sebc.dev"

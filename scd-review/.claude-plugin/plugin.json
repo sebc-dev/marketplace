@@ -1,6 +1,6 @@
 {
   "name": "scd-review",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Code review pipeline on the current branch with interactive per-observation decisions (apply/skip/defer/discuss) and persisted state for safe interruption/resume. Chained review+validation pipeline, correction_prompt for precise fixes, business context injection, model profiles, inline-only PR/MR comments. --auto-fix flag preserves the v1.0 non-interactive behavior for CI use.",
   "author": {
     "name": "sebc.dev"
