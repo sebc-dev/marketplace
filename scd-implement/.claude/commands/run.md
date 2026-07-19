@@ -9,6 +9,7 @@ allowed-tools:
   - Bash(git status *)
   - Bash(git rev-parse *)
   - Bash(git symbolic-ref *)
+  - Bash(find *)
   - Workflow
   - AskUserQuestion
 ---
@@ -52,13 +53,23 @@ Le workflow **commence** par créer la branche dédiée et se **termine** par un
 - **Base** : si `--base <branche>` est fourni, passe-le (la branche dédiée **et** la PR partent de cette base) ; sinon le workflow détecte la branche par défaut du repo.
 - **Action sortante** : `pr-author` fera `git push` + `gh pr create` / `glab mr create`. Pour éviter un prompt en cours de run, l'utilisateur peut pré-allowlister `Bash(git push *)`, `Bash(gh pr *)`, `Bash(glab mr *)`. Signale-le si ce n'est pas déjà le cas.
 
-Lance `implement-lot` avec les arguments résolus :
+Le workflow se lance **par son chemin de fichier** (`scriptPath`), **jamais par `name`** : un workflow **bundlé dans un plugin** n'est **pas** enregistré dans le registre des noms — seuls les workflows projet (`.claude/workflows/`) et built-in (`deep-research`, `code-review`) le sont. `Workflow(name: "implement-lot", …)` échoue donc avec « Workflow not found. Available: deep-research, code-review ».
+
+**a. Résoudre le chemin absolu du script.** Le fichier vit à `<racine-plugin>/.claude/workflows/implement-lot.js`. La variable `${CLAUDE_PLUGIN_ROOT}` **ne s'expande pas de façon fiable dans un fichier de commande markdown** (bug Claude Code connu) — ne la passe donc pas telle quelle à `scriptPath`. Résous le chemin par Bash, en ciblant la version active dans le cache des plugins :
+
+```bash
+find "$HOME/.claude/plugins/cache" -path '*scd-implement*/implement-lot.js' 2>/dev/null | sort -V | tail -1
+```
+
+Prends la ligne retournée comme chemin absolu (la version installée la plus haute). Si rien n'est trouvé (installation non standard, plugin lié en dev), élargis : `find "$HOME/.claude/plugins" -path '*scd-implement*/implement-lot.js' 2>/dev/null | sort -V | tail -1`, puis en dernier recours demande le chemin à l'utilisateur.
+
+**b. Lancer** avec ce chemin et les arguments résolus :
 
 ```
-Workflow(name: "implement-lot", args: { featureDir: "specs/NNN-feature", lot: "Rn", base: "<branche ou omis>" })
+Workflow(scriptPath: "<chemin absolu résolu en a>", args: { featureDir: "specs/NNN-feature", lot: "Rn", base: "<branche ou omis>" })
 ```
 
-> Le workflow est bundlé dans ce plugin (`.claude/workflows/implement-lot.js`). Si l'invocation par `name` ne le résout pas, lance-le par chemin : `Workflow(scriptPath: "<plugin>/.claude/workflows/implement-lot.js", args: {...})`. C'est un **template** — adapte-le si la feature l'exige (ex. framework de test particulier), sans casser le contrat parser.
+> C'est un **template** — adapte-le si la feature l'exige (ex. framework de test particulier), sans casser le contrat parser.
 
 ## 6. Rendre compte
 

@@ -60,10 +60,12 @@ Ne jamais : mettre du non-déterminisme, faire de l'I/O dans l'orchestrateur, pa
 <run>
 ## Lancer
 
-Depuis `/scd-implement:run`, après résolution de la cible :
+Depuis `/scd-implement:run`, après résolution de la cible, on lance **par `scriptPath`** (jamais par `name`) :
 ```
-Workflow(name: "implement-lot", args: { featureDir: "specs/NNN-slug", lot: "Rn" })
+Workflow(scriptPath: "<racine-plugin>/.claude/workflows/implement-lot.js", args: { featureDir: "specs/NNN-slug", lot: "Rn" })
 ```
+**Pourquoi pas `name`** : un workflow bundlé dans un plugin n'est pas dans le registre des noms (seuls les workflows projet `.claude/workflows/` et built-in le sont) ; `Workflow(name: "implement-lot")` échoue avec « not found ». Et `${CLAUDE_PLUGIN_ROOT}` ne s'expande pas de façon fiable dans une commande markdown → `run` résout le chemin absolu par Bash (`find "$HOME/.claude/plugins" -path '*scd-implement*/implement-lot.js' | sort -V | tail -1`) avant de lancer.
+
 Suivre dans `/workflows` (P pause, X stop). Le run est reprenable **dans la même session** (les agents terminés renvoient leurs résultats cachés). Quitter Claude Code repart de zéro.
 
 ## Fallback `agentType`
