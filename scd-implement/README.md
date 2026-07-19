@@ -1,0 +1,100 @@
+# implement
+
+**Le workflow dynamique d'implémentation TDD — la suite de `scd-feature-specs`. Un lot de review à la fois.**
+
+Là où `scd-feature-specs` produit et **atteste** le contrat d'une feature (`specs/NNN-feature/{spec,plan,tasks}.md`, gate `analyze` au vert) puis **s'arrête**, `scd-implement` prend le relais : il **honore** ce contrat et le **vérifie**, en implémentant **un lot `Rn` à la fois** via un **dynamic workflow** — un script JS qui orchestre huit subagents dédiés en arrière-plan.
+
+```
+Rouge (tests) → Valider les tests → Vert (impl) → Review → Triage sceptique → Apply → Record → PR
+```
+
+L'humain a décidé du *quoi* en amont (le contrat). Ici, le workflow exécute le *comment* et **prouve le vert** — sans intervention humaine en cours de run.
+
+## Frontières
+
+- **En amont — `scd-feature-specs`** = les documents par feature. Ce plugin ne les écrit pas : il les lit et signale si le contrat est incomplet.
+- **`scd-implement`** = le code + la review. Il écrit les **deux derniers maillons** de la chaîne de traçabilité — *test* et *code* — et coche `tasks.md`.
+- Si l'implémentation révèle un défaut du **contrat** (SHALL intestable, cas manquant), il le **signale** pour un retour amont ; il ne le corrige pas ici.
+
+```
+scd-project-docs  →  scd-feature-specs  →  scd-implement
+   (le socle)          (les documents)       (le code + la review)
+```
+
+## Le cycle, par lot
+
+Un lancement = un lot `Rn`. Huit phases, huit agents dédiés :
+
+| Phase | Agent | Rôle | Modèle |
+|---|---|---|---|
+| Prepare | `lot-briefer` | parse le lot, pull les SHALL, détecte le test runner | sonnet |
+| Red | `test-writer` | un test nommé par SHALL, confirme le **rouge** | sonnet |
+| Validate | `test-validator` | 1 SHALL = 1 test, cas limites, conventions, anti-patterns | opus |
+| Green | `implementer` | code jusqu'au **vert**, **sans toucher aux tests** | sonnet |
+| Review | `code-reviewer` | 6 dimensions, en contexte frais | opus |
+| Triage | `review-validator` | triage **sceptique adversarial** (apply/skip) | opus |
+| Apply | `fix-applier` | applique les findings retenus, re-vérifie le vert | sonnet |
+| Record | `progress-recorder` | branche de lot, coche `tasks.md`, commit | haiku |
+| PR | `pr-author` | pousse la branche, ouvre la PR/MR **ready** avec description | sonnet |
+
+## Les invariants
+
+- **TDD strict** — aucun code de production avant que les tests soient écrits, **validés**, et **rouges** (échec légitime). L'ordre T-test → T-impl est déjà porté par `tasks.md`.
+- **Une SHALL = un test nommé** — chaque critère EARS d'un FR livré par le lot devient un test dont le nom décrit scénario et résultat.
+- **Ne jamais toucher aux tests en phase verte** — garanti par un **check `git diff` déterministe** (vide), pas un hook : un hook statique ne sait pas distinguer la phase d'écriture des tests de la phase verte.
+- **Le vert se prouve** — `passing` n'est vrai que si la **sortie réelle** de la commande montre `0 failed`. Jamais « looks done ».
+- **Producteur ≠ vérificateur** — le `code-reviewer` n'a pas écrit le code ; le second regard en contexte frais tue le self-preferential bias.
+- **Sceptique mais sobre** — le triage reproduit chaque finding avant de le retenir et **ne corrige que ce qui touche la correction ou une exigence**. Le sur-engineering est rejeté ; un lot vert avec zéro finding retenu est un résultat valide.
+
+## Pourquoi un dynamic workflow
+
+Le cycle est exactement le cas où « la sortie de l'étape N détermine l'étape N+1 » (route, boucle de correction des tests, retry jusqu'au vert, review → triage → apply). Le **plan sort de la tête de Claude et passe dans du code** : la boucle, les branchements et les résultats intermédiaires vivent dans le script, seul le résultat final revient au contexte. Chaque agent a un contexte isolé et un objectif borné — ce qui combat structurellement l'*agentic laziness* (s'arrêter avant la fin) et le *self-preferential bias* (préférer son propre travail).
+
+> Un dynamic workflow consomme **substantiellement plus** de tokens qu'une session classique. Le périmètre « un lot par lancement » borne la dépense ; le routage opus/sonnet/haiku l'optimise. Piloter un premier run sur un petit lot (1-2 SHALL). Suivre dans `/workflows`.
+
+## Commandes
+
+| Commande | Rôle | Human/AI |
+|---|---|---|
+| `/scd-implement:run [NNN] [Rn]` | lance le workflow sur un lot (résout la cible, vérifie les préconditions) | 20/80 |
+| `/scd-implement:status [NNN]` | tableau de bord : lots faits / en cours / à faire, prochain lançable | 10/90 |
+
+L'état vit dans les cases de `tasks.md` — cochées par `progress-recorder`, relues par `status`. `/clear` efface le contexte, pas l'état.
+
+## Un lot = une PR
+
+Le run se conclut par une **PR ready-for-review, une par lot** — le prolongement direct de « un lot ≈ une PR reviewable » (`scd-feature-specs` dimensionne la slice ; `scd-implement` la livre).
+
+- **Branche** : `impl/<slug>-<lot>`, créée par `progress-recorder` **avant** le commit si tu es sur la branche par défaut (sinon ta branche de travail est respectée).
+- **Base** : branche par défaut du repo, détectée ; surchargeable via `--base <branche>`.
+- **Plateforme** : auto-détection `gh` (GitHub) / `glab` (GitLab).
+- **Description** : FR/SHALL livrés → tests, fichiers d'impl, findings appliqués/rejetés, preuve du vert (`0 failed`), traçabilité vers `specs/NNN-feature/`.
+
+> Créer une PR est une **action sortante** depuis un run en arrière-plan. Pour éviter un prompt en cours de run, pré-allowlister `Bash(git push *)`, `Bash(gh pr *)`, `Bash(glab mr *)`. En `-p`/SDK sans CLI/auth, `pr-author` échoue proprement (`created: false`) et laisse la branche poussée.
+
+## Couche déterministe (pas de hooks)
+
+Ce plugin **ne livre aucun hook**. Ce qui doit arriver à 100 % **dépend de la phase** et est donc garanti *dans* le workflow :
+- « tests intacts » → check `git diff` vide dans `implementer`/`fix-applier` ;
+- « vert » → assertion sur la sortie `0 failed`.
+
+Un hook `PreToolUse` statique ne connaît pas la phase (les fichiers de test ne sont connus qu'au runtime). La discipline TDD est portée par la **structure** du workflow, pas par une règle globale.
+
+## Quick start
+
+```
+# Après une gate analyze au vert de scd-feature-specs :
+/scd-implement:status                 # où en est l'implémentation ?
+/scd-implement:run 003 R1             # implémente le lot R1 de la feature 003
+# … suivre dans /workflows … puis :
+/scd-implement:run 003 R2             # lot suivant
+
+# perdu ?
+/scd-implement:status
+```
+
+## Installation
+
+```
+/plugin install scd-implement@sebc-dev-marketplace
+```

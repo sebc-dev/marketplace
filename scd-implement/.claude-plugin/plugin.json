@@ -1,0 +1,35 @@
+{
+  "name": "scd-implement",
+  "version": "0.1.0",
+  "description": "Workflow dynamique d'implémentation TDD, la suite de scd-feature-specs. Consomme le contrat documentaire d'une feature (specs/NNN-feature/{spec,plan,tasks}.md, verdict analyze au vert) et exécute, pour UN lot de review Rn à la fois, un dynamic workflow (script JS orchestrant des subagents dédiés en arrière-plan) qui déroule le cycle rouge→vert→review→triage→apply : rédaction des tests jusqu'au rouge, validation des tests (une SHALL EARS = un test nommé, couverture, cas limites, conventions du rubric), implémentation jusqu'au vert sans jamais toucher aux tests (garanti par un check git-diff déterministe, pas un hook), review du code sur six dimensions (architecture, propreté, conventions, couverture, sécurité, gestion d'erreur), triage sceptique adversarial des findings (chaque finding reproduit avant d'être retenu, style et scope creep rejetés, on ne corrige que ce qui touche la correction ou une exigence), puis application des seuls findings validés et re-vérification verte, et enfin publication d'une PR « ready for review » (une PR par lot : branche de lot dédiée, description structurée de l'implémentation — FR/SHALL livrés, tests, findings, preuve du vert). Producteur (implémenteur) et vérificateur (reviewer) ne partagent jamais de contexte — le second regard en contexte frais tue le self-preferential bias. La porte verte exige la sortie réelle de la commande de test (0 failed), jamais une affirmation. Neuf agents dédiés : lot-briefer (parse le lot, pull les SHALL, détecte le test runner), test-writer, test-validator, implementer, code-reviewer, review-validator, fix-applier, progress-recorder (branche de lot, coche les Tn/Rn de tasks.md, commit), pr-author (pousse la branche, ouvre la PR/MR gh/glab avec description). Entièrement autonome : aucune gate humaine en cours de run. Un lancement = un lot Rn ; l'unité de travail est la vertical slice reviewable produite par scd-feature-specs. Le plugin n'invente aucune techno (agnostique, détectée depuis le projet) et n'écrit aucun document de spec — il honore le contrat et le vérifie, là où scd-feature-specs s'arrête à la gate analyze. Human décide le quoi (le contrat, en amont) ; le workflow exécute le comment et prouve le vert.",
+  "author": {
+    "name": "sebc.dev"
+  },
+  "license": "MIT",
+  "keywords": [
+    "implement",
+    "tdd",
+    "dynamic-workflow",
+    "test-first",
+    "red-green",
+    "code-review",
+    "ears",
+    "vertical-slice",
+    "subagents",
+    "workflow"
+  ],
+  "commands": "./.claude/commands/",
+  "agents": [
+    "./.claude/agents/lot-briefer.md",
+    "./.claude/agents/test-writer.md",
+    "./.claude/agents/test-validator.md",
+    "./.claude/agents/implementer.md",
+    "./.claude/agents/code-reviewer.md",
+    "./.claude/agents/review-validator.md",
+    "./.claude/agents/fix-applier.md",
+    "./.claude/agents/progress-recorder.md",
+    "./.claude/agents/pr-author.md"
+  ],
+  "skills": "./.claude/skills/",
+  "repository": "https://github.com/sebc-dev/marketplace"
+}

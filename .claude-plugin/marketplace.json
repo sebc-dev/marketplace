@@ -95,9 +95,18 @@
         "name": "sebc.dev"
       },
       "category": "development"
+    },
+    {
+      "name": "scd-implement",
+      "source": "./scd-implement",
+      "description": "Workflow dynamique d'implementation TDD, la suite de scd-feature-specs. Consomme le contrat documentaire d'une feature (specs/NNN-feature/{spec,plan,tasks}.md, gate analyze au vert) et execute, pour UN lot de review Rn a la fois, un dynamic workflow (script JS orchestrant huit subagents dedies en arriere-plan) qui deroule le cycle rouge->vert->review->triage->apply : redaction des tests jusqu'au rouge, validation des tests (une SHALL EARS = un test nomme, couverture, cas limites, conventions du rubric), implementation jusqu'au vert sans jamais toucher aux tests (garanti par un check git-diff deterministe, pas un hook), review du code sur six dimensions (architecture, proprete, conventions, couverture, securite, gestion d'erreur), triage sceptique adversarial des findings (chaque finding reproduit avant d'etre retenu, style et scope creep rejetes, on ne corrige que ce qui touche la correction ou une exigence), puis application des seuls findings valides et re-verification verte, et enfin publication d'une PR ready-for-review (une PR par lot : branche dediee, description structuree de l'implementation). Producteur (implementeur) et verificateur (reviewer) ne partagent jamais de contexte : le second regard en contexte frais tue le self-preferential bias. La porte verte exige la sortie reelle de la commande de test (0 failed), jamais une affirmation. Neuf agents dedies : lot-briefer, test-writer, test-validator, implementer, code-reviewer, review-validator, fix-applier, progress-recorder, pr-author (pousse la branche et ouvre la PR/MR gh/glab). Entierement autonome, aucune gate humaine en cours de run ; un lancement = un lot. Agnostique (techno detectee depuis le projet), il honore le contrat et le verifie la ou scd-feature-specs s'arrete a analyze.",
+      "author": {
+        "name": "sebc.dev"
+      },
+      "category": "development"
     }
   ],
   "metadata": {
-    "version": "0.9.0"
+    "version": "0.10.0"
   }
 }
