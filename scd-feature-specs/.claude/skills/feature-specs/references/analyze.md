@@ -1,8 +1,10 @@
-# Référence — Gate terminale de validation (`analyze`)
+# Référence — Gate de conformité (`analyze`)
 
 <role>
-**Dernière phase du cycle.** Atteste que `spec.md` / `plan.md` / `tasks.md` sont **prêts pour une
-implémentation optimale** par un workflow aval. **Lecture seule + rapport** : ne modifie aucun
+**Gate de conformité du cycle.** Atteste que `spec.md` / `plan.md` / `tasks.md` sont **prêts pour une
+implémentation optimale** par un workflow aval. Peut être suivie de la passe optionnelle `premortem`
+(`references/premortem.md`), qui durcit un contrat déjà conforme par projection d'échec. **Lecture
+seule + rapport** : ne modifie aucun
 fichier, n'écrit aucun verdict sur disque (un PASS persisté deviendrait faux dès la prochaine
 édition — la gate est bon marché, on la relance).
 
@@ -83,5 +85,5 @@ unique sans les rejuger.
 - **Ne juge pas le code** : il n'existe pas. Les tests sont *prévus* dans `tasks.md`, pas exécutés.
 - **Ne transforme pas une estimation en gate.** Les budgets de lots sont des ordres de grandeur documentaires (ce plugin ne lit pas le code) et les seuils viennent d'études sur le code, transposés par analogie. Ils déclenchent une question, jamais un verdict — d'où « lot hors seuils = Major ». Les bloquants du découpage sont **qualitatifs** : verticalité, sujet unique, indépendance.
 - **Relançable à volonté** : après correction, rejouer la gate. C'est bon marché et toujours à jour.
-- **Le cycle boucle ici.** Un verdict `PRÊT` clôt la feature : le contrat part vers le workflow d'implémentation, et on repart sur la suivante par `/scd-feature-specs:kickoff` (ou `status` si plusieurs sont en vol). C'est la dernière phase — rien ne revient après.
+- **Le cycle boucle après la conformité.** Un verdict `PRÊT` ouvre le passage de main. Pour une feature à fort enjeu, la passe optionnelle `premortem` durcit le contrat d'abord (puis on relance cette gate). Une fois `PRÊT` (re)confirmé, le contrat part vers le workflow d'implémentation et on repart sur la suivante par `/scd-feature-specs:kickoff` (ou `status` si plusieurs sont en vol).
 </guidance>

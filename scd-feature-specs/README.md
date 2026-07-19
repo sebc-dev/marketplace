@@ -4,15 +4,15 @@
 
 Là où `scd-project-docs` pose **une fois** le socle d'un projet (`docs/prd.md`, `docs/stack.md`, `docs/adr/`, `CLAUDE.md`), `scd-feature-specs` le **consomme** et produit, **pour une ou plusieurs features**, les documents qui serviront de base au développement — puis **atteste qu'ils sont prêts** pour une implémentation optimale :
 
-`specs/NNN-feature/spec.md → plan.md → tasks.md → analyze (gate terminale) → passage de main`
+`specs/NNN-feature/spec.md → plan.md → tasks.md → analyze (gate de conformité) → premortem (durcissement, optionnel) → passage de main`
 
-L'humain décide du *quoi* ; Claude interroge, écrit en EARS, planifie contre le socle, découpe en **lots reviewables** et traçables, puis **valide le contrat de façon adverse**.
+L'humain décide du *quoi* ; Claude interroge, écrit en EARS, planifie contre le socle, découpe en **lots reviewables** et traçables, **valide le contrat de façon adverse**, puis — pour une feature à fort enjeu, et seulement avec l'accord de l'humain — le **durcit contre les modes de défaillance projetés**.
 
 ## Frontières
 
 - **En amont — `scd-project-docs`** = le socle projet, créé une fois au kickoff (Brief → PRD → Stack → ADR → CLAUDE.md). Ce plugin ne le crée pas : il le lit et signale s'il manque.
 - **`scd-feature-specs`** = les documents par feature, récurrents. **Périmètre strictement documentaire.**
-- **En aval — tout ce qui touche au code est HORS PÉRIMÈTRE.** Ni l'écriture du code, ni sa vérification post-implémentation (review et autres) : les deux relèvent d'un workflow séparé. Le cycle **s'arrête à `analyze`** et ne reprend pas. Aucun test n'est jamais exécuté ici.
+- **En aval — tout ce qui touche au code est HORS PÉRIMÈTRE.** Ni l'écriture du code, ni sa vérification post-implémentation (review et autres) : les deux relèvent d'un workflow séparé. Le cycle **s'arrête après `analyze` (et le `premortem` optionnel)** et ne reprend pas. Aucun test n'est jamais exécuté ici — le `premortem` durcit le *contrat*, pas le code.
 - **Une nuance, pas une exception** : le découpage est **dimensionné pour** que la review aval soit faisable par un humain. Décider de la taille d'une unité livrable est documentaire et se joue ici — après l'implémentation, redécouper coûte le prix du code déjà écrit. Mais on rend la review possible ; on ne la conduit pas.
 
 C'est la même frontière, répétée : chaque plugin livre un artefact et passe la main.
@@ -33,13 +33,14 @@ Chaque commande accepte `NNN` (ou le slug) en argument, et le **résout** toute 
 | 2 | `/scd-feature-specs:clarify` | `spec.md` (résout `[NEEDS CLARIFICATION]`) | 60/40 |
 | 3 | `/scd-feature-specs:plan` | `plan.md` (**plan mode**, réutilise stack/ADR) | 50/50 |
 | 4 | `/scd-feature-specs:tasks` | `tasks.md` (lots `Rn` reviewables, TDD, `[P]`, backref `_Requirements:_`) | 40/60 |
-| 5 | `/scd-feature-specs:analyze` | **gate terminale** : contrat + découpage validés → **boucle vers la suivante** | 30/70 |
+| 5 | `/scd-feature-specs:analyze` | **gate de conformité** : contrat + découpage validés (lecture seule) | 30/70 |
+| 6 | `/scd-feature-specs:premortem` | **durcissement adverse** (optionnel) : 3 sous-agents projettent l'échec, l'humain approuve, les remédiations sont inscrites → **re-analyze puis boucle vers la suivante** | 40/60 |
 | — | *(implémentation + review)* | **hors périmètre — workflow séparé** | — |
 | ⟳ | `/scd-feature-specs:status` | tableau de bord : où en est chaque feature | 10/90 |
 
 ## Cadence : une feature à la fois, ou plusieurs
 
-- **Séquentiel (défaut)** : on documente une feature, on la valide, `analyze` **boucle** vers `kickoff` pour la suivante. Les `NNN` sont stables, jamais réattribués.
+- **Séquentiel (défaut)** : on documente une feature, on la valide (`analyze`), on la durcit éventuellement (`premortem` → re-`analyze`), puis on **boucle** vers `kickoff` pour la suivante. Les `NNN` sont stables, jamais réattribués.
 - **Parallèle (sans risque ici)** : documenter plusieurs features en parallèle est un usage prévu — chaque phase n'écrit que dans `specs/NNN-*/`, disjoints par construction. La seule contrainte de parallélisme porte sur l'**implémentation**, donc en aval : `status` signale les features dont les « Fichiers touchés » se recoupent, comme note transmise au workflow suivant.
 - **Reprise** : `/clear` efface le contexte, pas l'état — il vit dans les fichiers. `status` le dérive (`spec.md` présent ? marqueurs restants ? `tasks.md` écrit ?), donc rien à maintenir et rien qui dérive. Aucun verdict n'est persisté : `analyze` est bon marché et se relance, là où un PASS sur disque deviendrait faux à la première édition.
 
@@ -49,6 +50,7 @@ Chaque commande accepte `NNN` (ou le slug) en argument, et le **résout** toute 
 - **Deux gates** : `clarify` (aucune ambiguïté non résolue) et `analyze` (14 contrôles : traçabilité, EARS, verbe vérifiable, technology-agnostic, scope EXCLU, cohérence socle, reviewability du découpage…). Attraper un trou ici coûte infiniment moins cher qu'après l'implémentation.
 - **Réutilisation du socle** : `plan` applique `stack.md`/`adr/`, ne les re-décide jamais ; une décision structurante nouvelle devient un **candidat ADR** dans `docs/adr/_candidates/`.
 - **Revue adverse des documents** : deux subagents en contexte frais et en lecture seule, aux mandats disjoints — `ears-verifier` juge le contrat, `slice-auditor` juge le découpage. La session qui a rédigé les documents est mal placée pour les juger.
+- **Durcissement par premortem** (optionnel, après `analyze`) : là où la gate vérifie la *conformité*, le premortem cherche les *modes de défaillance* qu'elle ne voit pas. Trois subagents en contexte frais — `premortem-facilitator` projette l'échec de la feature et remonte à la cause, `premortem-validator` trie les risques (rejette spéculation et scope creep), `premortem-applier` inscrit **uniquement** les remédiations que l'humain a approuvées. Puis on relance `analyze`, le contrat ayant changé.
 
 ## Découper pour que la review humaine ait lieu
 
@@ -88,7 +90,9 @@ Le contexte est *advisory* ; ce qui doit arriver à 100 % est un **hook** :
 /scd-feature-specs:kickoff "authentification par email"
 # puis, en faisant /clear avant chaque phase :
 /scd-feature-specs:specify → :clarify → :plan → :tasks → :analyze
-# analyze au vert = contrat validé. Il boucle vers la feature suivante :
+# analyze au vert = contrat conforme. Feature à fort enjeu ? durcis-le :
+/scd-feature-specs:premortem     # 3 sous-agents + ton approbation, puis re-:analyze
+# contrat validé → il boucle vers la feature suivante :
 /scd-feature-specs:kickoff "export CSV"
 
 # … puis le workflow d'implémentation prend le relais (hors périmètre) …

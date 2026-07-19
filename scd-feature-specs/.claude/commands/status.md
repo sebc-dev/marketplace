@@ -13,7 +13,7 @@ Ratio : 10% humain / 90% AI (lecture mécanique ; l'humain choisit la suite).
 
 - **Lecture seule.** Tu ne modifies aucun fichier. Tu orientes, tu ne corriges pas.
 - **Dérive l'état des fichiers**, jamais du contexte (il a été effacé) ni d'un fichier d'état (il dériverait).
-- **Aucun état « livrée »** : le cycle s'arrête à `analyze`. Ne dérive aucun statut depuis les cases de `tasks.md` — elles seront cochées par le workflow d'implémentation, pas ici.
+- **Aucun état « livrée »** : la dernière phase dérivable est `analyze` (le `premortem` optionnel édite les fichiers sans laisser de marqueur, donc il n'apparaît pas ici). Ne dérive aucun statut depuis les cases de `tasks.md` — elles seront cochées par le workflow d'implémentation, pas ici.
 
 ## Processus
 

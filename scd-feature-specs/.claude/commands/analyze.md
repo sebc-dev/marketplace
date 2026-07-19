@@ -1,11 +1,11 @@
 ---
 argument-hint: "[NNN ou slug de la feature — optionnel, résolu sinon]"
-description: "Phase 5, terminale : gate de validation des documents. LECTURE SEULE + rapport. Atteste que spec/plan/tasks sont prêts pour une implémentation optimale ET que le découpage produira des unités reviewables par un humain — traçabilité complète, critères EARS testables, aucun adjectif nu, scope EXCLU tenu, cohérence socle, lots verticaux à sujet unique et dimensionnés. 14 contrôles, rapport Critical/Major/Minor + verdict. Dernière phase avant le workflow d'implémentation."
+description: "Phase 5 : gate de conformité des documents. LECTURE SEULE + rapport. Atteste que spec/plan/tasks sont prêts pour une implémentation optimale ET que le découpage produira des unités reviewables par un humain — traçabilité complète, critères EARS testables, aucun adjectif nu, scope EXCLU tenu, cohérence socle, lots verticaux à sujet unique et dimensionnés. 14 contrôles, rapport Critical/Major/Minor + verdict. Suivie de la passe optionnelle premortem (durcissement adverse), puis du workflow d'implémentation."
 ---
 
 ## Contexte
 
-Tu tiens la **gate terminale** du cycle. Les documents sont écrits ; ta mission est d'**attester qu'ils sont prêts** pour une implémentation optimale par un workflow aval — ou de dire précisément ce qui manque.
+Tu tiens la **gate de conformité** du cycle. Les documents sont écrits ; ta mission est d'**attester qu'ils sont prêts** pour une implémentation optimale par un workflow aval — ou de dire précisément ce qui manque. (Une passe optionnelle de durcissement, `premortem`, peut suivre un verdict `PRÊT` pour chercher les modes de défaillance que la conformité ne couvre pas.)
 
 Deux questions, pas une :
 1. **Le contrat tient-il ?** Traçabilité complète, critères testables, frontières tenues.
@@ -48,5 +48,5 @@ Ratio : 30% humain / 70% AI (analyse mécanique ; l'humain décide de corriger o
 
 Donne le **Verdict**, en passant le `NNN` de la cible.
 
-- Si `PRÊT POUR IMPLÉMENTATION` : « `specs/<cible>/` est un contrat validé — traçabilité complète, critères testables, frontières tenues, et un découpage en N lots dont chacun sera reviewable par un humain. **La main passe au workflow d'implémentation.** » Puis **boucle le cycle** : « Feature suivante : `/clear`, puis `/scd-feature-specs:kickoff [prochaine feature]`. » Si d'autres features sont en vol, renvoie plutôt vers `/scd-feature-specs:status`.
+- Si `PRÊT POUR IMPLÉMENTATION` : « `specs/<cible>/` est un contrat validé — traçabilité complète, critères testables, frontières tenues, et un découpage en N lots dont chacun sera reviewable par un humain. » Puis, pour une feature non triviale (fort chemin d'erreur, enjeu produit), **propose la passe de durcissement optionnelle** : « Pour chercher les modes de défaillance que la conformité ne couvre pas, lance `/scd-feature-specs:premortem NNN` avant le passage de main. » Sinon, **la main passe au workflow d'implémentation** et le **cycle boucle** : « Feature suivante : `/clear`, puis `/scd-feature-specs:kickoff [prochaine feature]`. » Si d'autres features sont en vol, renvoie plutôt vers `/scd-feature-specs:status`.
 - Si `CORRIGER D'ABORD` : renvoie vers la phase concernée (`specify NNN` / `clarify NNN` / `plan NNN` / `tasks NNN` — les défauts de découpage relèvent tous de `tasks NNN`) pour les Critical, puis relance `/scd-feature-specs:analyze NNN`.

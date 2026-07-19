@@ -23,14 +23,16 @@ description: |
 
 Ce skill outille la **déclinaison** du socle projet en specs exécutables, **par feature**. Là où `scd-project-docs` pose le socle une fois (`docs/prd.md`, `docs/stack.md`, `docs/adr/`, `CLAUDE.md`), ce workflow le consomme et produit, à chaque feature, dans le repo cible :
 
-`specs/NNN-feature/spec.md` → `plan.md` → `tasks.md` → **`analyze`** (gate terminale) → *passage de main*.
+`specs/NNN-feature/spec.md` → `plan.md` → `tasks.md` → **`analyze`** (gate de conformité) → **`premortem`** (durcissement adverse, optionnel) → *passage de main*.
 
 **Frontière de périmètre.** Ce workflow est **purement documentaire**. Il produit les documents d'une feature et **atteste** qu'ils sont prêts pour une implémentation optimale — puis il **s'arrête**. Tout ce qui touche au code est hors périmètre et relève d'un workflow séparé, en aval :
 
 - **écrire le code** — ne prescris jamais *comment* implémenter (pas de boucle « jusqu'à ce que les tests passent », pas de pilotage) ;
-- **vérifier le code implémenté** — la revue post-implémentation (review et autres) appartient au workflow aval. Il n'y a **pas** de phase `verify` ici.
+- **vérifier le code implémenté** — la revue post-implémentation (review et autres) appartient au workflow aval. Il n'y a **pas** de phase `verify` ici : le `premortem` durcit le *contrat* par projection d'échec, il ne vérifie aucun code (qui n'existe pas encore).
 
 Ici on produit le contrat et on le valide ; ailleurs on l'honore et on le vérifie. C'est la même frontière que `scd-project-docs` pose vis-à-vis des specs : chaque plugin livre un artefact et passe la main.
+
+**Deux natures de phase.** `specify`, `clarify`, `plan`, `tasks` et `premortem` **écrivent** les documents ; `analyze` et `status` sont en **lecture seule**. `premortem` est la dernière phase d'écriture — et la seule dont les modifications sont proposées par des sous-agents : parce qu'un contrat qui part à l'implémentation ne doit pas avoir été altéré par une IA sans revue, elle passe par un **gate d'approbation humain** avant toute écriture, puis une **re-passe `analyze`** puisque le contrat a changé.
 
 **Une nuance, pas une exception.** Le découpage est **dimensionné pour** que la review aval soit faisable par un humain (les lots `Rn`, ci-dessous). Décider de la taille d'une unité livrable est documentaire et se joue **ici** — après l'implémentation, redécouper coûte le prix du code déjà écrit. Mais nous ne faisons toujours **aucune** review de code : nous rendons la review possible, nous ne la conduisons pas.
 
@@ -54,7 +56,7 @@ Chaîne complète : **`FR` du PRD → `FR`/`SHALL` de la spec feature → tâche
 
 Les features s'ajoutent **au fur et à mesure**. Deux modes :
 
-- **Séquentiel (défaut, recommandé)** : `kickoff → specify → clarify → plan → tasks → analyze`, puis **on recommence** avec la feature suivante. Le cycle boucle : un verdict `PRÊT` en fin d'`analyze` renvoie vers `kickoff`. C'est le mode sûr pour un solo — pas de context switching.
+- **Séquentiel (défaut, recommandé)** : `kickoff → specify → clarify → plan → tasks → analyze → premortem → (re-analyze)`, puis **on recommence** avec la feature suivante. Le cycle boucle : un verdict `PRÊT` reconfirmé renvoie vers `kickoff`. `premortem` est une passe de durcissement **optionnelle** (à calibrer, cf. seuils) qui suit une première gate `analyze` au vert. C'est le mode sûr pour un solo — pas de context switching.
 - **Parallèle (possible)** : plusieurs features en vol à des phases différentes. **Tout le cycle se parallélise sans risque** — chaque phase n'écrit que dans `specs/NNN-*/`, dossiers disjoints par construction. Documenter trois features avant d'en implémenter une seule est parfaitement viable.
 
   La contrainte de parallélisme ne porte que sur l'**implémentation**, donc **en aval, hors de ce plugin**. Signale-la quand même à la remise du contrat : deux features dont les sections « Fichiers touchés » se recoupent ne s'implémentent pas en même temps sans conflit (branche/worktree séparés, ou séquentiel). `status` croise ces sections pour le dire.
@@ -75,10 +77,12 @@ Les features s'ajoutent **au fur et à mesure**. Deux modes :
 | `spec.md` contenant `[NEEDS CLARIFICATION]` | à clarifier | `clarify` |
 | `spec.md` propre, pas de `plan.md` | à planifier | `plan` |
 | `plan.md`, pas de `tasks.md` | à découper | `tasks` |
-| `tasks.md` présent | à valider (gate terminale) | `analyze` |
+| `tasks.md` présent | à valider (gate de conformité) | `analyze` |
 | `DELTA.md` présent | mode **delta** (brownfield) | idem, scopé au delta |
 
-Il n'y a **pas** d'état « livrée » dérivable : une fois `analyze` au vert, le contrat part vers le workflow d'implémentation et le suivi du code ne nous regarde plus. `analyze` étant en lecture seule et bon marché, on le **relance** plutôt que de persister un verdict — un PASS écrit sur disque deviendrait faux à la première édition.
+`premortem` **n'apparaît pas dans la table** : il édite les fichiers existants sans produire de marqueur, donc il n'est pas dérivable de l'état disque. C'est une passe **explicitement invoquée** après une première gate `analyze` au vert, quand on veut durcir le contrat avant le passage de main ; ses modifications sont ensuite re-gatées par `analyze`. Comme `analyze`, il ne persiste aucun état — seulement ses effets dans les documents.
+
+Il n'y a **pas** d'état « livrée » dérivable : une fois `analyze` au vert (et le `premortem` éventuel appliqué puis reconfirmé), le contrat part vers le workflow d'implémentation et le suivi du code ne nous regarde plus. `analyze` étant en lecture seule et bon marché, on le **relance** plutôt que de persister un verdict — un PASS écrit sur disque deviendrait faux à la première édition.
 
 `/scd-feature-specs:status` applique cette table à toutes les features : c'est le tableau de bord (quoi en vol, à quelle phase, quoi ensuite, et si le parallèle est sûr). Les `NNN` sont **stables et jamais réattribués** : `kickoff` prend `max(NNN) + 1`, même si des features antérieures sont livrées ou abandonnées.
 
@@ -117,7 +121,9 @@ Détail, patterns de scission et checklist : `references/reviewability.md`. Audi
 
 Piège : **`exit 2` = bloquer ; `exit 1` = erreur ignorée**. Une gate écrite en `exit 1` ne bloque rien.
 
-Les gates liées à l'exécution des tests (« ne pas finir tant que c'est rouge ») appartiennent au workflow d'implémentation, **pas à ce plugin** : ici, aucun test n'est exécuté. Notre seule gate est `analyze` — advisory, sur les **documents**, avec deux seconds regards en contexte frais aux mandats disjoints : `ears-verifier` (contrat : traçabilité, EARS, frontières) et `slice-auditor` (découpage : verticalité, sujet unique, dimensionnement).
+Les gates liées à l'exécution des tests (« ne pas finir tant que c'est rouge ») appartiennent au workflow d'implémentation, **pas à ce plugin** : ici, aucun test n'est exécuté. Notre seule gate de conformité est `analyze` — advisory, sur les **documents**, avec deux seconds regards en contexte frais aux mandats disjoints : `ears-verifier` (contrat : traçabilité, EARS, frontières) et `slice-auditor` (découpage : verticalité, sujet unique, dimensionnement).
+
+Après `analyze`, la passe optionnelle `premortem` durcit le contrat par projection d'échec, avec trois sous-agents en contexte frais : `premortem-facilitator` (génère les modes de défaillance), `premortem-validator` (trie et rejette la spéculation / le scope creep) et `premortem-applier` (inscrit **uniquement** les remédiations approuvées par l'humain). C'est la seule passe d'écriture pilotée par sous-agents : le **gate d'approbation humain** avant écriture garde la décision du *quoi* à l'humain, l'`exit 2` de `block-adr-edits` empêche l'applicateur de toucher un ADR accepté, et la re-passe `analyze` reconfirme la conformité.
 
 ## Seuils de déclenchement (repris de la constitution CLAUDE.md)
 
@@ -135,7 +141,8 @@ Ne pas sur-cérémonialiser. Avant `kickoff`, calibrer :
 - **Un seul endroit par info.** Lier vers le socle, ne pas recopier.
 - **Plan mode pour `plan.md`** (recommander `opusplan` : Opus planifie, Sonnet exécute).
 - **Découper verticalement.** Un lot = une capability traversant les couches. Une couche seule n'est pas reviewable seule.
-- **Revue adverse** en contexte frais (subagents `ears-verifier` et `slice-auditor`) : rapporter les gaps, pas les préférences de style. Les documents audités sont générés par IA — verbeux et sur-complets, donc « ils ont l'air complets » est le cas où il faut lire ligne à ligne. Chercher l'erreur, pas la confirmation.
+- **Revue adverse** en contexte frais (subagents `ears-verifier` et `slice-auditor` pour la conformité ; le trio `premortem-*` pour la projection d'échec) : rapporter les gaps, pas les préférences de style. Les documents audités sont générés par IA — verbeux et sur-complets, donc « ils ont l'air complets » est le cas où il faut lire ligne à ligne. Chercher l'erreur, pas la confirmation.
+- **Durcir sans élargir.** Le `premortem` cherche les défaillances au-delà de la conformité, mais toute remédiation reste documentaire et **dans le périmètre** : générer large (facilitateur), rejeter le scope creep (valideur), n'inscrire que l'approuvé (applicateur). L'humain approuve avant toute écriture.
 
 ## Les artefacts et outils (progressive disclosure)
 
@@ -147,7 +154,8 @@ Charge **uniquement** la référence de la phase courante (la commande le fait) 
 - `references/plan.md` — Plan technique (réutilise stack/ADR, plan mode). Sections : `role`, `template`, `guidance`, `completion`
 - `references/tasks.md` — Plan de tâches : lots `Rn` + tâches `Tn` (backref `_Requirements:_`, TDD, `[P]`). Sections : `role`, `template`, `guidance`, `completion`
 - `references/reviewability.md` — Dimensionner les lots de review (bloquants vs signaux, patterns de scission verticale). Chargée avec `tasks.md` pendant la phase `tasks`. Sections : `role`, `criteria`, `splitting`, `pitfalls`
-- `references/analyze.md` — **Gate terminale** : 14 contrôles de validation du contrat et du découpage, rapport Critical/Major/Minor + verdict. Sections : `role`, `checks`, `report`, `guidance`
+- `references/analyze.md` — **Gate de conformité** : 14 contrôles de validation du contrat et du découpage, rapport Critical/Major/Minor + verdict. Sections : `role`, `checks`, `report`, `guidance`
+- `references/premortem.md` — **Durcissement adverse** (optionnel, après `analyze`) : premortem à 3 sous-agents + gate humain, projection d'échec → remédiations documentaires. Sections : `role`, `lenses`, `process`, `remediation-forms`, `guidance`
 - `references/ears.md` — Les 5 patterns EARS + SHALL→test. Sections : `patterns`, `examples`, `pitfalls`
 - `references/delta.md` — Modèle delta brownfield (OpenSpec). Sections : `role`, `template`, `guidance`
 - `references/gherkin.md` — Complément Gherkin dérivé d'EARS. Sections : `role`, `template`, `guidance`

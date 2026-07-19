@@ -3,8 +3,9 @@
 <scope>
 **Périmètre strict : la détection de dérive, pas l'implémentation.**
 
-Ce plugin est purement documentaire et **s'arrête à `analyze`** : écrire le code et le vérifier sont
-hors périmètre, c'est un workflow séparé. Aucune boucle décrite ici ne fait avancer une
+Ce plugin est purement documentaire et **s'arrête à la validation du contrat** (gate `analyze`, plus
+le durcissement `premortem` optionnel) : écrire le code et le vérifier sont hors périmètre, c'est un
+workflow séparé. Aucune boucle décrite ici ne fait avancer une
 implémentation, ne corrige du code, ni n'itère « jusqu'à ce que les tests passent ». La seule boucle
 en périmètre **observe** les living files et **signale** les écarts — elle ne répare rien.
 

@@ -33,8 +33,9 @@ Ratio : 30% humain / 70% AI (setup mécanique + cadrage).
    | 2 | `/scd-feature-specs:clarify NNN` | `spec.md` (marqueurs résolus) |
    | 3 | `/scd-feature-specs:plan NNN` | `specs/NNN-<slug>/plan.md` (plan mode) |
    | 4 | `/scd-feature-specs:tasks NNN` | `specs/NNN-<slug>/tasks.md` |
-   | 5 | `/scd-feature-specs:analyze NNN` | **gate terminale** : contrat validé → **boucle vers la feature suivante** |
-   | — | *(implémentation + review)* | **hors périmètre — workflow séparé.** Le cycle s'arrête à `analyze`. |
+   | 5 | `/scd-feature-specs:analyze NNN` | **gate de conformité** : contrat + découpage validés (lecture seule) |
+   | 6 | `/scd-feature-specs:premortem NNN` | **durcissement adverse** (optionnel) : 3 sous-agents projettent l'échec, tu approuves, remédiations inscrites → re-`analyze` → **boucle vers la feature suivante** |
+   | — | *(implémentation + review)* | **hors périmètre — workflow séparé.** Le cycle s'arrête après `analyze` (et le `premortem` optionnel). |
 
    Rappelle que `/scd-feature-specs:status` donne à tout moment l'état de toutes les features.
 
@@ -53,7 +54,7 @@ Les gates liées à l'exécution des tests (« ne pas finir tant que c'est rouge
 
 - Tu n'écris aucun contenu de spec/plan/tasks dans cette commande.
 - Tu ne présumes ni le périmètre ni la stack (elle est déjà fixée par `docs/stack.md`).
-- Tu ne prescris pas **comment implémenter**, et tu ne promets aucune vérification du code : écrire et reviewer le code relèvent d'un workflow séparé. Ce cycle est documentaire et s'arrête à `analyze`.
+- Tu ne prescris pas **comment implémenter**, et tu ne promets aucune vérification du code : écrire et reviewer le code relèvent d'un workflow séparé. Ce cycle est documentaire et s'arrête après `analyze` (et le `premortem` optionnel, qui durcit le contrat, jamais le code).
 
 ## Skill active
 

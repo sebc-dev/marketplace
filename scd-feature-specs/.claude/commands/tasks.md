@@ -53,4 +53,4 @@ Rappelle la double granularité : `tasks.md` est le contrat remis au workflow d'
 
 Annonce le nombre de lots et leur budget estimé total, en rappelant que ce sont des ordres de grandeur destinés à déclencher la scission, pas des mesures.
 
-Puis, en passant le `NNN` de la cible : « Dernière étape : `/clear`, puis `/scd-feature-specs:analyze NNN` (gate terminale de validation). »
+Puis, en passant le `NNN` de la cible : « Étape suivante : `/clear`, puis `/scd-feature-specs:analyze NNN` (gate de conformité). Pour une feature à fort enjeu, une passe de durcissement optionnelle — `/scd-feature-specs:premortem NNN` — peut suivre. »
