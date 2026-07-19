@@ -11,10 +11,11 @@ Deux parties, dans l'ordre (contrat parser) :
 1. `export const meta = { … }` — **littéral pur**, 1re instruction. `name`, `description`, `whenToUse`, `phases[]` (une entrée par `phase()`).
 2. Corps async : les schémas de handoff (consts JSON Schema), puis l'orchestration.
 
-## Les huit phases
+## Les dix phases
 
 | Phase | `agentType` | Modèle | Schéma retour |
 |---|---|---|---|
+| Branch | `scd-implement:branch-setup` | haiku | `BRANCH` |
 | Prepare | `scd-implement:lot-briefer` | sonnet | `BRIEF` |
 | Red | `scd-implement:test-writer` | sonnet | `TESTS` |
 | Validate | `scd-implement:test-validator` | opus | `TEST_VERDICT` |
@@ -34,11 +35,11 @@ Chaque résultat d'agent est vérifié (`if (!x) …`) — l'équivalent de `fil
 
 ## Statuts de sortie
 
-`done` (lot vert, cases cochées, PR ouverte) · `blocked-red` (vert jamais atteint) · `blocked-tests-modified` (l'impl a dû toucher les tests) · `blocked-after-fix` (une correction a cassé le vert). Les statuts `blocked-*` sont repris par `run` pour orienter l'humain ; le lot n'est ni coché ni transformé en PR (les phases Record/PR sont après les gardes de blocage). En `done`, le retour porte `branch` et `pr: { url, number, state }` (ou `pr: null` si la publication n'a pas pu se faire — remote/CLI absent).
+`done` (lot vert, cases cochées, PR ouverte) · `blocked-dirty-tree` (arbre de travail non propre au moment de brancher — phase Branch) · `blocked-branch` (la branche dédiée n'a pas pu être posée) · `blocked-red` (vert jamais atteint) · `blocked-tests-modified` (l'impl a dû toucher les tests) · `blocked-after-fix` (une correction a cassé le vert). Les statuts `blocked-*` sont repris par `run` pour orienter l'humain ; le lot n'est ni coché ni transformé en PR. **`blocked-dirty-tree`/`blocked-branch` sortent dès la première phase** — rien n'a été écrit, il suffit de nettoyer l'arbre et relancer. En `done`, le retour porte `branch`, `base` et `pr: { url, number, state }` (ou `pr: null` si la publication n'a pas pu se faire — remote/CLI absent).
 
-## Branche & PR (phases Record + PR)
+## Branche & PR (phases Branch + Record + PR)
 
-`progress-recorder` pose la branche du lot **avant** de commiter : `impl/<slug>-<lot>` si on est sur la branche par défaut (les changements non commités la suivent via `git switch -c`), sinon la branche de travail courante. `pr-author` détecte `gh`/`glab`, `git push -u` (jamais `--force`) et ouvre une PR/MR **ready** vers la base (arg `args.base`, sinon défaut du repo). Créer une PR est une action sortante : pré-allowlister `Bash(git push *)`, `Bash(gh pr *)`, `Bash(glab mr *)` évite un prompt en cours de run.
+**La branche est posée en toute première phase, toujours.** `branch-setup` exige un arbre propre (`git status --porcelain` vide, sinon STOP `blocked-dirty-tree`), fait `git fetch`, puis crée `impl/<slug>-<lot>` depuis la base **à jour** (`origin/<base>`, `base` = arg `args.base` sinon défaut du repo). Aucune exception : on repart de la base à jour même si on était sur une branche de travail (le stacking automatique disparaît — un lot dépendant suppose sa dépendance mergée dans la base, ou `--base` pointant sur elle). Le code du lot naît donc directement sur la branche dédiée ; `progress-recorder` ne fait plus que commiter dessus (il ne crée ni ne change de branche). `pr-author` détecte `gh`/`glab`, `git push -u` (jamais `--force`) et ouvre une PR/MR **ready** vers la même base. Créer une PR est une action sortante : pré-allowlister `Bash(git push *)`, `Bash(gh pr *)`, `Bash(glab mr *)` évite un prompt en cours de run.
 
 ## Déterminisme (non négociable)
 

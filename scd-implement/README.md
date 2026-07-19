@@ -2,10 +2,10 @@
 
 **Le workflow dynamique d'implémentation TDD — la suite de `scd-feature-specs`. Un lot de review à la fois.**
 
-Là où `scd-feature-specs` produit et **atteste** le contrat d'une feature (`specs/NNN-feature/{spec,plan,tasks}.md`, gate `analyze` au vert) puis **s'arrête**, `scd-implement` prend le relais : il **honore** ce contrat et le **vérifie**, en implémentant **un lot `Rn` à la fois** via un **dynamic workflow** — un script JS qui orchestre huit subagents dédiés en arrière-plan.
+Là où `scd-feature-specs` produit et **atteste** le contrat d'une feature (`specs/NNN-feature/{spec,plan,tasks}.md`, gate `analyze` au vert) puis **s'arrête**, `scd-implement` prend le relais : il **honore** ce contrat et le **vérifie**, en implémentant **un lot `Rn` à la fois** via un **dynamic workflow** — un script JS qui orchestre dix subagents dédiés en arrière-plan.
 
 ```
-Rouge (tests) → Valider les tests → Vert (impl) → Review → Triage sceptique → Apply → Record → PR
+Branche dédiée (base à jour) → Rouge (tests) → Valider les tests → Vert (impl) → Review → Triage sceptique → Apply → Record → PR
 ```
 
 L'humain a décidé du *quoi* en amont (le contrat). Ici, le workflow exécute le *comment* et **prouve le vert** — sans intervention humaine en cours de run.
@@ -23,10 +23,11 @@ scd-project-docs  →  scd-feature-specs  →  scd-implement
 
 ## Le cycle, par lot
 
-Un lancement = un lot `Rn`. Huit phases, huit agents dédiés :
+Un lancement = un lot `Rn`. Dix phases, dix agents dédiés :
 
 | Phase | Agent | Rôle | Modèle |
 |---|---|---|---|
+| Branch | `branch-setup` | crée **toujours** `impl/<slug>-<lot>` depuis la base **à jour** (arbre propre exigé) | haiku |
 | Prepare | `lot-briefer` | parse le lot, pull les SHALL, détecte le test runner | sonnet |
 | Red | `test-writer` | un test nommé par SHALL, confirme le **rouge** | sonnet |
 | Validate | `test-validator` | 1 SHALL = 1 test, cas limites, conventions, anti-patterns | opus |
@@ -34,7 +35,7 @@ Un lancement = un lot `Rn`. Huit phases, huit agents dédiés :
 | Review | `code-reviewer` | 6 dimensions, en contexte frais | opus |
 | Triage | `review-validator` | triage **sceptique adversarial** (apply/skip) | opus |
 | Apply | `fix-applier` | applique les findings retenus, re-vérifie le vert | sonnet |
-| Record | `progress-recorder` | branche de lot, coche `tasks.md`, commit | haiku |
+| Record | `progress-recorder` | coche `tasks.md`, commit sur la branche dédiée | haiku |
 | PR | `pr-author` | pousse la branche, ouvre la PR/MR **ready** avec description | sonnet |
 
 ## Les invariants
@@ -65,8 +66,8 @@ L'état vit dans les cases de `tasks.md` — cochées par `progress-recorder`, r
 
 Le run se conclut par une **PR ready-for-review, une par lot** — le prolongement direct de « un lot ≈ une PR reviewable » (`scd-feature-specs` dimensionne la slice ; `scd-implement` la livre).
 
-- **Branche** : `impl/<slug>-<lot>`, créée par `progress-recorder` **avant** le commit si tu es sur la branche par défaut (sinon ta branche de travail est respectée).
-- **Base** : branche par défaut du repo, détectée ; surchargeable via `--base <branche>`.
+- **Branche** : `impl/<slug>-<lot>`, créée **toujours et en toute première phase** par `branch-setup`, à partir de la base **mise à jour** (`git fetch`). Arbre de travail propre exigé (sinon le run s'arrête sans rien écrire). Pas de stacking automatique : chaque run repart de la base.
+- **Base** : branche par défaut du repo, détectée ; surchargeable via `--base <branche>` (la branche dédiée **et** la PR en partent).
 - **Plateforme** : auto-détection `gh` (GitHub) / `glab` (GitLab).
 - **Description** : FR/SHALL livrés → tests, fichiers d'impl, findings appliqués/rejetés, preuve du vert (`0 failed`), traçabilité vers `specs/NNN-feature/`.
 
@@ -75,6 +76,7 @@ Le run se conclut par une **PR ready-for-review, une par lot** — le prolongeme
 ## Couche déterministe (pas de hooks)
 
 Ce plugin **ne livre aucun hook**. Ce qui doit arriver à 100 % **dépend de la phase** et est donc garanti *dans* le workflow :
+- « branche dédiée depuis la base à jour, arbre propre » → première phase `branch-setup` (`git fetch` + `git switch -c` ; STOP si l'arbre n'est pas propre) ;
 - « tests intacts » → check `git diff` vide dans `implementer`/`fix-applier` ;
 - « vert » → assertion sur la sortie `0 failed`.
 

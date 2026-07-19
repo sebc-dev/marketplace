@@ -3,6 +3,7 @@ export const meta = {
   description: 'Implémente un lot de review Rn en TDD : rouge → valide → vert → review → triage → apply → record. Un lancement = un lot.',
   whenToUse: "Après une gate analyze au vert de scd-feature-specs, pour implémenter un lot Rn de specs/NNN-feature/tasks.md.",
   phases: [
+    { title: 'Branch', detail: 'branch-setup : crée impl/<slug>-<lot> depuis la base à jour (arbre propre exigé)' },
     { title: 'Prepare', detail: 'lot-briefer : parse le lot, pull les SHALL, détecte le test runner' },
     { title: 'Red', detail: 'test-writer : écrit les tests, confirme le rouge' },
     { title: 'Validate', detail: 'test-validator : 1 SHALL = 1 test, cas limites, conventions' },
@@ -10,7 +11,7 @@ export const meta = {
     { title: 'Review', detail: 'code-reviewer : 6 dimensions' },
     { title: 'Triage', detail: 'review-validator : triage sceptique adversarial' },
     { title: 'Apply', detail: 'fix-applier : applique les findings retenus, re-vérifie le vert' },
-    { title: 'Record', detail: 'progress-recorder : branche de lot, coche tasks.md, commit' },
+    { title: 'Record', detail: 'progress-recorder : coche tasks.md, commit sur la branche dédiée' },
     { title: 'PR', detail: 'pr-author : pousse la branche, ouvre la PR ready avec description' },
   ],
 }
@@ -18,6 +19,19 @@ export const meta = {
 // ---------------------------------------------------------------------------
 // Schémas de handoff (JSON Schema). Chaque étape aval consomme un objet validé.
 // ---------------------------------------------------------------------------
+
+const BRANCH = {
+  type: 'object',
+  required: ['created', 'branch'],
+  properties: {
+    created: { type: 'boolean', description: 'true si on est sur la branche dédiée (créée ou rejointe)' },
+    branch: { type: 'string', description: 'impl/<slug>-<lot>' },
+    base: { type: 'string', description: 'Base retenue (ex. main)' },
+    baseUpToDate: { type: 'boolean', description: 'true si la base a été rafraîchie depuis le remote (git fetch)' },
+    status: { type: 'string', description: 'ready | dirty-tree | error' },
+    note: { type: 'string' },
+  },
+}
 
 const BRIEF = {
   type: 'object',
@@ -198,6 +212,26 @@ const lot = args && args.lot
 if (!featureDir || !lot) {
   throw new Error('args requis : { featureDir: "specs/NNN-slug", lot: "Rn" }')
 }
+const base = args && args.base ? args.base : null
+
+phase('Branch')
+const branchInfo = await agent(
+  `Crée TOUJOURS la branche dédiée du lot ${lot} de ${featureDir}, À PARTIR de ` +
+  (base ? `la base \`${base}\`` : `la branche par défaut du repo`) +
+  ` mise À JOUR (git fetch), AVANT tout autre travail. ` +
+  `Exige un arbre de travail propre : si \`git status --porcelain\` n'est pas vide, STOP et retourne status='dirty-tree' sans rien faire. ` +
+  `Sinon crée \`impl/<slug>-${lot}\` (slug = suffixe de ${featureDir} après NNN-) depuis la base à jour (origin/<base>), ` +
+  `ou rejoins-la si elle existe déjà. Aucun commit, aucun push, aucune écriture de code.`,
+  { agentType: 'scd-implement:branch-setup', schema: BRANCH, model: 'haiku' },
+)
+if (!branchInfo || branchInfo.status === 'dirty-tree') {
+  return { lot, featureDir, status: 'blocked-dirty-tree', branchInfo }
+}
+if (!branchInfo.created) {
+  return { lot, featureDir, status: 'blocked-branch', branchInfo }
+}
+log(`Branche ${branchInfo.branch} depuis ${branchInfo.base || 'défaut'}${branchInfo.baseUpToDate === false ? ' (base locale, remote absent)' : ' (à jour)'}`)
+
 phase('Prepare')
 const brief = await agent(
   `Prépare l'implémentation du lot ${lot} de ${featureDir}.\n` +
@@ -310,27 +344,25 @@ if (triaged.apply.length) {
 
 phase('Record')
 const record = await agent(
-  `Prépare la branche du lot puis enregistre la progression du lot ${lot} de ${featureDir}. ` +
-  `Si tu es sur la branche par défaut du repo (main/master), crée d'abord une branche de lot ` +
-  `\`impl/<slug>-${lot}\` (git switch -c ; les changements non commités la suivent) ; sinon reste sur la branche courante. ` +
-  `Puis coche les cases des tâches Tn implémentées et le lot dans ${featureDir}/tasks.md ([ ] → [x]), ` +
-  `sans modifier autre chose, crée les commits (un par tâche observable si possible), et retourne la branche.\n` +
+  `Enregistre la progression du lot ${lot} de ${featureDir}. Tu es DÉJÀ sur la branche dédiée ` +
+  `\`${branchInfo.branch}\` (créée en phase Branch) — n'en crée aucune autre, ne change pas de branche. ` +
+  `Coche les cases des tâches Tn implémentées et le lot dans ${featureDir}/tasks.md ([ ] → [x]), ` +
+  `sans modifier autre chose, crée les commits (un par tâche observable si possible), et retourne la branche courante.\n` +
   `Tâches du lot:\n${JSON.stringify(brief.tasks)}`,
   { agentType: 'scd-implement:progress-recorder', schema: RECORD, model: 'haiku' },
 )
 
 phase('PR')
-const base = args && args.base ? args.base : null
 const pr = await agent(
   `Publie une PR "ready for review" pour le lot ${lot} de ${featureDir}. Détecte la plateforme (gh/glab), ` +
-  `pousse la branche \`${record ? record.branch : ''}\` (git push -u, jamais --force), et crée la PR vers ` +
+  `pousse la branche \`${(record && record.branch) || branchInfo.branch}\` (git push -u, jamais --force), et crée la PR vers ` +
   (base ? `la base \`${base}\`` : `la branche de base par défaut du repo`) +
   ` avec un titre et une description structurée de l'implémentation.\n` +
   `Résumé:\n${JSON.stringify({
     lot,
     featureDir,
-    branch: record ? record.branch : null,
-    base,
+    branch: (record && record.branch) || branchInfo.branch,
+    base: base || branchInfo.base,
     shalls: brief.shalls,
     files: finalGreen.diffFiles,
     tests: tests.files,
@@ -353,6 +385,7 @@ return {
   skipped: triaged.skipped.length,
   checked: record ? record.checked : [],
   committed: record ? record.committed : false,
-  branch: record ? record.branch : null,
+  branch: (record && record.branch) || branchInfo.branch,
+  base: base || branchInfo.base,
   pr: pr && pr.created ? { url: pr.url, number: pr.number, state: pr.state } : null,
 }

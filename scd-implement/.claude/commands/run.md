@@ -14,7 +14,7 @@ allowed-tools:
 ---
 
 <objective>
-Implémenter **un seul lot de review `Rn`** d'une feature documentée par `scd-feature-specs`, via le dynamic workflow `implement-lot` (script JS orchestrant huit subagents dédiés en arrière-plan).
+Implémenter **un seul lot de review `Rn`** d'une feature documentée par `scd-feature-specs`, via le dynamic workflow `implement-lot` (script JS orchestrant dix subagents dédiés en arrière-plan, à commencer par la création d'une branche dédiée depuis la base à jour).
 
 Tu ne lis ni n'écris le code toi-même : tu **résous la cible**, tu **vérifies les préconditions**, puis tu **lances le workflow**. Tout le travail sur le code se fait dans les subagents du workflow.
 </objective>
@@ -37,7 +37,7 @@ Applique la règle de résolution (identique à `scd-feature-specs`) :
 
 - `specs/NNN-feature/tasks.md` existe. Sinon → « Pas de `tasks.md`. Termine d'abord le cycle `scd-feature-specs` (jusqu'à `analyze`). » et STOP.
 - **Gate `analyze` au vert.** Ce plugin implémente un contrat *validé*. Tu ne persistes aucun verdict `analyze` (il n'en existe pas sur disque), donc **rappelle** à l'utilisateur de l'avoir passée : si `spec.md` contient encore `[NEEDS CLARIFICATION]`, ou si `plan.md`/`tasks.md` manquent → STOP et renvoie vers la phase manquante. En cas de doute, propose de lancer `/scd-feature-specs:analyze NNN` d'abord.
-- **Arbre de travail git propre** recommandé (le workflow committe). Si `git status` montre des changements non commités, préviens que le workflow ajoutera ses propres commits par-dessus.
+- **Arbre de travail git propre EXIGÉ.** La première phase du workflow (`branch-setup`) crée toujours la branche dédiée `impl/<slug>-<lot>` à partir de la base **à jour** (`git fetch`) — ce qui suppose un arbre propre. Exécute `git status --porcelain` : **s'il n'est pas vide → STOP** et demande à l'utilisateur de commiter ou remiser (`git stash`) ses changements avant de relancer. (Si tu lances quand même, le workflow s'arrêtera de lui-même en `blocked-dirty-tree` sans rien écrire.)
 
 ## 4. Résoudre le lot cible
 
@@ -47,8 +47,9 @@ Applique la règle de résolution (identique à `scd-feature-specs`) :
 
 ## 5. Lancer le workflow
 
-Le workflow se termine par une **PR ready-for-review** (une par lot). Rappels avant lancement :
-- **Base** : si `--base <branche>` est fourni, passe-le ; sinon le workflow détecte la branche par défaut du repo.
+Le workflow **commence** par créer la branche dédiée et se **termine** par une **PR ready-for-review** (une par lot). Rappels avant lancement :
+- **Branche d'abord** : la première phase (`branch-setup`) crée toujours `impl/<slug>-<lot>` depuis la base **à jour** (`git fetch`) — rien n'atterrit sur la base. C'est pourquoi l'arbre doit être propre (cf. préconditions).
+- **Base** : si `--base <branche>` est fourni, passe-le (la branche dédiée **et** la PR partent de cette base) ; sinon le workflow détecte la branche par défaut du repo.
 - **Action sortante** : `pr-author` fera `git push` + `gh pr create` / `glab mr create`. Pour éviter un prompt en cours de run, l'utilisateur peut pré-allowlister `Bash(git push *)`, `Bash(gh pr *)`, `Bash(glab mr *)`. Signale-le si ce n'est pas déjà le cas.
 
 Lance `implement-lot` avec les arguments résolus :
@@ -63,7 +64,9 @@ Workflow(name: "implement-lot", args: { featureDir: "specs/NNN-feature", lot: "R
 
 Le workflow tourne en arrière-plan (`/workflows` pour suivre). À sa complétion, résume le `status` retourné :
 - `done` → lot vert, findings appliqués/rejetés, cases cochées, **PR ouverte** (`pr.url`, ou `pr: null` si push/CLI indisponible — indique alors la branche poussée). Propose le lot suivant (`/scd-implement:run NNN Rn+1`) ou `/scd-implement:status NNN`.
-- `blocked-red` / `blocked-tests-modified` / `blocked-after-fix` → explique le blocage et la reprise possible (aucune PR n'est ouverte pour un lot bloqué).
+- `blocked-dirty-tree` → l'arbre n'était pas propre au moment de brancher ; **rien n'a été écrit**. Demande de commiter/remiser puis relancer.
+- `blocked-branch` → la branche dédiée n'a pas pu être posée (ex. problème git) ; rien n'a été écrit.
+- `blocked-red` / `blocked-tests-modified` / `blocked-after-fix` → explique le blocage et la reprise possible (aucune PR n'est ouverte pour un lot bloqué ; la branche dédiée existe déjà).
 
 </process>
 

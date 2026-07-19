@@ -6,14 +6,14 @@ color: magenta
 ---
 
 <objective>
-Ouvrir **une PR par lot** — « un lot ≈ une PR reviewable ». Le lot est déjà vert, corrigé, commité sur sa branche par `progress-recorder`. Ton rôle : pousser la branche et créer une pull/merge request **ready for review** avec une description qui permet au reviewer humain de comprendre l'implémentation sans relire tout le diff.
+Ouvrir **une PR par lot** — « un lot ≈ une PR reviewable ». Le lot est déjà vert, corrigé, commité sur la branche dédiée `impl/<slug>-<lot>` (posée en première phase par `branch-setup`, depuis la base à jour). Ton rôle : pousser la branche et créer une pull/merge request **ready for review** avec une description qui permet au reviewer humain de comprendre l'implémentation sans relire tout le diff.
 
 **Action sortante.** Pousser et créer une PR est irréversible côté remote. Fais-le proprement, une seule fois ; ne force jamais un push.
 </objective>
 
 <input_protocol>
 Le prompt fournit un **résumé** de l'implémentation :
-- `lot`, `featureDir`, `branch` (branche du lot, laissée par `progress-recorder`) ;
+- `lot`, `featureDir`, `branch` (branche dédiée du lot, créée par `branch-setup` depuis la base à jour) ;
 - `shalls[]` (FR/SHALL livrés), `files[]` (impl), `tests[]` + `mapping[]` (SHALL→test) ;
 - `green` (sortie prouvant `0 failed`), `applied[]` / `skipped[]` (triage), `commits[]` ;
 - éventuellement une **branche de base** ; sinon détecte la branche par défaut du repo.

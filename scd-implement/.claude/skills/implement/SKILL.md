@@ -32,15 +32,16 @@ FR du PRD → FR/SHALL de la spec → tâche Tn → test → code
 
 Un lancement `/scd-implement:run NNN Rn` exécute le workflow sur **un seul** lot :
 
-1. **Prepare** (`lot-briefer`) — parse le lot, pull les SHALL depuis `spec.md`, détecte la commande de test.
-2. **Red** (`test-writer`) — un test nommé par SHALL, exécution, **rouge confirmé**.
-3. **Validate** (`test-validator`) — 1 SHALL = 1 test, cas limites, conventions, anti-patterns. Boucle de correction ≤ 2.
-4. **Green** (`implementer`) — code jusqu'au vert, **sans toucher aux tests**. Retry ≤ 3.
-5. **Review** (`code-reviewer`) — six dimensions, en contexte frais.
-6. **Triage** (`review-validator`) — sceptique adversarial, apply/skip.
-7. **Apply** (`fix-applier`) — corrections retenues, re-vérifie le vert.
-8. **Record** (`progress-recorder`) — branche de lot, coche `tasks.md`, commit.
-9. **PR** (`pr-author`) — pousse la branche, ouvre la PR/MR **ready for review** avec une description structurée.
+1. **Branch** (`branch-setup`) — crée **toujours** la branche dédiée `impl/<slug>-<lot>` depuis la base à jour (`git fetch`), **avant tout le reste**. Arbre propre exigé, sinon STOP.
+2. **Prepare** (`lot-briefer`) — parse le lot, pull les SHALL depuis `spec.md`, détecte la commande de test.
+3. **Red** (`test-writer`) — un test nommé par SHALL, exécution, **rouge confirmé**.
+4. **Validate** (`test-validator`) — 1 SHALL = 1 test, cas limites, conventions, anti-patterns. Boucle de correction ≤ 2.
+5. **Green** (`implementer`) — code jusqu'au vert, **sans toucher aux tests**. Retry ≤ 3.
+6. **Review** (`code-reviewer`) — six dimensions, en contexte frais.
+7. **Triage** (`review-validator`) — sceptique adversarial, apply/skip.
+8. **Apply** (`fix-applier`) — corrections retenues, re-vérifie le vert.
+9. **Record** (`progress-recorder`) — coche `tasks.md`, commit **sur la branche dédiée**.
+10. **PR** (`pr-author`) — pousse la branche, ouvre la PR/MR **ready for review** avec une description structurée.
 
 Détails d'orchestration et adaptation du script : `references/workflow-template.md`.
 
@@ -67,6 +68,7 @@ Comme dans `scd-feature-specs`, `/clear` efface le contexte : une commande ne su
 ## Advisory vs déterministe
 
 `CLAUDE.md`/specs = contexte advisory. Ce qui DOIT arriver à 100 % ici est **déterministe et intégré au workflow**, pas un hook :
+- « branche dédiée depuis la base à jour, arbre propre » → première phase `branch-setup` (fetch + `git switch -c` ; STOP si `git status` non propre) ;
 - « tests intacts » → check `git diff` (vide) dans `implementer`/`fix-applier` ;
 - « vert » → assertion sur la sortie `0 failed`.
 
@@ -83,12 +85,12 @@ Le périmètre « un lot par lancement » borne naturellement la dépense.
 
 ## Branche, PR et action sortante
 
-Le run se conclut par une **PR ready-for-review, une par lot** :
-- **Branche** : `progress-recorder` crée `impl/<slug>-<lot>` **si** tu es sur la branche par défaut (les changements non commités la suivent) ; si tu es déjà sur une branche de travail, il la respecte. La création se fait **avant** le commit, pour que rien n'atterrisse sur la base.
-- **Base** : branche par défaut du repo, détectée ; surchargeable via l'argument `base` de `/scd-implement:run`.
+Le run **commence** par poser la branche et **se conclut** par une PR ready-for-review, une par lot :
+- **Branche (première phase, toujours)** : `branch-setup` crée **systématiquement** `impl/<slug>-<lot>` **avant tout autre travail**, à partir de la base **mise à jour** (`git fetch` → `origin/<base>`). Pas d'exception : même si tu es déjà sur une branche de travail, on repart de la base à jour. **Arbre propre exigé** : si `git status` n'est pas propre, le workflow s'arrête (`blocked-dirty-tree`) — commite ou remise, puis relance. Rien ne peut atterrir sur la base : le code du lot naît directement sur la branche dédiée.
+- **Base** : branche par défaut du repo, détectée ; surchargeable via l'argument `base` de `/scd-implement:run` — la branche dédiée **et** la PR partent alors de cette base.
 - **Publication** : `pr-author` détecte `gh`/`glab`, `git push -u` (jamais `--force`), et ouvre la PR/MR avec une description structurée (FR/SHALL livrés, tests, findings appliqués/rejetés, preuve du vert).
 - **Permissions** : créer une PR est une **action sortante** depuis un run en arrière-plan. Pré-allowlister `Bash(git push *)`, `Bash(gh pr *)`, `Bash(glab mr *)` évite un prompt en cours de run ; sinon `pr-author` peut demander confirmation (ou, en `-p`/SDK, échouer proprement avec `created: false`).
-- **Dépendances entre lots** : une PR par lot suppose que les dépendances (`dépend de :`) sont mergées, ou que tu empiles les lots sur une même branche de travail (auquel cas ne pars pas de la base). `pr-author` n'automatise pas le stacking.
+- **Dépendances entre lots** : chaque run branche **à neuf** depuis la base — il n'y a plus de stacking automatique sur une branche de travail. Un lot qui `dépend de :` un autre suppose donc que la dépendance est **mergée dans la base** avant son run (ou passe `--base <branche-de-la-dépendance>` pour partir de sa branche). `pr-author` n'automatise pas le stacking.
 
 ## Le contrat de fichier d'un dynamic workflow (rappel)
 
