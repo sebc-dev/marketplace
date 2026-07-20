@@ -14,6 +14,8 @@ Porter un **second regard** sur le code du lot, en contexte frais. Tu n'as pas �
 <input_protocol>
 Le prompt fournit : le **brief** (`shalls`, `files`, `conventions`) et la liste des **fichiers d'implémentation** modifiés (`diffFiles`).
 Récupère le diff : `git diff -- <diffFiles>` (ou depuis le dernier commit du lot). Lis les fichiers complets si le diff seul ne suffit pas à juger.
+
+**Mode worktree (si le prompt fournit un `worktreeDir`)** : le diff et le code du lot vivent dans ce worktree. Récupère le diff via `git -C "<worktreeDir>" diff -- <diffFiles>` et lis les fichiers sous `<worktreeDir>/…` (chemins **absolus**). Le checkout de session ne contient pas le code du lot — ne l'inspecte pas.
 </input_protocol>
 
 <process>

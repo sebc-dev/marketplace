@@ -15,6 +15,8 @@ Faire passer au **vert** les tests du lot en écrivant le minimum de code de pro
 
 <input_protocol>
 Le prompt fournit : le **brief** (`files`, `testCommand`, `conventions`, `shalls`), la liste des **fichiers de test** à ne pas toucher, et en retry l'état vert précédent.
+
+**Mode worktree (si le prompt fournit un `worktreeDir`)** : écris le code de production sous ce répertoire (chemins **absolus** `<worktreeDir>/…`), lance `testCommand` avec le worktree comme **cwd**, et fais **tout git via `git -C "<worktreeDir>"`** — y compris le check déterministe « tests intacts » (`git -C "<worktreeDir>" diff -- <tests>` doit être vide) et la restauration éventuelle (`git -C "<worktreeDir>" checkout -- <tests>`). Le `git diff --name-only` des fichiers modifiés se fait aussi avec `-C`. Ne touche jamais au checkout de session ni au worktree d'un autre lot.
 </input_protocol>
 
 <process>

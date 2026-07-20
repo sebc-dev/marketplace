@@ -17,12 +17,15 @@ Le prompt fournit :
 - **base** : la base cible (nom de branche — ex. `main`, ou une branche de lot sœur `impl/<slug>-Rk`). Tu utilises `origin/<base>` si le remote l'a, sinon la ref locale `<base>`.
 - **oldBase** (optionnel) : la ref **d'où la branche a été cuttée** (typiquement la branche de la dépendance `impl/<slug>-Rk`, encore présente localement). Fournie → mode `--onto` (robuste au squash). Absente → rebase simple sur la base.
 - **push** : `true` | `false` | `auto`. `auto` = pousse (`--force-with-lease`) **seulement si** `lotBranch` existe déjà sur `origin` (branche déjà publiée) ; sinon ne pousse pas (la publication initiale revient à `pr-author`).
+- **worktreeDir** (optionnel) : chemin absolu du worktree où `lotBranch` est checkoutée (mode worktree). Fourni → **opère avec `git -C "<worktreeDir>"`** pour tout et **NE fais AUCUN `git switch`** (la branche est déjà liée au worktree ; un `switch` échouerait). Absent → comportement classique dans le checkout de session.
 </input_protocol>
 
 <process>
 
+**Mode worktree** : si `worktreeDir` est fourni, préfixe **toutes** les commandes git par `git -C "<worktreeDir>"` (status, fetch, rev-parse, merge-base, rebase, push) et **saute le `git switch` de la §3** — la branche est déjà checkoutée dans le worktree. Ne touche jamais au checkout de session.
+
 ## 0. Préconditions (STOP si violées)
-- `git status --porcelain` **non vide** → `{ status: 'blocked-dirty', note: "arbre sale" }`, aucune action.
+- `git status --porcelain` **non vide** → `{ status: 'blocked-dirty', note: "arbre sale" }`, aucune action. (Mode worktree : `git -C "<worktreeDir>" status --porcelain`.)
 - HEAD détaché (`git symbolic-ref -q HEAD` échoue) → `{ status: 'blocked-dirty', note: "HEAD détaché" }`.
 
 ## 1. Rafraîchir
@@ -33,7 +36,7 @@ Si le tip de la base est **déjà un ancêtre** de la branche du lot — `git me
 → `{ status: 'up-to-date', lotBranch, base, pushed: false }`. (Après un **squash** de la dépendance, le commit de squash n'est PAS dans l'historique du lot → `is-ancestor` échoue → on rebase, ce qui est correct.)
 
 ## 3. Rebaser (transplant exact des commits du lot)
-`git switch <lotBranch>`.
+`git switch <lotBranch>` — **sauf en mode worktree** : la branche y est déjà checkoutée, tu enchaînes directement le `git -C "<worktreeDir>" rebase …` sans switch.
 - **oldBase fourni et ≠ base** → `git rebase --onto <baseRef> <oldBaseRef> <lotBranch>` où `<oldBaseRef>` = `origin/<oldBase>` si présent sinon `<oldBase>` local. Cela replante **exactement** `oldBase..lotBranch` (les commits propres du lot) sur la base à jour, en **abandonnant** les commits de la dépendance (désormais dans la base, même squashés).
 - **sinon** → `git rebase <baseRef>` (rebase simple).
 - **Conflit** (code ≠ 0) → `git rebase --abort` **immédiatement**, puis `{ status: 'blocked-conflict', lotBranch, base, note: "conflit — rebase avorté, à résoudre manuellement" }`. **Ne résous jamais** un conflit toi-même.

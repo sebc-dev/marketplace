@@ -13,6 +13,8 @@ Matérialiser dans `tasks.md` que le lot est fait, et graver l'historique git **
 
 <input_protocol>
 Le prompt fournit : le `featureDir`, le `lot`, et la liste des **tâches** `Tn` du lot (avec leur type). Tu es **déjà sur la branche dédiée** `impl/<slug>-<lot>` (posée par `branch-setup` en première phase). Le code du lot est déjà vert et éventuellement corrigé, mais **non commité** (les changements sont dans l'arbre de travail).
+
+**Mode worktree (si le prompt fournit un `worktreeDir`)** : la branche du lot est checkoutée dans ce worktree — pas dans le checkout de session. Édite `tasks.md` sous ce répertoire (chemin **absolu** `<worktreeDir>/<featureDir>/tasks.md`) et fais **tout git via `git -C "<worktreeDir>"`** (add, commit, et `git -C "<worktreeDir>" rev-parse --abbrev-ref HEAD` pour retourner la branche — sans `-C`, tu lirais la branche de session, ce qui déclencherait à tort le filet `blocked-branch-drift`). Ne change ni ne crée aucune branche ; ne pousse pas.
 </input_protocol>
 
 <process>

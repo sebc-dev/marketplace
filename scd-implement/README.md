@@ -58,7 +58,8 @@ Le cycle est exactement le cas où « la sortie de l'étape N détermine l'étap
 
 | Commande | Rôle | Human/AI |
 |---|---|---|
-| `/scd-implement:run [NNN] [Rn]` | lance le workflow sur un lot (résout la cible, vérifie les préconditions) | 20/80 |
+| `/scd-implement:run [NNN] [Rn]` | lance le workflow sur **un** lot (résout la cible, vérifie les préconditions) | 20/80 |
+| `/scd-implement:run-parallel [NNN] <Rn> <Rn> …` | lance **plusieurs** lots en **parallèle réel** (worktrees isolés) ; sérialise ceux aux fichiers non disjoints en chaîne `--base` | 20/80 |
 | `/scd-implement:sync [NNN] [Rn]` | **curatif** : re-rebase les PR de lot ouvertes dont la dépendance vient d'être mergée (« R1 mergé → rebase R2 ») | 20/80 |
 | `/scd-implement:status [NNN]` | tableau de bord : lots faits / en cours / à faire, prochain lançable, **dérive de rebase** signalée | 10/90 |
 
@@ -75,6 +76,24 @@ Le run se conclut par une **PR ready-for-review, une par lot** — le prolongeme
 - **Description** : FR/SHALL livrés → tests, fichiers d'impl, findings appliqués/rejetés, preuve du vert (`0 failed`), traçabilité vers `specs/NNN-feature/`.
 
 > Créer une PR est une **action sortante** depuis un run en arrière-plan. Pour éviter un prompt en cours de run, pré-allowlister `Bash(git push *)`, `Bash(gh pr *)`, `Bash(glab mr *)`. En `-p`/SDK sans CLI/auth, `pr-author` échoue proprement (`created: false`) et laisse la branche poussée.
+
+## Parallélisme réel : isolation par worktree
+
+Par défaut, un lancement traite **un lot** dans le checkout de session. `/scd-implement:run-parallel` en lance **plusieurs en même temps**, chacun isolé dans son propre **worktree git**. Il faut pour cela lever **deux obstacles distincts** :
+
+- **Couche 1 — collision d'exécution.** Tous les subagents opèrent dans le cwd de session (un seul checkout, un seul HEAD). Deux runs concurrents se disputent l'arbre : le premier qui le salit bloque les autres en `blocked-dirty-tree`. **Le worktree résout ça** — `git worktree add` donne à chaque lot son checkout indépendant. L'arbre principal n'a même plus à être propre, et il reste **inchangé** pendant les runs.
+- **Couche 2 — conflit de contenu.** Deux lots qui éditent le **même fichier** conflicteront au merge, worktree ou pas. L'isolation d'exécution n'y change rien : ces lots doivent être **sérialisés/empilés** (chaîne `--base`), jamais co-lancés. `run-parallel` **dérive la disjonction** des lignes `Fichiers :` (généralisation du marqueur `[P]`) : deux lots sont co-lançables **ssi** leurs fichiers sont disjoints **et** aucun ne dépend de l'autre non mergé.
+
+Concrètement, `run-parallel` résout les lots, calcule les **chaînes** (lots indépendants → parallèles ; lots qui se recoupent → empilés), fetch **une fois**, puis lance l'orchestrateur `implement-parallel` : un fan-out de `implement-lot` (mode worktree) sur les chaînes indépendantes. **Chaque lot ouvre sa propre PR.** Nettoyage déterministe : worktree **supprimé** après succès, **conservé** (chemin rapporté) après échec pour inspection.
+
+```
+run-parallel 003 R2 R3 R4
+   ├─ R2  (fichiers disjoints)        ── worktree ──▶ PR
+   ├─ R3 ─▶ R4  (R4 partage un fichier avec R3)  ── empilés --base ──▶ PR, PR
+   └─ …                                (chaînes lancées en parallèle)
+```
+
+> Le parallèle multiplie le coût d'un dynamic workflow par le nombre de lots concurrents. Réserve-le aux lots réellement indépendants et de taille maîtrisée.
 
 ## Couche déterministe (pas de hooks)
 
@@ -93,6 +112,9 @@ Un hook `PreToolUse` statique ne connaît pas la phase (les fichiers de test ne 
 /scd-implement:run 003 R1             # implémente le lot R1 de la feature 003
 # … suivre dans /workflows … puis :
 /scd-implement:run 003 R2             # lot suivant
+
+# plusieurs lots indépendants d'un coup (worktrees isolés, une PR par lot) :
+/scd-implement:run-parallel 003 R2 R3 R4
 
 # perdu ?
 /scd-implement:status

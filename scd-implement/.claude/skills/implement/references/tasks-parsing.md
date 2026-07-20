@@ -1,7 +1,7 @@
 # Référence — Parser `tasks.md` et résoudre la cible
 
 <role>
-Comment lire le `tasks.md` produit par `scd-feature-specs`, en extraire les lots `Rn` et leurs tâches `Tn`, et résoudre quelle feature / quel lot implémenter. Utilisé par `/scd-implement:run`, `/scd-implement:status` et l'agent `lot-briefer`.
+Comment lire le `tasks.md` produit par `scd-feature-specs`, en extraire les lots `Rn` et leurs tâches `Tn`, résoudre quelle feature / quel lot implémenter, et décider quels lots sont **co-lançables en parallèle**. Utilisé par `/scd-implement:run`, `/scd-implement:run-parallel`, `/scd-implement:status` et l'agent `lot-briefer`.
 </role>
 
 <parsing>
@@ -65,3 +65,25 @@ Le texte après `:` est la **SHALL** à traduire en test. Type : `When…shall�
 
 **Précondition d'implémentation** : la gate `analyze` doit avoir été passée au vert. Indices d'un contrat non prêt (→ STOP, renvoi amont) : `spec.md` contient `[NEEDS CLARIFICATION]`, ou `plan.md`/`tasks.md` absents.
 </resolution>
+
+<co-parallelism>
+## Co-parallélisabilité des lots (pour `/scd-implement:run-parallel`)
+
+Le marqueur `[P]` (`## Rn [P]`) signale un lot **parallélisable** : ses fichiers sont disjoints des autres `[P]`. `run-parallel` **généralise** ce marqueur en le **dérivant** de la ligne `Fichiers :` de chaque lot — plus robuste que se fier au seul `[P]`, qui peut manquer.
+
+**Deux couches, à ne pas confondre** (voir le SKILL) :
+- **Couche 1 — exécution.** Réglée par l'isolation **worktree** (chaque lot dans son checkout). C'est ce qui rend le parallèle *possible*.
+- **Couche 2 — contenu.** Deux lots qui touchent le **même fichier** conflicteront au merge, worktree ou pas. C'est ce que la co-parallélisabilité *décide* : on ne co-lance que des lots au contenu disjoint.
+
+**Règle.** Deux lots demandés `Ri`, `Rj` sont **co-lançables** (parallèles) **ssi** :
+1. leurs ensembles `Fichiers :` sont **disjoints** — `F(Ri) ∩ F(Rj) = ∅` — **ET**
+2. **aucun ne dépend de l'autre** de façon non mergée (ni `Rj ∈ dépend de(Ri)`, ni l'inverse, tant que la dépendance n'est pas mergée dans la base).
+
+Sinon → ils doivent être **sérialisés/empilés** dans une **chaîne `--base`** (jamais en parallèle) :
+- **fichiers non disjoints** → empilement pour éviter le conflit de contenu (le 2ᵉ lot branche sur le 1ᵉ, sa PR ne diffère que de lui) ;
+- **dépendance** → empilement naturel (`base = impl/<slug>-<lot-dont-il-dépend>`), déjà porté par l'auto-stacking de `run`.
+
+**Construire les chaînes.** Relation de conflit = (fichiers non disjoints) ∨ (dépendance dans l'ensemble demandé). Les **composantes connexes** de cette relation sont les chaînes ; l'ordre **intra-chaîne** est topologique par `dépend de :`, à égalité par numéro de lot. Le **1ᵉ** lot d'une chaîne prend sa base naturelle (défaut, ou auto-stacking sur une dépendance hors-ensemble non mergée) ; les **suivants** prennent `base = impl/<slug>-<lot-précédent-dans-la-chaîne>` (+ `oldBase`). Chaînes distinctes = lancées en parallèle.
+
+**En cas de doute sur la disjonction** (ligne `Fichiers :` absente ou ambiguë) → **sérialise** : le parallèle est une optimisation, jamais une obligation ; mieux vaut empiler que risquer un conflit silencieux.
+</co-parallelism>

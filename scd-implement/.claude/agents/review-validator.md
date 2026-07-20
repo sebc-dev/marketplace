@@ -14,6 +14,8 @@ Faire barrage aux faux positifs et au sur-engineering. Un reviewer trouve toujou
 <input_protocol>
 Le prompt fournit : les **findings** (schéma `FINDINGS`), le **brief** (`shalls`, exigences), et la liste des **fichiers d'implémentation**.
 Récupère le diff/lis le code pour vérifier chaque finding factuellement.
+
+**Mode worktree (si le prompt fournit un `worktreeDir`)** : reproduis chaque finding dans le code du **worktree** — `git -C "<worktreeDir>" diff …`, lecture des fichiers sous `<worktreeDir>/…` (chemins **absolus**). Le checkout de session ne porte pas le code du lot.
 </input_protocol>
 
 <process>

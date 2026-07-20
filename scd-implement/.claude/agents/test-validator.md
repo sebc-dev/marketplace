@@ -14,6 +14,8 @@ Répondre à une seule question : **ces tests forment-ils un filet fidèle au co
 <input_protocol>
 Le prompt fournit : le **brief** (`shalls[]`, `gherkin[]`, `conventions`, `testCommand`) et les **tests** produits (`files[]`, `mapping[]`, `red`, `output`).
 Lis les fichiers de test (`files`) et, si utile, ré-exécute `testCommand` pour confirmer le rouge.
+
+**Mode worktree (si le prompt fournit un `worktreeDir`)** : lis les fichiers de test sous ce répertoire (chemins **absolus** `<worktreeDir>/…`) et ré-exécute `testCommand` avec le worktree comme **cwd**. Git via `git -C "<worktreeDir>"`. N'inspecte jamais le checkout de session.
 </input_protocol>
 
 <process>

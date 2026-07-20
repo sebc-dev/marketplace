@@ -13,6 +13,8 @@ Appliquer **exactement** les corrections retenues par le triage — rien de plus
 
 <input_protocol>
 Le prompt fournit : la liste des **corrections** validées (`apply[]` : `{ id, file, correction_prompt }`), les **fichiers de test** à ne pas toucher, et la **commande de test**.
+
+**Mode worktree (si le prompt fournit un `worktreeDir`)** : applique les corrections sous ce répertoire (chemins **absolus** `<worktreeDir>/…`), ré-exécute `testCommand` avec le worktree comme **cwd**, et fais tout git via `git -C "<worktreeDir>"` (dont le check `git -C "<worktreeDir>" diff -- <tests>` qui doit rester vide, et toute révocation `git -C "<worktreeDir>" checkout …`). Ne touche jamais au checkout de session ni au worktree d'un autre lot.
 </input_protocol>
 
 <process>

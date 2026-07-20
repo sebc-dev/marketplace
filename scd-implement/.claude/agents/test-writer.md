@@ -15,6 +15,8 @@ Traduire chaque `SHALL` du lot en **tests exécutables qui échouent** (phase ro
 Le prompt fournit :
 - Le **brief** (schéma `BRIEF`) : `shalls[]`, `files`, `testCommand`, `testFramework`, `conventions`, `tasks[]`, `gherkin[]`.
 - En itération de correction : les **gaps** du test-validator + les tests actuels.
+
+**Mode worktree (si le prompt fournit un `worktreeDir`)** : écris et lis les fichiers de test sous ce répertoire (chemins **absolus** `<worktreeDir>/…`), lance `testCommand` avec le worktree comme **cwd** (`cd "<worktreeDir>" && <cmd>`, ou l'option répertoire du gestionnaire de paquets), et fais tout git via `git -C "<worktreeDir>"`. Ne touche jamais au checkout de session ni au worktree d'un autre lot. Les chemins retournés dans `files[]` restent relatifs au repo.
 </input_protocol>
 
 <process>

@@ -13,8 +13,11 @@ description: |
   adversarial des findings (reproduire avant de retenir, ne corriger que correction/
   exigence), le routage de modèles (opus pour raisonnement/review, sonnet pour codegen,
   haiku pour l'enregistrement) et le contrat de fichier d'un dynamic workflow. Se charge
-  pendant /scd-implement:* (run, sync, status). Périmètre : honorer et vérifier le contrat —
-  pas l'écrire (spec/plan/tasks appartiennent à scd-feature-specs). Un lancement = un lot.
+  pendant /scd-implement:* (run, run-parallel, sync, status), plus le mode d'isolation par
+  worktree git qui rend possible le parallélisme réel de plusieurs lots (couche 1, collision
+  d'exécution) — distinct de la sérialisation des lots aux fichiers non disjoints (couche 2,
+  conflit de contenu). Périmètre : honorer et vérifier le contrat —
+  pas l'écrire (spec/plan/tasks appartiennent à scd-feature-specs). Un lancement séquentiel = un lot ; run-parallel en lance plusieurs.
 ---
 
 # Implémentation TDD par lot (dynamic workflow)
@@ -94,6 +97,19 @@ Le run **commence** par poser la branche et **se conclut** par une PR ready-for-
 - **Dépendances entre lots — stacking automatique et déterministe.** Un lot qui `dépend de : Rk` non encore mergé s'**empile** : `run` calcule `--base impl/<slug>-Rk`, `branch-setup` forke la branche du lot depuis cette base (le code de `Rk` est donc présent), et `pr-author` ouvre la PR **vers** `impl/<slug>-Rk` (diff = le seul lot courant, pas de rejeu de `Rk`). Quand `Rk` est mergé dans la base par défaut, les runs suivants reviennent à la base par défaut. Deux dépendances non mergées → `run` ne devine pas et demande. **Garde-fous** : `pr-author` refuse (`created: false`) toute PR dont la tête descend d'une PR ouverte visant la même base (anti-chevauchement) ; l'orchestrateur bloque (`blocked-branch-drift`) si les commits atterrissent sur une branche ≠ celle posée par `branch-setup`.
 - **Rebase déterministe (préventif + curatif).** Le rebase est une **brique nommée** (`rebaser`, haiku) : elle transplante **exactement** les commits propres du lot (`git rebase --onto <base> <oldBase> <lotBranch>`), ce qui la rend robuste au mode de merge de la dépendance (merge-commit / squash / rebase). Elle est **idempotente** (skip si déjà à jour), n'auto-résout **jamais** un conflit (`--abort` + statut bloquant) et n'utilise **jamais** `--force` sec (uniquement `--force-with-lease`). Deux déclencheurs : **préventif** = phase `Rebase` du workflow (repose la branche sur la base à jour avant d'écrire) ; **curatif** = `/scd-implement:sync` quand une dépendance vient d'être mergée (« R1 mergé → rebase R2 » : re-rebase la PR de `R2` sur la base par défaut et retargete sa base). `oldBase` = la branche de la dépendance `impl/<slug>-Rk`, résolue depuis `dépend de :` — jamais devinée. `/scd-implement:status` **signale la dérive** (PR ouverte, dépendance mergée, branche non rebasée) pour rendre le besoin visible.
 
+## Parallélisme réel : isolation par worktree (deux couches)
+
+Par défaut, un lancement traite **un lot** dans le checkout de session. Pour lancer **plusieurs lots en même temps**, il faut lever deux obstacles **distincts** — ne jamais les confondre :
+
+- **Couche 1 — collision d'exécution.** Tous les subagents d'un workflow opèrent dans le **cwd de session** (un seul checkout). Deux workflows concurrents partagent le même HEAD et le même arbre : `branch-setup` bascule le HEAD global (`git switch -c`) et exige un arbre propre — dès que le premier lot salit l'arbre, les autres s'arrêtent en `blocked-dirty-tree`. **C'est ce que le worktree résout** : chaque lot vit dans son propre `git worktree` (checkout séparé, HEAD indépendant), donc plusieurs lots n'entrent plus en collision.
+- **Couche 2 — conflit de contenu.** Deux lots qui éditent le **même fichier** (ex. un registre à source unique `src/checks/index.ts`) entreront en conflit **au merge**, quelle que soit l'isolation d'exécution. Le worktree n'y change **rien**. Cette couche se règle par **sérialisation/empilement** (`--base`), pas par worktree. Le marqueur `[P]` de `tasks.md` encode déjà « parallélisable » (fichiers disjoints) ; on le **généralise** en dérivant la disjonction des ensembles `Fichiers :` de chaque lot.
+
+**Contrainte technique déterminante.** L'outil `Workflow` lance ses subagents dans le cwd de session et n'expose aucun paramètre de répertoire de travail ; le mécanisme `isolation: 'worktree'` des `agent()` crée un worktree *frais par appel* (auto-nettoyé) — inutilisable pour partager **un** worktree entre les onze phases d'un lot. Conséquence de conception : le worktree d'un lot est créé **explicitement** (`git worktree add`, par `branch-setup`) et son **chemin absolu** est propagé à chaque agent aval, qui **roote toutes ses opérations dessus** : git via `git -C "<worktreeDir>"` (jamais un git implicite sur le cwd), fichiers en chemins absolus sous `<worktreeDir>`, commande de test exécutée avec le worktree comme cwd. En mode worktree, l'arbre principal n'a **pas** à être propre (`git worktree add` ne le touche pas), et le checkout de session reste **inchangé** pendant le run.
+
+**Nettoyage déterministe.** Succès (PR créée, branche poussée) → `pr-author` supprime le worktree (`git worktree remove --force` + `git worktree prune`). Échec/bloqué → le worktree est **conservé** et son chemin **rapporté** pour inspection humaine (le travail du lot n'existe peut-être que là). `branch-setup` fait `git worktree prune` avant toute création (idempotence).
+
+**`/scd-implement:run-parallel`** exploite tout ça : il résout plusieurs lots, calcule la **co-parallélisabilité** (deux lots co-lançables **ssi** leurs `Fichiers :` sont disjoints **ET** aucun ne dépend de l'autre non mergé), refuse de co-lancer des lots qui se recoupent (il les **sérialise** en chaîne `--base`), fetch **une seule fois** avant le fan-out, puis lance l'orchestrateur `implement-parallel.js` — un `parallel([...])` de `workflow('implement-lot', { …, worktree: true })` (imbrication d'un seul niveau). Détails : `references/workflow-template.md` (section `parallel`) et `references/tasks-parsing.md` (co-parallélisabilité).
+
 ## Le contrat de fichier d'un dynamic workflow (rappel)
 
 Le workflow est un script JS que le runtime exécute en arrière-plan (cf. `docs/claude-code/workflows.md`). Règles dures, à respecter si tu l'adaptes :
@@ -108,8 +124,8 @@ Le workflow est un script JS que le runtime exécute en arrière-plan (cf. `docs
 
 Charge **uniquement** la référence utile à la phase courante :
 
-- `references/tasks-parsing.md` — Parser les lots `Rn`, tâches `Tn`, backrefs `_Requirements:_`, `[P]`, `Fichiers :`, `dépend de :` ; pull des SHALL depuis `spec.md`. Chargée par `run` et `status`. Sections : `role`, `parsing`, `resolution`.
+- `references/tasks-parsing.md` — Parser les lots `Rn`, tâches `Tn`, backrefs `_Requirements:_`, `[P]`, `Fichiers :`, `dépend de :` ; pull des SHALL depuis `spec.md` ; **règle de co-parallélisabilité** (généralisation de `[P]` : fichiers disjoints ∧ pas de dépendance non mergée). Chargée par `run`, `run-parallel` et `status`. Sections : `role`, `parsing`, `resolution`, `co-parallelism`.
 - `references/green-gate.md` — Discipline rouge/vert, EARS→test, check déterministe « tests intacts », porte verte par preuve. Sections : `role`, `tdd`, `enforcement`, `pitfalls`.
 - `references/testing-rubric.md` — Rubric de test (FIRST, AAA, EP+BVA, doubles, anti-patterns, quand supprimer). Base de `test-writer`/`test-validator`. Sections : `principles`, `selection`, `doubles`, `anti-patterns`, `checklists`.
 - `references/review-dimensions.md` — Les six dimensions, le modèle de sévérité, le triage sceptique (« gaps not style », anti sur-engineering). Base de `code-reviewer`/`review-validator`. Sections : `dimensions`, `severity`, `triage`.
-- `references/workflow-template.md` — Le dynamic workflow `implement-lot.js` expliqué : phases, schémas, boucles gardées, `agentType`, comment l'adapter, fallback inline. Sections : `role`, `structure`, `adaptation`, `run`.
+- `references/workflow-template.md` — Le dynamic workflow `implement-lot.js` expliqué : phases, schémas, boucles gardées, `agentType`, comment l'adapter, fallback inline ; **mode worktree** (propagation de `worktreeDir`, `git -C`, nettoyage) et **orchestrateur parallèle** `implement-parallel.js`. Sections : `role`, `structure`, `worktree`, `parallel`, `adaptation`, `run`.

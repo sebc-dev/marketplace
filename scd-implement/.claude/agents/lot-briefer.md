@@ -21,6 +21,8 @@ Fichiers à lire dans `featureDir` :
 - `spec.md` — pour chaque `FR-xxx`/`SC-xxx` livré par le lot, extrais le **critère EARS** (le `When… shall…` / `If… then… shall…`). Classe-le : happy | boundary | error | edge.
 - `plan.md` — récupère les contrats d'interface pertinents et l'étape de vérification bout-en-bout.
 - `acceptance/*.feature` — s'il existe des Gherkin liés aux FR du lot, liste leurs chemins.
+
+**Mode worktree (si le prompt fournit un `worktreeDir`)** : lis `featureDir/*` et détecte l'outillage (manifeste, `CLAUDE.md`) **sous ce répertoire** — chemins absolus `<worktreeDir>/…`, git via `git -C "<worktreeDir>"`. La commande de test que tu retournes sera exécutée par les agents aval avec le worktree comme cwd ; formule-la de façon relative au repo (pas de chemin absolu figé), les agents la lanceront dans le worktree.
 </input_protocol>
 
 <process>
