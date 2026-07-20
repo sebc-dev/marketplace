@@ -11,11 +11,12 @@ Deux parties, dans l'ordre (contrat parser) :
 1. `export const meta = { … }` — **littéral pur**, 1re instruction. `name`, `description`, `whenToUse`, `phases[]` (une entrée par `phase()`).
 2. Corps async : les schémas de handoff (consts JSON Schema), puis l'orchestration.
 
-## Les dix phases
+## Les onze phases
 
 | Phase | `agentType` | Modèle | Schéma retour |
 |---|---|---|---|
 | Branch | `scd-implement:branch-setup` | haiku | `BRANCH` |
+| Rebase | `scd-implement:rebaser` | haiku | `REBASE` |
 | Prepare | `scd-implement:lot-briefer` | sonnet | `BRIEF` |
 | Red | `scd-implement:test-writer` | sonnet | `TESTS` |
 | Validate | `scd-implement:test-validator` | opus | `TEST_VERDICT` |
@@ -35,11 +36,13 @@ Chaque résultat d'agent est vérifié (`if (!x) …`) — l'équivalent de `fil
 
 ## Statuts de sortie
 
-`done` (lot vert, cases cochées, PR ouverte) · `blocked-dirty-tree` (arbre de travail non propre au moment de brancher — phase Branch) · `blocked-branch` (la branche dédiée n'a pas pu être posée) · `blocked-red` (vert jamais atteint) · `blocked-tests-modified` (l'impl a dû toucher les tests) · `blocked-after-fix` (une correction a cassé le vert). Les statuts `blocked-*` sont repris par `run` pour orienter l'humain ; le lot n'est ni coché ni transformé en PR. **`blocked-dirty-tree`/`blocked-branch` sortent dès la première phase** — rien n'a été écrit, il suffit de nettoyer l'arbre et relancer. En `done`, le retour porte `branch`, `base` et `pr: { url, number, state }` (ou `pr: null` si la publication n'a pas pu se faire — remote/CLI absent).
+`done` (lot vert, cases cochées, PR ouverte) · `blocked-dirty-tree` (arbre de travail non propre au moment de brancher — phase Branch) · `blocked-branch` (la branche dédiée n'a pas pu être posée) · `blocked-rebase` (la phase Rebase préventive a échoué : `blocked-conflict`/`blocked-dirty`/`blocked-push`) · `blocked-red` (vert jamais atteint) · `blocked-tests-modified` (l'impl a dû toucher les tests) · `blocked-after-fix` (une correction a cassé le vert) · `blocked-branch-drift` (post-Record : les commits ont atterri sur une branche ≠ celle de `branch-setup` — PR non ouverte). Les statuts `blocked-*` sont repris par `run` pour orienter l'humain ; le lot n'est ni coché ni transformé en PR. **`blocked-dirty-tree`/`blocked-branch`/`blocked-rebase` sortent tôt** — rien du code n'a été écrit, il suffit de nettoyer (arbre, conflit de rebase) et relancer ; un conflit de rebase n'est **jamais** résolu automatiquement. En `done`, le retour porte `branch`, `base` et `pr: { url, number, state }` (ou `pr: null` si la publication n'a pas pu se faire — remote/CLI absent).
 
-## Branche & PR (phases Branch + Record + PR)
+## Branche, rebase & PR (phases Branch + Rebase + Record + PR)
 
-**La branche est posée en toute première phase, toujours.** `branch-setup` exige un arbre propre (`git status --porcelain` vide, sinon STOP `blocked-dirty-tree`), fait `git fetch`, puis crée `impl/<slug>-<lot>` depuis la base **à jour** (`origin/<base>`, `base` = arg `args.base` sinon défaut du repo). Aucune exception : on repart de la base à jour même si on était sur une branche de travail (le stacking automatique disparaît — un lot dépendant suppose sa dépendance mergée dans la base, ou `--base` pointant sur elle). Le code du lot naît donc directement sur la branche dédiée ; `progress-recorder` ne fait plus que commiter dessus (il ne crée ni ne change de branche). `pr-author` détecte `gh`/`glab`, `git push -u` (jamais `--force`) et ouvre une PR/MR **ready** vers la même base. Créer une PR est une action sortante : pré-allowlister `Bash(git push *)`, `Bash(gh pr *)`, `Bash(glab mr *)` évite un prompt en cours de run.
+**La branche est posée en toute première phase, toujours.** `branch-setup` exige un arbre propre (`git status --porcelain` vide, sinon STOP `blocked-dirty-tree`), fait `git fetch`, puis crée `impl/<slug>-<lot>` depuis la base **à jour** (`origin/<base>`, `base` = arg `args.base` sinon défaut du repo). `base` et `oldBase` sont **résolus en amont par `/scd-implement:run`** (auto-stacking : un lot qui `dépend de : Rk` non mergé s'empile → `base = impl/<slug>-Rk` ; `oldBase = impl/<slug>-Rk` arme le rebase `--onto`). La phase **Rebase** (`rebaser`, préventive et idempotente) repose ensuite la branche sur la base à jour — no-op sur une branche fraîche, utile sur une reprise où la base a bougé ; conflit → `--abort` + `blocked-rebase`, jamais de résolution auto, `--force-with-lease` uniquement.
+
+Le code du lot naît directement sur la branche dédiée ; `progress-recorder` ne fait que commiter dessus (il ne crée ni ne change de branche — l'orchestrateur bloque en `blocked-branch-drift` sinon). `pr-author` détecte `gh`/`glab`, `git push -u` (jamais `--force`) et ouvre une PR/MR **ready** vers la base fournie (jamais de repli silencieux sur `main`), en refusant une PR qui chevaucherait une PR ouverte de même base. Le curatif « dépendance mergée après coup → rebase la PR dépendante » vit dans `/scd-implement:sync` (réutilise `rebaser`). Créer/pousser une PR est une action sortante : pré-allowlister `Bash(git push *)`, `Bash(gh pr *)`, `Bash(glab mr *)` évite un prompt en cours de run.
 
 ## Déterminisme (non négociable)
 
@@ -62,7 +65,7 @@ Ne jamais : mettre du non-déterminisme, faire de l'I/O dans l'orchestrateur, pa
 
 Depuis `/scd-implement:run`, après résolution de la cible, on lance **par `scriptPath`** (jamais par `name`) :
 ```
-Workflow(scriptPath: "<racine-plugin>/.claude/workflows/implement-lot.js", args: { featureDir: "specs/NNN-slug", lot: "Rn" })
+Workflow(scriptPath: "<racine-plugin>/.claude/workflows/implement-lot.js", args: { featureDir: "specs/NNN-slug", lot: "Rn", base: "<branche ou omis>", oldBase: "<impl/<slug>-Rk ou omis>" })
 ```
 **Pourquoi pas `name`** : un workflow bundlé dans un plugin n'est pas dans le registre des noms (seuls les workflows projet `.claude/workflows/` et built-in le sont) ; `Workflow(name: "implement-lot")` échoue avec « not found ». Et `${CLAUDE_PLUGIN_ROOT}` ne s'expande pas de façon fiable dans une commande markdown → `run` résout le chemin absolu par Bash (`find "$HOME/.claude/plugins" -path '*scd-implement*/implement-lot.js' | sort -V | tail -1`) avant de lancer.
 

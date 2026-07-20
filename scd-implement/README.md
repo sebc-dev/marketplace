@@ -2,10 +2,10 @@
 
 **Le workflow dynamique d'implémentation TDD — la suite de `scd-feature-specs`. Un lot de review à la fois.**
 
-Là où `scd-feature-specs` produit et **atteste** le contrat d'une feature (`specs/NNN-feature/{spec,plan,tasks}.md`, gate `analyze` au vert) puis **s'arrête**, `scd-implement` prend le relais : il **honore** ce contrat et le **vérifie**, en implémentant **un lot `Rn` à la fois** via un **dynamic workflow** — un script JS qui orchestre dix subagents dédiés en arrière-plan.
+Là où `scd-feature-specs` produit et **atteste** le contrat d'une feature (`specs/NNN-feature/{spec,plan,tasks}.md`, gate `analyze` au vert) puis **s'arrête**, `scd-implement` prend le relais : il **honore** ce contrat et le **vérifie**, en implémentant **un lot `Rn` à la fois** via un **dynamic workflow** — un script JS qui orchestre onze subagents dédiés en arrière-plan.
 
 ```
-Branche dédiée (base à jour) → Rouge (tests) → Valider les tests → Vert (impl) → Review → Triage sceptique → Apply → Record → PR
+Branche dédiée (base à jour) → Rebase (préventif) → Rouge (tests) → Valider les tests → Vert (impl) → Review → Triage sceptique → Apply → Record → PR
 ```
 
 L'humain a décidé du *quoi* en amont (le contrat). Ici, le workflow exécute le *comment* et **prouve le vert** — sans intervention humaine en cours de run.
@@ -23,11 +23,12 @@ scd-project-docs  →  scd-feature-specs  →  scd-implement
 
 ## Le cycle, par lot
 
-Un lancement = un lot `Rn`. Dix phases, dix agents dédiés :
+Un lancement = un lot `Rn`. Onze phases, onze agents dédiés :
 
 | Phase | Agent | Rôle | Modèle |
 |---|---|---|---|
 | Branch | `branch-setup` | crée **toujours** `impl/<slug>-<lot>` depuis la base **à jour** (arbre propre exigé) | haiku |
+| Rebase | `rebaser` | **préventif, idempotent** : repose la branche sur la base à jour (no-op si fraîche) | haiku |
 | Prepare | `lot-briefer` | parse le lot, pull les SHALL, détecte le test runner | sonnet |
 | Red | `test-writer` | un test nommé par SHALL, confirme le **rouge** | sonnet |
 | Validate | `test-validator` | 1 SHALL = 1 test, cas limites, conventions, anti-patterns | opus |
@@ -58,7 +59,8 @@ Le cycle est exactement le cas où « la sortie de l'étape N détermine l'étap
 | Commande | Rôle | Human/AI |
 |---|---|---|
 | `/scd-implement:run [NNN] [Rn]` | lance le workflow sur un lot (résout la cible, vérifie les préconditions) | 20/80 |
-| `/scd-implement:status [NNN]` | tableau de bord : lots faits / en cours / à faire, prochain lançable | 10/90 |
+| `/scd-implement:sync [NNN] [Rn]` | **curatif** : re-rebase les PR de lot ouvertes dont la dépendance vient d'être mergée (« R1 mergé → rebase R2 ») | 20/80 |
+| `/scd-implement:status [NNN]` | tableau de bord : lots faits / en cours / à faire, prochain lançable, **dérive de rebase** signalée | 10/90 |
 
 L'état vit dans les cases de `tasks.md` — cochées par `progress-recorder`, relues par `status`. `/clear` efface le contexte, pas l'état.
 
@@ -66,8 +68,9 @@ L'état vit dans les cases de `tasks.md` — cochées par `progress-recorder`, r
 
 Le run se conclut par une **PR ready-for-review, une par lot** — le prolongement direct de « un lot ≈ une PR reviewable » (`scd-feature-specs` dimensionne la slice ; `scd-implement` la livre).
 
-- **Branche** : `impl/<slug>-<lot>`, créée **toujours et en toute première phase** par `branch-setup`, à partir de la base **mise à jour** (`git fetch`). Arbre de travail propre exigé (sinon le run s'arrête sans rien écrire). Pas de stacking automatique : chaque run repart de la base.
-- **Base** : branche par défaut du repo, détectée ; surchargeable via `--base <branche>` (la branche dédiée **et** la PR en partent).
+- **Branche** : `impl/<slug>-<lot>`, créée **toujours et en toute première phase** par `branch-setup`, à partir de la base **mise à jour** (`git fetch`). Arbre de travail propre exigé (sinon le run s'arrête sans rien écrire).
+- **Base** : résolue par `/scd-implement:run` et appliquée **à la branche dédiée et à la PR**. Défaut = branche par défaut du repo ; surchargeable via `--base <branche>` ; **auto-stacking** : un lot qui `dépend de : Rk` non encore mergé s'empile automatiquement sur `impl/<slug>-Rk` (base = cette branche pour le fork **et** la PR). Garde-fous déterministes : `pr-author` refuse une PR qui chevaucherait une PR ouverte de même base, et le workflow bloque si les commits dérivent hors de la branche du lot.
+- **Rebase déterministe** : le rebase est une brique nommée (`rebaser`) — transplant exact des commits du lot via `git rebase --onto` (robuste au merge/squash de la dépendance), idempotent, jamais de résolution de conflit automatique, jamais de `--force` sec (`--force-with-lease` uniquement). **Préventif** dans le workflow (repose la branche avant d'écrire) ; **curatif** via `/scd-implement:sync` quand une dépendance est mergée (re-rebase la PR dépendante et retargete sa base). `/scd-implement:status` signale la dérive.
 - **Plateforme** : auto-détection `gh` (GitHub) / `glab` (GitLab).
 - **Description** : FR/SHALL livrés → tests, fichiers d'impl, findings appliqués/rejetés, preuve du vert (`0 failed`), traçabilité vers `specs/NNN-feature/`.
 

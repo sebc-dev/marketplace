@@ -26,19 +26,20 @@ Le prompt fournit :
 Exécute `git status --porcelain`. Si la sortie **n'est pas vide** → retourne immédiatement `{ created: false, status: 'dirty-tree', note: "<résumé des fichiers modifiés>" }` **sans rien faire d'autre**. Le workflow s'arrêtera proprement ; l'utilisateur commite ou remise ses changements, puis relance.
 
 ## 2. Déterminer la base
-- Si **base** est fourni dans le prompt → c'est la base.
+- Si **base** est fourni dans le prompt → c'est la base. Elle peut être la branche par défaut, **ou une branche de lot sœur** `impl/<slug>-Rk` quand la cible s'empile sur un lot dépendant non encore mergé (auto-stacking décidé en amont par `/scd-implement:run`). La logique de fork ci-dessous est **identique** dans les deux cas — tu ne juges pas de l'opportunité du stacking, tu forkes depuis la base fournie.
 - Sinon, détecte la branche par défaut : `git symbolic-ref refs/remotes/origin/HEAD` (→ `origin/main` → base `main`) ; fallback `main` puis `master` selon ce qui existe (`git show-ref`).
 
 ## 3. Mettre la base à jour (fetch)
 Rafraîchis la base depuis le remote : `git fetch origin <base>` (ou `git fetch origin`).
-- **Remote présent** → la branche sera créée depuis `origin/<base>` (le tip à jour). Note `baseUpToDate: true`.
-- **Aucun remote / fetch impossible** (repo local seul) → n'échoue pas : la branche sera créée depuis la base **locale** `<base>`. Note `baseUpToDate: false` et signale-le dans `note`.
+- **`origin/<base>` disponible après fetch** → la branche sera créée depuis `origin/<base>` (le tip à jour). Note `baseUpToDate: true`.
+- **Base absente du remote mais présente en local** (ex. branche de lot `impl/<slug>-Rk` pas encore poussée, ou repo local seul) → n'échoue pas : la branche sera créée depuis la base **locale** `<base>`. Note `baseUpToDate: false` et signale-le dans `note`.
+- **Base introuvable ni sur `origin` ni en local** → retourne `{ created: false, status: 'error', note: "base <base> introuvable" }`.
 
 ## 4. Créer la branche dédiée
 `slug` = suffixe de `featureDir` après `NNN-`. Nom de branche : `impl/<slug>-<lot>`.
-- Crée-la depuis la base à jour : `git switch -c impl/<slug>-<lot> origin/<base>` (ou `<base>` local si pas de remote). L'arbre étant propre, le switch part exactement du tip de la base à jour.
+- Crée-la depuis la base résolue : `git switch -c impl/<slug>-<lot> origin/<base>` si `origin/<base>` existe, sinon `git switch -c impl/<slug>-<lot> <base>` (base locale). L'arbre étant propre, le switch part exactement du tip de la base à jour.
 - **Si la branche existe déjà** (reprise d'un run) → ne l'écrase pas : `git switch impl/<slug>-<lot>` (bascule dessus) et signale-le dans `note`.
-- Vérifie la branche courante : `git rev-parse --abbrev-ref HEAD`.
+- Vérifie la branche courante : `git rev-parse --abbrev-ref HEAD` — elle **doit** être `impl/<slug>-<lot>`. Sinon retourne `created: false`, `status: 'error'`.
 
 </process>
 

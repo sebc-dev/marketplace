@@ -13,7 +13,7 @@ description: |
   adversarial des findings (reproduire avant de retenir, ne corriger que correction/
   exigence), le routage de modèles (opus pour raisonnement/review, sonnet pour codegen,
   haiku pour l'enregistrement) et le contrat de fichier d'un dynamic workflow. Se charge
-  pendant /scd-implement:* (run, status). Périmètre : honorer et vérifier le contrat —
+  pendant /scd-implement:* (run, sync, status). Périmètre : honorer et vérifier le contrat —
   pas l'écrire (spec/plan/tasks appartiennent à scd-feature-specs). Un lancement = un lot.
 ---
 
@@ -33,15 +33,16 @@ FR du PRD → FR/SHALL de la spec → tâche Tn → test → code
 Un lancement `/scd-implement:run NNN Rn` exécute le workflow sur **un seul** lot :
 
 1. **Branch** (`branch-setup`) — crée **toujours** la branche dédiée `impl/<slug>-<lot>` depuis la base à jour (`git fetch`), **avant tout le reste**. Arbre propre exigé, sinon STOP.
-2. **Prepare** (`lot-briefer`) — parse le lot, pull les SHALL depuis `spec.md`, détecte la commande de test.
-3. **Red** (`test-writer`) — un test nommé par SHALL, exécution, **rouge confirmé**.
-4. **Validate** (`test-validator`) — 1 SHALL = 1 test, cas limites, conventions, anti-patterns. Boucle de correction ≤ 2.
-5. **Green** (`implementer`) — code jusqu'au vert, **sans toucher aux tests**. Retry ≤ 3.
-6. **Review** (`code-reviewer`) — six dimensions, en contexte frais.
-7. **Triage** (`review-validator`) — sceptique adversarial, apply/skip.
-8. **Apply** (`fix-applier`) — corrections retenues, re-vérifie le vert.
-9. **Record** (`progress-recorder`) — coche `tasks.md`, commit **sur la branche dédiée**.
-10. **PR** (`pr-author`) — pousse la branche, ouvre la PR/MR **ready for review** avec une description structurée.
+2. **Rebase** (`rebaser`) — **préventif, idempotent** : repose la branche sur la base à jour avant d'écrire. No-op sur une branche fraîche ; utile sur une **reprise** où la base a bougé. Conflit → `--abort` + STOP.
+3. **Prepare** (`lot-briefer`) — parse le lot, pull les SHALL depuis `spec.md`, détecte la commande de test.
+4. **Red** (`test-writer`) — un test nommé par SHALL, exécution, **rouge confirmé**.
+5. **Validate** (`test-validator`) — 1 SHALL = 1 test, cas limites, conventions, anti-patterns. Boucle de correction ≤ 2.
+6. **Green** (`implementer`) — code jusqu'au vert, **sans toucher aux tests**. Retry ≤ 3.
+7. **Review** (`code-reviewer`) — six dimensions, en contexte frais.
+8. **Triage** (`review-validator`) — sceptique adversarial, apply/skip.
+9. **Apply** (`fix-applier`) — corrections retenues, re-vérifie le vert.
+10. **Record** (`progress-recorder`) — coche `tasks.md`, commit **sur la branche dédiée**.
+11. **PR** (`pr-author`) — pousse la branche, ouvre la PR/MR **ready for review** avec une description structurée.
 
 Détails d'orchestration et adaptation du script : `references/workflow-template.md`.
 
@@ -79,7 +80,7 @@ Ce plugin **ne livre aucun hook** : rien ici n'est bloquant-100 % de façon *sta
 Pour maîtriser le coût d'un dynamic workflow (« substantiellement plus » de tokens) :
 - **opus** — raisonnement dur : `test-validator`, `code-reviewer`, `review-validator`.
 - **sonnet** — génération de code / rédaction : `test-writer`, `implementer`, `fix-applier`, `lot-briefer`, `pr-author`.
-- **haiku** — mécanique : `progress-recorder`.
+- **haiku** — mécanique : `progress-recorder`, `rebaser` (exécutent une recette, ne raisonnent pas).
 
 Le périmètre « un lot par lancement » borne naturellement la dépense.
 
@@ -87,10 +88,11 @@ Le périmètre « un lot par lancement » borne naturellement la dépense.
 
 Le run **commence** par poser la branche et **se conclut** par une PR ready-for-review, une par lot :
 - **Branche (première phase, toujours)** : `branch-setup` crée **systématiquement** `impl/<slug>-<lot>` **avant tout autre travail**, à partir de la base **mise à jour** (`git fetch` → `origin/<base>`). Pas d'exception : même si tu es déjà sur une branche de travail, on repart de la base à jour. **Arbre propre exigé** : si `git status` n'est pas propre, le workflow s'arrête (`blocked-dirty-tree`) — commite ou remise, puis relance. Rien ne peut atterrir sur la base : le code du lot naît directement sur la branche dédiée.
-- **Base** : branche par défaut du repo, détectée ; surchargeable via l'argument `base` de `/scd-implement:run` — la branche dédiée **et** la PR partent alors de cette base.
+- **Base** : la base est **résolue par `/scd-implement:run` avant le lancement** et s'applique **à la fois** à la branche dédiée et à la PR. Trois cas : (a) `--base <branche>` explicite → gagne toujours ; (b) auto-stacking → si le lot cible `dépend de : Rk` et que `impl/<slug>-Rk` existe et n'est **pas encore mergée** dans la base par défaut, la base devient `impl/<slug>-Rk` ; (c) sinon → branche par défaut du repo, détectée.
 - **Publication** : `pr-author` détecte `gh`/`glab`, `git push -u` (jamais `--force`), et ouvre la PR/MR avec une description structurée (FR/SHALL livrés, tests, findings appliqués/rejetés, preuve du vert).
 - **Permissions** : créer une PR est une **action sortante** depuis un run en arrière-plan. Pré-allowlister `Bash(git push *)`, `Bash(gh pr *)`, `Bash(glab mr *)` évite un prompt en cours de run ; sinon `pr-author` peut demander confirmation (ou, en `-p`/SDK, échouer proprement avec `created: false`).
-- **Dépendances entre lots** : chaque run branche **à neuf** depuis la base — il n'y a plus de stacking automatique sur une branche de travail. Un lot qui `dépend de :` un autre suppose donc que la dépendance est **mergée dans la base** avant son run (ou passe `--base <branche-de-la-dépendance>` pour partir de sa branche). `pr-author` n'automatise pas le stacking.
+- **Dépendances entre lots — stacking automatique et déterministe.** Un lot qui `dépend de : Rk` non encore mergé s'**empile** : `run` calcule `--base impl/<slug>-Rk`, `branch-setup` forke la branche du lot depuis cette base (le code de `Rk` est donc présent), et `pr-author` ouvre la PR **vers** `impl/<slug>-Rk` (diff = le seul lot courant, pas de rejeu de `Rk`). Quand `Rk` est mergé dans la base par défaut, les runs suivants reviennent à la base par défaut. Deux dépendances non mergées → `run` ne devine pas et demande. **Garde-fous** : `pr-author` refuse (`created: false`) toute PR dont la tête descend d'une PR ouverte visant la même base (anti-chevauchement) ; l'orchestrateur bloque (`blocked-branch-drift`) si les commits atterrissent sur une branche ≠ celle posée par `branch-setup`.
+- **Rebase déterministe (préventif + curatif).** Le rebase est une **brique nommée** (`rebaser`, haiku) : elle transplante **exactement** les commits propres du lot (`git rebase --onto <base> <oldBase> <lotBranch>`), ce qui la rend robuste au mode de merge de la dépendance (merge-commit / squash / rebase). Elle est **idempotente** (skip si déjà à jour), n'auto-résout **jamais** un conflit (`--abort` + statut bloquant) et n'utilise **jamais** `--force` sec (uniquement `--force-with-lease`). Deux déclencheurs : **préventif** = phase `Rebase` du workflow (repose la branche sur la base à jour avant d'écrire) ; **curatif** = `/scd-implement:sync` quand une dépendance vient d'être mergée (« R1 mergé → rebase R2 » : re-rebase la PR de `R2` sur la base par défaut et retargete sa base). `oldBase` = la branche de la dépendance `impl/<slug>-Rk`, résolue depuis `dépend de :` — jamais devinée. `/scd-implement:status` **signale la dérive** (PR ouverte, dépendance mergée, branche non rebasée) pour rendre le besoin visible.
 
 ## Le contrat de fichier d'un dynamic workflow (rappel)
 

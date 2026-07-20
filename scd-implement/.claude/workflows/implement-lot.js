@@ -3,7 +3,8 @@ export const meta = {
   description: 'Implémente un lot de review Rn en TDD : rouge → valide → vert → review → triage → apply → record. Un lancement = un lot.',
   whenToUse: "Après une gate analyze au vert de scd-feature-specs, pour implémenter un lot Rn de specs/NNN-feature/tasks.md.",
   phases: [
-    { title: 'Branch', detail: 'branch-setup : crée impl/<slug>-<lot> depuis la base à jour (arbre propre exigé)' },
+    { title: 'Branch', detail: 'branch-setup : crée impl/<slug>-<lot> depuis la base à jour — défaut, ou branche du lot dépendant en stacking (arbre propre exigé)' },
+    { title: 'Rebase', detail: 'rebaser : (préventif, idempotent) repose la branche sur la base à jour ; no-op sur une branche fraîche' },
     { title: 'Prepare', detail: 'lot-briefer : parse le lot, pull les SHALL, détecte le test runner' },
     { title: 'Red', detail: 'test-writer : écrit les tests, confirme le rouge' },
     { title: 'Validate', detail: 'test-validator : 1 SHALL = 1 test, cas limites, conventions' },
@@ -29,6 +30,19 @@ const BRANCH = {
     base: { type: 'string', description: 'Base retenue (ex. main)' },
     baseUpToDate: { type: 'boolean', description: 'true si la base a été rafraîchie depuis le remote (git fetch)' },
     status: { type: 'string', description: 'ready | dirty-tree | error' },
+    note: { type: 'string' },
+  },
+}
+
+const REBASE = {
+  type: 'object',
+  required: ['status'],
+  properties: {
+    status: { type: 'string', description: 'up-to-date | rebased | blocked-conflict | blocked-dirty | blocked-push | error' },
+    lotBranch: { type: 'string' },
+    base: { type: 'string' },
+    oldBase: { type: 'string' },
+    pushed: { type: 'boolean' },
     note: { type: 'string' },
   },
 }
@@ -213,6 +227,7 @@ if (!featureDir || !lot) {
   throw new Error('args requis : { featureDir: "specs/NNN-slug", lot: "Rn" }')
 }
 const base = args && args.base ? args.base : null
+const oldBase = args && args.oldBase ? args.oldBase : null
 
 phase('Branch')
 const branchInfo = await agent(
@@ -231,6 +246,24 @@ if (!branchInfo.created) {
   return { lot, featureDir, status: 'blocked-branch', branchInfo }
 }
 log(`Branche ${branchInfo.branch} depuis ${branchInfo.base || 'défaut'}${branchInfo.baseUpToDate === false ? ' (base locale, remote absent)' : ' (à jour)'}`)
+
+// Préventif : sur une branche fraîche c'est un no-op (idempotent), mais sur une REPRISE
+// de run où la base a bougé entre-temps, on repose la branche sur la base à jour AVANT
+// d'écrire. `push: auto` = ne pousse que si la branche est déjà publiée (sinon pr-author publiera).
+phase('Rebase')
+const rebased = await agent(
+  `Rebase la branche du lot sur sa base à jour, de façon idempotente, AVANT toute écriture de code.\n` +
+  `lotBranch: \`${branchInfo.branch}\`\nbase: \`${base || branchInfo.base}\`\n` +
+  (oldBase ? `oldBase: \`${oldBase}\` (mode --onto : transplante les seuls commits du lot)\n` : ``) +
+  `push: auto. Conflit → git rebase --abort et statut blocked-conflict (ne résous jamais un conflit).`,
+  { agentType: 'scd-implement:rebaser', schema: REBASE, model: 'haiku' },
+)
+if (rebased && (rebased.status === 'blocked-conflict' || rebased.status === 'blocked-dirty' || rebased.status === 'blocked-push')) {
+  return { lot, featureDir, status: 'blocked-rebase', rebase: rebased, branchInfo }
+}
+if (rebased && rebased.status === 'rebased') {
+  log(`Branche re-rebasée sur ${rebased.base}${rebased.pushed ? ' (poussée --force-with-lease)' : ''}`)
+}
 
 phase('Prepare')
 const brief = await agent(
@@ -352,12 +385,29 @@ const record = await agent(
   { agentType: 'scd-implement:progress-recorder', schema: RECORD, model: 'haiku' },
 )
 
+// Filet déterministe : la branche portant les commits DOIT être celle posée par branch-setup.
+// Si progress-recorder a dérivé (switch/branche involontaire), on refuse d'ouvrir une PR sur
+// la mauvaise tête — échec bruyant plutôt que PR silencieusement cassée.
+if (record && record.branch && record.branch !== branchInfo.branch) {
+  return {
+    lot,
+    featureDir,
+    status: 'blocked-branch-drift',
+    expectedBranch: branchInfo.branch,
+    recordedBranch: record.branch,
+    note: `progress-recorder a commité sur ${record.branch} au lieu de ${branchInfo.branch} — PR non ouverte.`,
+    record,
+  }
+}
+
 phase('PR')
 const pr = await agent(
   `Publie une PR "ready for review" pour le lot ${lot} de ${featureDir}. Détecte la plateforme (gh/glab), ` +
   `pousse la branche \`${(record && record.branch) || branchInfo.branch}\` (git push -u, jamais --force), et crée la PR vers ` +
   (base ? `la base \`${base}\`` : `la branche de base par défaut du repo`) +
-  ` avec un titre et une description structurée de l'implémentation.\n` +
+  ` avec un titre et une description structurée de l'implémentation. ` +
+  `AVANT de pousser, applique le garde-fou anti-chevauchement : si ta tête descend d'une PR déjà ` +
+  `ouverte visant la même base, n'ouvre pas de PR (created:false, note explicite) — n'empile jamais un doublon.\n` +
   `Résumé:\n${JSON.stringify({
     lot,
     featureDir,

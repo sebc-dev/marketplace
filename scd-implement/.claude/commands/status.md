@@ -5,6 +5,11 @@ allowed-tools:
   - Read
   - Grep
   - Glob
+  - Bash(git symbolic-ref *)
+  - Bash(git merge-base *)
+  - Bash(git ls-remote *)
+  - Bash(gh pr list *)
+  - Bash(gh pr view *)
 ---
 
 ## Contexte
@@ -26,8 +31,9 @@ Ratio : 10% humain / 90% AI (lecture mécanique ; l'humain choisit la suite).
    - **en cours** : certaines cochées, d'autres non ;
    - **à faire** : aucune cochée.
 3. Détermine le **prochain lot lançable** : le premier `Rn` non fait dans l'ordre des dépendances **dont toutes les dépendances (`dépend de : Rn`) sont faites**. Signale tout lot **bloqué** (dépendance non faite).
-4. Produis le tableau de bord (voir `<report>`), avec la **prochaine commande** prête à copier pour chaque feature en vol.
-5. Si `analyze` n'a manifestement pas été passée (spec avec `[NEEDS CLARIFICATION]`, `tasks.md` absent), signale-le : l'implémentation ne doit pas démarrer sur un contrat non validé.
+4. **Détecter la dérive de rebase** (best-effort, en **lecture seule** ; saute silencieusement si `gh`/remote indisponible). Pour chaque lot `Rn` à **PR ouverte** (`gh pr list --state open --head impl/<slug>-Rn --json number,baseRefName`) dont la dépendance `Rk` est **mergée** (`gh pr view impl/<slug>-Rk --json merged`, ou branche `impl/<slug>-Rk` disparue du remote) alors que la PR de `Rn` vise encore `impl/<slug>-Rk` (ou porte encore les commits de `Rk`) → **dérive** : signale-la et propose `/scd-implement:sync NNN Rn`. C'est ce qui rend le besoin de re-rebase **visible** au lieu de silencieux.
+5. Produis le tableau de bord (voir `<report>`), avec la **prochaine commande** prête à copier pour chaque feature en vol.
+6. Si `analyze` n'a manifestement pas été passée (spec avec `[NEEDS CLARIFICATION]`, `tasks.md` absent), signale-le : l'implémentation ne doit pas démarrer sur un contrat non validé.
 
 ## Ce que tu NE fais PAS
 
@@ -44,6 +50,7 @@ Lots : X faits · Y en cours · Z à faire
 - [~] R2 — <capability>           (en cours : T3, T4 restants)
 - [ ] R3 — <capability>           (à faire · bloqué par R2)
 Prochain : /scd-implement:run NNN R2
+⚠ Dérive : PR #12 (R2) vise impl/slug-R1 déjà mergé → /scd-implement:sync NNN R2
 
 ### MMM-autre
 ...
