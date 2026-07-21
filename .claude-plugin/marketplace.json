@@ -7,6 +7,7 @@
   "plugins": [
     {
       "name": "scd-astro",
+      "version": "0.4.1",
       "source": "./scd-astro",
       "description": "Skill Astro 6.x on Cloudflare Workers. Rendering modes, Content Layer, Live Collections, Cloudflare bindings via cloudflare:workers, Zod 4, Fonts API, workerd dev, breaking-change prevention.",
       "author": {
@@ -16,6 +17,7 @@
     },
     {
       "name": "scd-writer",
+      "version": "0.2.2",
       "source": "./scd-writer",
       "description": "Workflow d'ecriture en 7 phases pour developpeur-auteur. L'humain ecrit et pense, Claude questionne, structure et polit. Ne genere jamais de contenu a la place de l'auteur.",
       "author": {
@@ -25,6 +27,7 @@
     },
     {
       "name": "scd-forge",
+      "version": "0.2.1",
       "source": "./scd-forge",
       "description": "Architectural design patterns for Claude Code plugins. Component selection with skill-vs-workflow guard, context budget architecture, multi-component orchestration, skill description optimization (TRIGGER/SKIP, eval methodology), correct references/ placement, and quality validation. Complements plugin-dev with holistic design guidance.",
       "author": {
@@ -34,6 +37,7 @@
     },
     {
       "name": "scd-svelte",
+      "version": "0.1.1",
       "source": "./scd-svelte",
       "description": "Skill Svelte 5 + SvelteKit 2. Runes, components, routing, data loading, state management, hooks, TypeScript, testing, deployment, ecosystem selection, anti-pattern prevention. Complements the Svelte MCP server.",
       "author": {
@@ -43,6 +47,7 @@
     },
     {
       "name": "scd-tauri",
+      "version": "0.1.1",
       "source": "./scd-tauri",
       "description": "Skill Tauri v2 desktop and mobile. Architecture, security (capabilities, permissions, scopes, CSP), IPC bridge (commands, events, channels, state), plugin ecosystem (30+ official), desktop patterns (multi-window, tray, menus, sidecars), mobile (Android, iOS), build pipeline, code signing, updater, CI/CD, testing. Uses WebFetch for official docs lookup.",
       "author": {
@@ -52,6 +57,7 @@
     },
     {
       "name": "scd-vuejs",
+      "version": "0.2.1",
       "source": "./scd-vuejs",
       "description": "Skill Vue 3 (3.4+/3.5+) production. Composition API, Pinia, Vue Router v4, TypeScript, Vite. Bonnes pratiques, pieges, anti-patterns, decisions architecturales.",
       "author": {
@@ -61,6 +67,7 @@
     },
     {
       "name": "scd-qmd",
+      "version": "0.1.1",
       "source": "./scd-qmd",
       "description": "On-device search engine for project docs and crawled technical documentation. Hybrid search (BM25 + vector + LLM re-ranking) via qmd with MCP integration, collection management, web doc crawling, and progressive search workflows.",
       "author": {
@@ -80,6 +87,7 @@
     },
     {
       "name": "scd-project-docs",
+      "version": "0.1.1",
       "source": "./scd-project-docs",
       "description": "Greenfield project kickoff workflow. Six user-invoked phases (kickoff, brief, prd, stack, adr, contract) drive a traceability chain Brief -> PRD -> Stack -> foundational ADRs -> CLAUDE.md. One-question-at-a-time interview for upstream docs, justified options for the stack, immutable Nygard ADRs. Per-feature specs are a separate workflow.",
       "author": {
@@ -89,6 +97,7 @@
     },
     {
       "name": "scd-feature-specs",
+      "version": "0.4.0",
       "source": "./scd-feature-specs",
       "description": "Workflow documentaire par feature, la suite de scd-project-docs. Sept phases (kickoff, specify, clarify, plan, tasks, analyze, premortem) plus un tableau de bord status declinent le socle PRD/Stack/ADR en specs/NNN-feature/{spec,plan,tasks}.md pour une ou plusieurs features, puis attestent qu'ils sont prets pour une implementation optimale. Criteres d'acceptation EARS, interview une-question-a-la-fois, plan mode, backref Kiro. Les taches sont groupees en lots de review (Rn) : des vertical slices dimensionnees pour qu'un humain puisse reellement reviewer chacune une fois implementee, car un contrat parfaitement trace mais livrable d'un bloc produit une review que personne ne fait. Les bloquants sont qualitatifs (sujet unique, tranche verticale, comprehensible seule) ; les seuils chiffres ne sont qu'advisory, etant transposes d'etudes sur le code et le budget n'etant qu'une estimation documentaire. La gate de conformite analyze deroule 14 controles (tracabilite, conformite EARS, verbe verifiable plutot qu'adjectif, spec technology-agnostic, scope EXCLU, coherence socle, verticalite/cohesion/dimensionnement des lots) et rend un verdict Critical/Major/Minor. La passe optionnelle premortem durcit ensuite un contrat conforme par projection d'echec : trois subagents en contexte frais (un facilitateur projette l'echec de la feature livree et remonte a la cause dans le contrat, un valideur trie les risques en rejetant speculation et scope creep, un applicateur n'inscrit que les remediations approuvees par l'humain dans spec/plan/tasks), suivi d'une re-passe analyze puisque le contrat a change. Tout ce qui touche au code est HORS PERIMETRE : ni l'ecrire, ni le reviewer ensuite ; aucun test n'est execute ici. Le decoupage rend la review aval possible, il ne la conduit pas. Chaque commande resout sa feature cible depuis le disque, donc l'etat survit au /clear sans fichier d'etat, et documenter plusieurs features en parallele est sans risque. Livre un hook d'immutabilite des ADR, un hook de format, deux subagents auditeurs aux mandats disjoints (contrat et decoupage) plus un trio premortem (facilitateur, valideur, applicateur), les deltas brownfield OpenSpec, une boucle de maintenance du drift qui propose sans corriger, et le complement Gherkin.",
       "author": {
