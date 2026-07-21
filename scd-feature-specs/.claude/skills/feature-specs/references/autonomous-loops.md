@@ -19,8 +19,9 @@ ligne de commande). Il **propose**, il ne corrige pas :
 ```markdown
 # Boucle de maintenance specs (bare /loop)
 Pour chaque spec sous specs/*/ :
-1. Lis spec.md, plan.md, tasks.md. Vérifie que chaque FR/SHALL (EARS) a un test
-   correspondant et que tasks.md reflète l'état réel du code.
+1. Lis spec.md, plan.md, tasks.md. Vérifie que chaque FR/SHALL (EARS) a une
+   vérification correspondante (test, check, ou preuve inhérente selon le mode du
+   lot) et que tasks.md reflète l'état réel du code.
 2. Si un écart spec↔code↔test est détecté, note-le dans specs/<id>/DRIFT.md
    (ne corrige PAS le code — propose seulement).
 3. Vérifie la cohérence avec docs/stack.md et docs/adr/. NE MODIFIE JAMAIS docs/adr/*.

@@ -25,7 +25,7 @@ Checklist appliquée **à chaque lot `Rn`**, pas à la feature entière.
       sa correction ne se juge qu'en assemblage, donc il n'est pas reviewable seul.
 - [ ] **Reviewable seul.** Comprendre le lot ne demande pas de charger en mémoire les lots voisins.
       Les dépendances (`dépend de : Rn`) sont d'**ordre**, pas de **compréhension**.
-- [ ] **Chaque `FR` du lot a sa tâche test + impl** (couverture — déjà contrôlée par `analyze`).
+- [ ] **Chaque `FR` du lot a sa vérification observable + son impl** (couverture — déjà contrôlée par `analyze` ; la forme suit le **mode de vérification** du lot : test, check, ou critère d'impl en `inhérent` — cf. `references/tasks.md`).
 
 **Signaux de scission — un dépassement n'invalide pas, il déclenche « scinde ce lot » (Major).**
 - [ ] Budget estimé ≤ ~400 lignes de diff.
@@ -77,6 +77,7 @@ sections « Fichiers touchés » sont disjointes — même règle que pour les t
   « un lot ≈ une PR reviewable ». Comment il commite, branche ou empile ses PR ne nous regarde pas.
 - **Ne confonds pas `[P]` et lot.** `[P]` dit « peut tourner en parallèle » ; un lot dit « se review
   d'un bloc ». Deux tâches parallélisables du même lot restent dans le même lot.
-- **Un lot n'est pas une étape TDD.** « Tous les tests » puis « toute l'impl » = deux lots
-  horizontaux. L'ordre TDD vit **dans** le lot (test → impl par FR), jamais entre les lots.
+- **Un lot n'est pas une étape de vérification.** « Tous les tests » puis « toute l'impl » = deux lots
+  horizontaux. La vérification d'un `FR` vit **dans** le même lot que son impl (test-first en mode
+  `TDD` ; cf. les modes de `references/tasks.md`), jamais dans un lot séparé.
 </pitfalls>

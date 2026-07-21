@@ -32,7 +32,7 @@ Chaque commande accepte `NNN` (ou le slug) en argument, et le **résout** toute 
 | 1 | `/scd-feature-specs:specify` | `spec.md` (EARS, FR, scope EXCLU) | 60/40 |
 | 2 | `/scd-feature-specs:clarify` | `spec.md` (résout `[NEEDS CLARIFICATION]`) | 60/40 |
 | 3 | `/scd-feature-specs:plan` | `plan.md` (**plan mode**, réutilise stack/ADR) | 50/50 |
-| 4 | `/scd-feature-specs:tasks` | `tasks.md` (lots `Rn` reviewables, TDD, `[P]`, backref `_Requirements:_`) | 40/60 |
+| 4 | `/scd-feature-specs:tasks` | `tasks.md` (lots `Rn` reviewables, mode de vérif par lot, `[P]`, backref `_Requirements:_`) | 40/60 |
 | 5 | `/scd-feature-specs:analyze` | **gate de conformité** : contrat + découpage validés (lecture seule) | 30/70 |
 | 6 | `/scd-feature-specs:premortem` | **durcissement adverse** (optionnel) : 3 sous-agents projettent l'échec, l'humain approuve, les remédiations sont inscrites → **re-analyze puis boucle vers la suivante** | 40/60 |
 | — | *(implémentation + review)* | **hors périmètre — workflow séparé** | — |
@@ -46,7 +46,7 @@ Chaque commande accepte `NNN` (ou le slug) en argument, et le **résout** toute 
 
 ## Ce qui rend le contrat implémentable
 
-- **EARS** : chaque critère d'acceptation est un `SHALL` → un test nommé. Traçabilité `FR` du PRD → `FR`/`SHALL` de la spec → tâche → test → code. Ce plugin produit et valide la chaîne **jusqu'à `tasks.md`** ; l'aval en écrit les deux derniers maillons.
+- **EARS** : chaque critère d'acceptation est un `SHALL` → une vérification observable nommée (par défaut un test ; la forme se décide au découpage via le mode de vérification du lot). Traçabilité `FR` du PRD → `FR`/`SHALL` de la spec → tâche → vérification → code. Ce plugin produit et valide la chaîne **jusqu'à `tasks.md`** ; l'aval en écrit les deux derniers maillons.
 - **Deux gates** : `clarify` (aucune ambiguïté non résolue) et `analyze` (14 contrôles : traçabilité, EARS, verbe vérifiable, technology-agnostic, scope EXCLU, cohérence socle, reviewability du découpage…). Attraper un trou ici coûte infiniment moins cher qu'après l'implémentation.
 - **Réutilisation du socle** : `plan` applique `stack.md`/`adr/`, ne les re-décide jamais ; une décision structurante nouvelle devient un **candidat ADR** dans `docs/adr/_candidates/`.
 - **Revue adverse des documents** : deux subagents en contexte frais et en lecture seule, aux mandats disjoints — `ears-verifier` juge le contrat, `slice-auditor` juge le découpage. La session qui a rédigé les documents est mal placée pour les juger.
@@ -54,7 +54,7 @@ Chaque commande accepte `NNN` (ou le slug) en argument, et le **résout** toute 
 
 ## Découper pour que la review humaine ait lieu
 
-`tasks.md` a **deux granularités** : le **lot `Rn`** est l'unité de *review* (une vertical slice livrant une capability vérifiable, unité de livraison recommandée — « un lot ≈ une PR reviewable ») ; la **tâche `Tn`** est l'unité de *progression* (un critère observable = un commit = un test vert). L'ordre TDD vit **dans** le lot, jamais entre les lots.
+`tasks.md` a **deux granularités** : le **lot `Rn`** est l'unité de *review* (une vertical slice livrant une capability vérifiable, unité de livraison recommandée — « un lot ≈ une PR reviewable ») ; la **tâche `Tn`** est l'unité de *progression* (un critère observable = un commit = une vérification au vert). Chaque lot déclare un **mode de vérification** — `TDD` par défaut, ou `test-after` / `check` / `inhérent` quand la feature ne se prête pas au test-first (CI, infra, config, mise en page, one-shot). L'ordre de vérification vit **dans** le lot, jamais entre les lots.
 
 Pourquoi : un contrat parfaitement tracé mais livrable en un seul bloc produit une review que personne ne fera vraiment — le reviewer skimme, et le défaut passe. La traçabilité garantit que tout est couvert ; le dimensionnement garantit que quelqu'un le lira.
 

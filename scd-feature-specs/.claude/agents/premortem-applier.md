@@ -32,12 +32,14 @@ changement et le texte proposé. Si l'entrée est vide, ne modifie rien et signa
   vérifiable, jamais adjectif nu. Rattache-le au bon `FR`.
 - **Nouveau `FR`** — prends le **prochain ID libre** (jamais un ID réattribué). Ajoute le backref PRD
   `_(PRD: FR-0xx)_` ; si le lien est incertain, écris `[NEEDS CLARIFICATION: lien PRD]` plutôt que
-  d'inventer. Un nouveau `FR` sans tâche laisse le contrat incomplet : ajoute la tâche test + impl
-  correspondante dans le lot approprié (ou signale qu'un nouveau lot est nécessaire — sans le créer
-  toi-même si l'approbation ne le couvrait pas).
+  d'inventer. Un nouveau `FR` sans tâche laisse le contrat incomplet : ajoute la tâche d'impl **et** sa
+  vérification observable dans le lot approprié — suivant le **mode de vérification** déclaré du lot
+  (tâche test en `TDD`/`test-after`, tâche check en `check`, ou critère d'acceptation de l'impl en
+  `inhérent`) — ou signale qu'un nouveau lot est nécessaire (sans le créer toi-même si l'approbation ne
+  le couvrait pas).
 - **Item de scope EXCLU** — ajoute-le à la section « NON inclus » de `spec.md`.
-- **Nouvelle tâche** — place-la dans le lot `Rn` désigné, avec backref `_Requirements: FR-xxx_` et,
-  si le lot suit un ordre TDD, à la bonne position (test avant impl).
+- **Nouvelle tâche** — place-la dans le lot `Rn` désigné, avec backref `_Requirements: FR-xxx_` et, si
+  le lot suit un ordre `TDD`, à la bonne position (test avant impl).
 - **Note de plan** — inscris l'hypothèse explicitée / le contrat d'intégration dans `plan.md`.
 - **Candidat ADR** — crée/complète un fichier dans `docs/adr/_candidates/`. **N'édite jamais** un ADR
   accepté sous `docs/adr/` : le hook `block-adr-edits` le bloquera (`exit 2`), et c'est voulu.
@@ -63,7 +65,7 @@ Remédiations approuvées : R · Appliquées : R · En attente : 0
 - plan.md — hypothèse explicitée : le service de paiement est idempotent sur retry.
 - docs/adr/_candidates/retry-strategy.md — créé (candidat, décision structurante).
 
-Traçabilité : chaque nouveau FR a un backref PRD (ou [NEEDS CLARIFICATION]) et une tâche test+impl.
+Traçabilité : chaque nouveau FR a un backref PRD (ou [NEEDS CLARIFICATION]), une tâche d'impl et une vérification observable (selon le mode du lot).
 Prochaine étape : relancer /scd-feature-specs:analyze NNN — le contrat a changé.
 ```
 

@@ -57,9 +57,9 @@ sur chaque risque imaginé ; le gate humain garde la décision du *quoi* à l'hu
 Chaque risque retenu retombe en **une** de ces formes — la plus petite qui referme le trou :
 
 - **Nouveau critère EARS** sur un `FR` existant (le cas fréquent : happy path → + chemin d'erreur).
-- **Nouveau `FR`** — prochain ID libre, backref PRD (ou `[NEEDS CLARIFICATION]` si le lien est incertain), **+ tâche test + impl**.
+- **Nouveau `FR`** — prochain ID libre, backref PRD (ou `[NEEDS CLARIFICATION]` si le lien est incertain), **+ tâche d'impl et vérification observable** (selon le mode de vérification du lot).
 - **Item de scope EXCLU** — quand la bonne réponse est « on ne fait pas ça », l'écrire ferme la porte.
-- **Nouvelle tâche** dans un lot `Rn`, avec backref `_Requirements:_` et ordre TDD.
+- **Nouvelle tâche** dans un lot `Rn`, avec backref `_Requirements:_` et ordre de vérification cohérent avec le mode du lot.
 - **Note de plan** — hypothèse explicitée, contrat d'intégration nommé dans `plan.md`.
 - **Candidat ADR** — décision structurante → `docs/adr/_candidates/`, jamais un edit d'ADR accepté.
 

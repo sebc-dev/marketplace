@@ -13,7 +13,7 @@ Ratio : 60% humain / 40% AI (l'humain répond, tu structures en EARS).
 
 - **Une question à la fois.** Chaque question s'appuie sur la réponse précédente. Jamais un questionnaire entier.
 - **Technology-agnostic.** Aucun framework/lib/DB : ça descend dans `plan.md` (qui s'appuie sur `stack.md`/`adr/`). Une fuite de stack ici = à corriger.
-- **Chaque critère en EARS.** Un `SHALL` = un test futur. Verbe vérifiable, jamais adjectif.
+- **Chaque critère en EARS.** Un `SHALL` = une vérification observable future (par défaut un test ; la forme se décide en `tasks`). Verbe vérifiable, jamais adjectif.
 - N'écris le fichier qu'**après** que l'interview a couvert le template.
 
 ## Processus

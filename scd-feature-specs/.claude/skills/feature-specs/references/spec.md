@@ -44,7 +44,7 @@ Statut : Draft | Créé : [date] | Trace vers : docs/prd.md (FR-xxx, SC-xxx)
 </template>
 
 <guidance>
-- **Chaque critère en EARS** (`references/ears.md`) : un `SHALL` = un test nommé. Pas de « et » dans un FR (le scinder).
+- **Chaque critère en EARS** (`references/ears.md`) : un `SHALL` = une **vérification observable** nommée (le test automatisé en est la forme par défaut ; la forme réelle — test-first, check, inhérent — se décide en phase `tasks`). Pas de « et » dans un FR (le scinder).
 - **Technology-agnostic, sans exception.** Un framework/lib/DB dans la spec = fuite à corriger vers `plan.md`. La spec survit à un changement de stack.
 - **Trace vers le PRD** : chaque `FR` de feature référence le `FR/SC` produit qu'il décline (`_(PRD: FR-0xx)_`). Si aucun FR produit ne couvre le besoin, c'est peut-être un trou du PRD → signaler.
 - **`[NEEDS CLARIFICATION]`** pour toute ambiguïté : ne jamais trancher silencieusement. Résolu par la phase `clarify`.
@@ -55,7 +55,7 @@ Statut : Draft | Créé : [date] | Trace vers : docs/prd.md (FR-xxx, SC-xxx)
 
 <completion>
 La spec est terminée quand :
-- [ ] Chaque `FR-xxx` est en **EARS**, **atomique** et **testable** (traduisible en un test observable).
+- [ ] Chaque `FR-xxx` est en **EARS**, **atomique** et **testable** (traduisible en une vérification observable).
 - [ ] Chaque `FR-xxx`/`SC-xxx` **trace vers** un `FR/SC` du PRD (ou l'écart au PRD est signalé).
 - [ ] Aucun choix technique n'apparaît (spec restée technology-agnostic).
 - [ ] La section **NON inclus** borne le périmètre.

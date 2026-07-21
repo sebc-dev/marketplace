@@ -7,7 +7,7 @@ dépendances et **traçables** vers la spec.
 Deux granularités, deux rôles :
 - le **lot `Rn`** est l'unité de **review humaine** : une vertical slice livrant une capability
   vérifiable, dimensionnée pour être reviewée d'un bloc une fois implémentée (`references/reviewability.md`) ;
-- la **tâche `Tn`** est l'unité de **progression** : **un critère observable = un commit = un test vert**.
+- la **tâche `Tn`** est l'unité de **progression** : **un critère observable = un commit = une vérification au vert**.
 
 Sert d'état inter-sessions (cases cochées). C'est le **contrat** remis au workflow d'implémentation
 (hors périmètre) — pas son mode d'emploi.
@@ -21,10 +21,11 @@ Trace vers : plan.md (fichiers) · spec.md (FR/SC/SHALL)
 ## Légende
 - [ ] à faire · [x] fait · [P] parallélisable (aucune dépendance avec les autres [P])
 - `Rn` = lot de review : une vertical slice, unité de livraison recommandée (≈ une PR reviewable)
+- _vérif : <mode>_ = mode de vérification du lot — `TDD` (défaut) · `test-after` · `check` · `inhérent` (cf. guidance)
 - _Requirements:_ backref vers les FR/SC couverts (style Kiro)
 
 ## R1 — [capability nommable en une phrase]
-_Livre : FR-001, FR-002_ · _~180 lignes est._ · _3 concepts_ · dépend de : —
+_Livre : FR-001, FR-002_ · _vérif : TDD_ · _~180 lignes est._ · _3 concepts_ · dépend de : —
 Fichiers : `api/signup.ts`, `db/users.ts`, `ui/SignupForm.tsx`
 
 - [ ] T1 — Écrire le test pour FR-001 (When…shall…) _Requirements: FR-001_ ; dépend de : —
@@ -33,17 +34,23 @@ Fichiers : `api/signup.ts`, `db/users.ts`, `ui/SignupForm.tsx`
 - [ ] T4 — Implémenter FR-002 _Requirements: FR-002_ ; bloqué par : T3
 
 ## R2 [P] — [autre capability]
-_Livre : FR-003_ · _~120 lignes est._ · _2 concepts_ · dépend de : —
+_Livre : FR-003_ · _vérif : TDD_ · _~120 lignes est._ · _2 concepts_ · dépend de : —
 Fichiers : `api/reset.ts`, `ui/ResetForm.tsx`
 
 - [ ] T5 — Écrire le test pour FR-003 _Requirements: FR-003_
 - [ ] T6 — Implémenter FR-003 _Requirements: FR-003_ ; bloqué par : T5
 - [ ] T7 — Cas limite : test + impl de FR-00x (If…then…shall…) _Requirements: FR-00x_
 
-## R3 — Vérification bout-en-bout
-_Livre : SC-001_ · dépend de : R1, R2
+## R3 — Pipeline CI qui exécute lint + tests sur chaque push
+_Livre : FR-010_ · _vérif : inhérent (config CI : la preuve est le run vert, pas un test unitaire)_ · _~40 lignes est._ · _1 concept_ · dépend de : —
+Fichiers : `.github/workflows/ci.yml`
 
-- [ ] T8 — Vérif bout-en-bout (l'étape du plan) _Requirements: SC-001_
+- [ ] T8 — Ajouter le workflow CI ; critère d'acceptation : un push déclenche le run et il passe au vert _Requirements: FR-010_
+
+## R4 — Vérification bout-en-bout
+_Livre : SC-001_ · _vérif : check (parcours observé de bout en bout)_ · dépend de : R1, R2
+
+- [ ] T9 — Vérif bout-en-bout (l'étape du plan) _Requirements: SC-001_
 ```
 > Les cases seront cochées par le workflow d'implémentation, pas ici. Ce fichier part rempli et vierge.
 </template>
@@ -62,14 +69,38 @@ _Livre : SC-001_ · dépend de : R1, R2
 - **Trop petit aussi est un défaut** : un lot qui ne livre aucun incrément vérifiable est une couche
   déguisée, à refusionner.
 
+**Mode de vérification du lot** — l'invariant : **chaque `FR`/`SHALL` est rattaché, dans un seul lot,
+à ≥ 1 tâche d'impl et à ≥ 1 tâche dont l'achèvement est observable**. Le *test automatisé écrit
+d'abord* (TDD) en est la **forme par défaut**, pas la seule — certaines features ne s'y prêtent pas.
+Chaque lot déclare son mode (`_vérif : <mode>_`) ; dès qu'il quitte `TDD`, une **justification d'une
+ligne** l'accompagne (comme un dépassement de seuil : une déviation *documentée*, jamais silencieuse).
+
+- `TDD` (défaut) — tâche « écrire le test » **avant** tâche « implémenter ». Le code est « fait »
+  quand le test passe.
+- `test-after` — test automatisé toujours requis, mais écrit **après** l'impl (refactor à comportement
+  constant, exploration où le test-first n'aide pas). Justifier.
+- `check` — pas de test automatisé ; **vérification observable dédiée** à la place (revue visuelle
+  d'une mise en page, constat d'une migration one-shot). La tâche de check porte un critère
+  **observable**, jamais un adjectif. Justifier.
+- `inhérent` — **aucune tâche de vérif séparée** : le critère d'acceptation de la tâche d'impl **est**
+  la preuve (« le pipeline CI passe au vert », « `terraform apply` converge »). Réservé au non-testable
+  par nature. Justifier.
+
+Cas typiques du non-TDD : comportement purement visuel / mise en page · CI / infra / config /
+scaffolding · one-shot (migration, script jetable) · spike explicitement hors production · glue où le
+test ne ferait que dupliquer l'impl. **Le défaut reste `TDD`** : un `check`/`inhérent` posé sur de la
+logique métier est un finding d'`analyze`, pas un raccourci.
+
+**L'ordre de vérification vit dans le lot, jamais entre les lots** — quel que soit le mode : « tous
+les tests » puis « toute l'impl » reste deux lots horizontaux.
+
 **Écrire les tâches** :
-- **Ordre TDD, dans le lot** : la tâche « écrire le test » précède la tâche « implémenter ». Le code
-  est « fait » quand le test passe. L'ordre TDD ne vit **jamais** entre les lots (« tous les tests »
-  puis « toute l'impl » = deux lots horizontaux).
 - **Backref `_Requirements:_`** sur chaque tâche : le fil qui relie tâche → FR/SHALL → PRD. Une
   tâche sans backref est suspecte (scope creep).
-- **Couverture** : chaque `FR`/`SHALL` de la spec a **au moins** une tâche test + une tâche impl,
-  dans **un seul** lot. `analyze` le vérifiera.
+- **Couverture** : chaque `FR`/`SHALL` de la spec est rattaché, dans **un seul** lot, à ≥ 1 tâche
+  d'impl **et** à ≥ 1 **vérification observable** — une tâche test (`TDD`/`test-after`), une tâche
+  check (`check`), ou le critère d'acceptation de la tâche d'impl elle-même (`inhérent`). `analyze`
+  le vérifiera.
 - **`[P]`** uniquement si aucune dépendance croisée (fichiers disjoints) — au niveau tâche comme au
   niveau lot. `[P]` dit « peut tourner en parallèle » ; un lot dit « se review d'un bloc » : deux
   tâches `[P]` du même lot restent dans le même lot.
@@ -84,11 +115,12 @@ PR reviewable »). Comment l'aval commite, branche ou empile ses PR ne nous rega
 <completion>
 Le plan de tâches est terminé quand :
 - [ ] Chaque lot `Rn` est une **vertical slice** à **un seul sujet**, compréhensible seule.
-- [ ] Chaque lot porte : les `FR` livrés, un budget estimé, ses fichiers, ses dépendances.
+- [ ] Chaque lot porte : les `FR` livrés, son **mode de vérification**, un budget estimé, ses fichiers, ses dépendances.
 - [ ] Aucun lot ne dépasse les signaux de scission sans justification explicite.
-- [ ] Chaque `FR`/`SHALL` de la spec est couvert par ≥ 1 tâche test **et** ≥ 1 tâche impl.
+- [ ] Tout mode de vérification autre que `TDD` porte une justification d'une ligne.
+- [ ] Chaque `FR`/`SHALL` est rattaché, dans **un seul** lot, à ≥ 1 tâche impl **et** à ≥ 1 vérification observable (tâche test, tâche check, ou critère d'acceptation de l'impl en mode `inhérent`).
 - [ ] Chaque tâche porte un backref `_Requirements:_` valide.
-- [ ] L'ordre TDD est respecté **dans** chaque lot et les dépendances (`bloqué par`) sont explicites.
+- [ ] L'ordre de vérification est respecté **dans** chaque lot (test-first en mode `TDD`) et les dépendances (`bloqué par`) sont explicites.
 - [ ] Les `[P]` sont réellement indépendantes (tâches et lots).
 - [ ] Un lot de **vérif bout-en-bout** (l'étape du plan) clôt la liste.
 </completion>

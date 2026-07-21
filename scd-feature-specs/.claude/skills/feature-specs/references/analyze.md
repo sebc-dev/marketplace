@@ -19,7 +19,7 @@ les fichiers, jamais une impression.
 
 **Traçabilité (la chaîne doit être complète et sans orphelin)**
 1. **spec → PRD** : chaque `FR-xxx`/`SC-xxx` de la feature trace vers un `FR/SC` du `docs/prd.md` (`_(PRD: FR-0xx)_`), ou l'écart est explicitement justifié.
-2. **spec → tasks** : chaque `FR`/`SHALL` a ≥ 1 tâche **test** et ≥ 1 tâche **impl** dans `tasks.md`.
+2. **spec → tasks** : chaque `FR`/`SHALL` a, dans **un seul** lot, ≥ 1 tâche **d'impl** et ≥ 1 **vérification observable** — tâche test (`TDD`/`test-after`), tâche check (`check`), ou le critère d'acceptation de l'impl lui-même (`inhérent`). Chaque lot **déclare** son mode ; tout mode ≠ `TDD` est **justifié** (une ligne), et un `check`/`inhérent` posé sur de la logique métier est un finding.
 3. **tasks → spec** : chaque tâche porte un backref `_Requirements:_` valide. Une tâche orpheline = scope creep.
 
 **Qualité des critères (testabilité)**
@@ -45,8 +45,8 @@ les fichiers, jamais une impression.
 <report>
 Aucune écriture de fichier. Findings classés par ce qu'ils coûtent en aval :
 
-- **Critical** — rend l'implémentation non fiable, ou la review aval fictive : `FR` sans tâche, `[NEEDS CLARIFICATION]` restant, plan contredisant un ADR, scope EXCLU violé, critère non testable (adjectif nu), **lot horizontal**, **lot à sujets multiples**.
-- **Major** — fera perdre du temps : backref manquant, tâche orpheline, critère hors EARS, fuite de stack dans la spec, `FR` non atomique, **lot hors seuils de scission**.
+- **Critical** — rend l'implémentation non fiable, ou la review aval fictive : `FR` sans impl ou sans vérification observable, `[NEEDS CLARIFICATION]` restant, plan contredisant un ADR, scope EXCLU violé, critère non testable (adjectif nu), **lot horizontal**, **lot à sujets multiples**, mode `check`/`inhérent` masquant l'absence de preuve sur de la **logique métier**.
+- **Major** — fera perdre du temps : backref manquant, tâche orpheline, critère hors EARS, fuite de stack dans la spec, `FR` non atomique, **lot hors seuils de scission**, **mode de vérification ≠ `TDD` non justifié**.
 - **Minor** — améliore : `[P]` douteux, patron de référence absent, formulation perfectible.
 
 Format :
@@ -60,7 +60,8 @@ Format :
 ### Major (N) / ### Minor (N)
 - …
 
-Couverture : X/Y FR ont une tâche test + impl · Z tâches sans backref
+Couverture : X/Y FR ont une vérification observable + une impl · Z tâches sans backref
+Vérification : N lots (M non-`TDD` : modes déclarés + justifiés)
 Découpage : N lots · ~X lignes estimées au total · Z lots hors seuils
 Verdict : PRÊT POUR IMPLÉMENTATION | CORRIGER D'ABORD (Critical présents)
 ```
@@ -83,6 +84,7 @@ unique sans les rejuger.
 - **Ne corrige pas.** Tu signales, tu nommes le fichier et l'action. L'humain ou la phase concernée corrige.
 - **Ne rapporte pas de préférences de style.** Un relecteur à qui on demande de trouver des lacunes en trouvera toujours ; s'en tenir à ce qui affecte la testabilité, la traçabilité ou les frontières.
 - **Ne juge pas le code** : il n'existe pas. Les tests sont *prévus* dans `tasks.md`, pas exécutés.
+- **N'exige pas un test là où la preuve est légitimement autre.** Un lot `inhérent` (CI, infra, config, scaffolding) n'a pas de tâche test : la preuve est le critère d'acceptation de l'impl (« run → vert »). Ne le rapporte pas comme « FR sans test » — vérifie seulement que ce critère est **observable** (pas un adjectif) et que le mode est **déclaré et justifié**. Le finding, c'est un `check`/`inhérent` posé sur de la logique métier testable, pas l'usage légitime du mode.
 - **Ne transforme pas une estimation en gate.** Les budgets de lots sont des ordres de grandeur documentaires (ce plugin ne lit pas le code) et les seuils viennent d'études sur le code, transposés par analogie. Ils déclenchent une question, jamais un verdict — d'où « lot hors seuils = Major ». Les bloquants du découpage sont **qualitatifs** : verticalité, sujet unique, indépendance.
 - **Relançable à volonté** : après correction, rejouer la gate. C'est bon marché et toujours à jour.
 - **Le cycle boucle après la conformité.** Un verdict `PRÊT` ouvre le passage de main. Pour une feature à fort enjeu, la passe optionnelle `premortem` durcit le contrat d'abord (puis on relance cette gate). Une fois `PRÊT` (re)confirmé, le contrat part vers le workflow d'implémentation et on repart sur la suivante par `/scd-feature-specs:kickoff` (ou `status` si plusieurs sont en vol).

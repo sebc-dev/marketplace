@@ -4,7 +4,9 @@ description: |
   Connaissance transverse pour le cycle spec-driven par feature — la suite de
   scd-project-docs. La chaîne de traçabilité spec → plan → tasks → analyze qui
   descend du socle (PRD/Stack/ADR), la notation EARS (5 patterns, chaque SHALL =
-  un test), le backref Kiro _Requirements:_, le découpage en lots de review (Rn :
+  une vérification observable), le mode de vérification par lot (TDD par défaut,
+  ou test-after / check / inhérent pour CI-infra-config), le backref Kiro
+  _Requirements:_, le découpage en lots de review (Rn :
   vertical slices dimensionnées pour qu'un humain puisse reviewer l'implémentation
   aval — bloquants qualitatifs, seuils advisory), la décision greenfield-feature vs
   brownfield-delta, l'advisory-vs-déterministe (hooks), les seuils de déclenchement
@@ -48,9 +50,9 @@ Le mot-pivot reste **traçabilité**. Chaque maillon *trace vers* le précédent
 | `spec.md` (feature) | Quoi, niveau feature | PRD (`FR/SC`) | `FR-xxx` feature, `SC-xxx`, `SHALL` EARS |
 | `plan.md` | Comment | spec + `docs/stack.md` + `docs/adr/` | fichiers, contrats |
 | `tasks.md` | Découpage exécutable **et reviewable** | plan + spec (`_Requirements:_`) | `Rn` (lots), `Tn`, `[P]` |
-| *tests + code* | *Preuve* | *tasks* | *— (workflow aval)* |
+| *vérif + code* | *Preuve* | *tasks* | *— (workflow aval)* |
 
-Chaîne complète : **`FR` du PRD → `FR`/`SHALL` de la spec feature → tâche → test → code**. Nous produisons et validons la chaîne **jusqu'à `tasks.md`** ; le workflow aval en écrit les deux derniers maillons. Garde les IDs stables : c'est le fil qu'il suivra.
+Chaîne complète : **`FR` du PRD → `FR`/`SHALL` de la spec feature → tâche → vérification → code**. Nous produisons et validons la chaîne **jusqu'à `tasks.md`** ; le workflow aval en écrit les deux derniers maillons. Garde les IDs stables : c'est le fil qu'il suivra.
 
 ## Cadence : une feature à la fois (et le parallèle quand il est sûr)
 
@@ -92,14 +94,14 @@ Chaque critère d'acceptation s'écrit en **EARS** (`references/ears.md`). Forme
 `While <précondition>, when <déclencheur>, the <système> shall <réponse>.`
 Cinq patterns : **ubiquitous, event-driven, state-driven, unwanted behavior, optional feature**.
 
-Règle d'or : **un `SHALL` = un test nommé**. Un SHALL qui ne se traduit pas en test observable est mal écrit (adjectif au lieu de verbe vérifiable). Pour les critères multi-chemins à haute valeur, dériver un scénario **Gherkin** exécutable du SHALL (`references/gherkin.md`) — en complément, pas en remplacement.
+Règle d'or : **un `SHALL` = une vérification observable et nommée**. Un SHALL qui ne se traduit pas en vérification observable est mal écrit (adjectif au lieu de verbe vérifiable). *Observable* n'impose pas *test automatisé* : la **forme** de la vérification (test-first par défaut, ou autre) se décide en phase `tasks` via le **mode de vérification** du lot ; la spec, elle, garantit seulement que le critère est vérifiable. Pour les critères multi-chemins à haute valeur, dériver un scénario **Gherkin** exécutable du SHALL (`references/gherkin.md`) — en complément, pas en remplacement.
 
 ## Les lots de review — la granularité qui décide de la review humaine
 
 `tasks.md` a **deux** granularités, pas une :
 
 - le **lot `Rn`** est l'unité de **review humaine** : une *vertical slice* livrant une capability vérifiable, dimensionnée pour être reviewée d'un bloc une fois implémentée. C'est l'unité de livraison recommandée à l'aval (« un lot ≈ une PR reviewable ») ;
-- la **tâche `Tn`** est l'unité de **progression** : un critère observable = un commit = un test vert. L'ordre TDD vit **dans** le lot, jamais entre les lots.
+- la **tâche `Tn`** est l'unité de **progression** : un critère observable = un commit = une vérification au vert. L'ordre de vérification vit **dans** le lot, jamais entre les lots.
 
 Pourquoi : un `tasks.md` parfaitement tracé mais livrable en un seul bloc produit une review que personne ne fera vraiment — le reviewer skimme, et le défaut passe. La traçabilité garantit que tout est couvert ; le dimensionnement garantit que quelqu'un le lira.
 
@@ -107,6 +109,17 @@ Pourquoi : un `tasks.md` parfaitement tracé mais livrable en un seul bloc produ
 **Signaux de scission (advisory) :** ≈ 400 lignes estimées · ≈ 7 concepts · ≈ 5-7 critères par exigence. Un dépassement déclenche une scission verticale, **il ne rend pas un verdict** : ces seuils viennent d'études sur le code, transposés aux documents par analogie, et le budget en lignes est une estimation dérivée du plan — ce plugin ne lit pas le code. Ne les présente jamais comme des mesures.
 
 Détail, patterns de scission et checklist : `references/reviewability.md`. Audit en contexte frais : subagent `slice-auditor`.
+
+## Le mode de vérification — le test automatisé est le défaut, pas la loi
+
+L'invariant du contrat est : **chaque `FR`/`SHALL` est rattaché à ≥ 1 tâche dont l'achèvement est observable**, plus ≥ 1 tâche d'impl. Le *test automatisé écrit d'abord* (TDD) en est la **forme par défaut** — mais certaines features ne s'y prêtent pas (CI, infra, config, mise en page, one-shot). Chaque lot `Rn` déclare donc un **mode** (`_vérif : <mode>_`) ; dès qu'il quitte `TDD`, une justification d'une ligne l'accompagne (déviation documentée, jamais silencieuse) :
+
+- `TDD` (défaut) — test → impl ; le code est « fait » quand le test passe ;
+- `test-after` — test automatisé écrit après l'impl (refactor à comportement constant) ;
+- `check` — pas de test auto ; vérification observable dédiée (revue visuelle, constat d'un one-shot) ;
+- `inhérent` — **aucune tâche de vérif séparée** : le critère d'acceptation de l'impl *est* la preuve (« le pipeline CI passe au vert », `terraform apply` converge). Pour le non-testable par nature : CI, infra, config, scaffolding.
+
+Ce qui ne bouge jamais : la preuve reste **observable** (jamais un adjectif nu) et **traçable** — la chaîne `SHALL → vérification → code` tient dans les quatre modes. Le défaut reste `TDD` : un `check`/`inhérent` sur de la logique métier est un finding d'`analyze`, pas un raccourci. Détail et taxonomie : `references/tasks.md`.
 
 ## Greenfield-feature vs brownfield-delta
 
@@ -152,7 +165,7 @@ Charge **uniquement** la référence de la phase courante (la commande le fait) 
 - `references/spec.md` — Spec de feature (EARS, FR, scope EXCLU). Sections : `role`, `template`, `guidance`, `completion`
 - `references/clarify.md` — Gate de clarification (`[NEEDS CLARIFICATION]`). Sections : `role`, `process`, `completion`
 - `references/plan.md` — Plan technique (réutilise stack/ADR, plan mode). Sections : `role`, `template`, `guidance`, `completion`
-- `references/tasks.md` — Plan de tâches : lots `Rn` + tâches `Tn` (backref `_Requirements:_`, TDD, `[P]`). Sections : `role`, `template`, `guidance`, `completion`
+- `references/tasks.md` — Plan de tâches : lots `Rn` + tâches `Tn` (backref `_Requirements:_`, mode de vérification, `[P]`). Sections : `role`, `template`, `guidance`, `completion`
 - `references/reviewability.md` — Dimensionner les lots de review (bloquants vs signaux, patterns de scission verticale). Chargée avec `tasks.md` pendant la phase `tasks`. Sections : `role`, `criteria`, `splitting`, `pitfalls`
 - `references/analyze.md` — **Gate de conformité** : 14 contrôles de validation du contrat et du découpage, rapport Critical/Major/Minor + verdict. Sections : `role`, `checks`, `report`, `guidance`
 - `references/premortem.md` — **Durcissement adverse** (optionnel, après `analyze`) : premortem à 3 sous-agents + gate humain, projection d'échec → remédiations documentaires. Sections : `role`, `lenses`, `process`, `remediation-forms`, `guidance`

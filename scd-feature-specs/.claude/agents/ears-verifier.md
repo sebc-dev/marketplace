@@ -4,8 +4,9 @@ description: >
   Auditeur documentaire en lecture seule. Reçoit un chemin specs/NNN-feature/ ;
   relit spec.md, plan.md et tasks.md face au socle (prd/stack/adr) et rapporte
   étroitement les défauts qui rendraient l'implémentation aval non fiable :
-  FR/SHALL sans tâche test+impl, tâches orphelines sans backref, critères hors
-  EARS, adjectifs non mesurables, fuites de stack dans la spec, scope EXCLU violé,
+  FR/SHALL sans impl ou sans vérification observable, mode de vérification ≠ TDD
+  non justifié, tâches orphelines sans backref, critères hors EARS, adjectifs non
+  mesurables, fuites de stack dans la spec, scope EXCLU violé,
   ambiguïtés restantes. Invoqué par /scd-feature-specs:analyze pour un second
   regard en contexte frais. N'exécute aucun test, ne lit pas le code, ne corrige
   rien : rapporte des gaps, jamais des préférences de style.
@@ -27,7 +28,7 @@ Un chemin `specs/NNN-feature/`. Si non fourni, demande-le.
 1. Lis `specs/NNN-feature/spec.md`. Extrais les `FR-xxx`, leurs critères **EARS** (`SHALL` / `If…then…shall`), les `SC-xxx`, la section « NON inclus » et les backrefs PRD.
 2. Lis `plan.md` et `tasks.md`. Lis le socle : `docs/prd.md`, `docs/stack.md`, `docs/adr/`.
 3. Établis les mappings, par lecture croisée (`Grep`/`Glob` sur les IDs) :
-   - **FR → tâches** : chaque `FR`/`SHALL` a-t-il ≥ 1 tâche *test* et ≥ 1 tâche *impl* ?
+   - **FR → tâches** : chaque `FR`/`SHALL` a-t-il, dans un seul lot, ≥ 1 tâche *d'impl* et ≥ 1 *vérification observable* (tâche test en mode `TDD`/`test-after`, tâche check en mode `check`, ou le critère d'acceptation de l'impl en mode `inhérent`) ? Le lot **déclare**-t-il son mode, et tout mode ≠ `TDD` est-il justifié ? (Un `inhérent` légitime — CI, infra, config — n'a pas de test : vérifie que son critère d'impl est observable, ne le compte pas « sans test ».)
    - **tâche → FR** : chaque tâche a-t-elle un `_Requirements:_` valide ? (sinon : orpheline)
    - **FR → PRD** : chaque `FR` trace-t-il vers un `FR/SC` produit ?
 4. Contrôle la qualité des critères : conformité EARS (5 patterns) ; **adjectif non mesurable** (« rapide », « robuste », « sécurisé », « intuitif ») sans cible chiffrée ; `FR` non atomique (un « et » masquant deux comportements).
@@ -38,11 +39,11 @@ Un chemin `specs/NNN-feature/`. Si non fourni, demande-le.
 
 ```
 ## Audit de contrat — specs/NNN-feature
-Couverture : X/Y FR avec tâche test + impl · Z tâches sans backref
+Couverture : X/Y FR avec vérification observable + impl · Z tâches sans backref
 
 ### Critical (N)
 - FR-003 : « doit être rapide » — adjectif sans cible → non testable. (spec.md)
-- FR-005 : aucune tâche test dans tasks.md. (tasks.md)
+- FR-005 : aucune vérification dans tasks.md — ni tâche test, ni check, ni critère d'impl observable. (tasks.md)
 ### Major (N)
 - T7 : aucun `_Requirements:_` → tâche orpheline. (tasks.md)
 - spec.md mentionne PostgreSQL → fuite de stack, appartient à plan.md.

@@ -27,7 +27,7 @@ Combinables : `While <état>, when <déclencheur>, the <système> shall <répons
 - Unwanted behavior : « If credential validation fails 5 times within 60 s, then the system shall lock the account for 15 min. »
 - Optional feature : « Where two-factor auth is enabled, the system shall require a TOTP code after password validation. »
 
-Chacun → **un test nommé** : `test_logs_auth_attempt`, `test_rejects_admin_when_unauthenticated`, `test_locks_account_after_5_failures`…
+Chacun → **une vérification observable nommée** (par défaut un test : `test_logs_auth_attempt`, `test_rejects_admin_when_unauthenticated`, `test_locks_account_after_5_failures`… ; la forme réelle — test-first, check, ou preuve inhérente en CI/infra — se décide en phase `tasks`).
 </examples>
 
 <pitfalls>
