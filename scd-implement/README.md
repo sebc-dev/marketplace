@@ -1,19 +1,25 @@
 # implement
 
-**Le workflow dynamique d'implémentation TDD — la suite de `scd-feature-specs`. Un lot de review à la fois.**
+**Le workflow dynamique d'implémentation — la suite de `scd-feature-specs`. Un lot de review à la fois, selon son mode de vérification.**
 
-Là où `scd-feature-specs` produit et **atteste** le contrat d'une feature (`specs/NNN-feature/{spec,plan,tasks}.md`, gate `analyze` au vert) puis **s'arrête**, `scd-implement` prend le relais : il **honore** ce contrat et le **vérifie**, en implémentant **un lot `Rn` à la fois** via un **dynamic workflow** — un script JS qui orchestre onze subagents dédiés en arrière-plan.
+Là où `scd-feature-specs` produit et **atteste** le contrat d'une feature (`specs/NNN-feature/{spec,plan,tasks}.md`, gate `analyze` au vert) puis **s'arrête**, `scd-implement` prend le relais : il **honore** ce contrat et le **vérifie**, en implémentant **un lot `Rn` à la fois** via un **dynamic workflow** — un script JS qui orchestre des subagents dédiés en arrière-plan. Chaque lot déclare un **mode de vérification** (`_vérif :_` ∈ `TDD` défaut · `test-after` · `check` · `inhérent`) que le workflow lit et honore — **le TDD est le défaut, plus la loi unique**.
 
 ```
-Branche dédiée (base à jour) → Rebase (préventif) → Rouge (tests) → Valider les tests → Vert (impl) → Review → Triage sceptique → Apply → Record → PR
+Branche dédiée (base à jour) → Rebase (préventif) → Prepare (mode) →
+   segment de vérif SELON LE MODE :
+     TDD        → Rouge (tests) → Valider → Vert (impl)
+     test-after → Vert (impl) → Tests (au vert) → Valider
+     check      → Vert (impl) → Verify (vérif observable, contexte frais)
+     inhérent   → Vert (impl) → Verify (critère d'acceptation = la preuve)
+   → Review → Triage sceptique → Apply → Record → PR
 ```
 
-L'humain a décidé du *quoi* en amont (le contrat). Ici, le workflow exécute le *comment* et **prouve le vert** — sans intervention humaine en cours de run.
+L'humain a décidé du *quoi* en amont (le contrat, mode compris). Ici, le workflow exécute le *comment* et **prouve la vérification** — 0 failed ou preuve observable — sans intervention humaine en cours de run.
 
 ## Frontières
 
-- **En amont — `scd-feature-specs`** = les documents par feature. Ce plugin ne les écrit pas : il les lit et signale si le contrat est incomplet.
-- **`scd-implement`** = le code + la review. Il écrit les **deux derniers maillons** de la chaîne de traçabilité — *test* et *code* — et coche `tasks.md`.
+- **En amont — `scd-feature-specs`** = les documents par feature, **mode de vérif compris**. Ce plugin ne les écrit pas : il les lit et signale si le contrat est incomplet (ou si un mode paraît mal choisi).
+- **`scd-implement`** = le code + la vérification + la review. Il écrit les **deux derniers maillons** de la chaîne de traçabilité — *vérification* (test ou preuve observable) et *code* — et coche `tasks.md`.
 - Si l'implémentation révèle un défaut du **contrat** (SHALL intestable, cas manquant), il le **signale** pour un retour amont ; il ne le corrige pas ici.
 
 ```
@@ -23,30 +29,32 @@ scd-project-docs  →  scd-feature-specs  →  scd-implement
 
 ## Le cycle, par lot
 
-Un lancement = un lot `Rn`. Onze phases, onze agents dédiés :
+Un lancement = un lot `Rn`. Le préambule et le final sont **invariants** ; le **segment de vérification** (Red/Validate/Green ou Green/Verify) dépend du mode du lot. Douze agents dédiés :
 
-| Phase | Agent | Rôle | Modèle |
-|---|---|---|---|
-| Branch | `branch-setup` | crée **toujours** `impl/<slug>-<lot>` depuis la base **à jour** (arbre propre exigé) | haiku |
-| Rebase | `rebaser` | **préventif, idempotent** : repose la branche sur la base à jour (no-op si fraîche) | haiku |
-| Prepare | `lot-briefer` | parse le lot, pull les SHALL, détecte le test runner | sonnet |
-| Red | `test-writer` | un test nommé par SHALL, confirme le **rouge** | sonnet |
-| Validate | `test-validator` | 1 SHALL = 1 test, cas limites, conventions, anti-patterns | opus |
-| Green | `implementer` | code jusqu'au **vert**, **sans toucher aux tests** | sonnet |
-| Review | `code-reviewer` | 6 dimensions, en contexte frais | opus |
-| Triage | `review-validator` | triage **sceptique adversarial** (apply/skip) | opus |
-| Apply | `fix-applier` | applique les findings retenus, re-vérifie le vert | sonnet |
-| Record | `progress-recorder` | coche `tasks.md`, commit sur la branche dédiée | haiku |
-| PR | `pr-author` | pousse la branche, ouvre la PR/MR **ready** avec description | sonnet |
+| Phase | Agent | Rôle | Modèle | Mode |
+|---|---|---|---|---|
+| Branch | `branch-setup` | crée **toujours** `impl/<slug>-<lot>` depuis la base **à jour** (arbre propre exigé) | haiku | tous |
+| Rebase | `rebaser` | **préventif, idempotent** : repose la branche sur la base à jour (no-op si fraîche) | haiku | tous |
+| Prepare | `lot-briefer` | parse le lot **et son mode**, pull les SHALL, détecte le test runner | sonnet | tous |
+| Red | `test-writer` | un test nommé par SHALL — **rouge** (TDD) ou **vert** (test-after) | sonnet | TDD, test-after |
+| Validate | `test-validator` | 1 SHALL = 1 test, cas limites, conventions, anti-patterns | opus | TDD, test-after |
+| Green | `implementer` | code jusqu'au **vert** (si tests) ou selon le **critère d'acceptation**, sans toucher aux tests | sonnet | tous |
+| Verify | `verifier` | vérif **observable** en contexte frais ; preuve capturée ou `humanCheckRequired` | opus | check, inhérent |
+| Review | `code-reviewer` | 6 dimensions, en contexte frais | opus | tous |
+| Triage | `review-validator` | triage **sceptique adversarial** (apply/skip) | opus | tous |
+| Apply | `fix-applier` | applique les findings retenus, **re-vérifie selon le mode** | sonnet | tous |
+| Record | `progress-recorder` | coche `tasks.md`, commit sur la branche dédiée | haiku | tous |
+| PR | `pr-author` | pousse la branche, ouvre la PR/MR **ready** avec description adaptée au mode | sonnet | tous |
 
 ## Les invariants
 
-- **TDD strict** — aucun code de production avant que les tests soient écrits, **validés**, et **rouges** (échec légitime). L'ordre T-test → T-impl est déjà porté par `tasks.md`.
-- **Une SHALL = un test nommé** — chaque critère EARS d'un FR livré par le lot devient un test dont le nom décrit scénario et résultat.
-- **Ne jamais toucher aux tests en phase verte** — garanti par un **check `git diff` déterministe** (vide), pas un hook : un hook statique ne sait pas distinguer la phase d'écriture des tests de la phase verte.
-- **Le vert se prouve** — `passing` n'est vrai que si la **sortie réelle** de la commande montre `0 failed`. Jamais « looks done ».
-- **Producteur ≠ vérificateur** — le `code-reviewer` n'a pas écrit le code ; le second regard en contexte frais tue le self-preferential bias.
-- **Sceptique mais sobre** — le triage reproduit chaque finding avant de le retenir et **ne corrige que ce qui touche la correction ou une exigence**. Le sur-engineering est rejeté ; un lot vert avec zéro finding retenu est un résultat valide.
+- **Le mode vient du contrat** — chaque lot déclare `_vérif :_` (défaut `TDD` si absent, rétro-compatible). Les agents l'**appliquent**, ne le réinventent pas ; un `check`/`inhérent` sur de la vraie logique métier est un finding amont.
+- **TDD strict quand le mode l'exige** — en `TDD`, aucun code de production avant que les tests soient écrits, **validés**, et **rouges** (échec légitime). En `test-after`, le test est écrit après l'impl mais reste **dû** (au vert, validé).
+- **Une SHALL = une vérification observable et nommée** — un test nommé (TDD/test-after), ou une **preuve observable capturée** (check/inhérent). Un SHALL sans vérification = filet troué.
+- **Ne jamais toucher aux tests (dès qu'ils existent)** — garanti par un **check `git diff` déterministe** (vide), pas un hook : un hook statique ne sait ni la phase, ni si le lot a des tests. En check/inhérent, l'invariant est vacant.
+- **La vérif se prouve** — `passing` (modes-test) exige `0 failed` dans la sortie réelle ; `verified` (check/inhérent) exige une preuve observable capturée. Jamais « looks done ». Le non-constatable (rendu visuel, effet externe) part en `humanCheckRequired`, jamais faussement attesté.
+- **Producteur ≠ vérificateur** — ni `code-reviewer` (tous modes) ni `verifier` (check/inhérent) n'ont écrit le code ; le second regard en contexte frais tue le self-preferential bias.
+- **Sceptique mais sobre** — le triage reproduit chaque finding avant de le retenir et **ne corrige que ce qui touche la correction ou une exigence**. Le sur-engineering est rejeté ; un lot vérifié avec zéro finding retenu est un résultat valide.
 
 ## Pourquoi un dynamic workflow
 
@@ -73,7 +81,7 @@ Le run se conclut par une **PR ready-for-review, une par lot** — le prolongeme
 - **Base** : résolue par `/scd-implement:run` et appliquée **à la branche dédiée et à la PR**. Défaut = branche par défaut du repo ; surchargeable via `--base <branche>` ; **auto-stacking** : un lot qui `dépend de : Rk` non encore mergé s'empile automatiquement sur `impl/<slug>-Rk` (base = cette branche pour le fork **et** la PR). Garde-fous déterministes : `pr-author` refuse une PR qui chevaucherait une PR ouverte de même base, et le workflow bloque si les commits dérivent hors de la branche du lot.
 - **Rebase déterministe** : le rebase est une brique nommée (`rebaser`) — transplant exact des commits du lot via `git rebase --onto` (robuste au merge/squash de la dépendance), idempotent, jamais de résolution de conflit automatique, jamais de `--force` sec (`--force-with-lease` uniquement). **Préventif** dans le workflow (repose la branche avant d'écrire) ; **curatif** via `/scd-implement:sync` quand une dépendance est mergée (re-rebase la PR dépendante et retargete sa base). `/scd-implement:status` signale la dérive.
 - **Plateforme** : auto-détection `gh` (GitHub) / `glab` (GitLab).
-- **Description** : FR/SHALL livrés → tests, fichiers d'impl, findings appliqués/rejetés, preuve du vert (`0 failed`), traçabilité vers `specs/NNN-feature/`.
+- **Description** (adaptée au mode) : FR/SHALL livrés → tests (TDD/test-after) ou preuve observable (check/inhérent), fichiers d'impl, findings appliqués/rejetés, preuve (`0 failed` ou `observableProof`), **checklist des points à vérifier par un humain** si le lot en a, traçabilité vers `specs/NNN-feature/`.
 
 > Créer une PR est une **action sortante** depuis un run en arrière-plan. Pour éviter un prompt en cours de run, pré-allowlister `Bash(git push *)`, `Bash(gh pr *)`, `Bash(glab mr *)`. En `-p`/SDK sans CLI/auth, `pr-author` échoue proprement (`created: false`) et laisse la branche poussée.
 
@@ -97,12 +105,12 @@ run-parallel 003 R2 R3 R4
 
 ## Couche déterministe (pas de hooks)
 
-Ce plugin **ne livre aucun hook**. Ce qui doit arriver à 100 % **dépend de la phase** et est donc garanti *dans* le workflow :
+Ce plugin **ne livre aucun hook**. Ce qui doit arriver à 100 % **dépend de la phase et du mode** et est donc garanti *dans* le workflow :
 - « branche dédiée depuis la base à jour, arbre propre » → première phase `branch-setup` (`git fetch` + `git switch -c` ; STOP si l'arbre n'est pas propre) ;
-- « tests intacts » → check `git diff` vide dans `implementer`/`fix-applier` ;
-- « vert » → assertion sur la sortie `0 failed`.
+- « tests intacts » (dès qu'un test existe) → check `git diff` vide dans `implementer`/`fix-applier` ;
+- « vérifié » → assertion sur `0 failed` (modes-test) ou sur un `observableProof` capturé (check/inhérent).
 
-Un hook `PreToolUse` statique ne connaît pas la phase (les fichiers de test ne sont connus qu'au runtime). La discipline TDD est portée par la **structure** du workflow, pas par une règle globale.
+Un hook `PreToolUse` statique ne connaît ni la phase ni le mode (les fichiers de test ne sont connus qu'au runtime, et certains lots n'en ont pas). La discipline de vérification, quel que soit le mode, est portée par la **structure** du workflow, pas par une règle globale.
 
 ## Quick start
 

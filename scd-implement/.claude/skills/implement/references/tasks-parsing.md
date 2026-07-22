@@ -14,11 +14,12 @@ Deux granularités :
 ### En-tête de lot
 ```
 ## R1 — [capability nommable en une phrase]
-_Livre : FR-001, FR-002_ · _~180 lignes est._ · _3 concepts_ · dépend de : —
+_Livre : FR-001, FR-002_ · _vérif : TDD_ · _~180 lignes est._ · _3 concepts_ · dépend de : —
 Fichiers : `api/signup.ts`, `db/users.ts`, `ui/SignupForm.tsx`
 ```
 - `## Rn [P] — <titre>` : le `[P]` (optionnel) marque un lot parallélisable (fichiers disjoints).
-- `_Livre : FR-xxx_` : les FR/SC que le lot **livre** → source des SHALL à tester.
+- `_Livre : FR-xxx_` : les FR/SC que le lot **livre** → source des SHALL à vérifier.
+- **`_vérif : <mode>_`** : le **mode de vérification** du lot ∈ `TDD` (défaut) · `test-after` · `check` · `inhérent`. Il gouverne le segment de vérification du workflow (voir `references/verification-modes.md`). **Absent → `TDD`** (rétro-compatible avec les anciens `tasks.md`). Dès que le mode ≠ `TDD`, une **justification d'une ligne** l'accompagne (`_vérif : check (revue visuelle de la mise en page)_`) — la capturer.
 - `dépend de : Rn` (ou `—`) : **ordre** des lots. Un lot n'est lançable que si ses dépendances sont faites.
 - `Fichiers : …` : périmètre fichiers du lot (issu de `plan.md`).
 
@@ -30,7 +31,7 @@ Fichiers : `api/signup.ts`, `db/users.ts`, `ui/SignupForm.tsx`
 ```
 - `- [ ]` / `- [x]` : case à cocher = **état inter-session** (cochée par `progress-recorder`).
 - `Tn [P]` : `[P]` = parallélisable (aucune dépendance avec les autres `[P]`).
-- Type dérivé du libellé : « Écrire le test » → `test` ; « Implémenter » → `impl` ; « Cas limite : test + impl » → les deux.
+- Type dérivé du libellé : « Écrire le test » → `test` ; « Implémenter » → `impl` ; « Cas limite : test + impl » → les deux ; « Vérifier / constater » (lots `check`) → `check`. En mode `inhérent`, il n'y a **pas** de tâche de vérif séparée : le critère d'acceptation de la tâche d'impl est la preuve.
 - `_Requirements: FR-xxx_` : backref Kiro → le(s) FR couvert(s). **Une tâche sans backref est suspecte** (scope creep) — signale-la, ne l'implémente pas aveuglément.
 - `bloqué par : Tn` / `dépend de :` : ordre **intra-lot** (TDD : le test précède l'impl).
 

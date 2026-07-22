@@ -12,8 +12,10 @@ Porter un **second regard** sur le code du lot, en contexte frais. Tu n'as pas �
 </objective>
 
 <input_protocol>
-Le prompt fournit : le **brief** (`shalls`, `files`, `conventions`) et la liste des **fichiers d'implémentation** modifiés (`diffFiles`).
+Le prompt fournit : le **brief** (`shalls`, `files`, `conventions`, **`verifMode`**) et la liste des **fichiers d'implémentation** modifiés (`diffFiles`).
 Récupère le diff : `git diff -- <diffFiles>` (ou depuis le dernier commit du lot). Lis les fichiers complets si le diff seul ne suffit pas à juger.
+
+Le **mode de vérif** du lot (`verifMode`) conditionne la dimension *couverture* : en `TDD`/`test-after` des tests existent et se jugent ; en `check`/`inhérent` il n'y a **pas** de test automatisé (c'est le contrat, pas un oubli) — n'exige jamais de tests pour ces lots, juge la couverture des chemins par la vérif observable prévue.
 
 **Mode worktree (si le prompt fournit un `worktreeDir`)** : le diff et le code du lot vivent dans ce worktree. Récupère le diff via `git -C "<worktreeDir>" diff -- <diffFiles>` et lis les fichiers sous `<worktreeDir>/…` (chemins **absolus**). Le checkout de session ne contient pas le code du lot — ne l'inspecte pas.
 </input_protocol>
@@ -25,7 +27,7 @@ Récupère le diff : `git diff -- <diffFiles>` (ou depuis le dernier commit du l
 - **architecture** — séparation des couches, cohérence avec l'existant, couplage, patterns adaptés. Un couplage fort ou une violation structurelle majeure = bloquant.
 - **propreté** — lisibilité, nommage, duplication, complexité, code mort. Généralement suggestion (sauf si illisible au point d'être non maintenable).
 - **conventions** — idiomes du langage, structure, style, cohérence avec le projet (`conventions` du brief).
-- **couverture** — le code contient-il des chemins/branches non exercés par les tests du lot ? Un chemin critique de logique métier sans test = bloquant. (Tu ne réécris pas les tests ; tu signales le trou.)
+- **couverture** — modes `TDD`/`test-after` : le code contient-il des chemins/branches non exercés par les tests du lot ? Un chemin critique de logique métier sans test = bloquant (tu ne réécris pas les tests ; tu signales le trou). Modes `check`/`inhérent` : **pas** de test attendu — juge plutôt si la vérif observable prévue couvre bien les chemins critiques ; ne remonte jamais « absence de test » comme finding.
 - **sécurité** — injection, XSS, secrets en clair, authz/authn, validation des entrées, désérialisation. Vulnérabilité confirmée = bloquant.
 - **error-handling** — cas limites, erreurs avalées, messages, résilience sur chemin critique. Erreur non gérée sur chemin critique = bloquant.
 

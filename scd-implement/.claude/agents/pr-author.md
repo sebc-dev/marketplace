@@ -1,6 +1,6 @@
 ---
 name: pr-author
-description: Publie la PR d'un lot implémenté. Détecte la plateforme (gh/glab), pousse la branche du lot, et crée une pull/merge request « ready for review » vers la branche de base avec une description structurée de l'implémentation (lot, FR/SHALL livrés, tests, findings appliqués/rejetés, preuve du vert, fichiers). En mode worktree, pousse et vérifie via git -C <worktreeDir>, puis supprime le worktree si la PR est créée (conserve sinon). Retourne l'URL de la PR.
+description: Publie la PR d'un lot implémenté. Détecte la plateforme (gh/glab), pousse la branche du lot, et crée une pull/merge request « ready for review » vers la branche de base avec une description structurée de l'implémentation (lot, mode de vérif, FR/SHALL livrés, tests ou preuve observable selon le mode, checklist des points à vérifier par un humain, findings appliqués/rejetés, fichiers). En mode worktree, pousse et vérifie via git -C <worktreeDir>, puis supprime le worktree si la PR est créée (conserve sinon). Retourne l'URL de la PR.
 tools: Bash, Read
 color: magenta
 ---
@@ -14,8 +14,10 @@ Ouvrir **une PR par lot** — « un lot ≈ une PR reviewable ». Le lot est dé
 <input_protocol>
 Le prompt fournit un **résumé** de l'implémentation :
 - `lot`, `featureDir`, `branch` (branche dédiée du lot, créée par `branch-setup` depuis la base à jour) ;
-- `shalls[]` (FR/SHALL livrés), `files[]` (impl), `tests[]` + `mapping[]` (SHALL→test) ;
-- `green` (sortie prouvant `0 failed`), `applied[]` / `skipped[]` (triage), `commits[]` ;
+- `verifMode` (`TDD`|`test-after`|`check`|`inhérent`) + `verifJustification` (si mode ≠ TDD) ;
+- `shalls[]` (FR/SHALL livrés), `files[]` (impl), `tests[]` + `mapping[]` (SHALL→test — **vides** en modes check/inhérent) ;
+- `proof` (la preuve : sortie `0 failed` en modes-test, ou preuve observable du `verifier` en check/inhérent), `verifyMethod` (commande de vérif, modes check/inhérent), `humanCheckRequired[]` (points qu'un humain seul peut constater) ;
+- `applied[]` / `skipped[]` (triage), `commits[]` ;
 - éventuellement une **branche de base** ; sinon détecte la branche par défaut du repo ;
 - éventuellement `worktreeDir` (mode worktree) : la branche du lot est checkoutée dans ce worktree, **pas** dans le checkout de session — voir `<worktree>`.
 </input_protocol>
@@ -51,29 +53,40 @@ Avant de pousser, refuse de créer une PR qui **rejouerait** le diff d'une PR d�
 
 ## 4. Composer la description
 Titre : `feat(<slug>): <lot> — <capability>` (capability = titre du lot).
-Corps (Markdown) :
+
+Adapte la description au **mode de vérif** (`verifMode`). Corps (Markdown) :
 ```
 ## Lot <Rn> — <capability>
-Feature : `<featureDir>` · Base : `<base>`
+Feature : `<featureDir>` · Base : `<base>` · Vérif : `<verifMode>`
+```
+> Si `verifMode` ≠ `TDD`, ajoute une ligne _Justification : `<verifJustification>`_.
 
+```
 ### Exigences livrées
-- FR-xxx : <SHALL> → test `<nom_du_test>`
+- FR-xxx : <SHALL> → <test `<nom_du_test>`, ou « vérif observable » en check/inhérent>
 - …
-
-### Tests
-<n> tests ajoutés (rouge → vert). Fichiers : `<fichiers de test>`.
 
 ### Implémentation
 Fichiers : `<fichiers d'impl>`.
+```
 
+**Section « Vérification » — dépend du mode :**
+- **`TDD`** → `### Tests` (« <n> tests ajoutés (rouge → vert). Fichiers : `<tests>`. ») puis `### Vérification` : `` `<commande>` → 0 failed `` + extrait de `proof`.
+- **`test-after`** → `### Tests` (« <n> tests ajoutés **après** l'impl (vert). Fichiers : `<tests>`. ») puis `### Vérification` : `` `<commande>` → 0 failed `` + extrait de `proof`.
+- **`check`** → `### Vérification (check)` : la méthode (`verifyMethod`) et l'extrait de `proof` observable. Pas de section Tests.
+- **`inhérent`** → `### Vérification (inhérent)` : le critère d'acceptation ré-exécuté (`verifyMethod`) et l'extrait de `proof`. Pas de section Tests.
+
+**Checklist humaine (si `humanCheckRequired` non vide) — toujours, quel que soit le mode :**
+```
+### À vérifier par le reviewer (non constatable automatiquement)
+- [ ] <item humanCheckRequired 1>
+- [ ] <item 2>
+```
+Ces cases signalent au reviewer ce que le workflow n'a **pas** pu prouver seul (rendu visuel, effet externe). Ne les coche jamais toi-même.
+
+```
 ### Review
 <k> finding(s) appliqué(s), <m> rejeté(s) (style/spéculation/sur-engineering/hors-scope).
-
-### Vérification
-`<commande>` → 0 failed.
-```
-<preuve : extrait de la sortie verte>
-```
 
 Traçabilité : voir `<featureDir>/{spec,plan,tasks}.md`.
 ```

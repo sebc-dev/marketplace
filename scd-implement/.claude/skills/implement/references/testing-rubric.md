@@ -2,6 +2,8 @@
 
 <role>
 Le standard de qualité des tests que `test-writer` produit et que `test-validator` fait respecter. Distillé de la discipline du test (Fowler, Khorikov, Meszaros, données Google). Agnostique à toute techno.
+
+**Portée** : ce rubric régit les modes **porteurs de test** — `TDD` (test avant impl, rouge attendu) et `test-after` (test après impl, vert attendu). Les modes `check`/`inhérent` n'ont **pas** de test automatisé : leur preuve est une vérif observable (agent `verifier`, voir `references/verification-modes.md`), à laquelle ce rubric ne s'applique pas.
 </role>
 
 <principles>

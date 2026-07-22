@@ -31,7 +31,7 @@ Tu ne lis ni n'écris le code : tu **résous les cibles**, tu **calcules le plan
 <process>
 
 ## 1. Charger la connaissance transverse
-Charge le skill `implement` (`references/tasks-parsing.md` pour la résolution et la ligne `Fichiers :`, `references/green-gate.md` pour la discipline rouge/vert). Communique en français.
+Charge le skill `implement` (`references/tasks-parsing.md` pour la résolution, le mode `_vérif :_` et la ligne `Fichiers :`, `references/verification-modes.md` pour la discipline de vérification par mode). Communique en français.
 
 ## 2. Résoudre la feature cible
 Comme `/scd-implement:run` : argument `NNN`/slug → match sur préfixe ou slug dans `specs/` ; sinon la seule feature avec des lots non finis (l'annoncer) ; sinon `AskUserQuestion` ou renvoi vers `/scd-implement:status`. `slug` = suffixe de `featureDir` après `NNN-`.
@@ -107,5 +107,5 @@ Le workflow tourne en arrière-plan (`/workflows`). À la complétion, résume l
 </guidelines>
 
 <skill>
-- `implement` — charge `references/tasks-parsing.md` et `references/green-gate.md`.
+- `implement` — charge `references/tasks-parsing.md` et `references/verification-modes.md`.
 </skill>

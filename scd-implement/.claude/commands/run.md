@@ -1,6 +1,6 @@
 ---
 name: run
-description: "Lance le dynamic workflow d'implémentation TDD sur UN lot Rn d'une feature (rouge→vert→review→triage→apply→PR). Résout la feature et le lot depuis le disque, vérifie que la gate analyze est au vert, puis exécute le workflow implement-lot en arrière-plan, qui se termine par une PR ready-for-review."
+description: "Lance le dynamic workflow d'implémentation sur UN lot Rn d'une feature, selon son mode de vérif (_vérif :_ : TDD rouge→vert, test-after, check ou inhérent) → review→triage→apply→PR. Résout la feature et le lot depuis le disque, vérifie que la gate analyze est au vert, puis exécute le workflow implement-lot en arrière-plan, qui se termine par une PR ready-for-review."
 argument-hint: "[NNN|slug] [Rn] [--base <branche>]"
 allowed-tools:
   - Read
@@ -17,7 +17,7 @@ allowed-tools:
 ---
 
 <objective>
-Implémenter **un seul lot de review `Rn`** d'une feature documentée par `scd-feature-specs`, via le dynamic workflow `implement-lot` (script JS orchestrant onze subagents dédiés en arrière-plan, à commencer par la création d'une branche dédiée depuis la base à jour puis un rebase préventif).
+Implémenter **un seul lot de review `Rn`** d'une feature documentée par `scd-feature-specs`, via le dynamic workflow `implement-lot` (script JS orchestrant des subagents dédiés en arrière-plan, à commencer par la création d'une branche dédiée depuis la base à jour puis un rebase préventif ; le segment de vérification s'adapte au mode du lot).
 
 Tu ne lis ni n'écris le code toi-même : tu **résous la cible**, tu **vérifies les préconditions**, puis tu **lances le workflow**. Tout le travail sur le code se fait dans les subagents du workflow.
 </objective>
@@ -26,7 +26,7 @@ Tu ne lis ni n'écris le code toi-même : tu **résous la cible**, tu **vérifie
 
 ## 1. Charger la connaissance transverse
 
-Charge le skill `implement` (`references/tasks-parsing.md` pour la résolution de la cible, `references/green-gate.md` pour la discipline rouge/vert). Communique en français.
+Charge le skill `implement` (`references/tasks-parsing.md` pour la résolution de la cible et le mode `_vérif :_`, `references/verification-modes.md` pour la discipline de vérification par mode). Communique en français.
 
 ## 2. Résoudre la feature cible
 
@@ -89,11 +89,12 @@ Workflow(scriptPath: "<chemin absolu résolu en a>", args: { featureDir: "specs/
 ## 6. Rendre compte
 
 Le workflow tourne en arrière-plan (`/workflows` pour suivre). À sa complétion, résume le `status` retourné :
-- `done` → lot vert, findings appliqués/rejetés, cases cochées, **PR ouverte** (`pr.url`, ou `pr: null` si push/CLI indisponible — indique alors la branche poussée). Propose le lot suivant (`/scd-implement:run NNN Rn+1`) ou `/scd-implement:status NNN`.
+- `done` → lot vérifié (mode indiqué dans le retour), findings appliqués/rejetés, cases cochées, **PR ouverte** (`pr.url`, ou `pr: null` si push/CLI indisponible — indique alors la branche poussée). **Si `humanCheckRequired` non vide** (modes check/inhérent), signale-le : la PR porte une checklist de points qu'un humain doit constater (rendu visuel, effet externe). Propose le lot suivant (`/scd-implement:run NNN Rn+1`) ou `/scd-implement:status NNN`.
 - `blocked-dirty-tree` → l'arbre n'était pas propre au moment de brancher ; **rien n'a été écrit**. Demande de commiter/remiser puis relancer.
 - `blocked-branch` → la branche dédiée n'a pas pu être posée (ex. problème git) ; rien n'a été écrit.
 - `blocked-rebase` → la phase préventive de rebase a échoué (`blocked-conflict` = conflit avorté à résoudre à la main ; `blocked-dirty` ; `blocked-push` = `--force-with-lease` rejeté, refetch puis relance). Aucun code écrit ; rien n'est forcé.
-- `blocked-red` / `blocked-tests-modified` / `blocked-after-fix` → explique le blocage et la reprise possible (aucune PR n'est ouverte pour un lot bloqué ; la branche dédiée existe déjà).
+- `blocked-impl` (modes test-after/check/inhérent) → l'impl-first n'a pas passé l'intégration (build/lint) ; explique et propose la reprise.
+- `blocked-red` / `blocked-tests-modified` (modes-test) · `blocked-verify` (check/inhérent : le `verifier` n'a pas obtenu de preuve) · `blocked-after-fix` → explique le blocage et la reprise possible (aucune PR n'est ouverte pour un lot bloqué ; la branche dédiée existe déjà).
 - `blocked-branch-drift` → `progress-recorder` a commité sur une branche ≠ celle posée par `branch-setup` (filet déterministe) : **aucune PR ouverte**. Signale `expectedBranch`/`recordedBranch` ; c'est un bug d'agent à investiguer avant de relancer.
 
 </process>
@@ -106,5 +107,5 @@ Le workflow tourne en arrière-plan (`/workflows` pour suivre). À sa complétio
 </guidelines>
 
 <skill>
-- `implement` — charge `references/tasks-parsing.md` et `references/green-gate.md`.
+- `implement` — charge `references/tasks-parsing.md` et `references/verification-modes.md`.
 </skill>

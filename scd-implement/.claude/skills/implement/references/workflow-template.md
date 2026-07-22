@@ -11,32 +11,43 @@ Deux parties, dans l'ordre (contrat parser) :
 1. `export const meta = { … }` — **littéral pur**, 1re instruction. `name`, `description`, `whenToUse`, `phases[]` (une entrée par `phase()`).
 2. Corps async : les schémas de handoff (consts JSON Schema), puis l'orchestration.
 
-## Les onze phases
+## Les phases (segment de vérification variable selon le mode)
 
-| Phase | `agentType` | Modèle | Schéma retour |
-|---|---|---|---|
-| Branch | `scd-implement:branch-setup` | haiku | `BRANCH` |
-| Rebase | `scd-implement:rebaser` | haiku | `REBASE` |
-| Prepare | `scd-implement:lot-briefer` | sonnet | `BRIEF` |
-| Red | `scd-implement:test-writer` | sonnet | `TESTS` |
-| Validate | `scd-implement:test-validator` | opus | `TEST_VERDICT` |
-| Green | `scd-implement:implementer` | sonnet | `GREEN` |
-| Review | `scd-implement:code-reviewer` | opus | `FINDINGS` |
-| Triage | `scd-implement:review-validator` | opus | `TRIAGE` |
-| Apply | `scd-implement:fix-applier` | sonnet | `GREEN` |
-| Record | `scd-implement:progress-recorder` | haiku | `RECORD` |
-| PR | `scd-implement:pr-author` | sonnet | `PR_RESULT` |
+Préambule et final sont **invariants** ; le segment du milieu dépend de `brief.verifMode` (défaut `TDD`). Une phase non jouée (`Red`/`Validate` en check/inhérent, `Verify` en TDD/test-after) n'apparaît simplement pas dans ce run.
+
+| Phase | `agentType` | Modèle | Schéma retour | Joué en mode |
+|---|---|---|---|---|
+| Branch | `scd-implement:branch-setup` | haiku | `BRANCH` | tous |
+| Rebase | `scd-implement:rebaser` | haiku | `REBASE` | tous |
+| Prepare | `scd-implement:lot-briefer` | sonnet | `BRIEF` | tous |
+| Red | `scd-implement:test-writer` | sonnet | `TESTS` | TDD, test-after |
+| Validate | `scd-implement:test-validator` | opus | `TEST_VERDICT` | TDD, test-after |
+| Green | `scd-implement:implementer` | sonnet | `GREEN` | tous |
+| Verify | `scd-implement:verifier` | opus | `VERIFY` | check, inhérent |
+| Review | `scd-implement:code-reviewer` | opus | `FINDINGS` | tous |
+| Triage | `scd-implement:review-validator` | opus | `TRIAGE` | tous |
+| Apply | `scd-implement:fix-applier` | sonnet | `GREEN` | tous (re-vérifie selon le mode) |
+| Record | `scd-implement:progress-recorder` | haiku | `RECORD` | tous |
+| PR | `scd-implement:pr-author` | sonnet | `PR_RESULT` | tous |
+
+**Ordre du segment par mode** (voir `references/verification-modes.md`) :
+- `TDD` → Red → Validate → Green.
+- `test-after` → Green(impl-first) → Red(vert attendu) → Validate → Green(porte).
+- `check`/`inhérent` → Green → Verify.
+
+Le schéma **`VERIFY`** : `{ verified, mode, method, observableProof, humanCheckRequired[], note }`. Il porte la preuve observable des modes non-test (l'équivalent du `0 failed`) et la checklist `humanCheckRequired` remontée dans la PR.
 
 ## Boucles gardées
 
-- **Validate → test-writer** : ≤ 2 itérations, gardée par `budget.remaining() > 40_000`. Sort dès `verdict.ok`.
+- **Validate → test-writer** (modes-test) : ≤ 2 itérations, gardée par `budget.remaining() > 40_000`. Sort dès `verdict.ok`.
 - **Green** : retry ≤ 3, gardée par le budget. Sort dès `passing && testsUntouched`.
+- **Verify** (check/inhérent) : un seul appel — le `verifier` obtient la preuve ou déclare `verified:false` (blocage) / `humanCheckRequired` (déféré à l'humain).
 
 Chaque résultat d'agent est vérifié (`if (!x) …`) — l'équivalent de `filter(Boolean)` pour des appels uniques (un agent skipped/failed retourne `null`).
 
 ## Statuts de sortie
 
-`done` (lot vert, cases cochées, PR ouverte) · `blocked-dirty-tree` (arbre de travail non propre au moment de brancher — phase Branch) · `blocked-branch` (la branche dédiée n'a pas pu être posée) · `blocked-rebase` (la phase Rebase préventive a échoué : `blocked-conflict`/`blocked-dirty`/`blocked-push`) · `blocked-red` (vert jamais atteint) · `blocked-tests-modified` (l'impl a dû toucher les tests) · `blocked-after-fix` (une correction a cassé le vert) · `blocked-branch-drift` (post-Record : les commits ont atterri sur une branche ≠ celle de `branch-setup` — PR non ouverte). Les statuts `blocked-*` sont repris par `run` pour orienter l'humain ; le lot n'est ni coché ni transformé en PR. **`blocked-dirty-tree`/`blocked-branch`/`blocked-rebase` sortent tôt** — rien du code n'a été écrit, il suffit de nettoyer (arbre, conflit de rebase) et relancer ; un conflit de rebase n'est **jamais** résolu automatiquement. En `done`, le retour porte `branch`, `base` et `pr: { url, number, state }` (ou `pr: null` si la publication n'a pas pu se faire — remote/CLI absent).
+`done` (lot vérifié, cases cochées, PR ouverte) · `blocked-dirty-tree` (arbre de travail non propre au moment de brancher — phase Branch) · `blocked-branch` (la branche dédiée n'a pas pu être posée) · `blocked-rebase` (la phase Rebase préventive a échoué : `blocked-conflict`/`blocked-dirty`/`blocked-push`) · `blocked-impl` (l'impl-first de test-after/check/inhérent n'a pas passé l'intégration) · `blocked-red` (vert jamais atteint, modes-test) · `blocked-tests-modified` (l'impl a dû toucher les tests) · `blocked-verify` (check/inhérent : le `verifier` n'a pas obtenu de preuve et ce n'était pas déférable à l'humain) · `blocked-after-fix` (une correction a cassé la vérif) · `blocked-branch-drift` (post-Record : les commits ont atterri sur une branche ≠ celle de `branch-setup` — PR non ouverte). Les statuts `blocked-*` sont repris par `run` pour orienter l'humain ; le lot n'est ni coché ni transformé en PR. **`blocked-dirty-tree`/`blocked-branch`/`blocked-rebase` sortent tôt** — rien du code n'a été écrit, il suffit de nettoyer (arbre, conflit de rebase) et relancer ; un conflit de rebase n'est **jamais** résolu automatiquement. En `done`, le retour porte `mode`, `branch`, `base`, `humanCheckRequired[]` et `pr: { url, number, state }` (ou `pr: null` si la publication n'a pas pu se faire — remote/CLI absent).
 
 ## Branche, rebase & PR (phases Branch + Rebase + Record + PR)
 

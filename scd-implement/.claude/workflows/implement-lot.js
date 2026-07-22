@@ -1,17 +1,18 @@
 export const meta = {
   name: 'implement-lot',
-  description: 'Implémente un lot de review Rn en TDD : rouge → valide → vert → review → triage → apply → record. Un lancement = un lot.',
+  description: 'Implémente un lot de review Rn selon son mode de vérification (TDD par défaut, ou test-after / check / inhérent) : prépare → vérifie (segment variable) → review → triage → apply → record → PR. Un lancement = un lot.',
   whenToUse: "Après une gate analyze au vert de scd-feature-specs, pour implémenter un lot Rn de specs/NNN-feature/tasks.md.",
   phases: [
     { title: 'Branch', detail: 'branch-setup : crée impl/<slug>-<lot> depuis la base à jour — défaut, ou branche du lot dépendant en stacking (arbre propre exigé ; en mode worktree:true → git worktree add dédié, arbre principal libre)' },
     { title: 'Rebase', detail: 'rebaser : (préventif, idempotent) repose la branche sur la base à jour ; no-op sur une branche fraîche' },
-    { title: 'Prepare', detail: 'lot-briefer : parse le lot, pull les SHALL, détecte le test runner' },
-    { title: 'Red', detail: 'test-writer : écrit les tests, confirme le rouge' },
-    { title: 'Validate', detail: 'test-validator : 1 SHALL = 1 test, cas limites, conventions' },
-    { title: 'Green', detail: 'implementer : implémente jusqu au vert, tests intacts' },
-    { title: 'Review', detail: 'code-reviewer : 6 dimensions' },
+    { title: 'Prepare', detail: 'lot-briefer : parse le lot + son mode de vérif, pull les SHALL, détecte le test runner' },
+    { title: 'Red', detail: 'test-writer : (modes TDD/test-after) écrit les tests ; TDD confirme le rouge, test-after écrit après l\'impl et confirme le vert' },
+    { title: 'Validate', detail: 'test-validator : (modes TDD/test-after) 1 SHALL = 1 test, cas limites, conventions' },
+    { title: 'Green', detail: 'implementer : implémente ; en TDD/test-after jusqu\'au vert tests intacts, en check/inhérent selon le critère d\'acceptation' },
+    { title: 'Verify', detail: 'verifier : (modes check/inhérent) vérif observable en contexte frais — capture la preuve ou remonte un humanCheckRequired' },
+    { title: 'Review', detail: 'code-reviewer : 6 dimensions (tous modes)' },
     { title: 'Triage', detail: 'review-validator : triage sceptique adversarial' },
-    { title: 'Apply', detail: 'fix-applier : applique les findings retenus, re-vérifie le vert' },
+    { title: 'Apply', detail: 'fix-applier : applique les findings retenus, re-vérifie selon le mode' },
     { title: 'Record', detail: 'progress-recorder : coche tasks.md, commit sur la branche dédiée' },
     { title: 'PR', detail: 'pr-author : pousse la branche, ouvre la PR ready avec description' },
   ],
@@ -51,11 +52,13 @@ const REBASE = {
 
 const BRIEF = {
   type: 'object',
-  required: ['lot', 'featureDir', 'testCommand', 'shalls', 'files', 'tasks'],
+  required: ['lot', 'featureDir', 'verifMode', 'testCommand', 'shalls', 'files', 'tasks'],
   properties: {
     lot: { type: 'string' },
     featureDir: { type: 'string' },
-    testCommand: { type: 'string', description: 'Commande projet pour exécuter les tests du lot' },
+    verifMode: { type: 'string', description: 'Mode de vérif du lot : TDD (défaut) | test-after | check | inhérent' },
+    verifJustification: { type: 'string', description: 'Justification d\'une ligne si mode ≠ TDD ; pour check/inhérent, décrit la preuve observable (commande/observation)' },
+    testCommand: { type: 'string', description: 'Commande projet pour exécuter les tests (modes TDD/test-after) ou la vérif observable (check/inhérent), si applicable' },
     testFramework: { type: 'string' },
     conventions: { type: 'string', description: 'Conventions de test/code détectées (CLAUDE.md, patrons existants)' },
     shalls: {
@@ -93,8 +96,9 @@ const TESTS = {
   required: ['files', 'red'],
   properties: {
     files: { type: 'array', items: { type: 'string' }, description: 'Fichiers de test créés/modifiés' },
-    red: { type: 'boolean', description: 'true si les tests échouent pour la bonne raison (pas erreur de compilation triviale)' },
-    output: { type: 'string', description: 'Extrait de la sortie prouvant le rouge' },
+    red: { type: 'boolean', description: 'Mode TDD : true si les tests échouent pour la bonne raison (pas erreur triviale). Mode test-after : false (les tests visent le vert, cf. green)' },
+    green: { type: 'boolean', description: 'Mode test-after uniquement : true si les tests écrits après l\'impl passent au vert (0 failed)' },
+    output: { type: 'string', description: 'Extrait de la sortie prouvant l\'état attendu (rouge en TDD, vert en test-after)' },
     mapping: {
       type: 'array',
       description: 'Un test nommé par SHALL',
@@ -135,6 +139,23 @@ const GREEN = {
     testsUntouched: { type: 'boolean', description: 'true si git diff sur les fichiers de test est vide' },
     output: { type: 'string', description: 'Sortie réelle de la commande de test (preuve)' },
     diffFiles: { type: 'array', items: { type: 'string' }, description: "Fichiers d'implémentation modifiés" },
+  },
+}
+
+const VERIFY = {
+  type: 'object',
+  required: ['verified', 'mode'],
+  properties: {
+    verified: { type: 'boolean', description: 'true si une preuve observable a été obtenue OU s\'il ne reste qu\'une vérif humaine documentée (humanCheckRequired non vide)' },
+    mode: { type: 'string', description: 'check | inhérent' },
+    method: { type: 'string', description: 'Commande/observation utilisée pour prouver (ré-exécutable par fix-applier après un correctif)' },
+    observableProof: { type: 'string', description: 'Sortie/observation capturée qui prouve le critère (l\'équivalent du 0 failed pour un test)' },
+    humanCheckRequired: {
+      type: 'array',
+      items: { type: 'string' },
+      description: 'Items qu\'un agent ne peut pas constater (mise en page visuelle, effet externe) — remontés en checklist dans la PR pour le reviewer humain',
+    },
+    note: { type: 'string' },
   },
 }
 
@@ -323,73 +344,153 @@ const brief = await agent(
   `Lis ${featureDir}/tasks.md (isole le lot ${lot} : ses tâches Tn, backrefs _Requirements:_, ligne Fichiers:), ` +
   `${featureDir}/spec.md (extrais chaque SHALL EARS des FR/SC livrés par le lot), ${featureDir}/plan.md ` +
   `(contrats + étape de vérif), et tout ${featureDir}/acceptance/*.feature du lot. ` +
-  `Détecte la commande de test et les conventions du projet. Retourne le brief structuré.` + iso,
+  `Détecte le mode de vérification (_vérif :_), la commande de test et les conventions du projet. Retourne le brief structuré.` + iso,
   { agentType: 'scd-implement:lot-briefer', schema: BRIEF, model: 'sonnet' },
 )
 if (!brief) throw new Error('lot-briefer : brief indisponible (agent skipped/failed)')
-log(`Lot ${lot} : ${brief.shalls.length} SHALL · ${brief.files.length} fichiers · test: ${brief.testCommand}`)
+const mode = brief.verifMode || 'TDD'
+log(`Lot ${lot} : ${brief.shalls.length} SHALL · ${brief.files.length} fichiers · mode ${mode}${brief.testCommand ? ` · test: ${brief.testCommand}` : ''}`)
+if (mode !== 'TDD') log(`Mode ≠ TDD — justification du contrat : ${brief.verifJustification || '(non fournie)'}`)
 
-phase('Red')
-let tests = await agent(
-  `Écris les tests du lot ${lot} — un test nommé par SHALL — puis exécute \`${brief.testCommand}\` ` +
-  `et CONFIRME le rouge (échec pour la bonne raison, pas une erreur de compilation triviale).\n` +
-  `Brief:\n${JSON.stringify(brief)}` + iso,
-  { agentType: 'scd-implement:test-writer', schema: TESTS, model: 'sonnet' },
-)
-if (!tests) throw new Error('test-writer : aucun test produit')
+// -------------------------------------------------------------------------
+// Segment de vérification — VARIABLE selon le mode du lot (brief.verifMode).
+// Familles :
+//   TDD (défaut)   : Red(test-writer, rouge) → Validate → Green(implementer, tests intacts). Preuve = 0 failed.
+//   test-after     : Green(impl d'abord) → Tests(test-writer, vert) → Validate → Green(gate). Preuve = 0 failed.
+//   check|inhérent : Green(impl) → Verify(verifier, contexte frais). Preuve = observableProof / humanCheckRequired.
+// À la sortie de ce segment : `green` est set (impl prouvée), `tests` = {files,mapping} (vide en check/inhérent),
+// `verify` = VERIFY (check/inhérent) ou null. Le reste du workflow (Review→PR) est invariant.
+// -------------------------------------------------------------------------
+const usesTests = (mode === 'TDD' || mode === 'test-after')
+let tests = { files: [], mapping: [] }
+let green = null
+let verify = null
 
-phase('Validate')
-let verdict
-let tries = 0
-do {
-  verdict = await agent(
-    `Valide ces tests contre le brief et le rubric (1 SHALL = 1 test nommé ; cas limites If…then…shall… présents ; ` +
-    `FIRST/AAA/nommage comportemental ; anti-patterns tautologie/sur-mock/couplage à l'implémentation ; rouge effectif).\n` +
-    `Brief:\n${JSON.stringify(brief)}\nTests:\n${JSON.stringify(tests)}` + iso,
-    { agentType: 'scd-implement:test-validator', schema: TEST_VERDICT, model: 'opus' },
-  )
-  if (!verdict || verdict.ok) break
-  log(`Tests à corriger (${verdict.gaps.length} gap(s)) — itération ${tries + 1}`)
-  tests = await agent(
-    `Corrige les tests du lot ${lot} selon ces gaps, ré-exécute \`${brief.testCommand}\`, reconfirme le rouge.\n` +
-    `Gaps:\n${JSON.stringify(verdict.gaps)}\nTests actuels:\n${JSON.stringify(tests)}\nBrief:\n${JSON.stringify(brief)}` + iso,
-    { agentType: 'scd-implement:test-writer', schema: TESTS, model: 'sonnet' },
-  )
-  if (!tests) throw new Error('test-writer : correction des tests échouée')
-} while (++tries < 2 && budget.remaining() > 40_000)
-
-if (verdict && !verdict.ok) {
-  log(`Tests non validés après ${tries} itération(s) — gaps restants remontés, on poursuit vers le vert avec réserve.`)
-}
-
-phase('Green')
-let green
-let gtry = 0
-do {
+if (mode === 'test-after') {
+  // Impl d'abord : les tests n'existent pas encore. Best effort — prouve que le code s'intègre.
+  phase('Green')
   green = await agent(
-    `Implémente le code de production du lot ${lot} jusqu'à ce que \`${brief.testCommand}\` montre 0 failed. ` +
-    `INTERDICTION d'éditer les fichiers de test ${JSON.stringify(tests.files)} — à la fin, exécute ` +
-    `\`${gitPrefix} diff -- ${tests.files.join(' ')}\` : il DOIT être vide, sinon annule tes changements sur ces fichiers. ` +
-    `Montre la sortie réelle de la commande (passing=true uniquement si 0 failed).\n` +
+    `Mode TEST-AFTER. Implémente le code de production du lot ${lot} d'après ses tâches Tn et les contrats du plan — ` +
+    `AUCUN test n'existe encore, n'en écris pas. Prouve que le code s'intègre (build/typecheck/lint/smoke selon ce qui existe ; ` +
+    `passing=true si aucune erreur d'intégration). Reste dans les fichiers du lot.\n` +
     `Brief:\n${JSON.stringify(brief)}` + iso,
     { agentType: 'scd-implement:implementer', schema: GREEN, model: 'sonnet' },
   )
-  if (green && green.passing && green.testsUntouched) break
-  if (green) log(`Vert non atteint (passing=${green.passing}, testsUntouched=${green.testsUntouched}) — retry ${gtry + 1}`)
-} while (++gtry < 3 && budget.remaining() > 40_000)
-
-if (!green || !green.passing) {
-  return { lot, featureDir, status: 'blocked-red', green, tests, verdict, worktreeDir: wtDir }
+  if (!green || !green.passing) {
+    return { lot, featureDir, status: 'blocked-impl', mode, green, worktreeDir: wtDir }
+  }
 }
-if (!green.testsUntouched) {
-  return { lot, featureDir, status: 'blocked-tests-modified', green, tests, worktreeDir: wtDir }
+
+if (usesTests) {
+  const expectRed = (mode === 'TDD')
+  phase('Red')
+  tests = await agent(
+    (expectRed
+      ? `Mode TDD. Écris les tests du lot ${lot} — un test nommé par SHALL — puis exécute \`${brief.testCommand}\` ` +
+        `et CONFIRME le ROUGE (échec pour la bonne raison, pas une erreur de compilation triviale). red=true.`
+      : `Mode TEST-AFTER. L'impl existe déjà. Écris les tests du lot ${lot} — un test nommé par SHALL — contre l'impl EXISTANTE, ` +
+        `puis exécute \`${brief.testCommand}\` et CONFIRME le VERT (0 failed) : red=false, green=true. ` +
+        `Si un test échoue légitimement, c'est un écart de l'impl à combler ensuite — reporte-le dans output (green=false).`) +
+    `\nBrief:\n${JSON.stringify(brief)}` + iso,
+    { agentType: 'scd-implement:test-writer', schema: TESTS, model: 'sonnet' },
+  )
+  if (!tests) throw new Error('test-writer : aucun test produit')
+
+  phase('Validate')
+  let verdict
+  let tries = 0
+  do {
+    verdict = await agent(
+      `Valide ces tests contre le brief et le rubric (1 SHALL = 1 test nommé ; cas limites If…then…shall… présents ; ` +
+      `FIRST/AAA/nommage comportemental ; anti-patterns tautologie/sur-mock/couplage à l'implémentation ; ` +
+      `état d'exécution attendu selon le mode : ${expectRed ? 'ROUGE (rien d\'implémenté encore)' : 'VERT (tests écrits après l\'impl)'}).\n` +
+      `Brief:\n${JSON.stringify(brief)}\nTests:\n${JSON.stringify(tests)}` + iso,
+      { agentType: 'scd-implement:test-validator', schema: TEST_VERDICT, model: 'opus' },
+    )
+    if (!verdict || verdict.ok) break
+    log(`Tests à corriger (${verdict.gaps.length} gap(s)) — itération ${tries + 1}`)
+    tests = await agent(
+      `Corrige les tests du lot ${lot} selon ces gaps, ré-exécute \`${brief.testCommand}\`, ` +
+      `reconfirme l'état attendu (${expectRed ? 'rouge' : 'vert'}).\n` +
+      `Gaps:\n${JSON.stringify(verdict.gaps)}\nTests actuels:\n${JSON.stringify(tests)}\nBrief:\n${JSON.stringify(brief)}` + iso,
+      { agentType: 'scd-implement:test-writer', schema: TESTS, model: 'sonnet' },
+    )
+    if (!tests) throw new Error('test-writer : correction des tests échouée')
+  } while (++tries < 2 && budget.remaining() > 40_000)
+
+  if (verdict && !verdict.ok) {
+    log(`Tests non validés après ${tries} itération(s) — gaps restants remontés, on poursuit vers le vert avec réserve.`)
+  }
+
+  // Porte verte : TDD implémente jusqu'au vert ; test-after ferme les écarts éventuels révélés par les tests.
+  // Dans les deux cas, à l'arrivée : 0 failed ET tests intacts.
+  phase('Green')
+  let gtry = 0
+  do {
+    green = await agent(
+      `Implémente/complète le code de production du lot ${lot} jusqu'à ce que \`${brief.testCommand}\` montre 0 failed. ` +
+      `INTERDICTION d'éditer les fichiers de test ${JSON.stringify(tests.files)} — à la fin, exécute ` +
+      `\`${gitPrefix} diff -- ${tests.files.join(' ')}\` : il DOIT être vide, sinon annule tes changements sur ces fichiers. ` +
+      `Montre la sortie réelle de la commande (passing=true uniquement si 0 failed).\n` +
+      `Brief:\n${JSON.stringify(brief)}` + iso,
+      { agentType: 'scd-implement:implementer', schema: GREEN, model: 'sonnet' },
+    )
+    if (green && green.passing && green.testsUntouched) break
+    if (green) log(`Vert non atteint (passing=${green.passing}, testsUntouched=${green.testsUntouched}) — retry ${gtry + 1}`)
+  } while (++gtry < 3 && budget.remaining() > 40_000)
+
+  if (!green || !green.passing) {
+    return { lot, featureDir, status: 'blocked-red', mode, green, tests, worktreeDir: wtDir }
+  }
+  if (!green.testsUntouched) {
+    return { lot, featureDir, status: 'blocked-tests-modified', mode, green, tests, worktreeDir: wtDir }
+  }
+} else {
+  // Modes check / inhérent : pas de test automatisé. Impl d'abord, puis vérif observable en CONTEXTE FRAIS
+  // (producteur ≠ vérificateur : le verifier n'a pas écrit ce code).
+  phase('Green')
+  green = await agent(
+    `Mode ${mode.toUpperCase()} (pas de test automatisé). Implémente le lot ${lot} d'après ses tâches Tn et les contrats du plan, ` +
+    `de façon à satisfaire le critère d'acceptation observable du brief ` +
+    (mode === 'inhérent'
+      ? `(le critère d'acceptation de la tâche d'impl EST la preuve — ex. le pipeline CI passe au vert, \`terraform apply\` converge). `
+      : `(une vérification observable dédiée constatera le résultat — ex. revue visuelle, constat d'un one-shot). `) +
+    `Prouve que le code s'intègre (build/typecheck/lint/run selon ce qui existe) ; passing=true si aucune erreur d'intégration. ` +
+    `Reste dans les fichiers du lot. Aucun fichier de test à produire.\n` +
+    `Brief:\n${JSON.stringify(brief)}` + iso,
+    { agentType: 'scd-implement:implementer', schema: GREEN, model: 'sonnet' },
+  )
+  if (!green || !green.passing) {
+    return { lot, featureDir, status: 'blocked-impl', mode, green, worktreeDir: wtDir }
+  }
+
+  phase('Verify')
+  verify = await agent(
+    `Mode ${mode.toUpperCase()}. Vérifie le lot ${lot} en CONTEXTE FRAIS (tu n'as pas écrit ce code). ` +
+    `Objectif : obtenir une PREUVE OBSERVABLE que chaque SHALL/critère du brief est satisfait, SANS test unitaire. ` +
+    (mode === 'inhérent'
+      ? `Le critère d'acceptation de l'impl EST la preuve : ré-exécute-le (build/lint CI en local, \`terraform plan\`/\`apply\`, le script one-shot) et capture sa sortie dans observableProof. `
+      : `Exécute la vérification observable décrite (lancer le service et constater, requêter l'état après une migration one-shot…) et capture-la dans observableProof. `) +
+    `Ce que tu ne PEUX PAS constater par exécution (mise en page visuelle, effet externe) → liste-le dans humanCheckRequired (ne prétends JAMAIS l'avoir vérifié). ` +
+    `verified=true si tu as une preuve observable OU s'il ne reste que des humanCheckRequired documentés. method = la commande/observation utilisée (ré-exécutable après un correctif).\n` +
+    `Preuve attendue (du contrat) : ${brief.verifJustification || '(voir le critère d\'acceptation des tâches du lot)'}\n` +
+    `Fichiers d'impl : ${JSON.stringify(green.diffFiles)}\nBrief:\n${JSON.stringify(brief)}` + iso,
+    { agentType: 'scd-implement:verifier', schema: VERIFY, model: 'opus' },
+  )
+  if (!verify || !verify.verified) {
+    return { lot, featureDir, status: 'blocked-verify', mode, verify, green, worktreeDir: wtDir }
+  }
+  const hc = (verify.humanCheckRequired || []).filter(Boolean)
+  log(`Vérif ${mode} : ${verify.observableProof ? 'preuve observable capturée' : 'aucune preuve auto'}${hc.length ? ` · ${hc.length} point(s) à vérifier par un humain` : ''}`)
 }
 
 phase('Review')
 const review = await agent(
   `Review l'implémentation du lot ${lot} (contexte frais, tu n'as pas écrit ce code). ` +
   `Diff sur ${JSON.stringify(green.diffFiles)} (récupère-le via \`${gitPrefix} diff …\`). Six dimensions : architecture, propreté, conventions, ` +
-  `couverture, sécurité, gestion d'erreur. Classe bloquant/suggestion, propose un correction_prompt autonome.\n` +
+  `couverture, sécurité, gestion d'erreur. Mode de vérif du lot : ${mode}` +
+  (usesTests ? `` : ` — PAS de test automatisé attendu (c'est le contrat) : ne remonte jamais « absence de test » sur ce lot, juge la couverture par la vérif observable.`) +
+  `. Classe bloquant/suggestion, propose un correction_prompt autonome.\n` +
   `Brief:\n${JSON.stringify(brief)}` + iso,
   { agentType: 'scd-implement:code-reviewer', schema: FINDINGS, model: 'opus' },
 )
@@ -413,17 +514,26 @@ if (findings.length) {
 let finalGreen = green
 if (triaged.apply.length) {
   phase('Apply')
-  const applied = await agent(
-    `Applique EXACTEMENT ces corrections validées (rien d'autre), sans toucher aux fichiers de test ` +
-    `${JSON.stringify(tests.files)}, puis ré-exécute \`${brief.testCommand}\` et confirme le vert ` +
-    `(\`${gitPrefix} diff -- ${tests.files.join(' ')}\` doit rester vide).\n` +
-    `Corrections:\n${JSON.stringify(triaged.apply)}` + iso,
-    { agentType: 'scd-implement:fix-applier', schema: GREEN, model: 'sonnet' },
-  )
-  if (applied && applied.passing && applied.testsUntouched) {
+  const applied = usesTests
+    ? await agent(
+        `Applique EXACTEMENT ces corrections validées (rien d'autre), sans toucher aux fichiers de test ` +
+        `${JSON.stringify(tests.files)}, puis ré-exécute \`${brief.testCommand}\` et confirme le vert ` +
+        `(\`${gitPrefix} diff -- ${tests.files.join(' ')}\` doit rester vide).\n` +
+        `Corrections:\n${JSON.stringify(triaged.apply)}` + iso,
+        { agentType: 'scd-implement:fix-applier', schema: GREEN, model: 'sonnet' },
+      )
+    : await agent(
+        // check/inhérent : pas de test à re-jouer ; re-prouve la vérif observable après le correctif.
+        `Mode ${mode.toUpperCase()} : applique EXACTEMENT ces corrections validées (rien d'autre) au lot ${lot}, ` +
+        `puis PROUVE que la vérif observable tient toujours en ré-exécutant \`${verify.method || 'la vérification observable du lot (voir brief)'}\` ` +
+        `et capture sa sortie. passing=true si l'intégration ET la preuve tiennent.\n` +
+        `Corrections:\n${JSON.stringify(triaged.apply)}\nMéthode de vérif:\n${JSON.stringify(verify.method || '')}` + iso,
+        { agentType: 'scd-implement:fix-applier', schema: GREEN, model: 'sonnet' },
+      )
+  if (applied && applied.passing && (!usesTests || applied.testsUntouched)) {
     finalGreen = applied
   } else {
-    return { lot, featureDir, status: 'blocked-after-fix', applied, triaged, green, worktreeDir: wtDir }
+    return { lot, featureDir, status: 'blocked-after-fix', mode, applied, triaged, green, verify, worktreeDir: wtDir }
   }
 }
 
@@ -473,6 +583,8 @@ const pr = await agent(
   `\nRésumé:\n${JSON.stringify({
     lot,
     featureDir,
+    verifMode: mode,
+    verifJustification: brief.verifJustification || undefined,
     branch: (record && record.branch) || branchInfo.branch,
     base: base || branchInfo.base,
     worktreeDir: wtDir || undefined,
@@ -480,7 +592,10 @@ const pr = await agent(
     files: finalGreen.diffFiles,
     tests: tests.files,
     mapping: tests.mapping,
-    green: finalGreen.output,
+    // Preuve : sortie 0 failed (modes-test) OU preuve observable du verifier (check/inhérent).
+    proof: usesTests ? finalGreen.output : (verify && verify.observableProof),
+    verifyMethod: verify ? verify.method : undefined,
+    humanCheckRequired: verify ? (verify.humanCheckRequired || []) : [],
     applied: triaged.apply,
     skipped: triaged.skipped,
     commits: record ? record.commits : [],
@@ -497,10 +612,12 @@ return {
   lot,
   featureDir,
   status: 'done',
+  mode,
   passing: finalGreen.passing,
   filesChanged: finalGreen.diffFiles,
   applied: triaged.apply.length,
   skipped: triaged.skipped.length,
+  humanCheckRequired: verify ? (verify.humanCheckRequired || []) : [],
   checked: record ? record.checked : [],
   committed: record ? record.committed : false,
   branch: (record && record.branch) || branchInfo.branch,

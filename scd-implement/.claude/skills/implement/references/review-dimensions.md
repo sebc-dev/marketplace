@@ -10,7 +10,7 @@ Les six dimensions de la code review, le modèle de sévérité, et la disciplin
 - **architecture** — séparation des couches, cohérence avec l'existant, couplage, patterns adaptés. Couplage fort ou violation structurelle majeure = bloquant.
 - **propreté** — lisibilité, nommage, duplication, complexité, code mort. Généralement suggestion (sauf illisibilité rendant le code non maintenable).
 - **conventions** — idiomes du langage, structure, style, cohérence avec le projet (le `CLAUDE.md` cible et les patrons existants).
-- **couverture** — chemins/branches du code non exercés par les tests du lot. Chemin critique de logique métier sans test = bloquant. (Le reviewer **signale** le trou ; il ne réécrit pas les tests.)
+- **couverture** — modes `TDD`/`test-after` : chemins/branches du code non exercés par les tests du lot ; chemin critique de logique métier sans test = bloquant (le reviewer **signale** le trou, il ne réécrit pas les tests). Modes `check`/`inhérent` : **pas** de test automatisé attendu (c'est le contrat) — juger si la vérif observable prévue couvre les chemins critiques ; ne jamais remonter « absence de test ».
 - **sécurité** — injection, XSS, secrets en clair, authz/authn, validation des entrées, désérialisation non sûre. Vulnérabilité confirmée = bloquant.
 - **error-handling** — cas limites, erreurs avalées, messages, résilience. Erreur non gérée sur chemin critique = bloquant.
 </dimensions>
@@ -46,5 +46,5 @@ Un reviewer à qui on demande de trouver des défauts en trouvera **toujours**. 
 **Décision** : `apply` si reproduit + touche correction/exigence + fix chirurgical clair + risque de régression faible. Sinon `skip`. **En cas de doute → skip** (jamais d'apply sur un doute). Un lot vert avec **zéro finding retenu** est un résultat valide.
 
 ## Après application
-Les corrections retenues sont appliquées **chirurgicalement** (rien d'autre), **sans toucher aux tests**, puis le vert est reconfirmé (`0 failed`, `git diff` tests vide). Priorité au vert : mieux vaut une correction en moins qu'un lot rouge « plus propre ».
+Les corrections retenues sont appliquées **chirurgicalement** (rien d'autre), **sans toucher aux tests**, puis la vérification est reconfirmée selon le mode : `0 failed` + `git diff` tests vide (TDD/test-after), ou la preuve observable ré-exécutée (check/inhérent). Priorité à la vérif : mieux vaut une correction en moins qu'un lot cassé « plus propre ».
 </triage>
