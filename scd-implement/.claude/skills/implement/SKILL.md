@@ -18,7 +18,11 @@ description: |
   le triage sceptique adversarial des findings (reproduire avant de retenir, ne corriger
   que correction/exigence), le routage de modèles (opus pour raisonnement/review/verify,
   sonnet pour codegen, haiku pour l'enregistrement) et le contrat de fichier d'un dynamic
-  workflow. Se charge pendant /scd-implement:* (run, run-parallel, sync, status), plus le
+  workflow. Porte aussi l'anti-orphelinage des PR empilées (une PR empilée mergée sur une
+  branche de lot cul-de-sac laisse son code absent de main) : prévention par draft + labels
+  + avertissement (pr-author), détection en 4 états OK/DANGEREUX/EMPILÉ EN ATTENTE/ORPHELIN
+  (status), remédiation par retarget+ready (sync) et par cherry-pick (reland). Se charge
+  pendant /scd-implement:* (run, run-parallel, sync, status, reland), plus le
   mode d'isolation par worktree git qui rend possible le parallélisme réel de plusieurs
   lots (couche 1, collision d'exécution) — distinct de la sérialisation des lots aux
   fichiers non disjoints (couche 2, conflit de contenu). Périmètre : honorer et vérifier
@@ -106,6 +110,30 @@ Le run **commence** par poser la branche et **se conclut** par une PR ready-for-
 - **Permissions** : créer une PR est une **action sortante** depuis un run en arrière-plan. Pré-allowlister `Bash(git push *)`, `Bash(gh pr *)`, `Bash(glab mr *)` évite un prompt en cours de run ; sinon `pr-author` peut demander confirmation (ou, en `-p`/SDK, échouer proprement avec `created: false`).
 - **Dépendances entre lots — stacking automatique et déterministe.** Un lot qui `dépend de : Rk` non encore mergé s'**empile** : `run` calcule `--base impl/<slug>-Rk`, `branch-setup` forke la branche du lot depuis cette base (le code de `Rk` est donc présent), et `pr-author` ouvre la PR **vers** `impl/<slug>-Rk` (diff = le seul lot courant, pas de rejeu de `Rk`). Quand `Rk` est mergé dans la base par défaut, les runs suivants reviennent à la base par défaut. Deux dépendances non mergées → `run` ne devine pas et demande. **Garde-fous** : `pr-author` refuse (`created: false`) toute PR dont la tête descend d'une PR ouverte visant la même base (anti-chevauchement) ; l'orchestrateur bloque (`blocked-branch-drift`) si les commits atterrissent sur une branche ≠ celle posée par `branch-setup`.
 - **Rebase déterministe (préventif + curatif).** Le rebase est une **brique nommée** (`rebaser`, haiku) : elle transplante **exactement** les commits propres du lot (`git rebase --onto <base> <oldBase> <lotBranch>`), ce qui la rend robuste au mode de merge de la dépendance (merge-commit / squash / rebase). Elle est **idempotente** (skip si déjà à jour), n'auto-résout **jamais** un conflit (`--abort` + statut bloquant) et n'utilise **jamais** `--force` sec (uniquement `--force-with-lease`). Deux déclencheurs : **préventif** = phase `Rebase` du workflow (repose la branche sur la base à jour avant d'écrire) ; **curatif** = `/scd-implement:sync` quand une dépendance vient d'être mergée (« R1 mergé → rebase R2 » : re-rebase la PR de `R2` sur la base par défaut et retargete sa base). `oldBase` = la branche de la dépendance `impl/<slug>-Rk`, résolue depuis `dépend de :` — jamais devinée. `/scd-implement:status` **signale la dérive** (PR ouverte, dépendance mergée, branche non rebasée) pour rendre le besoin visible.
+
+## Anti-orphelinage des PR empilées (la faille du stacking)
+
+Le stacking a une **faille vécue**. Si un humain merge une PR empilée alors que sa base est **encore la branche de lot intermédiaire** `impl/<slug>-Rk`, GitHub fusionne les commits **dans cette branche** — un cul-de-sac — et **jamais dans la branche par défaut**. La PR passe `MERGED`, mais le code est **orphelin** : absent de `main`. Symptôme réel : `PR #6 MERGED base=impl/<slug>-R5`, mais `main` sans le code de `R6` ; remédiation manuelle par cherry-pick. `sync` est curatif et opt-in : rien ne détectait l'état dangereux ni ne prévenait le mauvais merge. Ce trou est comblé sur **trois volets**.
+
+**Définitions (partagées par `status`, `sync`, `reland`)** :
+- `défaut` = branche par défaut du repo (`git symbolic-ref refs/remotes/origin/HEAD` → suffixe après `origin/`).
+- **PR empilée** : `baseRefName` == une branche de lot `impl/<slug>-R*` (donc ≠ `défaut`).
+- **Lot arrivé dans `main`** (signal de **contenu**, robuste au squash/rebase/merge-commit) : ses `Tn` sont cochés dans `origin/<défaut>:specs/<NNN-slug>/tasks.md` (`git show`). Corroboration git (fiable pour un merge-commit) : `git merge-base --is-ancestor <headRefOid> origin/<défaut>`. **Le signal contenu prime** (le squash change les SHA, l'ancêtre échoue alors à tort).
+
+**1. Prévention (`pr-author`).** Toute PR empilée (base ≠ `défaut`) est ouverte en **draft** (un draft ne se merge pas sans passage ready explicite → barrière naturelle), labellisée `stacked` + `needs-sync` (best-effort), et sa description est préfixée d'un bloc « ⚠️ ne pas merger directement — synchronise d'abord ». Retour : `stacked: true`, `state: "draft"`. Une PR non empilée (base = `défaut`) reste **ready**, inchangée.
+
+**2. Détection (`/scd-implement:status`, lecture seule).** Classe chaque PR de lot en **4 états** :
+  - **OK** — `MERGED` avec le lot arrivé dans `main` ; ou `OPEN` non empilée.
+  - **⚠️ DANGEREUX** — `OPEN` ∧ base = `impl/<slug>-Rk` ∧ `Rk` **arrivé** dans `main`. Merger maintenant orphelinerait → `/scd-implement:sync NNN Rn`.
+  - **⚠️ EMPILÉ EN ATTENTE** — `OPEN` ∧ base = `impl/<slug>-Rk` ∧ `Rk` **pas encore** dans `main`. Merger `Rk` d'abord, puis `sync`.
+  - **🔴 ORPHELIN** — `MERGED` ∧ base ≠ `défaut` ∧ lot **absent** de `main`. → `/scd-implement:reland NNN Rn`.
+  Dégrade proprement sans `gh`/`glab` (signal git seul, « état PR indisponible »).
+
+**3. Remédiation.** Deux briques, jamais de résolution de conflit auto :
+  - **Dangereux → `/scd-implement:sync`** : rebase `--onto origin/<défaut> <oldBase> <branche>` (via `rebaser`, `--force-with-lease`), retarget `gh pr edit --base <défaut>`, **passage ready** `gh pr ready`, **retrait de `needs-sync`**. C'est le **pont prévention→sync** : la PR draft devient mergeable en sécurité.
+  - **Orphelin → `/scd-implement:reland`** (agent `relander`) : nouvelle branche `reland/<slug>-Rn` depuis `origin/<défaut>` → cherry-pick des commits **propres** du lot (`git log <oldBase>..<headRefOid> --no-merges --reverse` — robuste au squash) → push simple → nouvelle **PR ready → défaut** décrivant le rattrapage → commentaire sur l'orpheline (jamais rouverte). Idempotent (no-op si le lot est déjà dans `main`).
+
+**Règle d'or.** *Ne jamais merger une PR `stacked` en draft sans avoir passé `/scd-implement:sync` d'abord* — le draft est là précisément pour te forcer à synchroniser (retarget sur `défaut`) avant que le merge ne puisse envoyer le code dans le bon endroit. Ordre d'action sur un `status` : traiter les 🔴 ORPHELIN (code déjà perdu de `main`) avant les ⚠️ DANGEREUX (risque au prochain merge).
 
 ## Parallélisme réel : isolation par worktree (deux couches)
 

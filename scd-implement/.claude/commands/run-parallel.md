@@ -93,8 +93,9 @@ Présente le plan à l'utilisateur avant de lancer : les chaînes, l'ordre, les 
 
 ## 7. Rendre compte
 Le workflow tourne en arrière-plan (`/workflows`). À la complétion, résume le retour (`status: all-done | partial | all-blocked`) puis, **par lot** : `status`, `branch`, `base`, `pr` (URL ou null), et `worktreeDir` **si conservé** (lot en échec — le worktree est laissé pour inspection humaine). Rappelle que les lots `done` ont vu leur worktree **supprimé** après création de la PR ; les lots bloqués gardent le leur.
+- **PR empilées (`pr.stacked`)** : un lot empilé (2ᵉ+ d'une chaîne, ou stacké sur une dépendance hors-ensemble) ouvre sa PR en **draft** (labels `stacked`/`needs-sync`). C'est voulu — **ne pas merger avant `/scd-implement:sync`** une fois la dépendance mergée. La 1ʳᵉ PR d'une chaîne sur le défaut est ready.
 - Chaînes sérialisées : rappelle qu'un lot empilé bloqué interrompt les lots en aval de sa chaîne (`blocked-upstream`).
-- Propose la suite : `/scd-implement:status NNN`, `/scd-implement:sync NNN` (quand une dépendance est mergée), ou relancer un lot bloqué via `/scd-implement:run NNN Rn`.
+- Propose la suite : `/scd-implement:status NNN` (classe la sûreté de merge des PR), `/scd-implement:sync NNN` (quand une dépendance est mergée), `/scd-implement:reland NNN` (si un orphelin est signalé), ou relancer un lot bloqué via `/scd-implement:run NNN Rn`.
 
 </process>
 

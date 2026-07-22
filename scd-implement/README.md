@@ -29,7 +29,7 @@ scd-project-docs  →  scd-feature-specs  →  scd-implement
 
 ## Le cycle, par lot
 
-Un lancement = un lot `Rn`. Le préambule et le final sont **invariants** ; le **segment de vérification** (Red/Validate/Green ou Green/Verify) dépend du mode du lot. Douze agents dédiés :
+Un lancement = un lot `Rn`. Le préambule et le final sont **invariants** ; le **segment de vérification** (Red/Validate/Green ou Green/Verify) dépend du mode du lot. Les agents dédiés du cycle :
 
 | Phase | Agent | Rôle | Modèle | Mode |
 |---|---|---|---|---|
@@ -44,7 +44,9 @@ Un lancement = un lot `Rn`. Le préambule et le final sont **invariants** ; le *
 | Triage | `review-validator` | triage **sceptique adversarial** (apply/skip) | opus | tous |
 | Apply | `fix-applier` | applique les findings retenus, **re-vérifie selon le mode** | sonnet | tous |
 | Record | `progress-recorder` | coche `tasks.md`, commit sur la branche dédiée | haiku | tous |
-| PR | `pr-author` | pousse la branche, ouvre la PR/MR **ready** avec description adaptée au mode | sonnet | tous |
+| PR | `pr-author` | pousse la branche, ouvre la PR/MR (**ready**, ou **draft** + labels `stacked`/`needs-sync` si empilée) avec description adaptée au mode | sonnet | tous |
+
+Plus deux briques curatives hors du cycle nominal : `rebaser` (rebase déterministe `--onto`, réutilisé par `/scd-implement:sync`) et **`relander`** (rattrapage d'un lot orphelin par cherry-pick, `/scd-implement:reland`) — **treize agents** au total.
 
 ## Les invariants
 
@@ -68,8 +70,9 @@ Le cycle est exactement le cas où « la sortie de l'étape N détermine l'étap
 |---|---|---|
 | `/scd-implement:run [NNN] [Rn]` | lance le workflow sur **un** lot (résout la cible, vérifie les préconditions) | 20/80 |
 | `/scd-implement:run-parallel [NNN] <Rn> <Rn> …` | lance **plusieurs** lots en **parallèle réel** (worktrees isolés) ; sérialise ceux aux fichiers non disjoints en chaîne `--base` | 20/80 |
-| `/scd-implement:sync [NNN] [Rn]` | **curatif** : re-rebase les PR de lot ouvertes dont la dépendance vient d'être mergée (« R1 mergé → rebase R2 ») | 20/80 |
-| `/scd-implement:status [NNN]` | tableau de bord : lots faits / en cours / à faire, prochain lançable, **dérive de rebase** signalée | 10/90 |
+| `/scd-implement:sync [NNN] [Rn]` | **curatif** : re-rebase les PR de lot ouvertes dont la dépendance vient d'être mergée (« R1 mergé → rebase R2 »), retargete la base, **passe la PR ready** et retire `needs-sync` | 20/80 |
+| `/scd-implement:reland [NNN] [Rn]` | **remédiation orphelin** : rapatrie sur `main` un lot dont la PR a été mergée dans une branche de lot cul-de-sac (cherry-pick → nouvelle PR ready) | 20/80 |
+| `/scd-implement:status [NNN]` | tableau de bord : lots faits / en cours / à faire, prochain lançable, **sûreté de merge des PR** (OK / ⚠️ DANGEREUX / ⚠️ EMPILÉ EN ATTENTE / 🔴 ORPHELIN) | 10/90 |
 
 L'état vit dans les cases de `tasks.md` — cochées par `progress-recorder`, relues par `status`. `/clear` efface le contexte, pas l'état.
 
@@ -84,6 +87,16 @@ Le run se conclut par une **PR ready-for-review, une par lot** — le prolongeme
 - **Description** (adaptée au mode) : FR/SHALL livrés → tests (TDD/test-after) ou preuve observable (check/inhérent), fichiers d'impl, findings appliqués/rejetés, preuve (`0 failed` ou `observableProof`), **checklist des points à vérifier par un humain** si le lot en a, traçabilité vers `specs/NNN-feature/`.
 
 > Créer une PR est une **action sortante** depuis un run en arrière-plan. Pour éviter un prompt en cours de run, pré-allowlister `Bash(git push *)`, `Bash(gh pr *)`, `Bash(glab mr *)`. En `-p`/SDK sans CLI/auth, `pr-author` échoue proprement (`created: false`) et laisse la branche poussée.
+
+## Anti-orphelinage des PR empilées
+
+Le stacking a une **faille** : si un humain merge une PR empilée alors que sa base est encore la branche de lot intermédiaire `impl/<slug>-Rk`, GitHub fusionne les commits **dans ce cul-de-sac**, jamais dans la branche par défaut. La PR passe `MERGED`, mais le code est **orphelin** — absent de `main`. Trois volets ferment la faille :
+
+- **Prévention (`pr-author`).** Toute PR empilée (base ≠ défaut) est ouverte en **draft** — un draft ne se merge pas sans passage ready explicite → barrière naturelle — avec les labels `stacked`/`needs-sync` et un bloc d'avertissement en tête de description. Une PR non empilée reste **ready**.
+- **Détection (`/scd-implement:status`).** Classe chaque PR de lot : **OK** · **⚠️ DANGEREUX** (empilé, dépendance mergée → merger orphelinerait, `→ sync`) · **⚠️ EMPILÉ EN ATTENTE** (dépendance pas encore mergée) · **🔴 ORPHELIN** (déjà mergé hors du défaut, code absent de `main`, `→ reland`). Signal de contenu robuste au squash (`Tn` cochés dans `origin/<défaut>:tasks.md`), corroboré par `git merge-base --is-ancestor`. Dégrade proprement sans `gh`/`glab`.
+- **Remédiation.** `/scd-implement:sync` réaligne une PR **dangereuse** (rebase `--onto` défaut + retarget + **passage ready** + retrait `needs-sync`) ; `/scd-implement:reland` rapatrie un **orphelin** (branche `reland/<slug>-Rn` depuis le défaut → cherry-pick des commits propres → nouvelle PR ready → commentaire sur l'orpheline). **Jamais** de résolution de conflit automatique.
+
+> **Règle d'or.** Ne jamais merger une PR `stacked` en draft sans avoir passé `/scd-implement:sync` d'abord. Sur un `status`, traite les 🔴 ORPHELIN avant les ⚠️ DANGEREUX.
 
 ## Parallélisme réel : isolation par worktree
 

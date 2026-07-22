@@ -233,7 +233,8 @@ const PR_RESULT = {
     number: { type: 'string' },
     branch: { type: 'string' },
     base: { type: 'string' },
-    state: { type: 'string', description: 'ready | draft' },
+    stacked: { type: 'boolean', description: 'true si base ≠ branche par défaut (PR empilée → ouverte en draft, labels stacked/needs-sync, bloc d\'avertissement)' },
+    state: { type: 'string', description: 'draft (PR empilée, anti-orphelinage) | ready (PR non empilée)' },
     title: { type: 'string' },
     worktreeRemoved: { type: 'boolean', description: 'true si le worktree du lot a été supprimé après création de la PR (mode worktree, succès uniquement)' },
     note: { type: 'string' },
@@ -571,7 +572,10 @@ const pr = await agent(
   (base ? `la base \`${base}\`` : `la branche de base par défaut du repo`) +
   ` avec un titre et une description structurée de l'implémentation. ` +
   `AVANT de pousser, applique le garde-fou anti-chevauchement : si ta tête descend d'une PR déjà ` +
-  `ouverte visant la même base, n'ouvre pas de PR (created:false, note explicite) — n'empile jamais un doublon.` +
+  `ouverte visant la même base, n'ouvre pas de PR (created:false, note explicite) — n'empile jamais un doublon. ` +
+  `ANTI-ORPHELINAGE : si la base (\`${base || branchInfo.base}\`) ≠ la branche par défaut du repo, cette PR est EMPILÉE — ` +
+  `ouvre-la en DRAFT, pose les labels \`stacked\`+\`needs-sync\` (best-effort), et préfixe la description du bloc d'avertissement « ne pas merger directement » ` +
+  `(retourne stacked:true, state:draft). Sinon (base = défaut) : PR ready (stacked:false, state:ready).` +
   (wtDir
     ? `\n\nMode WORKTREE : la branche du lot est checkoutée dans \`${wtDir}\`. Fais TOUT git local via \`git -C "${wtDir}" …\` ` +
       `(rev-parse HEAD, merge-base, push) ; le head étant poussé sur origin, gh/glab crée la PR par nom de branche depuis le repo principal (même remote). ` +
@@ -624,5 +628,5 @@ return {
   base: base || branchInfo.base,
   worktree: useWorktree,
   worktreeDir: worktreeKept, // null si supprimé après succès ; chemin conservé sinon
-  pr: pr && pr.created ? { url: pr.url, number: pr.number, state: pr.state } : null,
+  pr: pr && pr.created ? { url: pr.url, number: pr.number, state: pr.state, stacked: pr.stacked, base: pr.base || base || branchInfo.base } : null,
 }

@@ -1,6 +1,6 @@
 ---
 name: sync
-description: "Curatif : re-rebase les PR de lot déjà ouvertes quand la dépendance dont elles dépendent vient d'être mergée (le cas « R1 mergé → rebase R2 »). Détecte la dérive depuis tasks.md + l'état des PR, calcule base/oldBase de façon déterministe, délègue le rebase à l'agent rebaser (transplant exact, --force-with-lease), et retargete la base de la PR. Ne résout aucun conflit automatiquement."
+description: "Curatif : re-rebase les PR de lot déjà ouvertes quand la dépendance dont elles dépendent vient d'être mergée (le cas « R1 mergé → rebase R2 »). Détecte la dérive depuis tasks.md + l'état des PR, calcule base/oldBase de façon déterministe, délègue le rebase à l'agent rebaser (transplant exact, --force-with-lease), retargete la base de la PR vers la branche par défaut, la passe ready et retire le label needs-sync. C'est le pont anti-orphelinage : une PR empilée créée en draft par pr-author devient mergeable en sécurité une fois sa dépendance mergée. Ne résout aucun conflit automatiquement."
 argument-hint: "[NNN|slug] [Rn]"
 allowed-tools:
   - Read
@@ -20,9 +20,9 @@ allowed-tools:
 ---
 
 <objective>
-**Réparer la dérive** d'une PR de lot déjà ouverte : quand le lot `Rk` dont elle dépend est **mergé** (dans la base par défaut), la branche du lot dépendant `Rn` doit être re-rebasée pour ne plus porter que **ses** commits, assise sur la base par défaut à jour — et sa PR retargetée. C'est le curatif exact du cas « **R1 mergé → rebase R2** ».
+**Réparer la dérive** d'une PR de lot déjà ouverte : quand le lot `Rk` dont elle dépend est **mergé** (dans la branche par défaut), la branche du lot dépendant `Rn` doit être re-rebasée pour ne plus porter que **ses** commits, assise sur la branche par défaut à jour — et sa PR **retargetée vers `défaut`, passée ready, et son label `needs-sync` retiré**. C'est le curatif exact du cas « **R1 mergé → rebase R2** », et le **pont anti-orphelinage** : `pr-author` a ouvert la PR empilée en **draft** (avec label `needs-sync`) pour empêcher un merge orphelinant ; `sync` est ce qui la rend mergeable **en sécurité** une fois la dépendance dans `main` — retarget sur `défaut` (plus de cul-de-sac) + rebase + ready.
 
-Tu ne raisonnes pas sur le git : tu **détectes** la dérive, tu **calcules** `base`/`oldBase` depuis la source de vérité (`tasks.md` + état des PR), puis tu **délègues** le rebase à l'agent `rebaser` (qui porte la recette et le contrat d'échec). Un lancement traite un ou plusieurs lots dérivés d'une même feature.
+Tu ne raisonnes pas sur le git : tu **détectes** la dérive, tu **calcules** `base`/`oldBase` depuis la source de vérité (`tasks.md` + état des PR), tu **délègues** le rebase à l'agent `rebaser` (qui porte la recette et le contrat d'échec), puis tu **retargetes / passes ready / retires le label**. Un lancement traite un ou plusieurs lots dérivés d'une même feature. **Aucun conflit n'est résolu automatiquement** (STOP + rapport).
 </objective>
 
 <process>
@@ -47,16 +47,22 @@ Pour chaque lot dérivé `Rn` dépendant de `Rk` mergé :
 ## 4. Déléguer le rebase à l'agent rebaser
 Pour chaque lot dérivé, invoque l'agent **`scd-implement:rebaser`** (Task) avec `{ lotBranch: "impl/<slug>-Rn", base: "<base-défaut>", oldBase: "impl/<slug>-Rk", push: true }`. L'agent transplante `oldBase..lotBranch` sur `origin/<base>` et pousse en `--force-with-lease`. Il **avorte** proprement sur conflit (`blocked-conflict`) — tu ne résous **jamais** un conflit à sa place.
 
-## 5. Retargeter la base de la PR
-Si le rebaser retourne `rebased` (ou `up-to-date` alors que la PR vise encore l'ancienne base) et que la PR de `Rn` vise encore `impl/<slug>-Rk` : retargette-la vers la base par défaut — `gh pr edit <number> --base <base-défaut>` (`glab mr update <iid> --target-branch <base-défaut>`). (Si `impl/<slug>-Rk` a été supprimée au merge, GitHub a pu retargeter automatiquement — vérifie avant d'agir.)
+## 5. Retargeter la base, passer ready, retirer `needs-sync`
+Ne fais cette étape que si le rebaser n'a **pas** bloqué (`rebased` ou `up-to-date`) — un rebase bloqué (`blocked-conflict`/`blocked-push`) laisse la PR **en l'état** (toujours draft, toujours empilée) : tu ne la rends surtout pas mergeable tant que ses commits ne sont pas proprement sur `défaut`.
+
+En trois gestes (idempotents — no-op si déjà faits) :
+1. **Retarget** vers `défaut` si la PR vise encore `impl/<slug>-Rk` : `gh pr edit <number> --base <défaut>` (`glab mr update <iid> --target-branch <défaut>`). Si `impl/<slug>-Rk` a été supprimée au merge, GitHub a pu retargeter automatiquement — **vérifie `baseRefName` avant d'agir** (ne retargete pas ce qui l'est déjà).
+2. **Passer ready** (la PR empilée était en draft) : `gh pr ready <number>` (`glab mr update <iid> --ready`). C'est ce qui lève la barrière : la PR n'est plus « à ne pas merger ». Si elle était déjà ready, no-op.
+3. **Retirer le label `needs-sync`** (best-effort, non bloquant) : `gh pr edit <number> --remove-label needs-sync` (`glab mr update <iid> --unlabel needs-sync`). Le label `stacked` peut rester (trace historique) ou être retiré aussi — au choix ; `needs-sync` **doit** partir puisque la synchro est faite.
 
 ## 6. Rendre compte
-Par lot traité : statut du rebaser (`rebased` / `up-to-date` / `blocked-*`), push effectué, base de PR retargetée. Récapitule les lots qui **restent empilés** (dépendance non mergée) et ceux **bloqués** (`blocked-conflict` → à rebaser à la main ; `blocked-push` → refetch puis relancer `/scd-implement:sync`).
+Par lot traité : statut du rebaser (`rebased` / `up-to-date` / `blocked-*`), push effectué, base de PR retargetée, **PR passée ready**, label `needs-sync` retiré. Récapitule les lots qui **restent empilés** (dépendance non mergée → toujours draft, c'est voulu) et ceux **bloqués** (`blocked-conflict` → à rebaser à la main, la PR reste draft ; `blocked-push` → refetch puis relancer `/scd-implement:sync`).
 
 </process>
 
 <guidelines>
-- **Curatif ciblé.** Ne rebase que des lots à **PR ouverte** dont la dépendance est **mergée**. Un lot pas encore lancé, ou dont la dépendance n'est pas mergée, n'est pas concerné.
+- **Pont anti-orphelinage.** Le passage ready + retrait de `needs-sync` n'a lieu **qu'après** un rebase réussi qui repose les commits sur `défaut` **et** un retarget de la base. Ne passe **jamais** une PR ready tant qu'elle vise encore une branche de lot (ce serait rouvrir la faille d'orphelinage que le draft ferme).
+- **Curatif ciblé.** Ne rebase que des lots à **PR ouverte** dont la dépendance est **mergée**. Un lot pas encore lancé, ou dont la dépendance n'est pas mergée, n'est pas concerné (il reste draft — c'est voulu).
 - **Jamais de résolution de conflit.** L'agent avorte ; tu rapportes. `blocked-conflict` = intervention humaine.
 - **Jamais `--force` sec** : l'agent n'utilise que `--force-with-lease`.
 - Tu ne modifies ni `tasks.md`, ni le code : tu réalignes des branches/PR déjà produites.
