@@ -18,7 +18,12 @@ description: |
   le triage sceptique adversarial des findings (reproduire avant de retenir, ne corriger
   que correction/exigence), le routage de modèles (opus pour raisonnement/review/verify,
   sonnet pour codegen, haiku pour l'enregistrement) et le contrat de fichier d'un dynamic
-  workflow. Porte aussi l'anti-orphelinage des PR empilées (une PR empilée mergée sur une
+  workflow. Porte aussi la description de PR comme ARTEFACT DE REVIEW — rédigée par
+  pr-describer (opus, lecture seule) et seulement publiée par pr-author : le fonctionnel
+  (capability, valeur, backref PRD, hors-périmètre issu du scope EXCLU) et le code (stats
+  de diff mesurées, ordre de lecture, points à scruter, findings appliqués ET rejetés avec
+  leur motif), en couches avec des <details>, plus les signaux humanCheckRequired et
+  oversized. Porte aussi l'anti-orphelinage des PR empilées (une PR empilée mergée sur une
   branche de lot cul-de-sac laisse son code absent de main) : prévention par draft + labels
   + avertissement (pr-author), détection en 4 états OK/DANGEREUX/EMPILÉ EN ATTENTE/ORPHELIN
   (status), remédiation par retarget+ready (sync) et par cherry-pick (reland). Se charge
@@ -58,7 +63,8 @@ Un lancement `/scd-implement:run NNN Rn` exécute le workflow sur **un seul** lo
 5. **Triage** (`review-validator`) — sceptique adversarial, apply/skip.
 6. **Apply** (`fix-applier`) — corrections retenues, **re-vérifie selon le mode** (re-run tests, ou re-run la vérif observable).
 7. **Record** (`progress-recorder`) — coche `tasks.md`, commit **sur la branche dédiée**.
-8. **PR** (`pr-author`) — pousse la branche, ouvre la PR/MR **ready for review** avec une description adaptée au mode (+ checklist `humanCheckRequired` si présente).
+8. **Describe** (`pr-describer`) — compose la description de review : le fonctionnel (capability, valeur, hors-périmètre) **et** le code (stats de diff mesurées, ordre de lecture, findings appliqués **et rejetés**). Non bloquant.
+9. **PR** (`pr-author`) — pousse la branche, ouvre la PR/MR **ready for review** en **publiant** cette description telle quelle.
 
 Détails d'orchestration, segment par mode et adaptation du script : `references/workflow-template.md` et `references/verification-modes.md`.
 
@@ -95,9 +101,11 @@ Ce plugin **ne livre aucun hook** : rien ici n'est bloquant-100 % de façon *sta
 ## Routage de modèles
 
 Pour maîtriser le coût d'un dynamic workflow (« substantiellement plus » de tokens) :
-- **opus** — raisonnement dur : `test-validator`, `code-reviewer`, `review-validator`, `verifier`.
-- **sonnet** — génération de code / rédaction : `test-writer`, `implementer`, `fix-applier`, `lot-briefer`, `pr-author`.
-- **haiku** — mécanique : `progress-recorder`, `rebaser` (exécutent une recette, ne raisonnent pas).
+- **opus** — raisonnement dur : `test-validator`, `code-reviewer`, `review-validator`, `verifier`, `pr-describer`.
+- **sonnet** — génération de code : `test-writer`, `implementer`, `fix-applier`, `lot-briefer`.
+- **haiku** — mécanique : `progress-recorder`, `rebaser`, `branch-setup` (exécutent une recette, ne raisonnent pas).
+
+`pr-author` (sonnet) est mécanique mais reste en sonnet : il porte des garde-fous à conditions (anti-chevauchement, anti-orphelinage, worktree) qu'une recette haiku appliquerait mal.
 
 Le périmètre « un lot par lancement » borne naturellement la dépense.
 
@@ -106,10 +114,24 @@ Le périmètre « un lot par lancement » borne naturellement la dépense.
 Le run **commence** par poser la branche et **se conclut** par une PR ready-for-review, une par lot :
 - **Branche (première phase, toujours)** : `branch-setup` crée **systématiquement** `impl/<slug>-<lot>` **avant tout autre travail**, à partir de la base **mise à jour** (`git fetch` → `origin/<base>`). Pas d'exception : même si tu es déjà sur une branche de travail, on repart de la base à jour. **Arbre propre exigé** : si `git status` n'est pas propre, le workflow s'arrête (`blocked-dirty-tree`) — commite ou remise, puis relance. Rien ne peut atterrir sur la base : le code du lot naît directement sur la branche dédiée.
 - **Base** : la base est **résolue par `/scd-implement:run` avant le lancement** et s'applique **à la fois** à la branche dédiée et à la PR. Trois cas : (a) `--base <branche>` explicite → gagne toujours ; (b) auto-stacking → si le lot cible `dépend de : Rk` et que `impl/<slug>-Rk` existe et n'est **pas encore mergée** dans la base par défaut, la base devient `impl/<slug>-Rk` ; (c) sinon → branche par défaut du repo, détectée.
-- **Publication** : `pr-author` détecte `gh`/`glab`, `git push -u` (jamais `--force`), et ouvre la PR/MR avec une description structurée (FR/SHALL livrés, tests, findings appliqués/rejetés, preuve du vert).
+- **Publication** : `pr-author` détecte `gh`/`glab`, `git push -u` (jamais `--force`), et ouvre la PR/MR en publiant **telle quelle** la description composée en amont par `pr-describer` (voir ci-dessous). Il est le **publieur**, pas l'auteur : il n'ajoute que le bloc « ⚠️ PR EMPILÉE » quand la base ≠ défaut.
 - **Permissions** : créer une PR est une **action sortante** depuis un run en arrière-plan. Pré-allowlister `Bash(git push *)`, `Bash(gh pr *)`, `Bash(glab mr *)` évite un prompt en cours de run ; sinon `pr-author` peut demander confirmation (ou, en `-p`/SDK, échouer proprement avec `created: false`).
 - **Dépendances entre lots — stacking automatique et déterministe.** Un lot qui `dépend de : Rk` non encore mergé s'**empile** : `run` calcule `--base impl/<slug>-Rk`, `branch-setup` forke la branche du lot depuis cette base (le code de `Rk` est donc présent), et `pr-author` ouvre la PR **vers** `impl/<slug>-Rk` (diff = le seul lot courant, pas de rejeu de `Rk`). Quand `Rk` est mergé dans la base par défaut, les runs suivants reviennent à la base par défaut. Deux dépendances non mergées → `run` ne devine pas et demande. **Garde-fous** : `pr-author` refuse (`created: false`) toute PR dont la tête descend d'une PR ouverte visant la même base (anti-chevauchement) ; l'orchestrateur bloque (`blocked-branch-drift`) si les commits atterrissent sur une branche ≠ celle posée par `branch-setup`.
 - **Rebase déterministe (préventif + curatif).** Le rebase est une **brique nommée** (`rebaser`, haiku) : elle transplante **exactement** les commits propres du lot (`git rebase --onto <base> <oldBase> <lotBranch>`), ce qui la rend robuste au mode de merge de la dépendance (merge-commit / squash / rebase). Elle est **idempotente** (skip si déjà à jour), n'auto-résout **jamais** un conflit (`--abort` + statut bloquant) et n'utilise **jamais** `--force` sec (uniquement `--force-with-lease`). Deux déclencheurs : **préventif** = phase `Rebase` du workflow (repose la branche sur la base à jour avant d'écrire) ; **curatif** = `/scd-implement:sync` quand une dépendance vient d'être mergée (« R1 mergé → rebase R2 » : re-rebase la PR de `R2` sur la base par défaut et retargete sa base). `oldBase` = la branche de la dépendance `impl/<slug>-Rk`, résolue depuis `dépend de :` — jamais devinée. `/scd-implement:status` **signale la dérive** (PR ouverte, dépendance mergée, branche non rebasée) pour rendre le besoin visible.
+
+## La description de PR est un artefact de review
+
+Le workflow ne s'arrête pas au code vert : il s'arrête quand **un humain peut reviewer**. Une PR dont la description se résume à « lot R2, 5 tests, 3 fichiers » sous-traite au reviewer tout le travail de reconstitution — rouvrir la spec, deviner la valeur, relire le diff sans savoir par où commencer. `scd-feature-specs` dimensionne la slice pour qu'elle soit reviewable ; la description est ce qui rend cette promesse effective.
+
+D'où la séparation : **`pr-describer` (opus, contexte frais) rédige, `pr-author` (sonnet) publie**. Le premier n'a aucun pouvoir sortant (lecture seule, pas de push, pas de PR) ; le second ne rédige que si aucun corps ne lui est fourni.
+
+Ce que la description doit porter, sur **deux axes** :
+- **Fonctionnel** — la capability en une phrase, la valeur côté utilisateur et le backref PRD (via `brief.context`, extrait du contrat par `lot-briefer`), la table `FR → SHALL EARS → vérification`, et surtout le **hors-périmètre** : le scope EXCLU de `spec.md` et ce que livreront les lots suivants. Sans lui, le reviewer réclame ce qui a été délibérément exclu.
+- **Code** — les **stats de diff mesurées** (`git diff --numstat` sur `merge-base(base, HEAD)..HEAD`, jamais estimées), un ordre de lecture motivé, 2-3 points à scruter dérivés des SHALL `error|boundary` et des dimensions à risque, la commande pour rejouer la vérif en local, et la **transparence du triage** : les findings appliqués **et** ceux rejetés, avec leur motif. Une review automatique dont on ne voit pas les angles morts vaut moins qu'aucune review.
+
+Deux garde-fous portés par la description elle-même : la checklist `humanCheckRequired` (ce que le workflow n'a **pas** pu prouver — jamais cochée par un agent) et le signal `oversized` quand le diff réel dépasse ~400 lignes ou 2× le budget estimé du lot, qui rend visible un dépassement du seuil de reviewability du contrat amont.
+
+**Non bloquant.** Si `pr-describer` échoue ou est sauté faute de budget, `pr-author` compose un corps de repli minimal et la PR s'ouvre quand même : une description pauvre est un défaut de confort, jamais un motif de perdre le lot.
 
 ## Anti-orphelinage des PR empilées (la faille du stacking)
 

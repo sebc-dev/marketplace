@@ -1,6 +1,6 @@
 export const meta = {
   name: 'implement-lot',
-  description: 'Implémente un lot de review Rn selon son mode de vérification (TDD par défaut, ou test-after / check / inhérent) : prépare → vérifie (segment variable) → review → triage → apply → record → PR. Un lancement = un lot.',
+  description: 'Implémente un lot de review Rn selon son mode de vérification (TDD par défaut, ou test-after / check / inhérent) : prépare → vérifie (segment variable) → review → triage → apply → record → describe → PR. Un lancement = un lot.',
   whenToUse: "Après une gate analyze au vert de scd-feature-specs, pour implémenter un lot Rn de specs/NNN-feature/tasks.md.",
   phases: [
     { title: 'Branch', detail: 'branch-setup : crée impl/<slug>-<lot> depuis la base à jour — défaut, ou branche du lot dépendant en stacking (arbre propre exigé ; en mode worktree:true → git worktree add dédié, arbre principal libre)' },
@@ -14,7 +14,8 @@ export const meta = {
     { title: 'Triage', detail: 'review-validator : triage sceptique adversarial' },
     { title: 'Apply', detail: 'fix-applier : applique les findings retenus, re-vérifie selon le mode' },
     { title: 'Record', detail: 'progress-recorder : coche tasks.md, commit sur la branche dédiée' },
-    { title: 'PR', detail: 'pr-author : pousse la branche, ouvre la PR ready avec description' },
+    { title: 'Describe', detail: 'pr-describer : compose la description de review (fonctionnel + code) depuis le contrat, le triage et les stats de diff réelles' },
+    { title: 'PR', detail: 'pr-author : pousse la branche, ouvre la PR ready en publiant la description' },
   ],
 }
 
@@ -88,6 +89,31 @@ const BRIEF = {
       },
     },
     gherkin: { type: 'array', items: { type: 'string' }, description: 'Chemins des .feature du lot, si présents' },
+    // Contexte de REVIEW (optionnel, rétro-compatible) : ce qu'un humain doit savoir pour juger
+    // le lot, extrait du contrat par le seul agent qui lit déjà spec/plan/tasks. Consommé par
+    // pr-describer ; son absence ne casse aucun agent existant.
+    context: {
+      type: 'object',
+      description: 'Matériau de la description de PR — le « pourquoi » fonctionnel et les frontières du lot',
+      properties: {
+        capability: { type: 'string', description: 'Titre du lot : la capability en une phrase' },
+        lotIndex: { type: 'integer', description: 'Rang du lot dans tasks.md (1-based)' },
+        lotCount: { type: 'integer', description: 'Nombre total de lots de la feature' },
+        dependsOn: { type: 'array', items: { type: 'string' }, description: 'Lots dont celui-ci dépend (dépend de : Rn)' },
+        budgetEstimate: { type: 'integer', description: 'Budget estimé du lot en lignes (_~N lignes est._)' },
+        why: { type: 'string', description: 'La valeur côté utilisateur : Résumé / user story de spec.md, en 2-4 phrases' },
+        prdRefs: { type: 'array', items: { type: 'string' }, description: 'FR/SC du PRD dont descendent les FR du lot' },
+        approach: { type: 'string', description: 'plan.md ## Approche, en 1-2 phrases' },
+        adrs: { type: 'array', items: { type: 'string' }, description: 'ADR contraignants cités par le plan' },
+        contracts: { type: 'string', description: 'Contrats d\'interface du lot (signatures, endpoints, codes d\'erreur)' },
+        outOfScope: { type: 'array', items: { type: 'string' }, description: 'spec.md ## NON inclus — ce que le reviewer ne doit PAS réclamer' },
+        nextLots: {
+          type: 'array',
+          description: 'Lots suivants et ce qu\'ils livreront (le reste du hors-périmètre)',
+          items: { type: 'object', properties: { lot: { type: 'string' }, title: { type: 'string' } } },
+        },
+      },
+    },
   },
 }
 
@@ -223,6 +249,27 @@ const RECORD = {
   },
 }
 
+const PR_BODY = {
+  type: 'object',
+  required: ['title', 'body'],
+  properties: {
+    title: { type: 'string', description: 'Titre de la PR : feat(<slug>): <lot> — <capability>' },
+    body: { type: 'string', description: 'Corps Markdown complet, SANS le bloc d\'avertissement « PR EMPILÉE » (posé par pr-author)' },
+    summary: { type: 'string', description: 'Une phrase : la valeur du lot (pour les logs)' },
+    diffStats: {
+      type: 'object',
+      description: 'Mesures git diff --numstat sur merge-base(base, HEAD)..HEAD',
+      properties: {
+        files: { type: 'integer' },
+        insertions: { type: 'integer' },
+        deletions: { type: 'integer' },
+      },
+    },
+    oversized: { type: 'boolean', description: 'true si le diff dépasse le seuil de review en une passe (~400 lignes, ou 2× le budget estimé du lot)' },
+    note: { type: 'string', description: 'Mesure impossible, contexte manquant' },
+  },
+}
+
 const PR_RESULT = {
   type: 'object',
   required: ['created'],
@@ -345,7 +392,10 @@ const brief = await agent(
   `Lis ${featureDir}/tasks.md (isole le lot ${lot} : ses tâches Tn, backrefs _Requirements:_, ligne Fichiers:), ` +
   `${featureDir}/spec.md (extrais chaque SHALL EARS des FR/SC livrés par le lot), ${featureDir}/plan.md ` +
   `(contrats + étape de vérif), et tout ${featureDir}/acceptance/*.feature du lot. ` +
-  `Détecte le mode de vérification (_vérif :_), la commande de test et les conventions du projet. Retourne le brief structuré.` + iso,
+  `Détecte le mode de vérification (_vérif :_), la commande de test et les conventions du projet. ` +
+  `Remplis aussi \`context\` (le matériau de la future description de PR : capability, rang du lot, dépendances, budget estimé, ` +
+  `valeur côté utilisateur, backref PRD, approche du plan, ADR contraignants, contrats, scope EXCLU, lots suivants) — ` +
+  `tu es le seul agent qui lit les trois documents, l'extraction est quasi gratuite ici. Retourne le brief structuré.` + iso,
   { agentType: 'scd-implement:lot-briefer', schema: BRIEF, model: 'sonnet' },
 )
 if (!brief) throw new Error('lot-briefer : brief indisponible (agent skipped/failed)')
@@ -565,12 +615,77 @@ if (record && record.branch && record.branch !== branchInfo.branch) {
   }
 }
 
+// La description est un ARTEFACT DE REVIEW : elle doit permettre de juger le fonctionnel ET le code
+// sans rouvrir les specs. Elle est composée par un agent dédié (contexte frais, opus), pas par le
+// publieur — pr-author reste mécanique. Non bloquant : si le describer est sauté (budget) ou échoue,
+// pr-author compose son corps de repli et la PR s'ouvre quand même.
+phase('Describe')
+const canDescribe = !budget.total || budget.remaining() > 40_000
+const desc = canDescribe
+  ? await agent(
+      `Compose la description de la PR du lot ${lot} de ${featureDir}, pour un REVIEWER HUMAIN : ` +
+      `le fonctionnel (capability, valeur, backref PRD, hors-périmètre) ET le code (stats de diff réelles, ordre de lecture, ` +
+      `points à scruter, findings appliqués ET rejetés avec leur motif, preuve d'exécution). ` +
+      `Mesure le diff toi-même : \`${gitPrefix} merge-base ${base || branchInfo.base} HEAD\` (préfère \`origin/${base || branchInfo.base}\` s'il existe) ` +
+      `puis \`${gitPrefix} diff --numstat <mb> HEAD\` et \`${gitPrefix} log --oneline --no-decorate <mb>..HEAD\` — aucun chiffre estimé. ` +
+      `Corps en couches : lisible en 30 s, blocs volumineux dans des <details>. ` +
+      `N'écris PAS le bloc « PR EMPILÉE » (c'est pr-author). Lecture seule : aucun push, aucune PR, aucune écriture.\n` +
+      `Résumé:\n${JSON.stringify({
+        lot,
+        featureDir,
+        branch: (record && record.branch) || branchInfo.branch,
+        base: base || branchInfo.base,
+        worktreeDir: wtDir || undefined,
+        context: brief.context || undefined,
+        verifMode: mode,
+        verifJustification: brief.verifJustification || undefined,
+        shalls: brief.shalls,
+        mapping: tests.mapping,
+        tests: tests.files,
+        proof: usesTests ? finalGreen.output : (verify && verify.observableProof),
+        verifyMethod: verify ? verify.method : brief.testCommand,
+        humanCheckRequired: verify ? (verify.humanCheckRequired || []) : [],
+        testsUntouched: finalGreen.testsUntouched,
+        testCommand: brief.testCommand,
+        testFramework: brief.testFramework,
+        conventions: brief.conventions,
+        gherkin: brief.gherkin,
+        plannedFiles: brief.files,
+        files: finalGreen.diffFiles,
+        findings,
+        applied: triaged.apply,
+        skipped: triaged.skipped,
+        tasks: brief.tasks,
+        checked: record ? record.checked : [],
+        commits: record ? record.commits : [],
+      })}` + iso,
+      { agentType: 'scd-implement:pr-describer', schema: PR_BODY, model: 'opus' },
+    )
+  : null
+// Un corps vide vaut un corps absent : on bascule alors sur le repli de pr-author plutôt que
+// de publier une description creuse. `described` est la seule source de vérité en aval.
+const described = desc && typeof desc.body === 'string' && desc.body.trim() ? desc : null
+if (!canDescribe) {
+  log('Description riche sautée (budget) — pr-author composera le corps de repli.')
+} else if (described) {
+  const d = (described.diffStats || {})
+  log(`Description : ${d.files ?? finalGreen.diffFiles.length} fichier(s)` +
+      (d.insertions != null ? `, +${d.insertions}/-${d.deletions ?? 0}` : ``) +
+      (described.oversized ? ' ⚠ au-delà du budget de review en une passe' : ''))
+} else {
+  log('Description non produite (pr-describer indisponible ou corps vide) — corps de repli.')
+}
+
 phase('PR')
 const pr = await agent(
   `Publie une PR "ready for review" pour le lot ${lot} de ${featureDir}. Détecte la plateforme (gh/glab), ` +
   `pousse la branche \`${(record && record.branch) || branchInfo.branch}\` (${gitPrefix} push -u origin <branch>, jamais --force), et crée la PR vers ` +
   (base ? `la base \`${base}\`` : `la branche de base par défaut du repo`) +
-  ` avec un titre et une description structurée de l'implémentation. ` +
+  (described
+    ? ` en PUBLIANT TEL QUEL le titre et le corps fournis ci-dessous (\`title\`/\`body\`) : tu es le publieur, pas l'auteur — ` +
+      `ne réécris ni ne résume ce corps, la seule addition permise est le bloc « PR EMPILÉE » en tête s'il y a lieu. ` +
+      `Écris-le dans un fichier via un heredoc QUOTÉ (\`cat <<'PRBODY' > …\`) et passe-le en --body-file/--description. `
+    : ` avec un titre et le corps de REPLI minimal de ton §4 (aucune description ne t'a été fournie — signale-le dans note). `) +
   `AVANT de pousser, applique le garde-fou anti-chevauchement : si ta tête descend d'une PR déjà ` +
   `ouverte visant la même base, n'ouvre pas de PR (created:false, note explicite) — n'empile jamais un doublon. ` +
   `ANTI-ORPHELINAGE : si la base (\`${base || branchInfo.base}\`) ≠ la branche par défaut du repo, cette PR est EMPILÉE — ` +
@@ -585,24 +700,30 @@ const pr = await agent(
       `Si la PR N'est PAS créée (push/CLI absent, garde-fou), CONSERVE le worktree (worktreeRemoved:false) pour inspection humaine.`
     : ``) +
   `\nRésumé:\n${JSON.stringify({
+    // À publier tel quel (absents si le describer a été sauté → corps de repli).
+    title: described ? described.title : undefined,
+    body: described ? described.body : undefined,
+    // Mécanique de publication.
     lot,
     featureDir,
-    verifMode: mode,
-    verifJustification: brief.verifJustification || undefined,
     branch: (record && record.branch) || branchInfo.branch,
     base: base || branchInfo.base,
     worktreeDir: wtDir || undefined,
-    shalls: brief.shalls,
-    files: finalGreen.diffFiles,
-    tests: tests.files,
-    mapping: tests.mapping,
+    // Matériau du corps de REPLI uniquement (ignoré si `body` est fourni).
+    verifMode: mode,
+    verifJustification: brief.verifJustification || undefined,
+    capability: (brief.context && brief.context.capability) || undefined,
+    shalls: described ? undefined : brief.shalls,
+    files: described ? undefined : finalGreen.diffFiles,
+    tests: described ? undefined : tests.files,
+    mapping: described ? undefined : tests.mapping,
     // Preuve : sortie 0 failed (modes-test) OU preuve observable du verifier (check/inhérent).
-    proof: usesTests ? finalGreen.output : (verify && verify.observableProof),
-    verifyMethod: verify ? verify.method : undefined,
-    humanCheckRequired: verify ? (verify.humanCheckRequired || []) : [],
-    applied: triaged.apply,
-    skipped: triaged.skipped,
-    commits: record ? record.commits : [],
+    proof: described ? undefined : (usesTests ? finalGreen.output : (verify && verify.observableProof)),
+    testCommand: described ? undefined : brief.testCommand,
+    verifyMethod: described ? undefined : (verify ? verify.method : undefined),
+    humanCheckRequired: described ? undefined : (verify ? (verify.humanCheckRequired || []) : []),
+    appliedCount: triaged.apply.length,
+    skippedCount: triaged.skipped.length,
   })}`,
   { agentType: 'scd-implement:pr-author', schema: PR_RESULT, model: 'sonnet' },
 )
@@ -621,6 +742,8 @@ return {
   filesChanged: finalGreen.diffFiles,
   applied: triaged.apply.length,
   skipped: triaged.skipped.length,
+  diffStats: described ? described.diffStats : null,
+  oversized: described ? !!described.oversized : false,
   humanCheckRequired: verify ? (verify.humanCheckRequired || []) : [],
   checked: record ? record.checked : [],
   committed: record ? record.committed : false,

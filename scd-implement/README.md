@@ -11,7 +11,7 @@ Branche dédiée (base à jour) → Rebase (préventif) → Prepare (mode) →
      test-after → Vert (impl) → Tests (au vert) → Valider
      check      → Vert (impl) → Verify (vérif observable, contexte frais)
      inhérent   → Vert (impl) → Verify (critère d'acceptation = la preuve)
-   → Review → Triage sceptique → Apply → Record → PR
+   → Review → Triage sceptique → Apply → Record → Describe → PR
 ```
 
 L'humain a décidé du *quoi* en amont (le contrat, mode compris). Ici, le workflow exécute le *comment* et **prouve la vérification** — 0 failed ou preuve observable — sans intervention humaine en cours de run.
@@ -44,9 +44,10 @@ Un lancement = un lot `Rn`. Le préambule et le final sont **invariants** ; le *
 | Triage | `review-validator` | triage **sceptique adversarial** (apply/skip) | opus | tous |
 | Apply | `fix-applier` | applique les findings retenus, **re-vérifie selon le mode** | sonnet | tous |
 | Record | `progress-recorder` | coche `tasks.md`, commit sur la branche dédiée | haiku | tous |
-| PR | `pr-author` | pousse la branche, ouvre la PR/MR (**ready**, ou **draft** + labels `stacked`/`needs-sync` si empilée) avec description adaptée au mode | sonnet | tous |
+| Describe | `pr-describer` | rédige la description de review — fonctionnel **et** code, diff mesuré — lecture seule | opus | tous (sautable) |
+| PR | `pr-author` | pousse la branche, ouvre la PR/MR (**ready**, ou **draft** + labels `stacked`/`needs-sync` si empilée) en **publiant** cette description | sonnet | tous |
 
-Plus deux briques curatives hors du cycle nominal : `rebaser` (rebase déterministe `--onto`, réutilisé par `/scd-implement:sync`) et **`relander`** (rattrapage d'un lot orphelin par cherry-pick, `/scd-implement:reland`) — **treize agents** au total.
+Plus deux briques curatives hors du cycle nominal : `rebaser` (rebase déterministe `--onto`, réutilisé par `/scd-implement:sync`) et **`relander`** (rattrapage d'un lot orphelin par cherry-pick, `/scd-implement:reland`) — **quatorze agents** au total.
 
 ## Les invariants
 
@@ -84,9 +85,44 @@ Le run se conclut par une **PR ready-for-review, une par lot** — le prolongeme
 - **Base** : résolue par `/scd-implement:run` et appliquée **à la branche dédiée et à la PR**. Défaut = branche par défaut du repo ; surchargeable via `--base <branche>` ; **auto-stacking** : un lot qui `dépend de : Rk` non encore mergé s'empile automatiquement sur `impl/<slug>-Rk` (base = cette branche pour le fork **et** la PR). Garde-fous déterministes : `pr-author` refuse une PR qui chevaucherait une PR ouverte de même base, et le workflow bloque si les commits dérivent hors de la branche du lot.
 - **Rebase déterministe** : le rebase est une brique nommée (`rebaser`) — transplant exact des commits du lot via `git rebase --onto` (robuste au merge/squash de la dépendance), idempotent, jamais de résolution de conflit automatique, jamais de `--force` sec (`--force-with-lease` uniquement). **Préventif** dans le workflow (repose la branche avant d'écrire) ; **curatif** via `/scd-implement:sync` quand une dépendance est mergée (re-rebase la PR dépendante et retargete sa base). `/scd-implement:status` signale la dérive.
 - **Plateforme** : auto-détection `gh` (GitHub) / `glab` (GitLab).
-- **Description** (adaptée au mode) : FR/SHALL livrés → tests (TDD/test-after) ou preuve observable (check/inhérent), fichiers d'impl, findings appliqués/rejetés, preuve (`0 failed` ou `observableProof`), **checklist des points à vérifier par un humain** si le lot en a, traçabilité vers `specs/NNN-feature/`.
+- **Description** : un **artefact de review**, pas un résumé de commit — voir ci-dessous.
 
 > Créer une PR est une **action sortante** depuis un run en arrière-plan. Pour éviter un prompt en cours de run, pré-allowlister `Bash(git push *)`, `Bash(gh pr *)`, `Bash(glab mr *)`. En `-p`/SDK sans CLI/auth, `pr-author` échoue proprement (`created: false`) et laisse la branche poussée.
+
+## La description de PR est un artefact de review
+
+Le workflow ne s'arrête pas au code vert : il s'arrête quand **un humain peut reviewer**. Une description qui se résume à « lot R2, 5 tests, 3 fichiers » sous-traite au reviewer tout le travail de reconstitution — rouvrir la spec, deviner la valeur, relire le diff sans savoir par où commencer.
+
+D'où la séparation : **`pr-describer` (opus, lecture seule) rédige, `pr-author` publie**. Le corps est composé **en couches** — un TL;DR lisible en 30 secondes, les blocs volumineux repliés dans des `<details>` — et couvre les deux axes :
+
+**Fonctionnel** — la capability en une phrase, la valeur côté utilisateur et le backref PRD, la table `FR → SHALL EARS → vérification`, et le **hors-périmètre** (scope EXCLU de `spec.md` + ce que livreront les lots suivants), pour que le reviewer ne réclame pas ce qui a été délibérément exclu.
+
+**Code** — les **stats de diff mesurées** (`git diff --numstat`, jamais estimées), un ordre de lecture motivé, 2-3 points à scruter dérivés des SHALL `error|boundary`, la commande pour rejouer la vérif en local, et la **transparence du triage** : les findings appliqués **et** ceux rejetés, avec leur motif — une review automatique dont on ne voit pas les angles morts vaut moins qu'aucune review.
+
+Deux garde-fous portés par la description : la checklist `humanCheckRequired` (ce que le workflow n'a **pas** pu prouver — jamais cochée par un agent) et le signal **`oversized`** quand le diff dépasse ~400 lignes ou 2× le budget estimé du lot, qui rend visible un dépassement du seuil de reviewability du contrat amont.
+
+Non bloquant : si `pr-describer` est sauté faute de budget, `pr-author` compose un corps de repli minimal et la PR s'ouvre quand même.
+
+<details>
+<summary>Squelette du corps produit</summary>
+
+```markdown
+## R2 — Réinitialisation de mot de passe
+> Permet à un utilisateur bloqué de reprendre la main sans passer par le support.
+
+`specs/003-auth` · lot 2/5 · dépend de R1 · vérif `TDD` · 3 FR · 5 tests verts · 4 fichiers (+182/-14)
+
+### Ce que ça fait          ### Hors périmètre de cette PR
+### Exigences livrées       (table FR | Critère EARS | Vérification)
+### Comment vérifier        (checkout + commande → 0 failed)
+### À vérifier par le reviewer (non constatable automatiquement)
+### Guide de review         (ordre de lecture, points à scruter, conventions)
+### Modifications           (table Fichier | Rôle | Δ, total vs budget estimé)
+
+<details>Commits</details>  <details>Preuve d'exécution</details>
+<details>Findings appliqués</details>  <details>Findings rejetés au triage</details>
+```
+</details>
 
 ## Anti-orphelinage des PR empilées
 
