@@ -1,0 +1,101 @@
+---
+description: "Phase 4 du socle : fige les décisions structurantes en ADR dans docs/adr/NNNN-*.md, une par candidat listé dans la Stack. Format Nygard, statut Accepté, immuables. Boucle la traçabilité bidirectionnelle avec docs/stack.md."
+argument-hint: "(aucun — lit docs/stack.md)"
+allowed-tools:
+  - Read
+  - Glob
+  - Write
+  - Edit
+  - AskUserQuestion
+---
+
+## Contexte
+
+Tu figes les **décisions structurantes du départ** en ADR, à partir de la liste
+« Décisions structurantes → candidats ADR » de la Stack. Un ADR = une décision, au format
+Nygard, **immuable**.
+
+Ce qu'un ADR achète : il empêche la décision de rester « dans la tête ». Six mois plus
+tard, personne — humain ou agent — ne peut rouvrir un choix sans savoir ce qu'il coûtait
+d'en changer. C'est pour ça que la **conséquence négative** est obligatoire : un ADR qui
+ne nomme que des avantages ne documente pas une décision, il la vend.
+
+C'est un travail de rédaction cadré : tu drafts, l'humain valide avant de figer.
+
+Ratio : 30% humain / 70% AI (dérivation depuis la Stack ; l'humain valide le contenu).
+
+## Règles absolues
+
+- **Un ADR par décision structurante**, ni plus ni moins. Aucun ADR pour une
+  non-décision (utilitaire mineur, convention évidente) : le bruit dilue le signal.
+- **Numérotation `NNNN` sur 4 chiffres**, séquentielle, au **plus petit numéro libre**
+  dans `docs/adr/`. Un numéro n'est **jamais réutilisé**, même si un ADR est abandonné.
+- **Conséquence négative obligatoire** dans chaque ADR : ce que le choix coûte ou ferme.
+- **Immutabilité.** Ici on **crée** (statut « Accepté »). On ne réédite jamais un ADR
+  existant — s'il devient faux, un futur ADR le remplacera.
+- **Traçabilité bidirectionnelle.** L'ADR trace vers `docs/stack.md`, et `docs/stack.md`
+  doit référencer l'ADR en retour. Un sens sans l'autre laisse la boucle ouverte.
+
+## Processus
+
+1. **Lis `docs/stack.md`** — prérequis strict. S'il manque, **arrête-toi** et renvoie
+   vers `/scd-sdd:stack` : les candidats ADR viennent de là. Récupère la liste
+   « Décisions structurantes → candidats ADR ».
+
+2. **Charge le template et ses règles** : lis `references/adr.md` du skill
+   `project-docs`.
+
+3. **Détermine la numérotation** : liste `docs/adr/*.md` et prends le **plus petit
+   numéro libre**. Sur un projet vierge, `0001`. Sur un projet déjà pourvu d'ADR, tu
+   continues la série — tu ne repars jamais de `0001`.
+
+4. **Pour chaque décision structurante**, écris `docs/adr/NNNN-titre-en-kebab-case.md` :
+   - **Contexte** — forces en présence, contraintes, et les `FR`/`SC` que la décision
+     sert (cités nommément) ;
+   - **Décision** — en **voix active** : « Nous utiliserons X », pas « X pourrait être
+     utilisé » ;
+   - **Conséquences** — positives **et** négatives ; ce à quoi le code s'engage désormais ;
+   - **Alternatives considérées** — au moins une, écartée, avec sa raison.
+
+   **Fais valider le contenu par l'utilisateur** avant de figer le statut « Accepté ».
+
+5. **Boucle la traçabilité** — l'étape que rien d'autre ne rattrape : renseigne la
+   colonne « ADR » du tableau « Choix retenus » de `docs/stack.md` avec chaque fichier
+   créé. C'est la **seule** édition d'un artefact antérieur de tout le socle ; elle se
+   fait par `Edit` ciblé sur les cellules concernées, sans rien réécrire d'autre.
+
+6. **Relis contre le bloc `<completion>`** de `references/adr.md` — en particulier :
+   chaque candidat de la Stack a **exactement un** ADR, et chaque ADR a au moins une
+   conséquence négative.
+
+7. **Consigne au journal** (voir ci-dessous).
+
+## Ce que tu NE fais PAS
+
+- Tu ne réédites aucun ADR existant, et tu ne changes le statut d'aucun.
+- Tu n'installes pas de hook d'immutabilité ADR : c'est de la maintenance, hors du socle
+  de création — signale-le comme étape aval.
+- Tu ne crées pas d'ADR pour une décision absente de la liste des candidats sans faire
+  valider l'ajout par l'utilisateur.
+- Tu ne modifies rien d'autre dans `docs/stack.md` que la colonne « ADR ».
+
+## Consigne au journal
+
+Charge le skill `journal` et ajoute **une ligne** dans la section `## Socle` de
+`docs/JOURNAL.md`, par `Edit` ciblé (crée le fichier ou la section s'ils manquent) :
+
+- **Phase** : `adr`
+- **Résultat** : la plage de numéros écrits · la confirmation du rétro-liage.
+  Exemple : `0001..0004 · stack.md rétro-lié`.
+
+## Skill active
+
+- `project-docs` — charge `references/adr.md`.
+- `journal` — contrat de `docs/JOURNAL.md`.
+
+## À la fin
+
+Liste les ADR créés et confirme, candidat par candidat, que chacun a bien le sien — puis
+que la colonne « ADR » de `docs/stack.md` est complète.
+
+Puis : « `/clear`, puis `/scd-sdd:contract` pour assembler CLAUDE.md. »

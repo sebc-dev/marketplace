@@ -1,0 +1,48 @@
+{
+  "name": "scd-sdd",
+  "version": "1.1.0",
+  "description": "Cycle spec-driven complet, du projet vide à la PR. Trois niveaux enchaînés : le SOCLE une fois au démarrage (brief → prd → stack → ADR → CLAUDE.md), les SPECS par feature (specify → clarify → plan → tasks → analyze, critères EARS, lots de review Rn dimensionnés pour être reviewables), puis l'IMPLÉMENTATION lot par lot (dynamic workflow orchestrant des subagents dédiés : branche, vérification selon le mode déclaré — TDD, test-after, check ou inhérent —, review en contexte frais, triage adversarial, PR ready-for-review). Chaque phase dérive son état des fichiers, jamais d'un fichier d'état : /clear efface le contexte, pas la progression. Chaque phase jouée laisse une ligne datée dans docs/JOURNAL.md, au niveau projet comme au niveau feature — dont les trois faits que rien ne permet de dériver : verdict de la gate analyze, remédiations d'un premortem, issue d'un lot y compris bloqué. /scd-sdd:status rend les trois niveaux en une vue avec la prochaine commande à jouer. Remplace scd-project-docs, scd-feature-specs et scd-implement : un projet démarré avec eux se reprend en une commande, /scd-sdd:migrate, qui diagnostique l'installation et le projet puis reconstitue docs/JOURNAL.md depuis l'historique git.",
+  "author": {
+    "name": "sebc.dev"
+  },
+  "license": "MIT",
+  "keywords": [
+    "spec-driven",
+    "sdd",
+    "kickoff",
+    "prd",
+    "adr",
+    "ears",
+    "vertical-slice",
+    "tdd",
+    "code-review",
+    "dynamic-workflow",
+    "subagents",
+    "journal",
+    "workflow"
+  ],
+  "commands": "./.claude/commands/",
+  "agents": [
+    "./.claude/agents/ears-verifier.md",
+    "./.claude/agents/slice-auditor.md",
+    "./.claude/agents/premortem-facilitator.md",
+    "./.claude/agents/premortem-validator.md",
+    "./.claude/agents/premortem-applier.md",
+    "./.claude/agents/branch-setup.md",
+    "./.claude/agents/rebaser.md",
+    "./.claude/agents/lot-briefer.md",
+    "./.claude/agents/test-writer.md",
+    "./.claude/agents/test-validator.md",
+    "./.claude/agents/implementer.md",
+    "./.claude/agents/verifier.md",
+    "./.claude/agents/code-reviewer.md",
+    "./.claude/agents/review-validator.md",
+    "./.claude/agents/fix-applier.md",
+    "./.claude/agents/progress-recorder.md",
+    "./.claude/agents/pr-describer.md",
+    "./.claude/agents/pr-author.md",
+    "./.claude/agents/relander.md"
+  ],
+  "skills": "./.claude/skills/",
+  "repository": "https://github.com/sebc-dev/marketplace"
+}

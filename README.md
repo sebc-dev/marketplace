@@ -28,6 +28,25 @@ Architectural design patterns for Claude Code plugins. Component selection (skil
 
 Interactive guided code review on the current branch. Reviews file by file in optimal order with dedicated background agents (code-reviewer + test-reviewer) for each file, JSON-based progress tracking, and blocking/suggestion classification. 5 slash commands (`/scd-review:review-init`, `/scd-review:code-review`, `/scd-review:review-followup`, `/scd-review:review-continue`, `/scd-review:review-post`). GitHub/GitLab PR posting integration.
 
+### [scd-sdd](./scd-sdd/) `v1.0.0`
+
+Complete spec-driven development cycle, from empty repo to reviewable PR — one plugin, three
+chained levels. **Foundation** (once per project): brief → PRD → stack → foundational ADRs →
+CLAUDE.md, by one-question-at-a-time interview. **Specs** (once per feature): specify → clarify →
+plan → tasks → analyze conformance gate (14 checks) plus an optional adversarial premortem, with
+EARS acceptance criteria, Kiro backrefs, and review lots (`Rn`) sized so a human can actually
+review each one. **Implementation** (one lot at a time): a dynamic workflow orchestrating 19
+dedicated subagents — dedicated branch, verification per the lot's declared mode (TDD by default,
+else test-after / check / inherent), fresh-context code review, adversarial finding triage, PR
+description as a review artifact, one ready-for-review PR per lot — with stacked-PR
+anti-orphaning and real parallelism via git worktrees. State is always derived from files, never
+from a state file: `/clear` wipes the context, not the progress. Every phase played appends a
+dated line to `docs/JOURNAL.md`, which is the only place three facts live: the analyze verdict,
+applied premortem remediations, and a lot's outcome (including a blocked run). 20 slash commands,
+including three dashboards — `/scd-sdd:status` (all three levels in one view, plus the next
+command to run), `/scd-sdd:status-specs`, `/scd-sdd:status-impl` (merge-safety of every lot PR).
+Replaces `scd-project-docs`, `scd-feature-specs` and `scd-implement`.
+
 ## Installation
 
 ```bash
@@ -41,6 +60,7 @@ Interactive guided code review on the current branch. Reviews file by file in op
 /plugin install scd-tauri@sebc-dev-marketplace
 /plugin install scd-forge@sebc-dev-marketplace
 /plugin install scd-review@sebc-dev-marketplace
+/plugin install scd-sdd@sebc-dev-marketplace
 ```
 
 ## License
