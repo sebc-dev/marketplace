@@ -1,9 +1,13 @@
 ---
 name: flutter-ui-interaction
 description: |
-  Flutter interaction and presentation — animation, gestures, keyboard, text input,
-  theming, accessibility, i18n.
-disable-model-invocation: true
+  Flutter interaction and presentation — the API surface for interaction and for the final
+  look of an already-rendered widget: animating, responding to a gesture or the keyboard,
+  taking text input, theming, making a UI accessible, translating it.
+  Use when building or reviewing an animation, a theme, a form or text field, a Semantics
+  annotation or a translation; when a gesture is swallowed by a parent, a shortcut never
+  fires or focus lands on the wrong widget; when a layout breaks under a large text scale or
+  in RTL; or when a Hero transition or drag target silently does nothing.
 ---
 
 # Flutter interaction and presentation

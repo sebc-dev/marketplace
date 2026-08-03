@@ -1,9 +1,13 @@
 ---
 name: flutter-data
 description: |
-  Flutter data layer — API calls, serialisation, local persistence, tokens and
-  sessions. Fills the Repository.
-disable-model-invocation: true
+  Flutter data layer — talking to an API, serialising a model, persisting locally, holding a
+  session. This skill fills the Repository; it does not decide that one exists.
+  Use when writing or reviewing a Repository, Service, API client, DTO or mapper; when
+  a request needs a timeout, a retry or cancellation; when a transport error must map onto a
+  Result; when tokens expire or a refresh races; when choosing or wiring a local database or
+  key-value store; when data must survive offline; or when JSON serialisation or build_runner
+  misbehaves.
 ---
 
 # Flutter data layer

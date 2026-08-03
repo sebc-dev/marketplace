@@ -1,9 +1,13 @@
 ---
 name: flutter-build-release
 description: |
-  Flutter build, dependencies and delivery — from the source tree to a signed
-  Android or iOS artefact in a store.
-disable-model-invocation: true
+  Flutter build, dependencies, release and delivery — everything between the source tree and a
+  signed Android or iOS artefact in a store. It produces the artefact and the pipeline that
+  emits it; reading what that costs is elsewhere.
+  Use when wiring a flavor or a --dart-define into the build, editing pubspec.yaml or resolving
+  a version conflict, setting up an Android keystore or an iOS provisioning profile, bumping a
+  release version, splitting a repo into Pub workspaces, publishing to pub.dev, writing a
+  release pipeline, upgrading Flutter or AGP, or shrinking a binary.
 ---
 
 # Flutter build, release and delivery

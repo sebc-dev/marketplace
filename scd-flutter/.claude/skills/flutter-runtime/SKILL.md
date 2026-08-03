@@ -1,9 +1,13 @@
 ---
 name: flutter-runtime
 description: |
-  Flutter runtime behaviour and widget lifecycle — what the framework rebuilds,
-  reconciles and replays, and what that costs.
-disable-model-invocation: true
+  Flutter runtime behaviour, widget lifecycle and cost — what the framework rebuilds,
+  reconciles, lays out and replays, and what that costs.
+  Use when an app janks, drops frames or leaks memory; when an animation rebuilds more than it
+  repaints; when widget state sticks to the wrong row after a reorder; when a layout throws on
+  intrinsics; when asking what hot reload replays; when reading a figure a tool produced — a
+  DevTools trace, an app-size view, a timing; when wiring a global error handler or keeping PII
+  out of a crash report; or when moving work off the UI thread with an isolate.
 ---
 
 # Flutter runtime, lifecycle and diagnosis
