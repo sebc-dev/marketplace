@@ -1,14 +1,9 @@
 ---
 name: flutter-architecture
 description: |
-  Flutter app architecture per the official app-architecture guide — where code belongs, and
-  which boundaries it may not cross.
-  Use when scaffolding a project or deciding where a new file or entry-point variant goes; when
-  choosing a state mechanism by scope (setState / ViewModel / Repository / Riverpod / BLoC);
-  when wiring dependency injection or the Result and Command patterns; when reviewing for layer
-  violations; when a BuildContext is used after an await; when asking whether something works
-  on web and desktop and how far to adapt per platform; or when packaging, signing or
-  notarising a desktop app.
+  Flutter app architecture — where code belongs, which layer boundaries it may not
+  cross, and desktop packaging.
+disable-model-invocation: true
 ---
 
 # Flutter app architecture

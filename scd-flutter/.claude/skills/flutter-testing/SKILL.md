@@ -1,12 +1,9 @@
 ---
 name: flutter-testing
 description: |
-  Flutter test strategy and test authoring — proving an app behaves, pass or fail, and
-  keeping the proof reliable.
-  Use when writing, fixing or reviewing a Flutter test; when a test is flaky, times out or
-  fails only in CI; when deciding what to test at which layer; when a widget test throws
-  MissingPluginException or a network call in a test returns 400; or when setting up goldens,
-  the accessibility harness or coverage.
+  Flutter test strategy and test authoring — proving an app behaves, and keeping
+  the proof reliable.
+disable-model-invocation: true
 ---
 
 # Flutter testing

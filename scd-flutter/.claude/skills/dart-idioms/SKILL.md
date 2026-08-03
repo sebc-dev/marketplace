@@ -1,13 +1,9 @@
 ---
 name: dart-idioms
 description: |
-  Dart 3.x language and standard library — the language layer, and the only skill here
-  that applies in any Dart project, Flutter or not (CLI, server, package).
-  Use when writing or reviewing .dart code; when null safety or type promotion fails;
-  when choosing between a record and a class; when a sealed switch stops being
-  exhaustive or an extension type does not enforce its invariant; when an async error is
-  swallowed or a future goes unawaited; when using the test package's matchers and async
-  semantics; or when configuring analysis_options.yaml and picking a lint ruleset.
+  Dart 3.x language and standard library — the language layer, valid in any Dart
+  project, Flutter or not.
+disable-model-invocation: true
 ---
 
 # Dart 3.x idioms

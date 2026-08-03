@@ -1,16 +1,36 @@
 # scd-flutter
 
-Dart 3.x and Flutter 3.44+ skills for Claude Code. Seven skills with **disjoint trigger
-scopes**, so a pure Dart project never loads Flutter guidance, an architecture question never
-loads the profiler, and a signing question never loads the animation API.
+Dart 3.x and Flutter 3.44+ skills for Claude Code. Seven skills with **disjoint scopes**, so a
+pure Dart project never loads Flutter guidance, an architecture question never loads the
+profiler, and a signing question never loads the animation API — plus `flutter-index`, the map
+that tells you which one to reach for.
 
-## The seven skills
+## Every skill is user-invoked
 
-| Skill | Fires when | Leading question it answers |
+None of these skills fires on its own. They are all `disable-model-invocation: true`, so the
+agent cannot reach them and **you invoke them by name**:
+
+```
+/scd-flutter:flutter-runtime
+```
+
+That is a deliberate trade. A model-invoked skill keeps its description in the context window
+on **every turn of every session**, whether or not you are writing Flutter; these seven cost
+nothing until you ask for them. What you pay instead is having to remember they exist — which
+is what `flutter-index` is for. Start there when you are not sure:
+
+```
+/scd-flutter:flutter-index
+```
+
+## The eight skills
+
+| Skill | Reach for it when | Leading question it answers |
 |---|---|---|
+| **`flutter-index`** | You are not sure which of the others owns your question | "Which skill should I invoke?" |
 | **`dart-idioms`** | Any `.dart` file, `analysis_options.yaml` — including pure Dart CLI, server or package projects with no Flutter | "Is this idiomatic, sound Dart?" |
-| **`flutter-architecture`** | Scaffolding, placing a file, choosing a state mechanism, wiring DI, reviewing layers, targeting web/desktop | "Where does this belong, and what talks to what?" |
-| **`flutter-runtime`** | Jank, dropped frames, memory growth, state lost after a reorder, an intrinsic-dimensions throw, hot reload, error handlers, profiling | "What does the framework rebuild, reconcile, lay out and replay — and what does it cost?" |
+| **`flutter-architecture`** | Scaffolding, placing a file, choosing a state mechanism, wiring DI, reviewing layers, targeting web/desktop, packaging a desktop app | "Where does this belong, and what talks to what?" |
+| **`flutter-runtime`** | Jank, dropped frames, memory growth, state lost after a reorder, an intrinsics throw, hot reload, error handlers, profiling | "What does the framework rebuild, reconcile, lay out and replay — and what does it cost?" |
 | **`flutter-testing`** | Writing or fixing a test, a flaky or timing-out test, goldens, coverage, accessibility checks | "How do I prove it works, and keep the proof reliable?" |
 | **`flutter-data`** | Calling an API, mapping a DTO, timeouts and retries, expiring tokens, local databases, offline | "How do I fill the Repository?" |
 | **`flutter-ui-interaction`** | Animating, handling a gesture, wiring a shortcut, a form, a theme, `Semantics`, a translation | "How does the user interact with this, and how does it look and read?" |
@@ -18,7 +38,8 @@ loads the profiler, and a signing question never loads the animation API.
 
 `dart-idioms` applies inside Flutter projects too — it covers the language, not the framework.
 
-Three seams worth knowing, because they are the ones that would otherwise drift:
+Three seams worth knowing, because they are the ones that would otherwise drift — `flutter-index`
+carries the full set, measured against real questions rather than guessed:
 
 - **`flutter-runtime` measures cost, `flutter-testing` proves behaviour.** A performance test
   that produces a timing (`watchPerformance`, `traceAction`) is a measurement and stays with the
@@ -135,6 +156,13 @@ rather than restated as settled.
 
 ```bash
 /plugin install scd-flutter@sebc-dev-marketplace
+```
+
+Then invoke a skill by name — nothing fires automatically:
+
+```bash
+/scd-flutter:flutter-index          # which skill owns my question?
+/scd-flutter:flutter-runtime        # or go straight to one
 ```
 
 ## License
