@@ -66,6 +66,16 @@
       "category": "development"
     },
     {
+      "name": "scd-flutter",
+      "version": "0.3.0",
+      "source": "./scd-flutter",
+      "description": "Dart 3.x et Flutter 3.44+, en sept skills aux portees de declenchement disjointes : une question posee par un developpeur ne doit en charger qu'un seul. dart-idioms tient le langage et la bibliotheque standard, et se declenche dans TOUT projet Dart, y compris CLI, serveur ou package sans Flutter. flutter-architecture tient le guide officiel : ou va un fichier, quelles frontieres de couche il ne franchit pas, quel mecanisme d'etat selon la portee, quelles cibles de plateforme, et le packaging desktop : MSIX, notarisation macOS, Snap. flutter-runtime tient ce que le framework reconstruit, reconcilie, met en page et rejoue, et ce que ca coute : jank, fuites memoire, Key et reconciliation, passes intrinseques, hot reload, isolates, erreurs non capturees. flutter-testing tient la preuve : quoi tester a quelle couche, tests instables, goldens, controle du temps, harnais d'accessibilite. flutter-data remplit le Repository : HTTP, retry et annulation, tokens et sessions, serialisation, bases locales, offline-first. flutter-ui-interaction tient l'interaction et la presentation finale : animations, gestes, focus et clavier, saisie de texte et formulaires, theme Material 3, accessibilite, i18n. flutter-build-release va de l'arbre source a l'artefact Android ou iOS signe : flavors, signature mobile, versionnage, contraintes pubspec et monorepos, publication pub.dev, CI/CD, taille du binaire. Chaque affirmation porte son niveau de preuve et sa confiance ; les zones sans source autoritative sont marquees plutot que comblees par inference.",
+      "author": {
+        "name": "sebc.dev"
+      },
+      "category": "development"
+    },
+    {
       "name": "scd-qmd",
       "version": "0.1.1",
       "source": "./scd-qmd",
@@ -97,6 +107,6 @@
     }
   ],
   "metadata": {
-    "version": "0.11.0"
+    "version": "0.12.0"
   }
 }
