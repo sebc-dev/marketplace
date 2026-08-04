@@ -53,12 +53,69 @@ notifications, platform views. That needs `patrol` `[OFFICIAL]`.
    with a fake returning **400**, to keep tests off the network. A test that genuinely needs a
    network call must supply its own client.
 
+## Driving an interaction
+
+Rule 2 says *what* to pump. This is how to make something happen first, and how to assert
+part-way through rather than only at rest.
+
+**Landing mid-animation.** Widget tests run inside a `FakeAsync` zone, so `pump(Duration)`
+steps the clock instead of waiting `[OFFICIAL, High]`. That is the whole mechanism — there is
+no separate animation-driving API:
+
+```dart
+await tester.tap(find.byType(FloatingActionButton));
+await tester.pump();                                  // schedules and starts the animation
+await tester.pump(const Duration(milliseconds: 150)); // lands on the instant asserted
+expect(/* the half-way state */);
+await tester.pumpAndSettle();                         // drain — only if it terminates
+```
+
+An animation that never ends makes `pumpAndSettle` throw (rule 2) **and** can make
+`pump(Duration)` fail on pending timers — flutter/flutter #180772, Flutter 3.38.5, ouvert
+2026-01-09, clos *solved* `[MAINTAINER]` `[VERIFY per version]`. Pump a fixed number of frames
+on those screens.
+
+**Choosing the gesture** — all on `WidgetTester` `[OFFICIAL]`:
+
+| Need | Method |
+|---|---|
+| Move a widget by an offset | `drag(finder, offset)` |
+| Start where no widget centre is | `dragFrom(start, offset)` |
+| A controlled velocity profile | `timedDrag(finder, offset, duration)` |
+| Throw with inertia | `fling(finder, offset, speed)` |
+| Scroll until a finder matches | `dragUntilVisible(finder, view, moveStep)` |
+| Several steps, or arena arbitration | `startGesture(loc)`, then `moveBy` / `up` on the `TestGesture` |
+| Trackpad rather than touch | `trackpadFling` — sends `PointerPanZoom`, not a touch sequence |
+
+**The touch-slop trap.** A drag longer than `kDragSlopDefault` (**20 px**) only registers if it
+is subdivided into smaller moves. `drag` and `dragFrom` subdivide for you; **`fling` does not**,
+which is why its `initialOffset` — meant to simulate a drag *then* a fling — does nothing:
+flutter/flutter #139455, ouvert, P3, found in 3.16/3.18, dernière activité 2023-12-04
+`[MAINTAINER]` `[VERIFY per version]`. Compose it by hand with `startGesture` when you need
+drag-then-fling.
+
+**Keyboard** `[OFFICIAL]`. `sendKeyEvent` sends down **and** up; `sendKeyDownEvent` /
+`sendKeyUpEvent` hold a modifier across other keys; `sendKeyRepeatEvent` simulates auto-repeat.
+The global `simulateKeyDownEvent` / `simulateKeyUpEvent` work without a tester. **A shortcut
+fires only if something is focused** — `Shortcuts` resolves through the enclosing `Focus`
+context, so a test must place focus before sending the key or the `Intent` never reaches its
+`Action`.
+
+> **[OFFICIAL, Medium] — there is no strategy guidance for testing an interaction.**
+> The API is fully documented on api.flutter.dev, but the official cookbook *Tap, drag, and
+> enter text* demonstrates only `tap`, `drag` and `enterText` — nothing on `fling`,
+> `dragUntilVisible`, arena arbitration or the keyboard. How much of a gesture is worth
+> asserting is left to the reader.
+> *What would lift this:* a cookbook recipe covering gestures beyond `drag`.
+
 ## Symptom index
 
 | Symptom | Likely cause |
 |---|---|
 | `MissingPluginException` | Host code absent in unit/widget tests — mock the channel |
 | "pumpAndSettle timed out" | Infinite animation, or `pumpAndSettle` used as a wait-for-ready |
+| A drag in a test does nothing | Shorter than the 20 px slop, or `fling`'s `initialOffset` (#139455) |
+| A shortcut never fires in a test | Nothing focused — `Shortcuts` resolves through `Focus` |
 | Network call returns 400 | The binding's `HttpClient` override |
 | Passes locally, fails in CI | Real time, execution order, or a font-dependent golden |
 | Golden differs by a few pixels | Fonts — goldens need the test font loaded, and differ across platforms |
@@ -100,6 +157,7 @@ When a question sits near a seam, decide which side it falls on before answering
 | Profiling, DevTools traces, the frame budget, leak diagnosis, `leak_tracker` | `flutter-runtime` | **This skill proves behaviour; that one measures cost.** A performance test that produces a timing (`watchPerformance`, `traceAction`) is a measurement and lives there |
 | Where code belongs, the layer contract, what makes code testable in the first place | `flutter-architecture` | Testability is designed there and exercised here |
 | What to annotate for accessibility, and the `Semantics` API | `flutter-ui-interaction` | This skill owns the harness and the guideline values, so they cannot diverge across two skills |
+| How the gesture arena arbitrates, how focus traversal and `Shortcuts`/`Actions` resolve, which animation family to reach for | `flutter-ui-interaction` | **Simulating an interaction is here; the behaviour being simulated is there.** `tester.drag`, `fling`, `sendKeyEvent` and stepping an animation with `pump(Duration)` are test instruments and stay here |
 | Running the suite in CI, release gating | `flutter-build-release` | Authoring a test is here; wiring it into a pipeline is a delivery concern |
 | `test` package idioms, async and `Future` semantics in Dart | `dart-idioms` | Language layer, valid outside Flutter |
 

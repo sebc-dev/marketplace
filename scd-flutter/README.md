@@ -13,7 +13,7 @@ loads the profiler, and a signing question never loads the animation API.
 | **`flutter-runtime`** | Jank, dropped frames, memory growth, state lost after a reorder, an intrinsic-dimensions throw, hot reload, error handlers, profiling | "What does the framework rebuild, reconcile, lay out and replay — and what does it cost?" |
 | **`flutter-testing`** | Writing or fixing a test, a flaky or timing-out test, goldens, coverage, accessibility checks | "How do I prove it works, and keep the proof reliable?" |
 | **`flutter-data`** | Calling an API, mapping a DTO, timeouts and retries, expiring tokens, local databases, offline | "How do I fill the Repository?" |
-| **`flutter-ui-interaction`** | Animating, handling a gesture, wiring a shortcut, a form, a theme, `Semantics`, a translation | "How does the user interact with this, and how does it look and read?" |
+| **`flutter-ui-interaction`** | Animating, handling a gesture or a pointer, wiring a shortcut, a form, a theme, `Semantics`, a translation | "How does the user interact with this, and how does it look and read?" |
 | **`flutter-build-release`** | Flavors, `pubspec` conflicts, keystores, version bumps, monorepos, publishing, CI/CD, binary size | "How do I configure, depend, sign, version and ship it?" |
 
 `dart-idioms` applies inside Flutter projects too — it covers the language, not the framework.
@@ -84,7 +84,9 @@ Repository as source of truth, JSON serialisation generators, and `build_runner`
 ### `flutter-ui-interaction`
 
 Implicit vs explicit animations and the `TickerProvider` choice, the gesture arena and
-parent/child arbitration, focus and keyboard (`Shortcuts`/`Actions`/`Intent`), text input
+parent/child arbitration, focus and keyboard (`Shortcuts`/`Actions`/`Intent`), pointer input on
+desktop and web (hover with `MouseRegion`, cursors, the scroll wheel as a pointer signal,
+right-click menus and the browser menu that hides them), text input
 (`TextInputFormatter`, composing region, IME), `Form`/`FormField`/`autovalidateMode`,
 Material 3 as the default with `ColorScheme.fromSeed` and `ThemeExtension`, accessibility
 (`Semantics`, `TextScaler`, target sizes), internationalisation (`gen-l10n`, ARB, RTL),

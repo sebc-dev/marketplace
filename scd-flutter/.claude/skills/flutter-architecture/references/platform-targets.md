@@ -88,6 +88,11 @@ Interaction conventions diverge too: touch (tap, swipe, pull-to-refresh) vs mous
 forgets hover and right-click on desktop/web; a desktop-first UI wrongly assumes a precise
 pointer.
 
+Deciding *that* the difference is worth honouring is this skill's call, and the rest of this page
+serves it. **How** a pointer is then detected, cursored, hovered, wheeled and right-clicked is
+`flutter-ui-interaction`'s API surface — `MouseRegion` and the hover traps, `MouseCursor`,
+`PointerScrollEvent`, `onSecondaryTapDown` and the browser context menu that hides yours on web.
+
 ## Adapt or duplicate
 
 Once you have decided a difference is worth honouring, there is a third option between one

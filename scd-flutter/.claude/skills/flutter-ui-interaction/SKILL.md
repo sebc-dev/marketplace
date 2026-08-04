@@ -1,22 +1,22 @@
 ---
 name: flutter-ui-interaction
 description: |
-  Flutter interaction and presentation — the API surface for interaction and for the final
-  look of an already-rendered widget: animating, responding to a gesture or the keyboard,
-  taking text input, theming, making a UI accessible, translating it.
+  Flutter interaction and presentation — the API surface and the final look of a rendered widget:
+  animating, responding to a gesture, a key or a pointer, theming, annotating a UI for accessibility.
   Use when building or reviewing an animation, a theme, a form or text field, a Semantics
-  annotation or a translation; when a gesture is swallowed by a parent, a shortcut never
-  fires or focus lands on the wrong widget; when a layout breaks under a large text scale or
-  in RTL; or when a Hero transition or drag target silently does nothing.
+  annotation or a translation; when a gesture is swallowed by a parent, a shortcut never fires,
+  hover, a mouse cursor or a right-click does nothing or focus lands on the wrong widget; when a
+  layout breaks at a large text scale or in RTL; or when a Hero transition or drag target does
+  nothing.
 ---
 
 # Flutter interaction and presentation
 
 Reference: **Flutter 3.44.0** (docs updated 2026-05-05) · Dart SDK **3.12.x**.
 
-Scope in one sentence: **everything that touches user interaction and the final presentation
-of a widget that is already rendered.** Not what the framework does to render it, not where
-the code lives.
+Scope in one sentence: **everything that touches user interaction and the final presentation of
+a widget that is already rendered.** Not what the framework does to render it, not where the code
+lives.
 
 **Material 3 is the default.** `ThemeData.useMaterial3` has been `true` by default since
 Flutter 3.16 `[OFFICIAL, High]`. Any advice presenting Material 2 as the default — including
@@ -32,11 +32,10 @@ TickerProviderStateMixin instead."* `[OFFICIAL, High]` Creating a second ticker 
 were created"* and *"A SingleTickerProviderStateMixin can only be used as a TickerProvider
 once"* (`createTicker`, `ticker_provider.dart`; seen in flutter/flutter #42054 and #179337).
 
-Read "over the lifetime of the `State`", not "at once" — a second controller added later to a
-`State` that already mixes in `SingleTickerProviderStateMixin` trips it just the same. **One
-`AnimationController` in the `State` → `SingleTickerProviderStateMixin`; anything else →
-`TickerProviderStateMixin`.** Both still require `dispose` on every controller, which is
-`flutter-runtime`'s checklist.
+Read "over the lifetime of the `State`", not "at once" — a second controller added later trips it
+just the same. **One `AnimationController` in the `State` → `SingleTickerProviderStateMixin`;
+anything else → `TickerProviderStateMixin`.** Both still require `dispose` on every controller,
+which is `flutter-runtime`'s checklist.
 
 **Choosing the family.** The official split is by *who drives the animation* `[OFFICIAL]`:
 
@@ -47,14 +46,9 @@ Read "over the lifetime of the `State`", not "at once" — a second controller a
 
 > **[OFFICIAL, Medium] — the fine criterion is not citable.**
 > Beyond that split, the official decision tree on docs.flutter.dev/ui/animations is published
-> **only as a PNG image**, with the detail delegated to a video and a blog post. The two
-> definitions above are the whole of the normative prose.
-> *What would lift this:* a textual transcription of that decision tree, or equivalent
-> normative prose on the animations page.
-
-The rebuild cost of an animation — passing the animation-independent subtree as
-`AnimatedBuilder`'s `child` rather than building it in the `builder` — belongs to
-`flutter-runtime`.
+> **only as a PNG image**, detail delegated to a video and a blog post; the two definitions above
+> are the whole of the normative prose.
+> *What would lift this:* a textual transcription of that decision tree.
 
 ## The gesture arena
 
@@ -62,8 +56,8 @@ When several recognisers compete for one pointer, the winner is decided by an **
 rule is counter-intuitive in exactly the way that produces dead zones.
 
 **The child wins.** For a parent and a child both defining `onTap`: *"The child GestureDetector
-wins in this scenario because it was the first to enter the arena, resolving as first come,
-first served"* `[OFFICIAL, High]`.
+wins in this scenario because it was the first to enter the arena, resolving as first come, first
+served"* `[OFFICIAL, High]`.
 
 **`HitTestBehavior` does not arbitrate.** *"Setting GestureDetector.behavior to
 HitTestBehavior.opaque or HitTestBehavior.translucent has no impact on parent-child
@@ -74,8 +68,7 @@ are both in the arena. Reaching for `opaque` to fix a parent/child conflict is t
 wrong move.
 
 Resolution: *"If there's only one recognizer left in the arena, that recognizer wins […] a
-recognizer can declare itself the winner, causing all of the remaining recognizers to lose."*
-`[OFFICIAL]`
+recognizer can declare itself the winner, causing all of the remaining recognizers to lose."* `[OFFICIAL]`
 
 | Widget | Use it for |
 |---|---|
@@ -83,9 +76,8 @@ recognizer can declare itself the winner, causing all of the remaining recognize
 | `Listener` | Raw pointer events, outside the arena entirely |
 | `RawGestureDetector` | A custom recogniser, or custom arena participation |
 
-Diagnosing a swallowed gesture or a dead zone: enable
-`debugPrintGestureArenaDiagnostics` `[TOOLED]` and read which recogniser entered and who
-resolved.
+Diagnosing a swallowed gesture or a dead zone: enable `debugPrintGestureArenaDiagnostics`
+`[TOOLED]` and read which recogniser entered and who resolved.
 
 ## Focus, keyboard and shortcuts
 
@@ -109,6 +101,23 @@ nothing else will ever need to fulfil that operation.
 widget `[OFFICIAL]` — the usual starting point for a custom interactive control.
 
 Traversal order and participation: [`references/focus-and-shortcuts.md`](references/focus-and-shortcuts.md).
+
+## Pointer input: hover, cursor, wheel, right-click
+
+A finger has no hover, no cursor and no second button, and the official framing puts the work
+exactly where custom code is: *"Some of these features work by default on Material widgets, but
+if you've created a custom widget, you might need to implement them directly."* `[OFFICIAL, High]`
+
+**The wheel is not a gesture, and the arena above does not arbitrate it.** A scroll arrives as a
+`PointerSignalEvent`: *"pointer signals always resolve at the end of event dispatch"*, and goes to
+*"the widget that's deepest in the widget hierarchy"* `[OFFICIAL]`. Nested scrollables under a
+wheel need no tuning; the same two under a drag do.
+
+Hover and its two traps (`onHover` does not fire when the *widget* moves; `onExit` can arrive
+after the widget is unmounted), cursors and `MouseCursor.defer` vs `uncontrolled`, why a mouse
+drag does not scroll a list, right-click menus and the browser menu that hides them on web, and
+the focus highlight that follows the last input device:
+[`references/pointer-and-desktop.md`](references/pointer-and-desktop.md).
 
 ## Text input, formatters and forms
 
@@ -173,14 +182,13 @@ makes an app impossible to re-theme later.
 For tokens Material does not define — brand spacing, a custom surface, semantic colours —
 `ThemeExtension` is the prescribed vehicle, and it requires **both** `copyWith` and `lerp`
 `[OFFICIAL]`. `lerp` is not boilerplate: without it a theme change snaps instead of animating,
-while every Material token around it transitions.
-
-Typography goes through `TextTheme` and its named roles rather than per-widget `TextStyle`, for
-the same reason: a role survives a redesign, a literal does not.
+while every Material token around it transitions. Typography goes through `TextTheme` and its
+named roles rather than per-widget `TextStyle`, for the same reason: a role survives a redesign,
+a literal does not.
 
 ## Accessibility
 
-The semantics tree is what a screen reader consumes, and it is built from widgets, so most of
+The semantics tree is what a screen reader consumes, and it is built from widgets — so most of
 this is annotation rather than new UI.
 
 | Widget | Use |
@@ -189,20 +197,18 @@ this is annotation rather than new UI.
 | `MergeSemantics` | Present a composite as **one** node — an icon plus its caption read as a single control |
 | `ExcludeSemantics` | Remove purely decorative content from the tree |
 
-**`textScaleFactor` is deprecated — use `TextScaler`** `[OFFICIAL, High]`. *"Use of
-textScaleFactor was deprecated in preparation for the upcoming nonlinear text scaling support.
-This feature was deprecated after v3.12.0-2.0.pre."* The reason is behavioural, not cosmetic:
-Android 14 scales **non-linearly** — *"larger text gets scaled at a lesser rate"* — so a layout
-computed by multiplying by a single factor is wrong at large sizes. Scale through
-`TextScaler.scale`. Any advice built on `textScaleFactor` is invalidated.
+**`textScaleFactor` is deprecated — use `TextScaler`** `[OFFICIAL, High]`. *"Use of textScaleFactor
+was deprecated in preparation for the upcoming nonlinear text scaling support. This feature was
+deprecated after v3.12.0-2.0.pre."* The reason is behavioural, not cosmetic: Android 14 scales
+**non-linearly** — *"larger text gets scaled at a lesser rate"* — so a layout computed by
+multiplying by a single factor is wrong at large sizes. Scale through `TextScaler.scale`; any
+advice built on `textScaleFactor` is invalidated. A layout must therefore survive a large text
+scale, and fixed-height containers around text are where this breaks first.
 
-The practical consequence: a layout must survive a large text scale. Fixed-height containers
-around text are where this breaks first.
-
-Tap targets have per-platform minimums, and they are **checkable in a test** — the values and
-the harness that asserts them live in `flutter-testing`, together, so they cannot drift apart.
-What this skill owns is making a target actually reach its minimum: padding and hit area around
-a small icon, not the number it has to clear.
+Tap targets have per-platform minimums, and they are **checkable in a test** — the values and the
+harness that asserts them live in `flutter-testing`, together, so they cannot drift apart. What
+this skill owns is making a target reach its minimum: padding and hit area around a small icon,
+not the number it has to clear.
 
 ## Internationalisation
 
@@ -215,13 +221,12 @@ landed in 3.28.0-0.0.pre, stable in **3.32.0**, and `package:flutter_gen` suppor
 Any tutorial referencing `.dart_tool/flutter_gen/` or the `synthetic-package` option is
 describing a setup that no longer exists.
 
-**RTL is a directional-widget discipline, not a translation task.** `EdgeInsets.only(left:)`
-does not mirror; `EdgeInsetsDirectional.only(start:)` does. Use the directional variant
-systematically — `EdgeInsetsDirectional`, `AlignmentDirectional`, `BorderDirectional`,
-`PositionedDirectional`, `BorderRadiusDirectional` — since padding *"depends on the
-Directionality to resolve EdgeInsetsDirectional objects into absolute EdgeInsets objects"*
-`[OFFICIAL]`. Code written with absolute sides looks correct until the first RTL locale, then
-fails everywhere at once.
+**RTL is a directional-widget discipline, not a translation task.** `EdgeInsets.only(left:)` does
+not mirror; `EdgeInsetsDirectional.only(start:)` does. Use the directional variant systematically
+— `EdgeInsetsDirectional`, `AlignmentDirectional`, `BorderDirectional`, `PositionedDirectional`,
+`BorderRadiusDirectional` — since padding *"depends on the Directionality to resolve
+EdgeInsetsDirectional objects into absolute EdgeInsets objects"* `[OFFICIAL]`. Code written with
+absolute sides looks correct until the first RTL locale, then fails everywhere at once.
 
 ## Hero transitions and drag & drop
 
@@ -241,10 +246,10 @@ without hand-maintaining a tag table.
 the item dragged from LongPressDraggable"* `[OFFICIAL, High]` — `Draggable<T>` and `DragTarget<T>`
 must agree on `T`, and a mismatch produces a target that simply never accepts, with no error.
 Using a domain type rather than `Object` or `Map` is what makes the mismatch a compile error
-instead of a silent dead zone.
-
-`LongPressDraggable` is the right default inside a scrollable: a plain `Draggable` competes with
-the scroll gesture in the arena, and the scrollable usually wins, so the drag never starts.
+instead of a silent dead zone. `LongPressDraggable` is the right default inside a scrollable — a
+plain `Draggable` competes with the scroll gesture in the arena and the scrollable usually wins,
+so the drag never starts — but that default is a touch idiom: a mouse user expects to drag
+directly, with no handle and no long press `[OFFICIAL]`.
 
 ## Seams
 
@@ -255,7 +260,9 @@ When a question sits near a seam, decide which side it falls on before answering
 | The *cost* of what is animated: rebuild granularity, `AnimatedBuilder`'s `child`, `const`, `RepaintBoundary`, `Opacity`/`saveLayer`, image decode sizing | `flutter-runtime` | The cost of rendering is one subject and lives once |
 | `Key` and `Element` reconciliation | `flutter-runtime` | Three intersections surface here — `AnimatedSwitcher` needing a distinct `Key` to transition between two widgets of the same type, `GlobalKey<FormState>`, state preservation across a locale or theme change — and each is a **cross-reference**, never a second treatment of the mechanism |
 | *Running* the accessibility checks: `ensureSemantics`, `handle.dispose`, `meetsGuideline` and the four guideline values; golden tests | `flutter-testing` | An agent writing a test reaches for the test skill, and splitting the numeric guideline values across two skills would guarantee they diverge. **What** to annotate stays here |
+| *Simulating* an interaction in a test: `tester.drag` / `fling` / `dragUntilVisible`, `startGesture`, `sendKeyEvent`, and stepping an animation with `pump(Duration)` | `flutter-testing` | **The behaviour is here; the instrument that exercises it is there.** The arena's arbitration rules, focus traversal and the animation families are this skill's subject; reproducing them under `WidgetTester` is test authoring |
 | The state mechanism, `go_router` itself, the adapt-vs-duplicate decision, `.adaptive` constructors, responsive vs adaptive | `flutter-architecture` | Branching on the platform is a targeting decision, and that skill already owns capability-not-platform doctrine. Only the `Hero` × route-transition articulation is here |
+| *Whether* to honour a pointer at all, and how far to adapt before duplicating a screen | `flutter-architecture` | **Deciding that desktop and web deserve a different interaction is a targeting decision; how a pointer is then detected, cursored, hovered, wheeled and right-clicked is this skill's API surface.** That skill names the omission — a touch-first UI forgets hover and right-click — and this one closes it |
 | The `dispose` checklist for `AnimationController`, `TextEditingController`, `ScrollController` | `flutter-runtime` | Memory and object lifetime live once |
 | *Invoking* `gen-l10n` in a build pipeline | `flutter-build-release` | Configuration — `l10n.yaml`, ARB layout, generated-into-source — is here; pipeline invocation is a build concern |
 
@@ -267,11 +274,12 @@ Standing silences here: the fine implicit-vs-explicit animation criterion beyond
 text, whose decision tree is published only as an image; platform IME bugs and the composing
 region on web, which live in issues #78827, #65357 and #107969 while the `TextInputFormatter`
 prescription itself is solid and is written normally; the `Hero` × `ShellRoute` articulation,
-issue #112095.
+issue #112095; the coordinate space of `MenuController.open`'s `position`, and the absence of any
+recommended way to ask whether a mouse is connected — both boxed in `pointer-and-desktop.md`.
 
 Scroll-driven animation has **no dedicated official API** in Flutter 3.44 — no `ScrollTimeline`
 equivalent. The official approach composes generic primitives: `ScrollController`/`ScrollPosition`
-as a `Listenable` with `AnimatedBuilder`, or the `Flow` widget. Turnkey widgets are third-party.
+as a `Listenable` with `AnimatedBuilder`, or `Flow`. Turnkey widgets are third-party.
 
 ## References
 
@@ -280,6 +288,10 @@ as a `Listenable` with `AnimatedBuilder`, or the `Flow` widget. Turnkey widgets 
   customising the selection toolbar with `contextMenuBuilder` and `AdaptiveTextSelectionToolbar`
   without dropping the standard entries, the three `FormState` methods, and the undocumented
   per-platform composing-region behaviour.
+- [`references/pointer-and-desktop.md`](references/pointer-and-desktop.md) — hover with
+  `MouseRegion` and its traps, cursor resolution with `defer` and `uncontrolled`, the wheel as a
+  pointer signal and why a mouse drag does not scroll, right-click menus and `BrowserContextMenu`
+  on web, the focus highlight following the last input device, and `VisualDensity`.
 - [`references/focus-and-shortcuts.md`](references/focus-and-shortcuts.md) — the focus tree and
   `FocusNode` lifetime, the three participation flags (`canRequestFocus`, `skipTraversal`,
   `descendantsAreFocusable`) and what each one actually removes, the four traversal policies and
