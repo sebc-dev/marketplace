@@ -101,6 +101,34 @@ fires only if something is focused** — `Shortcuts` resolves through the enclos
 context, so a test must place focus before sending the key or the `Intent` never reaches its
 `Action`.
 
+**Pointer, wheel and secondary button.** The default test pointer is a finger — both
+`createGesture` and `startGesture` default to `PointerDeviceKind.touch` `[OFFICIAL]` — and there
+is **no `tester.hover`**: flutter/flutter #102754, ouverte 2022-04-28, P3, toujours ouverte au
+2026-08-04 `[MAINTAINER]` `[VERIFY per version]`. A hover is assembled by hand, and none of the
+five lines is optional:
+
+```dart
+final gesture = await tester.createGesture(kind: PointerDeviceKind.mouse);
+await gesture.addPointer(location: Offset.zero);
+addTearDown(gesture.removePointer);   // or "other tests will panic" — #37524
+await gesture.moveTo(tester.getCenter(find.byType(MyButton)));
+await tester.pump();                  // enter/exit are dispatched between frames
+```
+
+`createGesture` rather than `startGesture`, because the latter *"begins with a down event"*
+`[OFFICIAL]` and a pointer that is down cannot hover — `moveTo` silently dispatches a move
+instead, `TestPointer.hover`'s assert never fires, and the test greens on an expectation it
+never ran.
+
+| Need | Instrument |
+|---|---|
+| Hover, enter, exit, cursor | `createGesture(kind: PointerDeviceKind.mouse)` → `addPointer` → `moveTo` |
+| Scroll wheel | `sendEventToBinding(pointer.scroll(delta))` on a `TestPointer` — **not** `scrollUntilVisible`, which delegates to `dragUntilVisible` |
+| Right-click | `tap(finder, buttons: kSecondaryButton)`, or `createGesture(buttons: kSecondaryButton)` to assert between down and up |
+
+`TestPointer` **builds** events, `TestGesture` **dispatches** them. Building one and never
+sending it is a test that passes without asserting anything.
+
 > **[OFFICIAL, Medium] — there is no strategy guidance for testing an interaction.**
 > The API is fully documented on api.flutter.dev, but the official cookbook *Tap, drag, and
 > enter text* demonstrates only `tap`, `drag` and `enterText` — nothing on `fling`,
@@ -116,6 +144,8 @@ context, so a test must place focus before sending the key or the `Intent` never
 | "pumpAndSettle timed out" | Infinite animation, or `pumpAndSettle` used as a wait-for-ready |
 | A drag in a test does nothing | Shorter than the 20 px slop, or `fling`'s `initialOffset` (#139455) |
 | A shortcut never fires in a test | Nothing focused — `Shortcuts` resolves through `Focus` |
+| A hover test never sees `onEnter` | Pointer kind still `touch`, gesture already down, or no `pump` after the move |
+| A wheel test passes while the app's wheel is broken | `scrollUntilVisible` is a drag, and mouse is excluded from `dragDevices` |
 | Network call returns 400 | The binding's `HttpClient` override |
 | Passes locally, fails in CI | Real time, execution order, or a font-dependent golden |
 | Golden differs by a few pixels | Fonts — goldens need the test font loaded, and differ across platforms |
@@ -157,7 +187,7 @@ When a question sits near a seam, decide which side it falls on before answering
 | Profiling, DevTools traces, the frame budget, leak diagnosis, `leak_tracker` | `flutter-runtime` | **This skill proves behaviour; that one measures cost.** A performance test that produces a timing (`watchPerformance`, `traceAction`) is a measurement and lives there |
 | Where code belongs, the layer contract, what makes code testable in the first place | `flutter-architecture` | Testability is designed there and exercised here |
 | What to annotate for accessibility, and the `Semantics` API | `flutter-ui-interaction` | This skill owns the harness and the guideline values, so they cannot diverge across two skills |
-| How the gesture arena arbitrates, how focus traversal and `Shortcuts`/`Actions` resolve, which animation family to reach for | `flutter-ui-interaction` | **Simulating an interaction is here; the behaviour being simulated is there.** `tester.drag`, `fling`, `sendKeyEvent` and stepping an animation with `pump(Duration)` are test instruments and stay here |
+| How the gesture arena arbitrates, how focus traversal and `Shortcuts`/`Actions` resolve, which animation family to reach for, what `MouseRegion` promises on hover, how a cursor resolves, why a mouse drag does not scroll | `flutter-ui-interaction` | **Simulating an interaction is here; the behaviour being simulated is there.** `tester.drag`, `fling`, `sendKeyEvent`, `createGesture(kind: PointerDeviceKind.mouse)`, `TestPointer.scroll` and stepping an animation with `pump(Duration)` are test instruments and stay here |
 | Running the suite in CI, release gating | `flutter-build-release` | Authoring a test is here; wiring it into a pipeline is a delivery concern |
 | `test` package idioms, async and `Future` semantics in Dart | `dart-idioms` | Language layer, valid outside Flutter |
 
@@ -175,3 +205,9 @@ invented.
   by architecture layer, `blocTest`, golden tests and Alchemist, fakes and mocks, async, stream
   and time testing, plugin-dependent code, file organisation, coverage and its limits, and the
   six documented test anti-patterns.
+- [`references/pointer-under-test.md`](references/pointer-under-test.md) — `TestPointer` builds
+  events and `TestGesture` dispatches them, the five-line hover and why each line is load-bearing,
+  `moveTo`'s branch on `isDown` and the test that greens without asserting, the two routes by
+  which enter and exit reach a frame, the wheel through `sendEventToBinding` and why
+  `scrollUntilVisible` cannot catch a wheel regression, and the secondary button held open
+  between down and up.

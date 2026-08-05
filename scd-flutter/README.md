@@ -18,7 +18,7 @@ loads the profiler, and a signing question never loads the animation API.
 
 `dart-idioms` applies inside Flutter projects too — it covers the language, not the framework.
 
-Three seams worth knowing, because they are the ones that would otherwise drift:
+Four seams worth knowing, because they are the ones that would otherwise drift:
 
 - **`flutter-runtime` measures cost, `flutter-testing` proves behaviour.** A performance test
   that produces a timing (`watchPerformance`, `traceAction`) is a measurement and stays with the
@@ -30,6 +30,10 @@ Three seams worth knowing, because they are the ones that would otherwise drift:
   `TextScaler`, target sizes) is `flutter-ui-interaction`; *running* the checks
   (`ensureSemantics`, `meetsGuideline` and the four guideline values) is `flutter-testing`,
   so the numeric values cannot diverge across two skills.
+- **Interaction splits the same way.** The *behaviour* — how the gesture arena arbitrates, what
+  `MouseRegion` promises on hover, how focus traverses — is `flutter-ui-interaction`; the
+  *instrument* that reproduces it under `WidgetTester` (`drag`, `fling`, `sendKeyEvent`,
+  `createGesture(kind: PointerDeviceKind.mouse)`, `TestPointer.scroll`) is `flutter-testing`.
 
 ### `dart-idioms`
 
@@ -66,9 +70,10 @@ mechanism, and uncaught-error handling with crash reporting and PII redaction.
 
 The three test layers and what each buys, testability as an architecture signal, fakes vs
 mocks, `WidgetTester`, `pump` vs `pumpAndSettle` and why the latter is not a wait-for-ready,
-`fakeAsync` and controlling time, golden tests and their font fragility, `blocTest`, mocktail vs
-mockito, plugin channel mocking, the accessibility harness with the exact values of the four
-guidelines, `integration_test` and its native-UI ceiling, coverage and its limits, and the
+driving a gesture, a keystroke or a pointer — hover, scroll wheel and secondary button — under
+`WidgetTester`, `fakeAsync` and controlling time, golden tests and their font fragility,
+`blocTest`, mocktail vs mockito, plugin channel mocking, the accessibility harness with the exact
+values of the four guidelines, `integration_test` and its native-UI ceiling, coverage and its limits, and the
 documented flakiness causes.
 
 ### `flutter-data`
