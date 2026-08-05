@@ -65,8 +65,8 @@ Ratio : 60% humain / 40% AI (l'humain tranche, tu répercutes en EARS).
 
 ## Consigne au journal
 
-Charge le skill `journal` et ajoute **une ligne** dans la section `## NNN-slug` de
-`docs/JOURNAL.md`, par `Edit` ciblé :
+Charge le skill `journal` et ajoute **une ligne** dans `docs/journal/NNN-slug.md`,
+par `Edit` ciblé :
 
 - **Phase** : `clarify`
 - **Résultat** : le nombre résolu et le nombre restant.
@@ -78,7 +78,7 @@ restants` est un fait, et la ligne suivante montrera la reprise.
 ## Skill active
 
 - `feature-specs` — charge `references/clarify.md`.
-- `journal` — contrat de `docs/JOURNAL.md`.
+- `journal` — contrat de `docs/journal/*.md`.
 
 ## À la fin
 

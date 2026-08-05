@@ -81,8 +81,8 @@ commandes du projet).
 
 ## Consigne au journal
 
-Charge le skill `journal` et ajoute **une ligne** dans la section `## Socle` de
-`docs/JOURNAL.md`, par `Edit` ciblé (crée le fichier ou la section s'ils manquent) :
+Charge le skill `journal` et ajoute **une ligne** dans `docs/journal/socle.md`,
+par `Edit` ciblé (crée le fichier s'il manque) :
 
 - **Phase** : `contract`
 - **Résultat** : nb de principes · taille de la Definition of Done.
@@ -91,7 +91,7 @@ Charge le skill `journal` et ajoute **une ligne** dans la section `## Socle` de
 ## Skill active
 
 - `project-docs` — charge `references/claude-md.md`.
-- `journal` — contrat de `docs/JOURNAL.md`.
+- `journal` — contrat de `docs/journal/*.md`.
 
 ## À la fin
 

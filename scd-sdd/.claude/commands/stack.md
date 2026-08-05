@@ -80,8 +80,8 @@ Ratio : 50% humain / 50% AI (tu proposes et argumentes, l'humain arbitre).
 
 ## Consigne au journal
 
-Charge le skill `journal` et ajoute **une ligne** dans la section `## Socle` de
-`docs/JOURNAL.md`, par `Edit` ciblé (crée le fichier ou la section s'ils manquent) :
+Charge le skill `journal` et ajoute **une ligne** dans `docs/journal/socle.md`,
+par `Edit` ciblé (crée le fichier s'il manque) :
 
 - **Phase** : `stack`
 - **Résultat** : les choix structurants · le nb de décisions → ADR.
@@ -90,7 +90,7 @@ Charge le skill `journal` et ajoute **une ligne** dans la section `## Socle` de
 ## Skill active
 
 - `project-docs` — charge `references/stack.md`.
-- `journal` — contrat de `docs/JOURNAL.md`.
+- `journal` — contrat de `docs/journal/*.md`.
 
 ## À la fin
 

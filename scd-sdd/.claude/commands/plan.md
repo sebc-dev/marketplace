@@ -74,8 +74,8 @@ Ratio : 50% humain / 50% AI (arbitrages techniques partagés).
 
 ## Consigne au journal
 
-Charge le skill `journal` et ajoute **une ligne** dans la section `## NNN-slug` de
-`docs/JOURNAL.md`, par `Edit` ciblé :
+Charge le skill `journal` et ajoute **une ligne** dans `docs/journal/NNN-slug.md`,
+par `Edit` ciblé :
 
 - **Phase** : `plan`
 - **Résultat** : le nombre de fichiers touchés et les candidats ADR créés.
@@ -84,7 +84,7 @@ Charge le skill `journal` et ajoute **une ligne** dans la section `## NNN-slug` 
 ## Skill active
 
 - `feature-specs` — charge `references/plan.md`.
-- `journal` — contrat de `docs/JOURNAL.md`.
+- `journal` — contrat de `docs/journal/*.md`.
 
 ## À la fin
 

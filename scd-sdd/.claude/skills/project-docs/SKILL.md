@@ -76,10 +76,9 @@ L'état du socle se **dérive des fichiers** : `docs/prd.md` existe → la phase
 faite. Aucune commande n'écrit un fichier d'état — il dériverait.
 
 Ce que la dérivation ne donne pas, c'est la **chronologie** : quand chaque phase a été
-jouée. Chaque commande du socle consigne donc sa ligne dans la section `## Socle` de
-`docs/JOURNAL.md`. Le format, la règle d'ajout et le vocabulaire attendu par phase
-appartiennent au skill **`journal`**, qui est chargé au moment de consigner — ils ne sont
-pas recopiés ici.
+jouée. Chaque commande du socle consigne donc sa ligne dans `docs/journal/socle.md`. Le
+format, la règle d'ajout et le vocabulaire attendu par phase appartiennent au skill
+**`journal`**, qui est chargé au moment de consigner — ils ne sont pas recopiés ici.
 
 ## Seuils de déclenchement (constitution fondue dans CLAUDE.md)
 

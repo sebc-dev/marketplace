@@ -182,8 +182,8 @@ Ratio : 20% humain / 80% AI (l'humain valide la cible et la base ; le workflow f
 
 ## Consigne au journal
 
-Charge le skill `journal` et ajoute **une ligne** dans la section `## NNN-slug` de
-`docs/JOURNAL.md`, par `Edit` ciblé, à partir de l'objet de retour du workflow.
+Charge le skill `journal` et ajoute **une ligne** dans `docs/journal/NNN-slug.md`,
+par `Edit` ciblé, à partir de l'objet de retour du workflow.
 
 - **Phase** : `run Rn` — le lot est dans la cellule, pas dans le résultat.
 - **Résultat**, succès : `✅ done · <mode> · N tests · PR #n`. Ajoute `(empilée sur Rk)` si
@@ -204,7 +204,7 @@ l'histoire, on ne réécrit jamais une ligne passée.
 
 - `feature-specs` — section « Cibler une feature » pour la résolution de la cible.
 - `implement` — charge `references/tasks-parsing.md` et `references/verification-modes.md`.
-- `journal` — contrat de `docs/JOURNAL.md`.
+- `journal` — contrat de `docs/journal/*.md`.
 
 ## À la fin
 
@@ -213,7 +213,8 @@ s'il y a des PR à classer. Sur une PR empilée, la suite est `/scd-sdd:sync NNN
 dépendance mergée**.
 
 Sur un blocage : donne la commande de reprise, et rappelle que la branche du lot existe déjà (le
-travail n'est pas perdu).
+travail n'est pas perdu). **Si la reprise n'est pas immédiate**, ajoute : « `/scd-sdd:pause` avant
+de `/clear` — le journal garde le `⛔`, la fiche gardera ce que tu allais faire. »
 
 Coût : un dynamic workflow consomme substantiellement plus de tokens qu'une session classique ; le
 périmètre « un lot » le borne. Suivre `/workflows`.

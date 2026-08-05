@@ -119,9 +119,9 @@ features antérieures sont livrées ou abandonnées.
 ## État dérivé, événement journalisé
 
 La dérivation ci-dessus donne un instantané : elle dit *où on en est*, jamais *quand on y est
-arrivé*. Chaque commande de ce niveau consigne donc sa ligne dans la section `## NNN-slug` de
-`docs/JOURNAL.md` — `kickoff-feature` crée la section, les six suivantes y ajoutent une ligne
-datée. Seul `status-specs` n'écrit rien : il lit.
+arrivé*. Chaque commande de ce niveau consigne donc sa ligne dans `docs/journal/NNN-slug.md` —
+`kickoff-feature` crée le fichier, les six suivantes y ajoutent une ligne datée. Seul
+`status-specs` n'écrit rien : il lit.
 
 Deux de ces lignes portent un fait que **rien ne permet de dériver** :
 

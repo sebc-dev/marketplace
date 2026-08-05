@@ -8,7 +8,7 @@ seule + rapport** : ne modifie aucun document du contrat, et ne persiste **aucun
 état** (un PASS écrit sur disque deviendrait faux dès la prochaine édition — la gate est bon
 marché, on la relance).
 
-Seule écriture autorisée : **une ligne datée dans `docs/JOURNAL.md`**. C'est un *événement* — « le
+Seule écriture autorisée : **une ligne datée dans `docs/journal/NNN-slug.md`**. C'est un *événement* — « le
 28/07, la gate a rendu PRÊT » reste vrai pour toujours — et non un état qu'on relirait comme
 « la feature est validée ». Un lecteur ne le convertit jamais en état sans contrôler sa fraîcheur
 contre la date de modification de `spec.md`/`plan.md`/`tasks.md` (skill `journal`).

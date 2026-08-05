@@ -81,8 +81,8 @@ Ratio : 30% humain / 70% AI (dérivation depuis la Stack ; l'humain valide le co
 
 ## Consigne au journal
 
-Charge le skill `journal` et ajoute **une ligne** dans la section `## Socle` de
-`docs/JOURNAL.md`, par `Edit` ciblé (crée le fichier ou la section s'ils manquent) :
+Charge le skill `journal` et ajoute **une ligne** dans `docs/journal/socle.md`,
+par `Edit` ciblé (crée le fichier s'il manque) :
 
 - **Phase** : `adr`
 - **Résultat** : la plage de numéros écrits · la confirmation du rétro-liage.
@@ -91,7 +91,7 @@ Charge le skill `journal` et ajoute **une ligne** dans la section `## Socle` de
 ## Skill active
 
 - `project-docs` — charge `references/adr.md`.
-- `journal` — contrat de `docs/JOURNAL.md`.
+- `journal` — contrat de `docs/journal/*.md`.
 
 ## À la fin
 

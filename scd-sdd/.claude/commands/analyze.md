@@ -94,8 +94,8 @@ section : le verdict de cette gate n'existe **nulle part ailleurs**. Elle n'écr
 rapport, donc sans cette ligne, savoir si le contrat a été validé — et quand — est perdu à la
 fin de la session.
 
-Charge le skill `journal` et ajoute **une ligne** dans la section `## NNN-slug` de
-`docs/JOURNAL.md`, par `Edit` ciblé :
+Charge le skill `journal` et ajoute **une ligne** dans `docs/journal/NNN-slug.md`,
+par `Edit` ciblé :
 
 - **Phase** : `analyze`
 - **Résultat** : le **verdict en gras**, puis le décompte par sévérité.
@@ -113,7 +113,7 @@ Une gate au rouge se consigne **aussi** : c'est la moitié de l'histoire qui a d
 ## Skill active
 
 - `feature-specs` — charge `references/analyze.md`.
-- `journal` — contrat de `docs/JOURNAL.md`.
+- `journal` — contrat de `docs/journal/*.md`.
 - Subagents (recommandés, en parallèle, contexte frais) : `ears-verifier` — contrat (1-11) ·
   `slice-auditor` — découpage (12-14).
 

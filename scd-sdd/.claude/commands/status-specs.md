@@ -6,6 +6,7 @@ allowed-tools:
   - Glob
   - Grep
   - Bash(git log *)
+  - Bash(grep *)
 ---
 
 ## Contexte
@@ -17,8 +18,8 @@ différents. Tu scannes, tu dérives, tu orientes.
 Tu croises **deux sources**, et c'est tout l'intérêt de cette commande :
 
 - **les fichiers**, qui donnent la phase courante — robuste, toujours à jour, rien à maintenir ;
-- **`docs/JOURNAL.md`**, qui donne le seul fait que les fichiers ne portent pas : **le verdict
-  de la gate `analyze`**, et son passage éventuel au `premortem`. Sans lui, une feature au
+- **`docs/journal/NNN-slug.md`**, qui donne le seul fait que les fichiers ne portent pas : **le
+  verdict de la gate `analyze`**, et son passage éventuel au `premortem`. Sans lui, une feature au
   `tasks.md` complet reste « à valider » pour toujours — on ne distingue pas un contrat jamais
   audité d'un contrat au vert.
 
@@ -29,9 +30,12 @@ Ratio : 10% humain / 90% AI (lecture mécanique ; l'humain choisit la suite).
 
 ## Règles absolues
 
-- **Lecture seule.** Tu ne modifies aucun fichier — **pas même `docs/JOURNAL.md`**. Tu joues
-  aucune phase, donc tu ne consignes rien. C'est la seule catégorie de commande du plugin qui
-  n'écrit pas au journal, et c'est de nature, pas un oubli.
+- **Lecture seule.** Tu ne modifies aucun fichier — **pas même un journal**. Tu ne joues
+  aucune phase, donc tu ne consignes rien : c'est de nature, pas un oubli.
+- **Tu ne lis pas `docs/chantiers/`.** Les chantiers sont rendus par `/scd-sdd:status`, qui est la
+  vue transverse. Ton périmètre est documentaire : les specs, et rien d'autre.
+- **Tu n'ouvres aucun journal en entier** : tu en extrais par motif les deux lignes qui te
+  concernent (étape 3).
 - **Dérive l'état des fichiers**, jamais du contexte (il a été effacé) ni d'un fichier d'état
   (il dériverait).
 - **Une ligne de journal n'est jamais un état.** C'est un événement daté. Tu ne l'affiches
@@ -48,8 +52,12 @@ Ratio : 10% humain / 90% AI (lecture mécanique ; l'humain choisit la suite).
    du skill `feature-specs`, section « Cibler une feature ». Relève aussi le mode (`DELTA.md`
    présent → delta, sinon neuf).
 
-3. **Lis `docs/JOURNAL.md`** s'il existe. Pour chaque feature, dans sa section `## NNN-slug`,
-   relève la **dernière** ligne `analyze` (verdict + date) et la dernière ligne `premortem`.
+3. **Extrais de `docs/journal/NNN-slug.md`**, s'il existe, sans l'ouvrir :
+
+   ```bash
+   grep -h '| analyze |'   docs/journal/NNN-slug.md | tail -1
+   grep -h '| premortem |' docs/journal/NNN-slug.md | tail -1
+   ```
 
 4. **Contrôle la fraîcheur de chaque gate** — l'étape que rien d'autre ne rattrape. Compare la
    date de la ligne `analyze` à la dernière modification de `spec.md`, `plan.md` et
@@ -81,12 +89,15 @@ Ratio : 10% humain / 90% AI (lecture mécanique ; l'humain choisit la suite).
 
 - **`specs/` vide ou absent** → « Aucune feature. Démarre avec `/scd-sdd:kickoff-feature
   [feature]`. »
-- **`docs/JOURNAL.md` absent** (projet démarré avant le journal) → tableau **complet mais sans
-  colonne `Gate`**, et une ligne de pied qui le dit : « Pas de `docs/JOURNAL.md` — le verdict
+- **`docs/journal/` absent** (projet démarré avant le journal) → tableau **complet mais sans
+  colonne `Gate`**, et une ligne de pied qui le dit : « Pas de `docs/journal/` — le verdict
   `analyze` n'est pas connaissable hors session. Il apparaîtra à la prochaine gate. » **Toi, tu
   ne le crées ni ne le reconstruis** : tu es en lecture seule. Projet venu des trois anciens
   plugins → renvoie vers `/scd-sdd:migrate`, la seule commande qui le crée.
-- **Section `## NNN-slug` absente pour une feature existante** → `Gate : —`. Ce n'est pas une
+- **`docs/JOURNAL.md` présent** (projet suivi avant l'éclatement du journal) → dis-le en
+  une ligne et renvoie vers `/scd-sdd:migrate`, qui le convertit. **Tu ne le lis pas** : porter deux
+  formats te ferait porter deux règles de lecture pour toujours.
+- **`docs/journal/NNN-slug.md` absent pour une feature existante** → `Gate : —`. Ce n'est pas une
   anomalie à corriger : la feature n'a simplement jamais été gatée.
 - **Hors dépôt git** → repli sur la mtime, et signale que la fraîcheur est moins fiable (une
   copie de fichiers peut réinitialiser les mtime).
@@ -97,6 +108,7 @@ Ratio : 10% humain / 90% AI (lecture mécanique ; l'humain choisit la suite).
 - **Tu n'écris rien**, ni dans les documents, ni dans le journal.
 - Tu ne suis pas l'état du code, tu ne comptes pas les lots faits, tu n'interroges ni `gh` ni
   `glab` : c'est `/scd-sdd:status-impl`.
+- Tu ne lis pas `docs/chantiers/` — les chantiers sont rendus par `/scd-sdd:status`.
 - Tu ne rejoues pas `analyze` pour « vérifier » un verdict périmé — tu le signales et tu
   renvoies.
 
@@ -104,7 +116,7 @@ Ratio : 10% humain / 90% AI (lecture mécanique ; l'humain choisit la suite).
 
 - `feature-specs` — charge `references/status.md` ; table de dérivation dans la section
   « Cibler une feature ».
-- `journal` — contrat de `docs/JOURNAL.md` (**lecture seule ici**).
+- `journal` — contrat de `docs/journal/*.md` (**lecture seule ici**).
 
 ## À la fin
 

@@ -1,5 +1,5 @@
 ---
-description: "Ouvre le niveau SOCLE d'un projet : scaffolde docs/, docs/adr/ et docs/JOURNAL.md, établit ce qui est déjà fait, présente la séquence brief → prd → stack → adr → contract, puis lance la première phase manquante. À jouer une fois au démarrage — rejouable sans risque pour reprendre."
+description: "Ouvre le niveau SOCLE d'un projet : scaffolde docs/, docs/adr/, docs/journal/socle.md et les trois répertoires d'état de docs/chantiers/, établit ce qui est déjà fait, présente la séquence brief → prd → stack → adr → contract, puis lance la première phase manquante. À jouer une fois au démarrage — rejouable sans risque pour reprendre."
 argument-hint: "[nom ou idée du projet — optionnel]"
 allowed-tools:
   - Read
@@ -56,9 +56,14 @@ Ratio : 20% humain / 80% AI (scaffolding mécanique + établissement de l'état)
    **incomplet**, pas comme fait : signale-le nommément.
 
 3. **Scaffolde ce qui manque**, sans jamais toucher à ce qui existe :
-   - `docs/` et `docs/adr/` (`mkdir -p`) ;
-   - `docs/JOURNAL.md` s'il est absent — uniquement le titre et le bloc de citation
-     prescrits par le skill `journal`, avec une section `## Socle` vide.
+   - `docs/`, `docs/adr/` et `docs/journal/` (`mkdir -p`) ;
+   - `docs/chantiers/en-cours/`, `docs/chantiers/en-attente/` et `docs/chantiers/archive/`
+     (`mkdir -p`) — les trois états d'un chantier **sont** ces répertoires (skill `chantier`) ;
+   - `docs/journal/socle.md` s'il est absent — uniquement le titre, le bloc de citation
+     prescrits par le skill `journal`, et l'en-tête de la table, sans aucune ligne.
+
+   Tu ne crées **aucun** `docs/journal/NNN-slug.md` : c'est `/scd-sdd:kickoff-feature` qui le
+   fait, une feature à la fois.
 
 4. **Présente la séquence et le point de reprise.** Une phase = une commande, `/clear`
    entre chacune. Marque les phases faites, l'incomplète le cas échéant, et nomme **la
@@ -81,8 +86,8 @@ Ratio : 20% humain / 80% AI (scaffolding mécanique + établissement de l'état)
 
 ## Consigne au journal
 
-Charge le skill `journal` et ajoute **une ligne** dans la section `## Socle` de
-`docs/JOURNAL.md`, par `Edit` ciblé (jamais de réécriture du fichier) :
+Charge le skill `journal` et ajoute **une ligne** dans `docs/journal/socle.md`,
+par `Edit` ciblé (jamais de réécriture du fichier) :
 
 - **Phase** : `init-project`
 - **Résultat** : ce qui a été scaffoldé, et le socle préexistant le cas échéant —
@@ -92,7 +97,7 @@ Charge le skill `journal` et ajoute **une ligne** dans la section `## Socle` de
 ## Skill active
 
 - `project-docs` — vue d'ensemble de la chaîne et de la séquence du socle.
-- `journal` — contrat de `docs/JOURNAL.md` (gabarit du fichier, règle d'ajout).
+- `journal` — contrat de `docs/journal/*.md` (gabarit du fichier, règle d'ajout).
 
 ## À la fin
 

@@ -1,5 +1,5 @@
 ---
-description: "Reprend un projet démarré sous scd-project-docs / scd-feature-specs / scd-implement : diagnostique l'installation et le projet, reconstitue docs/JOURNAL.md depuis l'historique git, applique les correctifs après accord, puis rend le point de reprise. À jouer une fois par projet migré."
+description: "Reprend un projet venu de scd-project-docs / scd-feature-specs / scd-implement, ou d'une version antérieure à l'éclatement du journal : diagnostique l'installation et le projet, convertit un docs/JOURNAL.md monolithique en docs/journal/*.md, reconstitue depuis l'historique git ce qui manque, scaffolde docs/chantiers/, applique les correctifs après accord, puis rend le point de reprise. À jouer une fois par projet migré."
 argument-hint: "(aucun — inspecte l'installation, docs/ et specs/)"
 allowed-tools:
   - Read
@@ -23,11 +23,18 @@ ailleurs, et c'est invisible tant que rien ne le nomme :
   leurs skills entrent en concurrence de routage avec les quatre nouveaux ;
 - les placeholders `FORMAT_CMD` / `LINT_CMD` de `format-lint.sh` sont **repartis à vide** — le
   nouveau plugin est un nouveau répertoire de cache ;
-- `docs/JOURNAL.md` **n'existe pas**, donc `/scd-sdd:status` dégrade : ni chronologie, ni
-  contrôle de fraîcheur des gates.
+- `docs/journal/` **n'existe pas**, donc `/scd-sdd:status` dégrade : ni chronologie, ni
+  contrôle de fraîcheur des gates ;
+- `docs/chantiers/` **n'existe pas**, donc `/scd-sdd:pause` n'a nulle part où poser une fiche.
 
-Tu diagnostiques ces trois plans, tu reconstitues ce que git permet de reconstituer, et tu rends
-la main. Tu es une commande de **reprise**, jouée une fois — pas une phase du cycle.
+**Deuxième provenance** : un projet suivi sous une version de `scd-sdd` **antérieure à
+l'éclatement du journal** a un `docs/JOURNAL.md` **monolithique**, à sections. Il se convertit en
+un fichier par cible (`DECISIONS.md` §D17). C'est un **déplacement de lignes**, pas une
+réécriture — et c'est toi qui le fais. Les deux provenances se cumulent sans se gêner : un projet
+peut avoir besoin de la conversion **et** de la reconstitution des phases jamais journalisées.
+
+Tu diagnostiques ces plans, tu convertis, tu reconstitues ce que git permet de reconstituer, et tu
+rends la main. Tu es une commande de **reprise**, jouée une fois — pas une phase du cycle.
 
 Ratio : 30% humain / 70% AI (diagnostic mécanique ; l'humain accorde chaque écriture et
 désinstalle les anciens plugins).
@@ -41,11 +48,16 @@ désinstalle les anciens plugins).
   rétro-compatibilité est déjà portée par `implement/references/tasks-parsing.md`.
 - **Tu n'écris rien sans accord explicite** (`AskUserQuestion`), écriture par écriture, avec
   l'aperçu de ce qui sera écrit.
-- **Tu ne reconstitues le journal que si `docs/JOURNAL.md` est absent.** Présent → tu n'y ajoutes
-  que ta propre ligne. C'est ce qui te rend **rejouable sans doubler quoi que ce soit**.
+- **La conversion ne réécrit aucune ligne.** Un `docs/JOURNAL.md` monolithique se convertit par
+  **déplacement** : chaque section devient un fichier, lignes inchangées au caractère près. Tu
+  comptes les lignes avant et après ; si le total diverge, tu **t'arrêtes** sans rien supprimer.
+- **Tu ne reconstitues une cible que si son fichier `docs/journal/<cible>.md` est absent.**
+  Présent → tu n'y ajoutes que ta propre ligne. C'est ce qui te rend **rejouable sans doubler
+  quoi que ce soit**.
 - **Tu ne reconstitues jamais un fait non dérivable** — verdict `analyze`, `premortem` appliqué,
-  issue d'un lot. Ils n'ont de trace nulle part, ni disque ni git.
-- **Hors dépôt git → aucune ligne reconstituée.** Tu crées le journal avec ses sections vides et
+  issue d'un lot. Ils n'ont de trace nulle part, ni disque ni git. Les **chantiers** non plus :
+  ils n'ont laissé aucun artefact daté avant d'exister.
+- **Hors dépôt git → aucune ligne reconstituée.** Tu crées les fichiers avec leur en-tête vide et
   tu dis pourquoi. Les mtime d'une copie de fichiers sont fausses.
 - **Tu ne joues aucune phase du cycle** et tu n'écris aucun contenu de document.
 
@@ -62,10 +74,11 @@ désinstalle les anciens plugins).
 
 ## Processus
 
-1. **Charge la connaissance transverse** : le skill `journal` — et sa section
-   **« Reconstitution (migration) »**, qui porte la règle de datation, la table des lignes
-   reconstituables et la liste de ce qui ne l'est jamais. Charge aussi la table « Cibler une
-   feature » du skill `feature-specs` pour dériver la phase de chaque feature.
+1. **Charge la connaissance transverse** : le skill `journal` et sa référence
+   **`references/reconstitution.md`**, qui porte la recette de conversion, la règle de datation,
+   la table des lignes reconstituables et la liste de ce qui ne l'est jamais. Tu es la **seule**
+   commande à la charger. Charge aussi la table « Cibler une feature » du skill `feature-specs`
+   pour dériver la phase de chaque feature.
 
 2. **Diagnostique l'installation.** Lis `~/.claude/plugins/installed_plugins.json`, puis les
    `enabledPlugins` de `~/.claude/settings.json`, `.claude/settings.json` et
@@ -102,14 +115,25 @@ désinstalle les anciens plugins).
      `Fichiers :` (→ `run-parallel` **sérialisera** au lieu de paralléliser). Signale-les
      nommément : ce sont des conséquences réelles, pas des défauts à corriger.
 
-5. **Prépare la reconstitution du journal.** Si `docs/JOURNAL.md` est absent **et** que le projet
-   est un dépôt git (`git rev-parse --git-dir`), compose les lignes selon la section
-   « Reconstitution » du skill `journal` — c'est elle qui fait autorité sur la source de date, le
-   contenu de chaque ligne et le marquage. Présente le fichier **complet** que tu proposes
-   d'écrire, lignes triées par date croissante dans chaque section.
+5. **Prépare la conversion, puis la reconstitution** — dans cet ordre, les deux selon
+   `references/reconstitution.md`, qui fait autorité :
+
+   - **Conversion.** `docs/JOURNAL.md` présent → compose l'arborescence cible : `## Socle` →
+     `docs/journal/socle.md`, chaque `## NNN-slug` → `docs/journal/NNN-slug.md`. Une section que
+     tu ne sais pas classer → **STOP** et demande ; on ne classe pas au jugé. Compte les lignes de
+     table avant et après : elles doivent être égales.
+   - **Reconstitution.** Pour chaque cible dont le fichier reste **absent** après conversion, et
+     si le projet est un dépôt git (`git rev-parse --git-dir`), compose les lignes depuis
+     l'historique. Présente chaque fichier **complet**, lignes triées par date croissante.
+
+   Un projet déjà éclaté n'a donc rien à convertir ; un projet venu des trois anciens plugins n'a
+   rien à convertir non plus, mais tout à reconstituer ; un projet à moitié suivi a besoin des deux.
 
 6. **Demande l'accord, écriture par écriture** (`AskUserQuestion`) — jamais un accord global :
-   - créer `docs/JOURNAL.md` (avec ou sans les lignes reconstituées) ;
+   - convertir `docs/JOURNAL.md` en `docs/journal/*.md` (et le supprimer **seulement** après que
+     le compte de lignes est vérifié) ;
+   - créer les `docs/journal/<cible>.md` manquants (avec ou sans lignes reconstituées) ;
+   - créer `docs/chantiers/en-cours/`, `en-attente/` et `archive/` ;
    - renseigner `FORMAT_CMD` / `LINT_CMD` dans `format-lint.sh` ;
    - retirer du `.claude/settings*.json` du projet les hooks pointant un ancien cache.
 
@@ -126,7 +150,9 @@ désinstalle les anciens plugins).
 Installation   ⚠ 3 anciens plugins encore installés
 Projet         ⚠ 2 pointeurs périmés · hooks projet OK · format-lint à renseigner
 Artefacts      ✅ socle complet · 2 features · 1 lot sans `Fichiers :`
-Journal        ✅ créé — 9 lignes reconstituées depuis git (2026-07-25 → 2026-07-29)
+Journal        ✅ converti — 24 lignes → socle.md (7) · 001-auth.md (11) · 002-billing.md (6)
+               ✅ + 3 lignes reconstituées depuis git (2026-07-25 → 2026-07-29)
+Chantiers      ✅ docs/chantiers/{en-cours,en-attente,archive}/ créés — vides
 
 ### À jouer toi-même
 /plugin uninstall scd-project-docs@sebc-dev-marketplace
@@ -143,6 +169,7 @@ docs/stack.md:71  /scd-implement:status        → /scd-sdd:status-impl
 ### Non reconstituable — définitivement absent du journal
 analyze · premortem · runs des lots — aucune trace sur disque ni dans git.
 clarify — il édite spec.md, il n'a pas d'artefact propre.
+chantiers — rien n'a existé avant docs/chantiers/, il n'y a rien à dater.
 Les cases [x] de tasks.md restent la source de vérité des lots faits.
 
 → Prochaine : /scd-sdd:status
@@ -163,26 +190,32 @@ la plage de dates couverte, à charge du lecteur de voir ce qui manque — la se
   manquant.
 - Tu ne reconstitues ni verdict `analyze`, ni `premortem`, ni issue de lot, et tu ne les déduis
   pas des cases cochées.
-- Tu ne touches pas à un `docs/JOURNAL.md` existant, hors ta propre ligne.
+- Tu ne touches pas à un `docs/journal/<cible>.md` déjà présent, hors ta propre ligne.
+- **Tu ne réécris aucune ligne pendant la conversion**, tu ne les réordonnes pas, et tu ne
+  supprimes `docs/JOURNAL.md` qu'après avoir vérifié le compte de lignes.
+- Tu ne crées **aucune fiche de chantier** : tu ne fais que scaffolder les trois répertoires.
 
 ## Consigne au journal
 
-Charge le skill `journal` et ajoute **une ligne** dans la section `## Socle` de
-`docs/JOURNAL.md`, par `Edit` ciblé — **après** les lignes reconstituées, et datée du **jour** :
+Charge le skill `journal` et ajoute **une ligne** dans `docs/journal/socle.md`,
+par `Edit` ciblé — **après** les lignes reconstituées, et datée du **jour** :
 
 - **Phase** : `migrate`
 - **Résultat** : ce qui a été constaté et corrigé — `3 anciens plugins à désinstaller · journal
-  reconstitué (9 lignes) · format-lint renseigné`. Si aucun ancien plugin n'a été trouvé et que
-  rien n'a été écrit : `rien à migrer · journal déjà en place`.
+  converti (24 lignes, 3 fichiers) · 3 lignes reconstituées · chantiers/ créé · format-lint
+  renseigné`. Si aucun ancien plugin n'a été trouvé et que rien n'a été écrit : `rien à migrer ·
+  journal déjà éclaté`.
 
 Cette ligne est écrite **même si l'humain a refusé toutes les autres écritures** : le diagnostic
-a eu lieu, c'est un événement. Elle ne l'est pas si `docs/JOURNAL.md` n'a pas pu être créé
+a eu lieu, c'est un événement. Elle ne l'est pas si `docs/journal/socle.md` n'a pas pu être créé
 (refus, ou absence de `docs/`).
 
 ## Skill active
 
-- `journal` — contrat de `docs/JOURNAL.md`, et surtout sa section **« Reconstitution
-  (migration) »** : source de date, table des lignes reconstituables, non-reconstituables.
+- `journal` — contrat de `docs/journal/*.md`, et surtout sa référence
+  **`references/reconstitution.md`** : recette de conversion, source de date, table des lignes
+  reconstituables, non-reconstituables. Tu es la seule commande à la charger.
+- `chantier` — uniquement pour l'arborescence de `docs/chantiers/` que tu scaffoldes.
 - `feature-specs` — table « Cibler une feature » pour dériver la phase de chaque feature.
 - `implement` — `references/tasks-parsing.md` pour lire les lots `Rn` et leurs lignes méta.
 

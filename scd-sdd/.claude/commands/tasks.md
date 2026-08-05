@@ -99,8 +99,8 @@ Ratio : 40% humain / 60% AI (découpage mécanique ; l'humain valide l'ordre et 
 
 ## Consigne au journal
 
-Charge le skill `journal` et ajoute **une ligne** dans la section `## NNN-slug` de
-`docs/JOURNAL.md`, par `Edit` ciblé :
+Charge le skill `journal` et ajoute **une ligne** dans `docs/journal/NNN-slug.md`,
+par `Edit` ciblé :
 
 - **Phase** : `tasks`
 - **Résultat** : le nombre de lots `Rn` et de tâches `Tn`, et les modes non-`TDD` s'il y en a.
@@ -109,7 +109,7 @@ Charge le skill `journal` et ajoute **une ligne** dans la section `## NNN-slug` 
 ## Skill active
 
 - `feature-specs` — charge `references/tasks.md` et `references/reviewability.md`.
-- `journal` — contrat de `docs/JOURNAL.md`.
+- `journal` — contrat de `docs/journal/*.md`.
 
 ## À la fin
 

@@ -119,9 +119,9 @@ cochés.
 ## État dérivé, événement journalisé
 
 Les cases de `tasks.md` donnent un instantané : elles disent *quels lots sont faits*, jamais
-*ce qui s'est passé*. Chaque commande d'action de ce niveau consigne donc sa ligne dans la
-section `## NNN-slug` de `docs/JOURNAL.md` : `run` et `run-parallel` (une ligne **par lot**),
-`sync`, `reland`. Seul `status-impl` n'écrit rien — il lit.
+*ce qui s'est passé*. Chaque commande d'action de ce niveau consigne donc sa ligne dans
+`docs/journal/NNN-slug.md` : `run` et `run-parallel` (une ligne **par lot**), `sync`, `reland`.
+Seul `status-impl` n'écrit rien — il lit.
 
 Un fait de ce niveau n'est **dérivable de rien** : l'**issue d'un lot bloqué**. Un run qui
 échoue ne coche aucune case et n'ouvre aucune PR — sans sa ligne au journal, il est

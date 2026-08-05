@@ -139,8 +139,8 @@ Partagées avec `/scd-sdd:status-impl` et `/scd-sdd:sync` ; portées par le skil
 
 ## Consigne au journal
 
-Charge le skill `journal` et ajoute **une ligne** dans la section `## NNN-slug` de
-`docs/JOURNAL.md`, par `Edit` ciblé — **une ligne par orphelin traité**.
+Charge le skill `journal` et ajoute **une ligne** dans `docs/journal/NNN-slug.md`,
+par `Edit` ciblé — **une ligne par orphelin traité**.
 
 - **Phase** : `reland`
 - **Résultat** : l'action effectuée et les deux PR en jeu. Succès :
@@ -158,7 +158,7 @@ sur disque ne le dit.
 
 - `feature-specs` — section « Cibler une feature » pour la résolution de la cible.
 - `implement` — charge `references/tasks-parsing.md` ; définitions de l'anti-orphelinage.
-- `journal` — contrat de `docs/JOURNAL.md`.
+- `journal` — contrat de `docs/journal/*.md`.
 
 ## À la fin
 

@@ -82,7 +82,7 @@ l'aval, on ne l'inscrit pas.
 - **Relançable, mais re-gate.** Toute modification du contrat invalide le dernier verdict `analyze` :
   reconfirmer `PRÊT` après application. Le premortem ne persiste **aucun état** sur disque — comme
   `analyze`, il ne laisse que ses effets dans les documents, plus **une ligne datée dans
-  `docs/JOURNAL.md`**. Cette ligne est ce qui le rend traçable du tout : le premortem édite
+  `docs/journal/NNN-slug.md`**. Cette ligne est ce qui le rend traçable du tout : le premortem édite
   `spec/plan/tasks` sans y laisser le moindre marqueur, donc son passage n'est dérivable d'aucun
   fichier. C'est un événement, pas un verdict à relire comme un état.
 - **Le cycle boucle après.** Une fois le contrat durci et re-gaté `PRÊT`, il part vers le workflow

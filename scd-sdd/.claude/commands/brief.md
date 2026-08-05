@@ -74,8 +74,8 @@ Ratio : 60% humain / 40% AI (l'humain répond, tu structures).
 
 ## Consigne au journal
 
-Charge le skill `journal` et ajoute **une ligne** dans la section `## Socle` de
-`docs/JOURNAL.md`, par `Edit` ciblé (crée le fichier ou la section s'ils manquent) :
+Charge le skill `journal` et ajoute **une ligne** dans `docs/journal/socle.md`,
+par `Edit` ciblé (crée le fichier s'il manque) :
 
 - **Phase** : `brief`
 - **Résultat** : chiffré et factuel — nb de personas · nb de `SC-xxx` · nb d'exclusions.
@@ -84,7 +84,7 @@ Charge le skill `journal` et ajoute **une ligne** dans la section `## Socle` de
 ## Skill active
 
 - `project-docs` — charge `references/brief.md` (`template` + `guidance` + `completion`).
-- `journal` — contrat de `docs/JOURNAL.md`.
+- `journal` — contrat de `docs/journal/*.md`.
 
 ## À la fin
 

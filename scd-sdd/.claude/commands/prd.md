@@ -78,8 +78,8 @@ Ratio : 60% humain / 40% AI (l'humain arbitre, tu dérives et structures).
 
 ## Consigne au journal
 
-Charge le skill `journal` et ajoute **une ligne** dans la section `## Socle` de
-`docs/JOURNAL.md`, par `Edit` ciblé (crée le fichier ou la section s'ils manquent) :
+Charge le skill `journal` et ajoute **une ligne** dans `docs/journal/socle.md`,
+par `Edit` ciblé (crée le fichier s'il manque) :
 
 - **Phase** : `prd`
 - **Résultat** : nb de `FR-xxx` · nb de `SC-xxx` · nb de marqueurs restants.
@@ -88,7 +88,7 @@ Charge le skill `journal` et ajoute **une ligne** dans la section `## Socle` de
 ## Skill active
 
 - `project-docs` — charge `references/prd.md`.
-- `journal` — contrat de `docs/JOURNAL.md`.
+- `journal` — contrat de `docs/journal/*.md`.
 
 ## À la fin
 

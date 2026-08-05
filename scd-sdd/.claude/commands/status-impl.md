@@ -15,6 +15,8 @@ allowed-tools:
   - Bash(gh pr view *)
   - Bash(glab mr list *)
   - Bash(glab mr view *)
+  - Bash(grep *)
+  - Bash(ls *)
 ---
 
 ## Contexte
@@ -31,9 +33,13 @@ Tu croises **trois sources** :
   les cases `[x]` **sont** la source de vérité : c'est ce niveau-ci qui les coche, via
   `progress-recorder` ;
 - **l'état des PR** (`gh`/`glab`), qui donne la sûreté de merge ;
-- **`docs/JOURNAL.md`**, qui donne le seul fait que ni les cases ni les PR ne portent : **un run
-  bloqué**. Un run qui échoue ne coche rien et n'ouvre aucune PR — sans le journal, il est
+- **`docs/journal/NNN-slug.md`**, qui donne le seul fait que ni les cases ni les PR ne portent :
+  **un run bloqué**. Un run qui échoue ne coche rien et n'ouvre aucune PR — sans le journal, il est
   indiscernable d'un lot jamais lancé.
+
+Et, en complément, l'**en-tête** des fiches de `docs/chantiers/en-cours/` : si la `Portée` d'une
+fiche nomme un lot, ce lot a été relayé par un `/scd-sdd:pause`. C'est la réparation la plus
+concrète de l'angle mort de `DECISIONS.md` §D8 — sans jamais scanner les worktrees.
 
 Tu es la vue **détaillée du niveau implémentation**. La vue des trois niveaux est `/scd-sdd:status` ;
 le détail des specs est dans `/scd-sdd:status-specs`.
@@ -42,10 +48,15 @@ Ratio : 10% humain / 90% AI (lecture mécanique ; l'humain choisit la suite).
 
 ## Règles absolues
 
-- **Lecture seule.** Tu ne modifies aucun fichier — **pas même `docs/JOURNAL.md`** — et tu ne lances
-  aucun workflow. `git fetch` (mise à jour des refs de suivi) est toléré : il ne touche ni l'arbre de
-  travail ni l'historique local. Tout le reste est de la lecture. Tu ne joues aucune phase, donc tu ne
-  consignes rien, et c'est de nature, pas un oubli.
+- **Lecture seule.** Tu ne modifies aucun fichier — **ni un journal, ni une fiche de chantier** — et
+  tu ne lances aucun workflow. `git fetch` (mise à jour des refs de suivi) est toléré : il ne touche
+  ni l'arbre de travail ni l'historique local. Tout le reste est de la lecture. Tu ne joues aucune
+  phase, donc tu ne consignes rien, et c'est de nature, pas un oubli.
+- **Des fiches de chantier tu ne lis que la ligne `Portée`.** Jamais le corps, jamais le manifeste :
+  c'est `/scd-sdd:resume` qui restitue une intention, et ça coûte un contexte qu'un tableau de bord
+  ne dépense pas. Un chantier **ne change pas** le calcul du prochain lot lançable.
+- **Tu n'ouvres aucun journal en entier** : tu en extrais par motif les lignes `run Rn`, `sync` et
+  `reland` (étape 5).
 - **Dérive l'avancement des cases de `tasks.md`**, jamais du contexte (il a été effacé) ni d'un
   fichier d'état (il dériverait).
 - **Une ligne de journal n'est jamais un état.** C'est un événement daté. La colonne « Dernier run »
@@ -95,8 +106,13 @@ Partagées avec `/scd-sdd:sync` et `/scd-sdd:reland` ; portées par le skill `im
    **dont toutes les dépendances (`dépend de : Rn`) sont faites**. Signale tout lot **bloqué**
    (dépendance non faite).
 
-5. **Lis `docs/JOURNAL.md`** s'il existe. Pour chaque lot, dans la section `## NNN-slug` de la feature,
-   relève la **dernière** ligne dont la phase est `run Rn`, plus les lignes `sync`/`reland` qui la
+5. **Extrais de `docs/journal/NNN-slug.md`**, s'il existe, sans l'ouvrir :
+
+   ```bash
+   grep -hE '\| (run R|sync|reland) ' docs/journal/NNN-slug.md
+   ```
+
+   Pour chaque lot, garde la **dernière** ligne `run Rn`, plus les lignes `sync`/`reland` qui la
    suivent. C'est ce qui alimente la colonne **« Dernier run »**, et c'est la seule façon de voir :
    - un lot **bloqué** (`⛔ blocked-*`) — aucune case cochée, aucune PR : invisible partout ailleurs ;
    - un lot **relancé après échec** — deux lignes, dont on ne garde que la dernière ;
@@ -107,6 +123,11 @@ Partagées avec `/scd-sdd:sync` et `/scd-sdd:reland` ; portées par le skill `im
    péremption doit être vérifiée. Ici les cases de `tasks.md` sont autoritaires et toujours à jour :
    le journal ne fait qu'**ajouter** ce qu'elles ne peuvent pas porter. En cas de désaccord (journal
    `✅ done`, cases non cochées), affiche les deux et **fie-toi aux cases**.
+
+   Puis `ls docs/chantiers/en-cours/` et, pour chaque fiche, lis **la seule ligne `Portée`**
+   (`grep -m1 '^Portée' <fiche>`). Une portée de la forme `NNN-slug · lot Rn` marque ce lot d'un
+   `⏸` dans la colonne « Dernier run », avec le titre de la fiche en note de pied. Cela ne change
+   **rien** au calcul de l'étape 4.
 
 6. **Classe la sûreté de merge de chaque PR de lot** (best-effort ; saute proprement si
    `gh`/`glab`/remote indisponible et signale « état PR indisponible »). Pour chaque lot `Rn`, récupère
@@ -179,14 +200,17 @@ Colonne **Dernier run** — le seul fait de ce tableau qui ne vient ni des fichi
 
 - **`specs/` vide, ou aucun `tasks.md`** → « Aucune feature prête à implémenter. Termine un cycle de
   specs (jusqu'à `analyze`). »
-- **`docs/JOURNAL.md` absent** (projet démarré avant le journal) → tableau **complet mais sans colonne
-  « Dernier run »**, et une ligne de pied qui le dit : « Pas de `docs/JOURNAL.md` — l'issue des runs
+- **`docs/journal/` absent** (projet démarré avant le journal) → tableau **complet mais sans colonne
+  « Dernier run »**, et une ligne de pied qui le dit : « Pas de `docs/journal/` — l'issue des runs
   passés n'est pas connaissable hors session, notamment les runs bloqués. Elle apparaîtra au prochain
   run. » **Toi, tu ne le crées ni ne le reconstruis** : tu es en lecture seule. Projet venu des trois
   anciens plugins → renvoie vers `/scd-sdd:migrate`, la seule commande qui le crée. Elle ne
   reconstitue **pas** l'issue des runs pour autant : elle n'a aucune source pour ça.
-- **Section `## NNN-slug` absente pour une feature existante** → colonne à `—` sur tous ses lots. Ce
-  n'est pas une anomalie : aucun lot n'a jamais été lancé.
+- **`docs/JOURNAL.md` présent** (projet suivi avant l'éclatement du journal) → dis-le en une
+  ligne et renvoie vers `/scd-sdd:migrate`, qui le convertit. **Tu ne le lis pas.**
+- **`docs/journal/NNN-slug.md` absent pour une feature existante** → colonne à `—` sur tous ses lots.
+  Ce n'est pas une anomalie : aucun lot n'a jamais été lancé.
+- **`docs/chantiers/` absent ou `en-cours/` vide** → aucun `⏸`, aucune note de pied, aucune mention.
 - **Pas de `gh`/`glab`, ou pas de remote** → voir la note du `<report>`. **N'annonce ni DANGEREUX ni
   ORPHELIN** : ces deux états exigent l'état des PR.
 - **Hors dépôt git** → pas de signal `main` du tout : n'affiche que l'avancement et la colonne
@@ -201,12 +225,16 @@ Colonne **Dernier run** — le seul fait de ce tableau qui ne vient ni des fichi
   l'avancement dérivé des cases, l'issue journalisée, et l'état/base des PR.
 - Tu ne dérives aucune phase de specs : c'est `/scd-sdd:status-specs`.
 - Tu ne convertis pas une ligne de journal en avancement : sur désaccord, les cases gagnent.
+- Tu ne lis pas le **corps** d'une fiche de chantier — seulement sa ligne `Portée` — et un chantier
+  ne modifie jamais le prochain lot lançable que tu recommandes.
 
 ## Skill active
 
 - `implement` — charge `references/tasks-parsing.md` ; définitions de l'anti-orphelinage.
 - `feature-specs` — section « Cibler une feature » si un argument doit être résolu.
-- `journal` — contrat de `docs/JOURNAL.md` (**lecture seule ici**).
+- `journal` — contrat de `docs/journal/*.md` (**lecture seule ici**).
+- `chantier` — format de l'en-tête, pour lire la ligne `Portée` (**cette ligne seule, lecture seule
+  ici** ; tu ne charges pas `references/manifeste.md`).
 
 ## À la fin
 

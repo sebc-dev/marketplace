@@ -48,8 +48,8 @@ approuve, le troisième applique).
    `tasks.md` **ayant passé `analyze`**. **Annonce la cible retenue.**
 
    Vérifie que la gate est au vert : le premortem se joue **après** `analyze`, jamais à sa
-   place. La section `## NNN-slug` de `docs/JOURNAL.md` en porte la trace datée — vérifie aussi
-   que les documents n'ont pas bougé depuis. Sinon, renvoie vers `/scd-sdd:analyze NNN`.
+   place. `docs/journal/NNN-slug.md` en porte la trace datée — vérifie aussi que les documents
+   n'ont pas bougé depuis. Sinon, renvoie vers `/scd-sdd:analyze NNN`.
 
 2. **Charge la référence** : `references/premortem.md` du skill `feature-specs`.
 
@@ -94,8 +94,8 @@ Le premortem **édite `spec.md` / `plan.md` / `tasks.md` sans y laisser le moind
 son passage n'est dérivable d'aucun fichier. Sans cette ligne, il est invisible — c'est
 pourquoi il n'apparaît pas dans la table de dérivation du skill.
 
-Charge le skill `journal` et ajoute **une ligne** dans la section `## NNN-slug` de
-`docs/JOURNAL.md`, par `Edit` ciblé :
+Charge le skill `journal` et ajoute **une ligne** dans `docs/journal/NNN-slug.md`,
+par `Edit` ciblé :
 
 - **Phase** : `premortem`
 - **Résultat** : le nombre de remédiations appliquées et les IDs créés.
@@ -107,7 +107,7 @@ C'est un fait utile, et l'absence de ligne se lirait comme un premortem jamais j
 ## Skill active
 
 - `feature-specs` — charge `references/premortem.md`.
-- `journal` — contrat de `docs/JOURNAL.md`.
+- `journal` — contrat de `docs/journal/*.md`.
 - Subagents, dans cet ordre : `premortem-facilitator` → `premortem-validator` → *[gate
   humain]* → `premortem-applier`.
 

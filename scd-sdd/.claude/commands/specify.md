@@ -72,8 +72,8 @@ Ratio : 60% humain / 40% AI (l'humain répond, tu structures en EARS).
 
 ## Consigne au journal
 
-Charge le skill `journal` et ajoute **une ligne** dans la section `## NNN-slug` de
-`docs/JOURNAL.md`, par `Edit` ciblé (crée la section ou le fichier s'ils manquent) :
+Charge le skill `journal` et ajoute **une ligne** dans `docs/journal/NNN-slug.md`,
+par `Edit` ciblé (crée le fichier s'il manque) :
 
 - **Phase** : `specify`
 - **Résultat** : le nombre de `FR` et le nombre de marqueurs restants.
@@ -83,7 +83,7 @@ Charge le skill `journal` et ajoute **une ligne** dans la section `## NNN-slug` 
 
 - `feature-specs` — charge `references/spec.md` et `references/ears.md` (+ `delta.md` /
   `gherkin.md` au besoin).
-- `journal` — contrat de `docs/JOURNAL.md`.
+- `journal` — contrat de `docs/journal/*.md`.
 
 ## À la fin
 

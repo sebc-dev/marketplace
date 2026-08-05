@@ -173,9 +173,9 @@ Ratio : 30% humain / 70% AI (l'humain valide le plan de chaînes avant le fan-ou
 
 ## Consigne au journal
 
-Charge le skill `journal` et ajoute, dans la section `## NNN-slug` de `docs/JOURNAL.md`, **une ligne
-par lot** — jamais une ligne unique pour le lancement d'ensemble. Un run parallèle de trois lots
-produit **trois** lignes, dans l'ordre des lots.
+Charge le skill `journal` et ajoute, dans `docs/journal/NNN-slug.md`, **une ligne par lot** — jamais
+une ligne unique pour le lancement d'ensemble. Un run parallèle de trois lots produit **trois**
+lignes, dans l'ordre des lots.
 
 - **Phase** : `run Rn` — identique à `/scd-sdd:run`. Le journal ne distingue pas le mode de
   lancement : ce qui compte est l'issue du lot, pas la façon dont il a été démarré.
@@ -196,13 +196,17 @@ Ce n'est pas une classe de problème nouvelle : `tasks.md` est déjà édité pa
 - `feature-specs` — section « Cibler une feature » pour la résolution de la cible.
 - `implement` — charge `references/tasks-parsing.md` (§co-parallélisabilité) et
   `references/verification-modes.md`.
-- `journal` — contrat de `docs/JOURNAL.md`.
+- `journal` — contrat de `docs/journal/*.md`.
 
 ## À la fin
 
 Propose la suite : `/scd-sdd:status-impl NNN` (classe la sûreté de merge des PR),
 `/scd-sdd:sync NNN` (quand une dépendance est mergée), `/scd-sdd:reland NNN` (si un orphelin est
 signalé), ou relancer un lot bloqué via `/scd-sdd:run NNN Rn`.
+
+Sur un lot bloqué dont la reprise n'est pas immédiate — et **en particulier si son worktree a été
+conservé** : « `/scd-sdd:pause` depuis ce worktree avant de `/clear`. La fiche enregistrera sa
+branche, et le hook la ressortira à la prochaine session ouverte dessus. »
 
 Coût : le parallèle multiplie la dépense d'un dynamic workflow par le nombre de lots concurrents.
 Réserve-le aux lots réellement indépendants et de taille maîtrisée. Suivre `/workflows`.

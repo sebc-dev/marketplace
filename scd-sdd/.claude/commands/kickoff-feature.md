@@ -87,11 +87,14 @@ Ratio : 30% humain / 70% AI (setup mécanique + cadrage ; l'humain tranche l'éc
 
 ## Hooks (couche déterministe)
 
-Le plugin livre deux hooks, **actifs dès son installation** — rien à câbler dans le projet :
+Le plugin livre trois hooks, **actifs dès son installation** — rien à câbler dans le projet :
 
 - **PreToolUse** `block-adr-edits.sh` — immutabilité des ADR (`exit 2` sur `docs/adr/NNNN-*` ;
   `docs/adr/_candidates/` reste autorisé, c'est là qu'écrit `plan`).
 - **PostToolUse** `format-lint.sh` — format/lint après édition.
+- **SessionStart** `chantier-notice.sh` — annonce le chantier en cours après un `/clear`. **Lecture
+  seule, aucun placeholder à renseigner**, et silencieux tant que `docs/chantiers/en-cours/` est
+  vide. Il n'écrit jamais de fiche : un hook ne connaît pas l'issue de ce qu'il consignerait.
 
 Ta seule action ici : proposer de renseigner les placeholders `FORMAT_CMD` / `LINT_CMD` de
 `format-lint.sh` avec les commandes du projet (lis-les dans `CLAUDE.md` si elles y sont, sinon
@@ -109,9 +112,9 @@ Les gates liées à l'exécution des tests relèvent du niveau implémentation �
 
 ## Consigne au journal
 
-Charge le skill `journal` et ajoute **une ligne** dans `docs/JOURNAL.md`, par `Edit` ciblé.
-C'est cette commande qui **crée la section `## NNN-slug`** — en fin de fichier, après les
-sections existantes (et le fichier lui-même s'il manque) :
+Charge le skill `journal` et ajoute **une ligne** dans `docs/journal/NNN-slug.md`, par
+`Edit` ciblé. C'est cette commande qui **crée le fichier de journal de la feature** —
+titre et bloc de citation prescrits par le skill, puis la table :
 
 - **Phase** : `kickoff-feature`
 - **Résultat** : le dossier créé · l'échelle retenue · le mode.
@@ -123,7 +126,7 @@ feature n'a été ouverte.
 ## Skill active
 
 - `feature-specs` — vue d'ensemble du cycle, table « Cibler une feature », seuils.
-- `journal` — contrat de `docs/JOURNAL.md` (gabarit, règle d'ajout).
+- `journal` — contrat de `docs/journal/*.md` (gabarit, règle d'ajout).
 
 ## À la fin
 
