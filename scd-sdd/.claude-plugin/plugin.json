@@ -1,7 +1,7 @@
 {
   "name": "scd-sdd",
-  "version": "1.3.0",
-  "description": "Cycle spec-driven complet, du projet vide à la PR. Trois niveaux enchaînés : le SOCLE une fois au démarrage (brief → prd → stack → ADR → CLAUDE.md), les SPECS par feature (specify → clarify → plan → tasks → analyze, critères EARS, lots de review Rn dimensionnés pour être reviewables), puis l'IMPLÉMENTATION lot par lot (dynamic workflow orchestrant des subagents dédiés : branche, vérification selon le mode déclaré — TDD, test-after, check ou inhérent —, review en contexte frais, triage adversarial, PR ready-for-review). Chaque phase dérive son état des fichiers, jamais d'un fichier d'état : /clear efface le contexte, pas la progression. Chaque phase jouée laisse une ligne datée dans le journal de sa cible — docs/journal/socle.md ou docs/journal/NNN-slug.md, un fichier par cible pour qu'aucun ne croisse sans borne — dont les trois faits que rien ne permet de dériver : verdict de la gate analyze, remédiations d'un premortem, issue d'un lot y compris bloqué. Le travail qui ne relève d'aucune phase, ou qu'un /clear interrompt en vol, devient un CHANTIER : une fiche datée sous docs/chantiers/, dont l'état est son répertoire (en-cours, en-attente, archive) et qui porte un manifeste de contexte — des références chargées à la demande, jamais du contenu recopié. /scd-sdd:pause la pose, /scd-sdd:resume la reprend en contrôlant sa fraîcheur, /scd-sdd:note archive un travail déjà terminé, et un hook SessionStart annonce celle qui correspond à la branche courante. La gate analyze s'appuie sur le même mécanisme : sa liste de corrections vit dans un chantier de gate, les Major s'y arbitrent une fois pour toutes avec motif, et specify/clarify/plan/tasks la lisent au lieu de repartir à froid — ce qui ferme la boucle où le contrat ne convergeait pas. /scd-sdd:status rend les trois niveaux et les chantiers en une vue, avec la prochaine commande à jouer. Remplace scd-project-docs, scd-feature-specs et scd-implement ; /scd-sdd:migrate reprend un projet venu d'eux ou d'une version antérieure à l'éclatement du journal, et convertit un docs/JOURNAL.md monolithique.",
+  "version": "1.5.0",
+  "description": "Cycle spec-driven complet, du projet vide à la PR. Trois niveaux. Le SOCLE, une fois au démarrage : brief → prd → stack → ADR → ci → CLAUDE.md, où ci rend déterministe, hors de l'agent, ce que CLAUDE.md ne peut que conseiller. Les SPECS, par feature : specify → clarify → plan → tasks → analyze, critères EARS, lots de review Rn reviewables. L'IMPLÉMENTATION, lot par lot : un dynamic workflow orchestre des subagents dédiés — vérification selon le mode déclaré par le lot (TDD, test-after, check ou inhérent), review en contexte frais, triage adversarial, une PR par lot. L'état se dérive des fichiers : /clear efface le contexte, pas la progression. Chaque phase laisse une ligne datée dans le journal de sa cible — docs/journal/socle.md ou NNN-slug.md — dont les trois faits non dérivables : verdict de la gate analyze, premortem appliqué, issue d'un lot même bloqué. Le travail hors phase ou interrompu en vol devient un CHANTIER : une fiche sous docs/chantiers/, dont l'état est le répertoire. La recherche est TRANSVERSE : /scd-sdd:lookup répond en session sans rien écrire, /scd-sdd:research compose un prompt Claude Research puis classe et relit le rapport sous docs/research/ — un rapport ne descend jamais seul dans le socle. /scd-sdd:status rend les trois niveaux en une vue, et /scd-sdd:migrate reprend un projet venu des trois anciens plugins ou d'une version antérieure à l'éclatement du journal.",
   "author": {
     "name": "sebc.dev"
   },
@@ -12,6 +12,7 @@
     "kickoff",
     "prd",
     "adr",
+    "ci",
     "ears",
     "vertical-slice",
     "tdd",
@@ -20,6 +21,7 @@
     "subagents",
     "journal",
     "chantier",
+    "research",
     "handoff",
     "reprise",
     "gate",

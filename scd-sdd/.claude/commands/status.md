@@ -78,9 +78,10 @@ Ratio : 5% humain / 95% AI (lecture mécanique ; l'humain choisit la suite).
 
 2. **Niveau socle** — l'existence des fichiers, rien de plus, dans l'ordre de la chaîne du skill
    `project-docs` : `docs/brief.md` → `brief`, `docs/prd.md` → `prd`, `docs/stack.md` → `stack`,
-   `docs/adr/*.md` → `adr`, `CLAUDE.md` → `contract`. C'est l'état que `/scd-sdd:init-project`
-   établit ; tu le relis, tu ne le complètes pas. Un fichier présent contenant encore un
-   `[NEEDS CLARIFICATION]` compte comme **incomplet**, pas comme fait — nomme-le.
+   `docs/adr/*.md` → `adr`, `docs/ci.md` → `ci`, `CLAUDE.md` → `contract`. C'est l'état que
+   `/scd-sdd:init-project` établit ; tu le relis, tu ne le complètes pas. Un fichier présent
+   contenant encore un `[NEEDS CLARIFICATION]` compte comme **incomplet**, pas comme fait —
+   nomme-le.
 
 3. **Niveau specs** — pour chaque `specs/NNN-slug/`, applique la **table de dérivation de phase**
    du skill `feature-specs`. Relève aussi le mode (`DELTA.md` présent → delta).
@@ -153,7 +154,7 @@ Ratio : 5% humain / 95% AI (lecture mécanique ; l'humain choisit la suite).
 
 ## Où on en est
 
-Socle       ✅ complet — brief · prd · stack · 4 ADR · CLAUDE.md
+Socle       ✅ complet — brief · prd · stack · 4 ADR · ci · CLAUDE.md
 Specs       2 features · 1 validée · 1 à revalider
 Implém.     001-auth : 2/4 lots faits · PR #10, #12 journalisées
 
@@ -248,7 +249,7 @@ toutes, la plus récemment actualisée d'abord.
 - `feature-specs` — table de dérivation (§ « Cibler une feature ») et `references/status.md`
   (colonne `Gate`, règle de fraîcheur).
 - `implement` — `references/tasks-parsing.md` pour l'état des lots `Rn`.
-- `project-docs` — chaîne du socle (brief → prd → stack → adr → CLAUDE.md).
+- `project-docs` — chaîne du socle (brief → prd → stack → adr → ci → CLAUDE.md).
 - `journal` — contrat de `docs/journal/*.md` (**lecture seule ici**).
 - `chantier` — § « Contrôle de fraîcheur » et format de l'en-tête (**en-tête seul, lecture seule
   ici** ; tu ne charges pas `references/manifeste.md`).

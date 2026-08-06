@@ -35,6 +35,12 @@ Ratio : 30% humain / 70% AI (dérivation depuis la Stack ; l'humain valide le co
   existant — s'il devient faux, un futur ADR le remplacera.
 - **Traçabilité bidirectionnelle.** L'ADR trace vers `docs/stack.md`, et `docs/stack.md`
   doit référencer l'ADR en retour. Un sens sans l'autre laisse la boucle ouverte.
+- **Un fait daté se cite par sa source, jamais nu.** Si elle est un rapport de recherche,
+  c'est `docs/research/AAAA-MM-JJ-slug.md`, nommé dans le Contexte ou les Alternatives.
+  Un ADR est **immuable** : ce qui entre ici sans source ressort en décision que
+  `CLAUDE.md` interdit de contredire et que la gate `analyze` protège au lieu de la
+  questionner. Un fait que tu ne tiens pas de mémoire se source **avant** d'être figé —
+  `/scd-sdd:lookup` s'il est ponctuel, `/scd-sdd:research` s'il porte l'arbitrage.
 
 ## Processus
 
@@ -51,7 +57,10 @@ Ratio : 30% humain / 70% AI (dérivation depuis la Stack ; l'humain valide le co
 
 4. **Pour chaque décision structurante**, écris `docs/adr/NNNN-titre-en-kebab-case.md` :
    - **Contexte** — forces en présence, contraintes, et les `FR`/`SC` que la décision
-     sert (cités nommément) ;
+     sert (cités nommément). Un fait qui vient d'une recherche se cite par son fichier,
+     `docs/research/AAAA-MM-JJ-slug.md` — et ce qui y portait `[À VÉRIFIER]`,
+     `[INCERTAIN]` ou « source unique non recoupée » ne se fige pas ici sans que
+     l'utilisateur l'ait explicitement validé ;
    - **Décision** — en **voix active** : « Nous utiliserons X », pas « X pourrait être
      utilisé » ;
    - **Conséquences** — positives **et** négatives ; ce à quoi le code s'engage désormais ;
@@ -78,6 +87,9 @@ Ratio : 30% humain / 70% AI (dérivation depuis la Stack ; l'humain valide le co
 - Tu ne crées pas d'ADR pour une décision absente de la liste des candidats sans faire
   valider l'ajout par l'utilisateur.
 - Tu ne modifies rien d'autre dans `docs/stack.md` que la colonne « ADR ».
+- Tu ne touches à aucun rapport de `docs/research/` — pas même pour y noter l'ADR qu'il a
+  servi. Le lien va de l'ADR vers le rapport, jamais l'inverse : un rapport qui listerait
+  ses usages serait un fichier qui croît (`DECISIONS.md` §D23).
 
 ## Consigne au journal
 
@@ -98,4 +110,5 @@ par `Edit` ciblé (crée le fichier s'il manque) :
 Liste les ADR créés et confirme, candidat par candidat, que chacun a bien le sien — puis
 que la colonne « ADR » de `docs/stack.md` est complète.
 
-Puis : « `/clear`, puis `/scd-sdd:contract` pour assembler CLAUDE.md. »
+Puis : « `/clear`, puis `/scd-sdd:ci` pour poser les contrôles automatiques — la phase qui
+rend déterministe ce que `CLAUDE.md` ne pourra que conseiller. »

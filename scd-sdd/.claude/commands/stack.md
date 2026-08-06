@@ -48,6 +48,14 @@ Ratio : 50% humain / 50% AI (tu proposes et argumentes, l'humain arbitre).
    cible de déploiement, stratégie de test**, plus tout domaine propre au projet. Pour
    chacun :
    - présente **2-3 options** avec pour/contre **reliés aux `FR`/`SC` concernés** ;
+   - **si l'arbitrage dépend d'un fait que tu ne tiens pas de mémoire** — maturité réelle
+     d'un framework, limite d'un service géré, état d'un écosystème —, **fais-le sourcer
+     avant de trancher** : `/scd-sdd:research` pour un arbitrage entier,
+     `/scd-sdd:lookup` pour un fait ponctuel et daté, qui répond en session. Un pour/contre
+     écrit au jugé se lit exactement comme un pour/contre sourcé, et il descend ensuite dans
+     un ADR **immuable** : c'est là que la chaîne de traçabilité devient un vecteur de
+     blanchiment de citation. Annonce la question et laisse l'humain lancer la recherche —
+     tu reprends la phase quand le résultat est là ;
    - fais trancher l'utilisateur (`AskUserQuestion`) ;
    - note l'alternative écartée **et sa raison**.
 

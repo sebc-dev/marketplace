@@ -1,16 +1,16 @@
 ---
 name: journal
 description: |
-  Contrat des fichiers de suivi docs/journal/socle.md et docs/journal/NNN-slug.md du
-  cycle spec-driven : emplacement, format, règle d'ajout, vocabulaire de chaque phase,
-  et la frontière événement-vs-état qui décide ce qui a le droit d'y figurer. Se charge
-  quand une commande /scd-sdd:* consigne la phase qu'elle vient de jouer — les 18
-  commandes de phase, d'init-project à reland — et quand les trois status le relisent.
-  Porte UNIQUEMENT le journal : ni la dérivation de l'état depuis les fichiers (elle
-  appartient aux skills project-docs, feature-specs et implement), ni le travail hors
-  des phases du cycle, qui est un chantier et non une ligne (skill chantier), ni le
-  contenu des documents produits. La règle de reconstitution et de conversion vit dans
-  references/reconstitution.md, chargée par la seule commande migrate.
+  Contrat des fichiers de suivi docs/journal/socle.md et docs/journal/NNN-slug.md du cycle
+  spec-driven : emplacement, format, règle d'ajout, vocabulaire de chaque phase, et la
+  frontière événement-vs-état qui décide ce qui a le droit d'y figurer. Se charge quand une
+  commande /scd-sdd:* consigne la phase qu'elle vient de jouer — les 19 commandes de phase,
+  d'init-project à reland — et quand les trois status le relisent. Ni lookup ni research n'y
+  écrivent : leur rapport est le fait (skill research). Porte UNIQUEMENT le journal : ni la
+  dérivation de l'état depuis les fichiers (skills project-docs, feature-specs, implement),
+  ni le travail hors des phases du cycle, qui est un chantier et non une ligne (skill
+  chantier), ni le contenu des documents produits. La reconstitution vit dans
+  references/reconstitution.md, que seule la commande migrate charge.
 ---
 
 # Journal — `docs/journal/*.md`
@@ -131,6 +131,7 @@ Court, chiffré, factuel. Ce qu'on veut relire dans six mois — pas une phrase.
 | `prd` | nb FR · nb SC · marqueurs restants |
 | `stack` | choix structurants · nb de décisions → ADR |
 | `adr` | plage de numéros écrits · rétro-liage de `stack.md` |
+| `ci` | la forge · nb de contrôles bloquants et informatifs · seuil de couverture différentielle |
 | `contract` | nb de principes · taille de la DoD |
 | `kickoff-feature` | dossier `NNN-slug` créé · échelle · greenfield ou delta |
 | `specify` | nb FR · nb `[NEEDS CLARIFICATION]` |

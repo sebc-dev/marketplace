@@ -10,7 +10,7 @@ Cycle spec-driven complet, du projet vide à la PR — en un seul plugin.
 
 | Niveau | Quand | Produit |
 |---|---|---|
-| **Socle** | une fois, au démarrage du projet | `docs/{brief,prd,stack}.md`, `docs/adr/NNNN-*.md`, `CLAUDE.md` |
+| **Socle** | une fois, au démarrage du projet | `docs/{brief,prd,stack,ci}.md`, `docs/adr/NNNN-*.md`, le workflow de CI, `CLAUDE.md` |
 | **Specs** | une fois par feature | `specs/NNN-slug/{spec,plan,tasks}.md` |
 | **Implémentation** | un lot de review `Rn` à la fois | code, tests, commits, une PR par lot |
 
@@ -24,6 +24,7 @@ Cycle spec-driven complet, du projet vide à la PR — en un seul plugin.
 | `/scd-sdd:prd` | `docs/prd.md` |
 | `/scd-sdd:stack` | `docs/stack.md` |
 | `/scd-sdd:adr` | `docs/adr/NNNN-*.md` |
+| `/scd-sdd:ci` | `docs/ci.md` + le workflow de la forge |
 | `/scd-sdd:contract` | `CLAUDE.md` |
 
 ### Specs
@@ -58,6 +59,12 @@ Cycle spec-driven complet, du projet vide à la PR — en un seul plugin.
 | `/scd-sdd:pause` | pose ou actualise un chantier avant un `/clear` en cours de tâche |
 | `/scd-sdd:resume` | reprend un chantier : fraîcheur contrôlée, contexte rechargé |
 | `/scd-sdd:note` | archive un travail hors-cycle **déjà terminé** |
+
+### Recherche
+| Commande | Effet |
+|---|---|
+| `/scd-sdd:lookup` | répond **en session** à une question factuelle et datée, en citant ses sources — **n'écrit aucun fichier** |
+| `/scd-sdd:research` | l'**aller** : compose un prompt Claude Research dans `docs/research/` · le **retour** : classe le rapport revenu, le relit, et rend ce qu'il ne faut **pas** reprendre comme acquis |
 
 ### Reprise
 | Commande | Effet |
@@ -128,6 +135,50 @@ Deux mécanismes en découlent :
 
 Le rapport gagne aussi un bloc **« Corrigés depuis »** : le signal qui manquait pour
 distinguer *corrigé* de *pas re-mentionné cette fois*.
+
+## La phase `ci` — la vérification sort de l'agent
+
+`CLAUDE.md` est **advisory par construction** : écrire « les tests doivent passer » ne fait
+pas passer les tests. Le socle s'arrêtait là. Il gagne une phase avant sa dernière,
+`/scd-sdd:ci`, qui rend **déterministe** ce que le contrat ne peut que conseiller.
+
+Elle dérive de `docs/stack.md` **sept contrôles bloquants** — build et typage, tests et
+couverture *différentielle*, SCA sur lockfile committé, secrets vérifiés, SAST — dont deux
+qui visent l'agent et non le code qu'il écrit : **`test-integrity`** (assertion supprimée,
+`assert True`, `skip`/`xfail` ajouté, fichier de test vidé) et **`quality-config-guard`**
+(seuils abaissés, règles désactivées), ce dernier avec sa soupape `chore(ci):` pour ne pas
+bloquer sa propre maintenance.
+
+Pourquoi de l'extérieur : le niveau implémentation atteste **de lui-même** que les tests
+sont intacts. C'est la seule configuration producteur-vérificateur du plugin, et le terrain
+la dit insuffisante. La CI vérifie ce que l'agent affirme.
+
+Elle écrit `docs/ci.md` et le fichier de workflow ; elle **rend sans les exécuter** la
+recette `gh` de protection de branche et le bloc `PreToolUse` qui bloque `--no-verify` en
+local. Sans le ruleset posé — geste humain — tout ce qui précède est informatif. Le reste
+du durcissement part en fiche `docs/chantiers/en-attente/`, parce qu'une section de plus
+dans `docs/ci.md` ne serait jamais relue. `docs/ci.md` porte enfin, en section obligatoire,
+**ce que ces contrôles ne couvrent pas** : régression sémantique silencieuse, oracle faux,
+*building to the test*.
+
+## La recherche — transverse, et jamais reprise telle quelle
+
+Une recherche ne joue **aucune phase** : elle ne journalise pas, le **rapport est le fait**.
+`/scd-sdd:lookup` répond en session et ne persiste rien ; `/scd-sdd:research` fait l'aller
+(un prompt Claude Research prêt à coller) et le retour (le rapport classé sous
+`docs/research/AAAA-MM-JJ-slug.md`).
+
+La moitié qui compte est **le retour**. La chaîne de traçabilité du plugin — Brief → PRD →
+Stack → **ADR immuable** → spec → code — est un vecteur de *citation laundering* : une
+source inexistante gagne en légitimité en traversant des documents réels que personne ne
+vérifie, et ressort en décision que `CLAUDE.md` interdit de contredire. D'où la règle
+centrale : **`research` ne modifie aucun document du socle.** Il isole ce qui porte
+`[À VÉRIFIER]`, `[INCERTAIN]`, « source unique non recoupée », « éval interne », « préprint »
+ou « contenu commercial », le nomme comme **non repris comme acquis**, et rend une liste.
+L'humain décide ce qui descend dans `stack.md` ou dans un ADR.
+
+Le lien va donc de la décision vers sa source, **jamais l'inverse** : un rapport qui
+listerait les décisions qu'il a servies serait un fichier qui croît.
 
 ## Migration depuis les trois plugins
 

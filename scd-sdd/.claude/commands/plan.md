@@ -67,7 +67,11 @@ Ratio : 50% humain / 50% AI (arbitrages techniques partagés).
    - les **fichiers touchés** nommés, chacun avec son patron de référence existant ;
    - les **contrats d'interface**, cohérents avec les contrats d'E/S de la spec ;
    - les décisions et les **alternatives écartées** avec leur raison ; candidat ADR si une
-     décision est structurante **et** nouvelle ;
+     décision est structurante **et** nouvelle. Un arbitrage qui dépend d'un fait que tu ne
+     tiens pas de mémoire se **source avant** d'être écrit — `/scd-sdd:lookup` pour un fait
+     ponctuel et daté, `/scd-sdd:research` pour l'arbitrage entier. Ici ce n'est pas une
+     précaution de confort : un candidat non sourcé est promu tel quel par `/scd-sdd:adr`,
+     et devient immuable ;
    - l'**étape de vérification bout-en-bout**, unique.
 
 6. **Vérifie la couverture** : chaque `FR` de la spec est couvert par une portion du plan.

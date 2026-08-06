@@ -61,6 +61,7 @@ exécution, et sous quatre conditions strictes.
    | `docs/prd.md` | `socle.md` | `prd` | nb FR · nb SC |
    | `docs/stack.md` | `socle.md` | `stack` | choix structurants |
    | `docs/adr/NNNN-*.md` | `socle.md` | `adr` | **une seule ligne** — plage de numéros, datée du **dernier** ADR ajouté |
+   | `docs/ci.md` | `socle.md` | `ci` | nb de contrôles bloquants · nb d'informatifs |
    | `CLAUDE.md` | `socle.md` | `contract` | nb de principes · taille de la DoD |
    | `specs/NNN-slug/` | `NNN-slug.md` | `kickoff-feature` | mode — `DELTA.md` présent → delta |
    | `…/spec.md` | `NNN-slug.md` | `specify` | nb FR · nb `[NEEDS CLARIFICATION]` |

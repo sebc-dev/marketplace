@@ -1,8 +1,9 @@
 # Référence — Assemblage de `CLAUDE.md`
 
 <role>
-Dernière phase du kickoff. `CLAUDE.md` est le **contrat opérationnel** : chargé à chaque session,
-il **pointe** vers les docs produits (Brief, PRD, Stack, ADR) sans les recopier. C'est aussi ici
+Dernière phase du kickoff, la **sixième**. `CLAUDE.md` est le **contrat opérationnel** : chargé à
+chaque session, il **pointe** vers les docs produits (Brief, PRD, Stack, ADR, CI) sans les
+recopier, et il **lit** les commandes du projet dans `docs/ci.md`. C'est aussi ici
 que la **constitution est fondue** (principes non-négociables + seuils de déclenchement) plutôt
 que dans un fichier séparé. Advisory, pas exécutif : garder court, haut-signal, cible < 200 lignes.
 </role>
@@ -15,8 +16,9 @@ que dans un fichier séparé. Advisory, pas exécutif : garder court, haut-signa
 - Objet : [une phrase] — voir @docs/brief.md
 - Le "quoi" produit : @docs/prd.md — Les fondations techniques : @docs/stack.md
 - Décisions figées : @docs/adr/ — NE PAS contredire un ADR accepté
+- Ce qui est vérifié automatiquement : `docs/ci.md` — les contrôles bloquants font foi
 
-## Commandes (ce que Claude ne peut pas deviner)
+## Commandes (reprises de docs/ci.md — s'y reporter, ne pas diverger)
 - Build : `[commande]`
 - Test (unitaire) : `[commande]`   # préférer un seul test, pas toute la suite
 - Lint/format : `[commande]`        # SOURCE DE VÉRITÉ du style — ne pas documenter les règles ici
@@ -51,17 +53,18 @@ que dans un fichier séparé. Advisory, pas exécutif : garder court, haut-signa
 - **Pointer, pas recopier.** Le contenu du Brief/PRD/Stack reste dans `docs/` ; CLAUDE.md ne fait que `@import` la constitution stable et *mentionner* les chemins des specs. Recopier = dérive garantie.
 - **`@import` avec parcimonie.** Les fichiers `@importés` sont chargés au lancement : n'importer que le stable et universel. Laisser Brief/PRD/Stack être lus à la demande (backtick le chemin pour le mentionner sans l'importer si besoin).
 - **Constitution fondue ici** : la section « Principes & seuils » remplace un `constitution.md` séparé (choix assumé pour un solo).
-- **Advisory ≠ garanti.** Écrire la Definition of Done dans CLAUDE.md ne la fait pas respecter. Ce qui DOIT arriver à 100 % doit AUSSI devenir un hook/linter/test — le signaler à l'utilisateur comme prochaine étape (hors périmètre de ce kickoff de création).
+- **Advisory ≠ garanti.** Écrire la Definition of Done dans CLAUDE.md ne la fait pas respecter. Ce qui DOIT arriver à 100 % est exécuté par les contrôles bloquants de `docs/ci.md`, sous protection de branche : relier chaque item de DoD au job qui le vérifie, et laisser advisory — explicitement — ce qu'aucun job ne couvre.
 - **Concision.** Test de chaque ligne : « sa suppression ferait-elle échouer Claude ? » Sinon, couper. Un CLAUDE.md gonflé dilue les règles qui comptent.
-- **Commandes** : en greenfield elles peuvent être inconnues ; interviewer brièvement (build/test/lint/run) ou laisser des placeholders explicites `[à compléter]`.
+- **Commandes** : elles ne se devinent plus et ne s'inventent jamais — elles se **lisent** dans la table « Commandes du projet » de `docs/ci.md` et se recopient à l'identique. Un `[à compléter]` qui subsiste là-bas se reporte tel quel et se signale : c'est un trou de la phase `ci`, et le corriger ici créerait une commande que la CI n'exécute pas.
 </guidance>
 
 <completion>
 CLAUDE.md est terminé quand :
-- [ ] Il **pointe** vers `docs/brief.md`, `docs/prd.md`, `docs/stack.md`, `docs/adr/` — sans recopier leur contenu.
+- [ ] Il **pointe** vers `docs/brief.md`, `docs/prd.md`, `docs/stack.md`, `docs/adr/`, `docs/ci.md` — sans recopier leur contenu.
+- [ ] La section **Commandes** est identique à la table « Commandes du projet » de `docs/ci.md` — aucune commande ajoutée, aucune reformulée.
 - [ ] La section **Definition of Done** est présente et vérifiable.
 - [ ] La section **Principes & seuils** (constitution fondue) est présente.
 - [ ] Aucune règle de style n'est documentée à la main (déléguée au linter).
 - [ ] Le fichier reste court et haut-signal (viser < 200 lignes).
-- [ ] Les garanties dures (tests/lint bloquants) sont signalées à l'utilisateur comme devant devenir des hooks — étape hors de ce kickoff.
+- [ ] Les garanties dures (tests/lint bloquants) renvoient aux jobs de `docs/ci.md`, et **l'état de la protection de branche** est rappelé à l'utilisateur : tant qu'elle porte **À POSER**, ces contrôles sont informatifs.
 </completion>
