@@ -87,6 +87,11 @@ approuve, le troisième applique).
 - Tu n'édites aucun ADR accepté — candidats seulement (le hook `block-adr-edits` le bloque de
   toute façon, `exit 2`).
 - Tu ne rejoues pas `analyze` toi-même : tu la recommandes.
+- **Tu ne touches pas au chantier de gate** (`docs/chantiers/en-cours/*-gate-NNN-*.md`) s'il en
+  existe un. Tu viens de modifier le contrat : sa liste de corrections est **périmée**, et c'est
+  la re-passe `analyze` — que tu imposes — qui la rafraîchira en constatant ce qui a disparu et ce
+  que tes remédiations ont introduit. Ses **arbitrages** (`## Écarté`), eux, restent valides : une
+  remédiation ne rouvre pas une décision déjà prise.
 
 ## Consigne au journal
 
@@ -114,7 +119,9 @@ C'est un fait utile, et l'absence de ligne se lirait comme un premortem jamais j
 ## À la fin
 
 - **Remédiations appliquées** : « Contrat durci — R remédiations inscrites. **Relance
-  `/scd-sdd:analyze NNN`** pour reconfirmer `PRÊT` avant le passage de main. »
+  `/scd-sdd:analyze NNN`** pour reconfirmer `PRÊT` avant le passage de main. » Ajoute, si une
+  fiche de gate est ouverte : « sa liste de corrections est périmée jusqu'à cette re-passe — n'y
+  travaille pas d'ici là. »
 - **Rien retenu ou approuvé** : « Premortem passé sans remédiation : le contrat tient tel quel.
   La main passe à l'implémentation — `/scd-sdd:run NNN R1`. »
 

@@ -51,6 +51,19 @@ Ratio : 40% humain / 60% AI (découpage mécanique ; l'humain valide l'ordre et 
    « Cibler une feature ». Candidature propre à cette phase : la feature avec `plan.md` et
    **sans `tasks.md`**. **Annonce la cible retenue.**
 
+1bis. **Charge le chantier de gate, s'il y en a un** — `Glob` sur
+   `docs/chantiers/en-cours/*-gate-<cible>.md`. Une fiche ouverte signifie qu'une passe
+   `/scd-sdd:analyze` a laissé une liste de corrections : lis son `## À corriger` et son
+   `## Écarté`, et **pars de là**. C'est ici que ça compte le plus : **tous** les défauts de
+   découpage te reviennent, et re-dériver les lots à froid recasse ce qui allait autant que ça
+   corrige — c'est exactement la boucle `tasks` ↔ `analyze`.
+
+   Traite les entrées dont la ligne `Phase :` te désigne ; **laisse les autres intactes**, elles
+   relèvent d'une autre commande. Et **ne modifie pas la fiche** : c'est `/scd-sdd:analyze` qui
+   l'actualise, en constatant à la passe suivante ce qui a disparu.
+
+   Pas de fiche → tu pars du contrat. Ce n'est pas une anomalie.
+
 2. **Charge les références** : `references/tasks.md` **et** `references/reviewability.md` du
    skill `feature-specs`. La seconde n'est pas optionnelle — c'est elle qui porte les patterns
    de scission.
@@ -109,6 +122,8 @@ par `Edit` ciblé :
 ## Skill active
 
 - `feature-specs` — charge `references/tasks.md` et `references/reviewability.md`.
+- `chantier` — format de la fiche de gate, pour la LIRE seulement. Tu ne l'écris ni
+  ne la modifies : c'est `/scd-sdd:analyze` qui l'actualise.
 - `journal` — contrat de `docs/journal/*.md`.
 
 ## À la fin

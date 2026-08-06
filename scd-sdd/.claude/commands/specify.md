@@ -39,6 +39,18 @@ Ratio : 60% humain / 40% AI (l'humain répond, tu structures en EARS).
    « Cibler une feature ». Candidature propre à cette phase : le dossier `specs/NNN-*/` **sans
    `spec.md`**. **Annonce la cible retenue** avant d'écrire quoi que ce soit.
 
+1bis. **Charge le chantier de gate, s'il y en a un** — `Glob` sur
+   `docs/chantiers/en-cours/*-gate-<cible>.md`. Une fiche ouverte signifie qu'une passe
+   `/scd-sdd:analyze` a laissé une liste de corrections : lis son `## À corriger` et son
+   `## Écarté`, et **pars de là**. Corriger en re-dérivant à froid, c'est risquer de recasser ce
+   qui allait et de rater ce qui n'allait pas — c'est ainsi qu'on tourne en rond avec `analyze`.
+
+   Traite les entrées dont la ligne `Phase :` te désigne ; **laisse les autres intactes**, elles
+   relèvent d'une autre commande. Et **ne modifie pas la fiche** : c'est `/scd-sdd:analyze` qui
+   l'actualise, en constatant à la passe suivante ce qui a disparu.
+
+   Pas de fiche → tu pars du contrat. Ce n'est pas une anomalie.
+
 2. **Charge les références** : `references/spec.md` et `references/ears.md` du skill
    `feature-specs` — plus `references/delta.md` si un `DELTA.md` est présent (brownfield).
 
@@ -83,6 +95,8 @@ par `Edit` ciblé (crée le fichier s'il manque) :
 
 - `feature-specs` — charge `references/spec.md` et `references/ears.md` (+ `delta.md` /
   `gherkin.md` au besoin).
+- `chantier` — format de la fiche de gate, pour la LIRE seulement. Tu ne l'écris ni
+  ne la modifies : c'est `/scd-sdd:analyze` qui l'actualise.
 - `journal` — contrat de `docs/journal/*.md`.
 
 ## À la fin

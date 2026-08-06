@@ -34,7 +34,7 @@ Cycle spec-driven complet, du projet vide à la PR — en un seul plugin.
 | `/scd-sdd:clarify` | `spec.md` sans marqueur |
 | `/scd-sdd:plan` | `plan.md` |
 | `/scd-sdd:tasks` | `tasks.md` |
-| `/scd-sdd:analyze` | gate de conformité — rapport + verdict |
+| `/scd-sdd:analyze` | gate de conformité — verdict au journal, corrections dans un chantier de gate |
 | `/scd-sdd:premortem` | durcissement adverse du contrat |
 
 ### Implémentation
@@ -109,6 +109,25 @@ Un hook `SessionStart` annonce, après un `/clear`, la fiche dont la **branche**
 à celle du worktree courant — ce qui rend la reprise déterministe même avec plusieurs lots
 en parallèle. Il lit, il n'écrit jamais : un hook ne connaît pas l'issue de ce qu'il
 consignerait, et une fiche fabriquée est pire qu'un dossier vide.
+
+### Le chantier de gate — ce qui ferme la boucle `tasks` ↔ `analyze`
+
+`analyze` ne modifie aucun document du contrat et ne persiste aucun verdict — mais sa
+**liste de corrections** est désormais une fiche de portée `NNN-slug · gate`. Sans elle,
+la liste mourait au `/clear` suivant et la commande de correction repartait à froid :
+c'est ce qui faisait tourner le contrat en rond sans converger.
+
+Deux mécanismes en découlent :
+
+- **`specify` / `clarify` / `plan` / `tasks` lisent la fiche** avant de travailler, et
+  corrigent depuis sa liste plutôt qu'en re-dérivant tout.
+- **Un Major s'arbitre une fois**, avec motif et date, dans le `## Écarté` de la fiche. Aux
+  passes suivantes il est **détecté quand même** — les 14 contrôles se déroulent toujours
+  intégralement — mais présenté à part, hors du décompte du verdict. Un finding neuf ressort
+  alors du bruit. **Un Critical, lui, ne s'arbitre jamais.**
+
+Le rapport gagne aussi un bloc **« Corrigés depuis »** : le signal qui manquait pour
+distinguer *corrigé* de *pas re-mentionné cette fois*.
 
 ## Migration depuis les trois plugins
 

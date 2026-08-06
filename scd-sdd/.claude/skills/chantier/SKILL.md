@@ -105,8 +105,9 @@ Faire passer SHALL-4 au vert sans toucher au middleware de session.
 - Middleware `rateLimit` existant — compte par IP, le critère demande par compte.
 ```
 
-- **`Portée`**, vocabulaire fermé donc greppable : `NNN-slug · lot Rn` | `NNN-slug` | `socle` |
-  `hors-cycle`.
+- **`Portée`**, vocabulaire fermé donc greppable : `NNN-slug · lot Rn` | `NNN-slug · gate` |
+  `NNN-slug` | `socle` | `hors-cycle`. La portée `· gate` est la liste de corrections laissée par
+  `/scd-sdd:analyze` — contrat dans `feature-specs/references/analyze.md`, section `<gate>`.
 - **`branche`** porte une double charge : c'est l'**ancre de fraîcheur** *et* la **clé de sélection
   par worktree**. Ne l'omets jamais.
 - **`## Écarté` est la rubrique de plus forte valeur** : rien d'autre dans le projet ne porte les
@@ -178,8 +179,8 @@ l'invalidation se **calcule à la lecture**, elle n'est pas un artefact.
 | mise de côté | `resume` | `git mv` vers `en-attente/` |
 | fermeture / abandon | `resume` | ajoute `## Issue`, `git mv` vers `archive/` |
 
-Une fiche archivée n'est **jamais** supprimée : l'archive est la chronologie du hors-cycle, et son
-tri par nom la rend lisible sans index.
+Une fiche archivée n'est **jamais** supprimée : l'archive est la chronologie du hors-cycle, que son
+tri par nom rend lisible sans index.
 
 ## La frontière avec le journal
 

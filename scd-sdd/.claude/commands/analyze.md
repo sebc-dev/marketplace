@@ -1,12 +1,20 @@
 ---
-description: "Phase 5 des specs : gate de conformité du contrat. Lecture seule + rapport. Atteste que spec/plan/tasks sont prêts pour l'implémentation ET que le découpage produira des unités reviewables par un humain. 14 contrôles, rapport Critical/Major/Minor, verdict PRÊT ssi zéro Critical. Consigne son verdict au journal."
+description: "Phase 5 des specs : gate de conformité du contrat. Ne modifie aucun document du contrat. Atteste que spec/plan/tasks sont prêts pour l'implémentation ET que le découpage produira des unités reviewables par un humain. 14 contrôles, rapport Critical/Major/Minor, verdict PRÊT ssi zéro Critical. Consigne son verdict au journal, et porte la liste des corrections dans un chantier de gate pour qu'elle survive au /clear — avec les Major arbitrés une fois pour toutes."
 argument-hint: "[NNN ou slug — optionnel, résolu sinon]"
 allowed-tools:
   - Read
   - Glob
   - Grep
+  - Write
   - Edit
   - Task
+  - AskUserQuestion
+  - Bash(ls *)
+  - Bash(git rev-parse *)
+  - Bash(git add *)
+  - Bash(git commit *)
+  - Bash(git mv *)
+  - Bash(date *)
 ---
 
 ## Contexte
@@ -27,16 +35,27 @@ Ce n'est pas une revue de code : il n'existe pas encore. C'est un contrôle qual
 **contrat** — des « unit tests for English ». Attraper un trou ici coûte infiniment moins cher
 qu'après l'implémentation.
 
-Ratio : 30% humain / 70% AI (analyse mécanique ; l'humain décide de corriger ou de passer la
-main).
+Et une contrainte que les passes précédentes t'imposent : **converger**. Une gate qu'on rejoue
+trois fois en re-listant les mêmes findings ne valide rien, elle use. C'est pourquoi la liste de
+travail est portée par un **chantier de gate** et qu'un Major s'arbitre **une fois**.
+
+Ratio : 30% humain / 70% AI (analyse mécanique ; l'humain décide de corriger, d'arbitrer ou de
+passer la main).
 
 ## Règles absolues
 
 - **Tu ne modifies aucun document du contrat.** `spec.md`, `plan.md`, `tasks.md` et le socle
-  sortent de cette commande **bit pour bit identiques**. Ta sortie est un rapport en
-  conversation. Seule écriture autorisée : la ligne de journal (voir plus bas).
+  sortent de cette commande **bit pour bit identiques**. Tu écris exactement deux choses,
+  ailleurs : la **ligne de journal** et le **chantier de gate**.
 - **Tu ne persistes aucun verdict comme état.** Un `PRÊT` écrit sur disque deviendrait faux à
-  la première édition d'un document. La gate est bon marché : on la relance.
+  la première édition d'un document. La gate est bon marché : on la relance. Le chantier de gate
+  ne porte **pas** le verdict — il porte la **liste de travail**, qui ne devient pas fausse quand
+  un document bouge : elle devient *faite*, et c'est vérifiable.
+- **Tu déroules les 14 contrôles intégralement, à chaque passe.** Tu ne sautes **jamais** un
+  contrôle parce que la fiche dit « arbitré » : tu détectes tout, tu ne changes que la
+  présentation. C'est ce qui empêche la gate de devenir un tampon.
+- **On n'arbitre jamais un Critical.** Seuls les Major et les Minor s'écartent, avec motif et
+  date. Une demande d'arbitrage sur un Critical se refuse en le disant.
 - **Tu ne corriges pas toi-même** : tu nommes le fichier, l'ID et l'action.
 - **Tu ne juges pas le code** : il n'existe pas. Les tests sont *prévus* dans `tasks.md`,
   jamais exécutés ici.
@@ -54,10 +73,20 @@ main).
    « Cibler une feature ». Candidature propre à cette phase : la feature disposant d'un
    **`tasks.md`**. **Annonce la cible retenue.**
 
-2. **Charge la référence** : `references/analyze.md` du skill `feature-specs`.
+2. **Charge la référence** : `references/analyze.md` du skill `feature-specs` — dont sa section
+   `<gate>`, qui porte le contrat du chantier de gate.
 
 3. **Lis** `specs/<cible>/spec.md`, `plan.md`, `tasks.md`, plus `docs/prd.md`,
    `docs/stack.md` et `docs/adr/`.
+
+3bis. **Récupère l'historique de gate de cette feature**, sans quoi tu repartirais à froid :
+   - `ls docs/chantiers/en-cours/*-gate-<cible>.md` → une fiche ouverte ? Lis-la : son
+     `## À corriger` est la liste de la passe précédente, son `## Écarté` les arbitrages en
+     vigueur.
+   - Aucune fiche ouverte → `ls docs/chantiers/archive/*-gate-<cible>.md` et prends la **plus
+     récente** : tu en reprends le `## Écarté`, et lui seul. Un arbitrage est une décision, pas une
+     note de passage.
+   - Rien nulle part → première passe, tu pars de zéro. Ce n'est pas une anomalie.
 
 4. **Déroule les 14 contrôles** de `references/analyze.md` :
 
@@ -74,25 +103,56 @@ main).
    **`slice-auditor`** pour 12-14. Recommandé si la feature est grosse, et **fortement** si
    c'est cette session qui a rédigé les documents : elle est alors mal placée pour les juger.
 
-6. **Produis un seul rapport** classé **Critical / Major / Minor** selon le bloc `<report>` de
+6. **Apparie avec la passe précédente**, si elle existe — triplet `[ID]` · fichier · nature :
+   - apparié à une entrée d'`## Écarté` → bloc **« Déjà arbitrés »**, hors du décompte qui décide
+     du verdict ;
+   - présent dans la fiche mais introuvable maintenant → bloc **« Corrigés depuis »** ;
+   - le reste → rapport normal.
+
+7. **Produis un seul rapport** classé **Critical / Major / Minor** selon le bloc `<report>` de
    la référence — fusionne les findings des subagents **sans les rejuger** — avec la couverture
    chiffrée, le récapitulatif du découpage et le **Verdict**.
 
-7. **Consigne au journal** (voir ci-dessous).
+8. **Propose les arbitrages** (`AskUserQuestion`) : s'il reste des Major non arbitrés, demande
+   lesquels sont assumés et **exige un motif** pour chacun. Un refus de trancher est une réponse
+   valide — le Major reste dans la liste. **Ne propose jamais d'arbitrer un Critical.**
+
+9. **Écris le chantier de gate**, selon `<gate>` de la référence :
+   - **`CORRIGER D'ABORD`** → ouvre `docs/chantiers/en-cours/AAAA-MM-JJ-gate-<cible>.md` (ou
+     actualise celui qui existe) : les Critical, les Major non arbitrés, les arbitrages dans
+     `## Écarté`. Les Minor non arbitrés restent en conversation.
+   - **`PRÊT`** → une fiche ouverte existe ? Ajoute `## Issue` (ce qui a été corrigé, en combien de
+     passes) et `git mv` vers `archive/`. Aucune fiche → n'en crée pas : il n'y a pas de travail à
+     porter.
+
+   Puis `git add` **scopé à la fiche** et `git commit -m "chore(chantier): gate <cible>"` — sans
+   quoi l'arbre reste sale et `/scd-sdd:run` tombera en `blocked-dirty-tree`.
+
+10. **Consigne au journal** (voir ci-dessous).
 
 ## Ce que tu NE fais PAS
 
 - Aucune modification de `spec.md`, `plan.md`, `tasks.md`, ni du socle.
-- Aucun rapport écrit sur disque : le rapport reste en conversation.
+- **Tu n'écris pas le rapport sur disque** : il reste en conversation. La fiche de gate porte la
+  **liste de travail** — les Critical, les Major non arbitrés, les arbitrages — pas la couverture
+  chiffrée, pas le récapitulatif de découpage, pas les Minor non arbitrés.
+- **Tu n'écris jamais le verdict dans la fiche.** Il vit au journal, daté, et ne se relit que sous
+  contrôle de fraîcheur.
+- Tu n'arbitres pas un Critical, et tu n'arbitres rien **à la place de l'humain** : un arbitrage
+  sans motif explicite n'est pas un arbitrage.
+- Tu ne sautes aucun contrôle, même sur un finding déjà arbitré.
 - Tu ne prescris pas **comment** implémenter.
 - Tu n'exécutes aucun test.
 
 ## Consigne au journal
 
-C'est **l'exception explicite** à la règle de lecture seule, et la raison d'être de cette
-section : le verdict de cette gate n'existe **nulle part ailleurs**. Elle n'écrit aucun
-rapport, donc sans cette ligne, savoir si le contrat a été validé — et quand — est perdu à la
-fin de la session.
+Le **verdict** de cette gate n'existe **nulle part ailleurs** — surtout pas dans le chantier de
+gate, qui porte la liste de travail et jamais le verdict. Sans cette ligne, savoir si le contrat a
+été validé, et quand, est perdu à la fin de la session.
+
+Les deux écritures sont donc disjointes et le restent : **le journal dit ce qui est arrivé** (« le
+28/07, la gate a rendu PRÊT »), **la fiche dit ce qu'il reste à faire**. La première est immuable,
+la seconde s'actualise à chaque passe et disparaît quand elle est vide.
 
 Charge le skill `journal` et ajoute **une ligne** dans `docs/journal/NNN-slug.md`,
 par `Edit` ciblé :
@@ -112,7 +172,10 @@ Une gate au rouge se consigne **aussi** : c'est la moitié de l'histoire qui a d
 
 ## Skill active
 
-- `feature-specs` — charge `references/analyze.md`.
+- `feature-specs` — charge `references/analyze.md`, dont sa section `<gate>`.
+- `chantier` — format de la fiche, nommage, `Portée`, cycle de vie. Tu n'as **pas** besoin de
+  `references/manifeste.md` : le `## Contexte à charger` d'une fiche de gate se réduit aux deux ou
+  trois documents du contrat, tous petits et tous `à lire`.
 - `journal` — contrat de `docs/journal/*.md`.
 - Subagents (recommandés, en parallèle, contexte frais) : `ears-verifier` — contrat (1-11) ·
   `slice-auditor` — découpage (12-14).
@@ -134,3 +197,12 @@ reviewable par un humain. »
 **Si `CORRIGER D'ABORD`** — renvoie vers la phase concernée pour les Critical (`specify NNN` /
 `clarify NNN` / `plan NNN` / `tasks NNN` — **tous** les défauts de découpage relèvent de
 `tasks NNN`), puis relance `/scd-sdd:analyze NNN`.
+
+Rappelle que la liste est **dans la fiche de gate**, pas seulement à l'écran : « `/clear` puis
+`/scd-sdd:tasks NNN` — la commande chargera la fiche, tu ne repars pas de zéro. »
+
+**Si deux passes consécutives ne produisent ni correction constatée ni arbitrage neuf**, dis-le
+franchement au lieu de proposer une troisième : le contrat ne converge pas, et le blocage est
+ailleurs — périmètre trop large, `[NEEDS CLARIFICATION]` déguisé en critère, ou une feature qui
+demandait deux features. Propose alors `/scd-sdd:status-specs` et une décision humaine, pas une
+relance.
