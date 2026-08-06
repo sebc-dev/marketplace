@@ -4,9 +4,10 @@ description: |
   Contrat des fichiers de suivi docs/journal/socle.md et docs/journal/NNN-slug.md du cycle
   spec-driven : emplacement, format, règle d'ajout, vocabulaire de chaque phase, et la
   frontière événement-vs-état qui décide ce qui a le droit d'y figurer. Se charge quand une
-  commande /scd-sdd:* consigne la phase qu'elle vient de jouer — les 19 commandes de phase,
-  d'init-project à reland — et quand les trois status le relisent. Ni lookup ni research n'y
-  écrivent : leur rapport est le fait (skill research). Porte UNIQUEMENT le journal : ni la
+  commande /scd-sdd:* consigne la phase qu'elle vient de jouer — les 18 commandes de phase,
+  d'init-project à reland — plus premortem, qui n'est pas une phase mais ne laisse aucun
+  marqueur. Ni lookup ni research n'y écrivent : leur rapport est le fait (skill research).
+  Porte UNIQUEMENT le journal : ni la
   dérivation de l'état depuis les fichiers (skills project-docs, feature-specs, implement),
   ni le travail hors des phases du cycle, qui est un chantier et non une ligne (skill
   chantier), ni le contenu des documents produits. La reconstitution vit dans
@@ -22,8 +23,9 @@ cases `[x]` de `tasks.md` → les lots faits. C'est robuste et ça survit au `/c
 maintenir. Mais la dérivation ne donne qu'un instantané : elle dit *où on en est*, jamais *comment
 on y est arrivé, ni quand*.
 
-Le journal est donc la **chronologie des phases jouées** — une ligne par phase. Chaque commande qui
-joue une phase y consigne son résultat ; les trois `status` ne consignent rien, ils lisent.
+Le journal est donc la **chronologie des phases jouées** — une ligne par phase jouée, **et par ce
+qui n'est dérivable de nulle part**. Chaque commande concernée y consigne son résultat ; les trois
+`status` ne consignent rien, ils lisent.
 
 Et parmi ces phases, **trois faits ne sont connaissables que là**, parce qu'ils ne laissent aucune
 trace sur disque :
@@ -31,12 +33,20 @@ trace sur disque :
 | Fait | Pourquoi il n'est pas dérivable |
 |---|---|
 | le verdict d'une gate `analyze` | `analyze` est en lecture seule, il n'écrit aucun rapport |
-| un `premortem` appliqué | il édite `spec/plan/tasks` sans laisser de marqueur |
+| un `premortem` appliqué | il édite les documents de sa cible sans y laisser de marqueur |
 | l'issue d'un lot | un run **bloqué** ne coche rien et ne produit aucune PR |
 
 Sans le journal, ces trois-là sont perdus à la fin de la session. Les autres lignes, elles, sont
 redondantes avec les fichiers **par leur existence** mais pas **par leur date** : c'est ce qui rend
 la péremption détectable.
+
+**La règle n'est donc pas « une phase journalise ».** C'est **« ce qui n'est dérivable de nulle
+part se consigne »**. Les deux capacités transverses le montrent en s'opposant : `research`
+n'écrit **aucune** ligne, parce que le rapport qu'il produit **est** le fait ; `premortem` en
+écrit une, parce qu'il ne produit aucun artefact propre — il modifie des documents existants sans
+y laisser de marqueur — alors même qu'il n'est pas une phase et n'apparaît dans aucune table de
+dérivation. Sa seule exception : la cible `chantier`, où la fiche modifiée **est** le fait et où
+son `Actualisé le` date le durcissement (skill `chantier`).
 
 ## La frontière : un événement — ni un état, ni un chantier
 
@@ -138,7 +148,7 @@ Court, chiffré, factuel. Ce qu'on veut relire dans six mois — pas une phrase.
 | `plan` | nb fichiers touchés · candidats ADR |
 | `tasks` | nb lots `Rn` · nb tâches `Tn` |
 | `analyze` | **verdict en gras** — nb Critical · Major · Minor |
-| `premortem` | nb remédiations appliquées · les IDs créés |
+| `premortem` | nb remédiations appliquées · les IDs ou rubriques créés · nb chantiers ouverts |
 | `run Rn` | `✅ done` ou `⛔ <statut>` · mode de vérif · nb tests · n° de PR |
 | `sync` / `reland` | l'action effectuée · n° de PR concernée |
 

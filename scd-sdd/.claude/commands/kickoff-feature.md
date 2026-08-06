@@ -82,7 +82,7 @@ Ratio : 30% humain / 70% AI (setup mécanique + cadrage ; l'humain tranche l'éc
    | 3 | `/scd-sdd:plan NNN` | `plan.md` (en plan mode) |
    | 4 | `/scd-sdd:tasks NNN` | `tasks.md` — lots `Rn`, tâches `Tn` |
    | 5 | `/scd-sdd:analyze NNN` | **gate de conformité** — rapport + verdict, lecture seule |
-   | 6 | `/scd-sdd:premortem NNN` | **durcissement adverse**, optionnel → re-`analyze` |
+   | *(hors phase)* | `/scd-sdd:premortem NNN` | **durcissement adverse**, optionnel, à fort enjeu → re-`analyze` |
    | → | `/scd-sdd:run NNN R1` | niveau **implémentation** : un lot → une PR |
 
    Rappelle que `/scd-sdd:status-specs` donne à tout moment l'état de toutes les features, et

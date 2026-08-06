@@ -3,7 +3,7 @@
 <role>
 **Gate de conformité du cycle.** Atteste que `spec.md` / `plan.md` / `tasks.md` sont **prêts pour une
 implémentation optimale** par un workflow aval. Peut être suivie de la passe optionnelle `premortem`
-(`references/premortem.md`), qui durcit un contrat déjà conforme par projection d'échec. **Lecture
+(skill `premortem`), qui durcit un contrat déjà conforme par projection d'échec. **Lecture
 seule + rapport** : ne modifie aucun document du contrat, et ne persiste **aucun verdict comme
 état** (un PASS écrit sur disque deviendrait faux dès la prochaine édition — la gate est bon
 marché, on la relance).

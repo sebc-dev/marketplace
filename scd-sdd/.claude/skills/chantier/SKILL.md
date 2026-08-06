@@ -5,12 +5,12 @@ description: |
   ne relève d'aucune des phases du cycle, ou qu'un /clear interrompt en vol. Format, état
   porté par le répertoire (en-cours / en-attente / archive), manifeste de contexte chargé
   à la demande, contrôle de fraîcheur, sélection par branche pour les worktrees, cycle de
-  vie. Se charge pendant /scd-sdd:pause, resume et note, quand analyze ou ci écrivent
-  leur fiche (gate, durcissement), et quand une commande — les status, les phases specs
-  devant une fiche de gate — ou le hook SessionStart en lit une. Porte UNIQUEMENT les
-  chantiers : ni la chronologie des phases jouées (skill journal), ni la dérivation de
-  l'état du cycle depuis les fichiers (skills project-docs, feature-specs, implement),
-  ni le contenu des documents produits. Une fiche ne dit jamais où en est le projet.
+  vie. Se charge pendant /scd-sdd:pause, resume et note, quand analyze, ci ou premortem
+  écrivent leur fiche, et quand une commande — les status, les phases specs devant une
+  fiche de gate — ou le hook SessionStart en lit une. Porte UNIQUEMENT les chantiers : ni
+  la chronologie des phases jouées (skill journal), ni la dérivation de l'état du cycle
+  depuis les fichiers (skills project-docs, feature-specs, implement), ni le contenu des
+  documents produits. Une fiche ne dit jamais où en est le projet.
 ---
 
 # Chantiers — `docs/chantiers/`
@@ -174,7 +174,7 @@ l'invalidation se **calcule à la lecture**, elle n'est pas un artefact.
 | ouverture / actualisation | `pause` | écrit dans `en-cours/` après validation humaine, puis commite |
 | travail déjà terminé | `note` | écrit directement dans `archive/`, avec `## Issue` |
 | liste de corrections de gate | `analyze` | ouvre ou actualise `en-cours/…-gate-<cible>.md` ; au PRÊT, ajoute `## Issue` et archive |
-| durcissement différé | `ci` | écrit directement dans `en-attente/` (`…-durcissement-ci.md`), repris via `resume` |
+| durcissement différé | `ci` · `premortem` | écrivent dans `en-attente/` — plan de durcissement CI, ou risque de premortem qui ne se referme par aucun texte ; repris via `resume`. La cible `chantier` de `premortem` édite la fiche et actualise `Actualisé le`, **sans ligne de journal** |
 | annonce | hook `SessionStart` | lit l'en-tête, n'écrit rien, n'affirme aucune fraîcheur |
 | signalement | `status`, `status-impl`, phases specs (fiche de gate) | lisent sous contrôle de fraîcheur — l'en-tête seul pour les `status` |
 | mise de côté | `resume` | `git mv` vers `en-attente/` |

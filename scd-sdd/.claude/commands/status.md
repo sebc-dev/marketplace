@@ -102,7 +102,8 @@ Ratio : 5% humain / 95% AI (lecture mécanique ; l'humain choisit la suite).
    ```
 
    `docs/journal/socle.md` est le seul que tu peux lire en entier : il est borné à quelques lignes,
-   écrites une fois.
+   écrites une fois. Il peut y figurer une ligne `premortem` — le durcissement s'applique aussi au
+   socle. Elle n'y **manque** jamais : le premortem n'est pas une phase, tu ne le réclames pas.
 
 6. **Contrôle la fraîcheur de chaque gate** — applique la règle de `references/status.md`
    (`git log -1 --format=%cI -- <fichier>` sur `spec.md`, `plan.md` et `tasks.md`, repli sur la

@@ -1,7 +1,7 @@
 {
   "name": "scd-sdd",
-  "version": "1.5.1",
-  "description": "Cycle spec-driven complet, du projet vide à la PR. Trois niveaux. Le SOCLE, une fois au démarrage : brief → prd → stack → ADR → ci → CLAUDE.md, où ci rend déterministe, hors de l'agent, ce que CLAUDE.md ne peut que conseiller. Les SPECS, par feature : specify → clarify → plan → tasks → analyze, critères EARS, lots de review Rn reviewables. L'IMPLÉMENTATION, lot par lot : un dynamic workflow orchestre des subagents dédiés — vérification selon le mode déclaré par le lot (TDD, test-after, check ou inhérent), review en contexte frais, triage adversarial, une PR par lot. L'état se dérive des fichiers : /clear efface le contexte, pas la progression. Chaque phase laisse une ligne datée dans le journal de sa cible — docs/journal/socle.md ou NNN-slug.md — dont les trois faits non dérivables : verdict de la gate analyze, premortem appliqué, issue d'un lot même bloqué. Le travail hors phase ou interrompu en vol devient un CHANTIER : une fiche sous docs/chantiers/, dont l'état est le répertoire. La recherche est TRANSVERSE : /scd-sdd:lookup répond en session sans rien écrire, /scd-sdd:research compose un prompt Claude Research puis classe et relit le rapport sous docs/research/ — un rapport ne descend jamais seul dans le socle. /scd-sdd:status rend les trois niveaux en une vue, et /scd-sdd:migrate reprend un projet venu des trois anciens plugins ou d'une version antérieure à l'éclatement du journal.",
+  "version": "1.6.0",
+  "description": "Cycle spec-driven complet, du projet vide à la PR. Trois niveaux. Le SOCLE, une fois au démarrage : brief → prd → stack → ADR → ci → CLAUDE.md, où ci rend déterministe, hors de l'agent, ce que CLAUDE.md ne peut que conseiller. Les SPECS, par feature : specify → clarify → plan → tasks → analyze, critères EARS, lots de review Rn reviewables. L'IMPLÉMENTATION, lot par lot : un dynamic workflow orchestre des subagents dédiés — vérification selon le mode déclaré par le lot (TDD, test-after, check ou inhérent), review en contexte frais, triage adversarial, une PR par lot. L'état se dérive des fichiers : /clear efface le contexte, pas la progression. Chaque phase laisse une ligne datée dans le journal de sa cible — docs/journal/socle.md ou NNN-slug.md — dont les trois faits non dérivables : verdict de la gate analyze, premortem appliqué, issue d'un lot même bloqué. Le travail hors phase ou interrompu en vol devient un CHANTIER : une fiche sous docs/chantiers/, dont l'état est le répertoire. Deux capacités sont TRANSVERSES, hors des phases et jamais réclamées par status. La RECHERCHE : /scd-sdd:lookup répond en session sans rien écrire, /scd-sdd:research compose un prompt Claude Research puis classe et relit le rapport sous docs/research/ — un rapport ne descend jamais seul dans le socle. Le PREMORTEM : /scd-sdd:premortem suppose l'échec et remonte à ce que les documents omettaient, sur le SOCLE, une FEATURE ou un CHANTIER — chaque risque retenu se referme par un changement de document, pris dans les formes légales de sa cible et approuvé par l'humain avant écriture ; ce qui ne se referme par aucun texte devient un chantier. /scd-sdd:status rend les trois niveaux en une vue, et /scd-sdd:migrate reprend un projet venu des trois anciens plugins ou d'une version antérieure à l'éclatement du journal.",
   "author": {
     "name": "sebc.dev"
   },
@@ -22,6 +22,7 @@
     "journal",
     "chantier",
     "research",
+    "premortem",
     "handoff",
     "reprise",
     "gate",

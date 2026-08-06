@@ -28,23 +28,39 @@ Architectural design patterns for Claude Code plugins. Component selection (skil
 
 Interactive guided code review on the current branch. Reviews file by file in optimal order with dedicated background agents (code-reviewer + test-reviewer) for each file, JSON-based progress tracking, and blocking/suggestion classification. 5 slash commands (`/scd-review:review-init`, `/scd-review:code-review`, `/scd-review:review-followup`, `/scd-review:review-continue`, `/scd-review:review-post`). GitHub/GitLab PR posting integration.
 
-### [scd-sdd](./scd-sdd/) `v1.0.0`
+### [scd-sdd](./scd-sdd/) `v1.6.0`
 
 Complete spec-driven development cycle, from empty repo to reviewable PR — one plugin, three
-chained levels. **Foundation** (once per project): brief → PRD → stack → foundational ADRs →
-CLAUDE.md, by one-question-at-a-time interview. **Specs** (once per feature): specify → clarify →
-plan → tasks → analyze conformance gate (14 checks) plus an optional adversarial premortem, with
-EARS acceptance criteria, Kiro backrefs, and review lots (`Rn`) sized so a human can actually
-review each one. **Implementation** (one lot at a time): a dynamic workflow orchestrating 19
-dedicated subagents — dedicated branch, verification per the lot's declared mode (TDD by default,
-else test-after / check / inherent), fresh-context code review, adversarial finding triage, PR
-description as a review artifact, one ready-for-review PR per lot — with stacked-PR
-anti-orphaning and real parallelism via git worktrees. State is always derived from files, never
-from a state file: `/clear` wipes the context, not the progress. Every phase played appends a
-dated line to `docs/JOURNAL.md`, which is the only place three facts live: the analyze verdict,
-applied premortem remediations, and a lot's outcome (including a blocked run). 20 slash commands,
-including three dashboards — `/scd-sdd:status` (all three levels in one view, plus the next
-command to run), `/scd-sdd:status-specs`, `/scd-sdd:status-impl` (merge-safety of every lot PR).
+chained levels. **Foundation** (once per project): brief → PRD → stack → foundational ADRs → CI →
+CLAUDE.md, by one-question-at-a-time interview, where the `ci` phase makes deterministic and
+verifiable *outside the agent* what CLAUDE.md can only advise. **Specs** (once per feature):
+specify → clarify → plan → tasks → analyze conformance gate (14 checks), with EARS acceptance
+criteria, Kiro backrefs, and review lots (`Rn`) sized so a human can actually review each one.
+**Implementation** (one lot at a time): a dynamic workflow orchestrating 20 dedicated subagents —
+dedicated branch, verification per the lot's declared mode (TDD by default, else test-after /
+check / inherent), fresh-context code review, adversarial finding triage, PR description as a
+review artifact, one ready-for-review PR per lot — with stacked-PR anti-orphaning and real
+parallelism via git worktrees.
+
+State is always derived from files, never from a state file: `/clear` wipes the context, not the
+progress. No shared file grows. Each phase appends a dated line to its own target's journal
+(`docs/journal/socle.md` or `NNN-slug.md`), the only place three facts live: the analyze verdict,
+applied premortem remediations, and a lot's outcome (including a blocked run). Work outside the
+phases — or interrupted mid-flight by a `/clear` — becomes a **chantier**: a card under
+`docs/chantiers/`, whose state *is* its directory.
+
+Two capabilities are **transverse**, outside the phases and never reported as missing.
+**Research**: `/scd-sdd:lookup` answers in-session and writes nothing, `/scd-sdd:research`
+composes a Claude Research prompt then files and critically re-reads the report — a report never
+descends into the foundation on its own. **Premortem**: `/scd-sdd:premortem` assumes failure and
+traces back to what the documents left out, on the **foundation**, a **feature** or a
+**chantier** — every retained risk closes with a document change drawn from its target's legal
+forms, approved by the human before anything is written; whatever no text can close becomes a
+chantier instead.
+
+27 slash commands, including three dashboards — `/scd-sdd:status` (all three levels in one view,
+plus the next command to run), `/scd-sdd:status-specs`, `/scd-sdd:status-impl` (merge-safety of
+every lot PR) — and `/scd-sdd:migrate` to pick up a project coming from the three former plugins.
 Replaces `scd-project-docs`, `scd-feature-specs` and `scd-implement`.
 
 ## Installation

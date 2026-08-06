@@ -36,7 +36,6 @@ Cycle spec-driven complet, du projet vide à la PR — en un seul plugin.
 | `/scd-sdd:plan` | `plan.md` |
 | `/scd-sdd:tasks` | `tasks.md` |
 | `/scd-sdd:analyze` | gate de conformité — verdict au journal, corrections dans un chantier de gate |
-| `/scd-sdd:premortem` | durcissement adverse du contrat |
 
 ### Implémentation
 | Commande | Effet |
@@ -59,6 +58,11 @@ Cycle spec-driven complet, du projet vide à la PR — en un seul plugin.
 | `/scd-sdd:pause` | pose ou actualise un chantier avant un `/clear` en cours de tâche |
 | `/scd-sdd:resume` | reprend un chantier : fraîcheur contrôlée, contexte rechargé |
 | `/scd-sdd:note` | archive un travail hors-cycle **déjà terminé** |
+
+### Durcissement
+| Commande | Effet |
+|---|---|
+| `/scd-sdd:premortem` | suppose l'échec et remonte à ce que les documents omettaient — sur le **socle**, une **feature** ou un **chantier**. Écrit, après approbation humaine |
 
 ### Recherche
 | Commande | Effet |
@@ -186,6 +190,38 @@ L'humain décide ce qui descend dans `stack.md` ou dans un ADR.
 
 Le lien va donc de la décision vers sa source, **jamais l'inverse** : un rapport qui
 listerait les décisions qu'il a servies serait un fichier qui croît.
+
+## Le premortem — transverse aussi, et il écrit
+
+Toutes les gates du cycle demandent « ce document est-il bien formé ? ». `/scd-sdd:premortem`
+pose la question orthogonale : **s'il était honoré tel quel, est-ce que ça échouerait quand
+même ?** On se projette après coup **en supposant l'échec**, on l'explique, et on remonte à ce
+que les documents omettaient. Poser l'échec comme acquis fait émerger ce qu'une checklist de
+conformité ne voit pas — expliquer est une tâche à laquelle on est bien meilleur que prédire.
+
+Elle s'applique à **trois cibles**, qui changent les documents jugés et ce qu'on a le droit
+d'écrire, jamais la méthode :
+
+| Cible | Ce qui est jugé | Ce qui suit |
+|---|---|---|
+| `/scd-sdd:premortem socle` | `prd.md` `stack.md` `adr/` `ci.md` `CLAUDE.md` | les features en vol dont les backrefs ont bougé sont **nommées** |
+| `/scd-sdd:premortem 003` | `spec.md` `plan.md` `tasks.md`, après une gate au vert | **re-passe `analyze` imposée** |
+| `/scd-sdd:premortem chantier <slug>` | une fiche de `docs/chantiers/` | rien — `resume` lira la fiche durcie |
+
+Trois barrières, dans cet ordre : un valideur en contexte frais rejette le spéculatif, le
+déjà-couvert et le scope creep ; **l'humain approuve** ; l'applicateur n'inscrit que l'approuvé.
+Le scope creep est le risque n° 1 de la passe — c'est la seule écriture **déléguée** du plugin.
+
+Deux règles font le reste. **On ne remédie jamais hors de la cible** : les formes légales sont
+limitatives, et un risque qui vise un autre niveau devient un signalement. Et **un risque retenu
+n'est jamais abandonné en silence** : s'il ne se referme par aucun texte — mesurer, éprouver,
+migrer —, il devient une fiche `docs/chantiers/en-attente/`.
+
+Comme la recherche, ce n'est **pas une phase** : rien ne la réclame, `status` ne la signale jamais
+comme manquante, un socle sans premortem n'est pas un socle incomplet. Contrairement à elle, elle
+**journalise** — parce qu'elle ne produit aucun artefact propre : elle modifie des documents
+existants sans y laisser de marqueur, et sans sa ligne son passage serait dérivable de rien. Seule
+exception, la cible `chantier` : la fiche est le fait, son `Actualisé le` suffit.
 
 ## Migration depuis les trois plugins
 

@@ -7,7 +7,8 @@ description: |
   d'écriture pour un agent (verbe vérifiable, technology-agnostic, scope EXCLU),
   la frontière advisory / déterministe et la phase ci qui la franchit, seuils de
   déclenchement du niveau specs, et les templates copy-paste de chaque document.
-  Se charge pendant /scd-sdd:init-project, brief, prd, stack, adr, ci et
+  Se charge pendant /scd-sdd:init-project, brief, prd, stack, adr, ci, premortem
+  (cible socle) et
   contract. Porte UNIQUEMENT le socle — ni les specs par feature (skill
   feature-specs), ni l'implémentation d'un lot (skill implement), ni le contrat
   du fichier de suivi (skill journal).
@@ -47,6 +48,22 @@ Garde ces IDs stables : ils sont le fil qui relie le socle à l'implémentation.
 noms de jobs deviennent les checks requis de la forge, et `CLAUDE.md` en **lit** les
 commandes du projet au lieu de les inventer. C'est aussi pourquoi il vient **avant**
 `CLAUDE.md` et non après.
+
+## Durcir le socle — `/scd-sdd:premortem socle`
+
+Aucune gate ne juge le socle : rien ne rejoue `prd` ou `stack` pour dire s'ils tiennent. C'est
+le niveau où l'erreur coûte le plus cher — dix features déclineront ce PRD, et un ADR accepté
+est immuable — et celui où **rien ne la rattrape mécaniquement**.
+
+`/scd-sdd:premortem socle` est la passe qui comble ce trou : on suppose le projet échoué six
+mois plus tard et on remonte à ce que le socle omettait. Ses remédiations sont bornées aux
+formes du niveau — critère `SC` mesurable, `FR` produit, item de scope EXCLU, contrainte de
+Stack, contrôle `ci`, candidat ADR — et `docs/brief.md` n'est **jamais** remédié : il est
+l'intention d'origine, pas une cible.
+
+**Ce n'est pas une septième phase.** Elle est optionnelle, ne figure dans aucune table de
+dérivation, et un socle sans premortem n'est pas un socle incomplet. Méthode et formes : skill
+`premortem`.
 
 ## Méthode d'interview
 

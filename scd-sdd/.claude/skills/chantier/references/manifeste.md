@@ -1,6 +1,7 @@
 # Référence — Le manifeste de contexte d'une fiche
 
-Chargée par `/scd-sdd:pause` (qui l'écrit et la contrôle) et `/scd-sdd:resume` (qui l'honore).
+Chargée par `/scd-sdd:pause` (qui l'écrit et la contrôle), `/scd-sdd:resume` (qui l'honore) et
+`/scd-sdd:premortem` de cible `chantier` (qui l'honore pour lire, et l'applique pour écrire).
 Ni `status`, ni `status-impl`, ni le hook n'en ont besoin : ils ne lisent que l'en-tête d'une fiche.
 
 Sans règle, un manifeste pointant `src/legacy/router.ts` (2 400 lignes) reproduirait exactement le

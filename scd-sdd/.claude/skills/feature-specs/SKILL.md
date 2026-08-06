@@ -17,21 +17,21 @@ description: |
 
 Ce skill outille la **déclinaison** du socle en specs exécutables, **par feature** :
 `specs/NNN-slug/spec.md` → `plan.md` → `tasks.md` → **`analyze`** (gate de conformité) →
-**`premortem`** (durcissement adverse, optionnel) → *passage de main à l'implémentation*.
+*[`premortem`, optionnel]* → *passage de main à l'implémentation*.
 `NNN` = numéro séquentiel zero-paddé (`001`, `002`…). Ces fichiers sont **vivants** : on les
 édite quand le comportement change, on ne les jette pas après livraison.
 
 **Frontière de périmètre.** Ce niveau est **purement documentaire** : il produit le contrat
 d'une feature, atteste qu'il est prêt, et s'arrête. Écrire le code et le reviewer relèvent du
-skill `implement` — ne prescris jamais *comment* implémenter, n'exécute aucun test ; le
-`premortem` durcit le *contrat*, pas du code qui n'existe pas encore. Seule nuance : le
-**dimensionnement** des lots `Rn` se joue ici, car après l'implémentation redécouper coûte le
-prix du code écrit. On rend la review possible ; on ne la conduit pas.
+skill `implement` — ne prescris jamais *comment* implémenter, n'exécute aucun test. Seule
+nuance : le **dimensionnement** des lots `Rn` se joue ici, car après l'implémentation
+redécouper coûte le prix du code écrit. On rend la review possible ; on ne la conduit pas.
 
-**Deux natures de phase.** `specify`, `clarify`, `plan`, `tasks` et `premortem` **écrivent** ;
-`analyze` et `status-specs` sont en **lecture seule**. `premortem` est la seule phase dont
-les modifications sont proposées par des sous-agents, d'où le **gate d'approbation humain**
-avant écriture, puis la **re-passe `analyze`**.
+**Deux natures de phase.** `specify`, `clarify`, `plan` et `tasks` **écrivent** ; `analyze` et
+`status-specs` sont en **lecture seule**. **`premortem` n'est pas une phase de ce niveau** : c'est
+une **capacité transverse** (socle, feature, chantier), qui se joue ici *après* une gate au vert,
+durcit le *contrat* et impose une **re-passe `analyze`** puisqu'elle modifie ce que la gate venait
+d'attester. Seule écriture **déléguée** du plugin, d'où son gate humain. Skill **`premortem`**.
 
 ## La chaîne de traçabilité (elle descend du socle)
 
@@ -53,7 +53,7 @@ derniers maillons. Garde les IDs stables : c'est le fil qu'elle suivra.
 ## Cadence : une feature à la fois (et le parallèle quand il est sûr)
 
 **Séquentiel (défaut, recommandé)** : `kickoff-feature → specify → clarify → plan → tasks →
-analyze → premortem → (re-analyze)`, puis la feature suivante — le mode sûr pour un solo.
+analyze` (+ `premortem → re-analyze` si l'enjeu le justifie), puis la suivante — le mode sûr en solo.
 **Parallèle (possible)** : tout ce niveau se parallélise, chaque phase n'écrivant que dans
 `specs/NNN-*/`, disjoints par construction. La contrainte ne porte que sur
 l'**implémentation** : deux features aux « Fichiers touchés » communs ne s'implémentent pas
@@ -81,9 +81,10 @@ en même temps — `status-specs` croise ces sections pour le dire.
 | `tasks.md` présent | à valider (gate de conformité) | `analyze` |
 | `DELTA.md` présent | mode **delta** (brownfield) | idem, scopé au delta |
 
-`premortem` **n'apparaît pas dans la table** : il édite sans produire de marqueur — passe
-**explicitement invoquée** après une première gate `analyze` au vert, re-gatée ensuite. Pas
-d'état « livrée » non plus : `analyze`, lecture seule et bon marché, se **relance** plutôt que
+`premortem` **n'apparaît pas dans la table**, et n'y apparaîtra jamais : il édite sans produire
+de marqueur, et n'est pas une phase — passe **explicitement invoquée** après une gate au vert,
+re-gatée ensuite ; une feature sans premortem n'est pas incomplète. Pas d'état « livrée » non
+plus : `analyze`, lecture seule et bon marché, se **relance** plutôt que
 d'en persister le verdict (un PASS écrit deviendrait faux à la première édition).
 `/scd-sdd:status-specs` applique cette table à toutes les features. Les `NNN` sont **stables
 et jamais réattribués** (`max(NNN) + 1`).
@@ -155,9 +156,9 @@ ignorée**. Les gates liées aux tests appartiennent au niveau implémentation. 
 est `analyze` — advisory, sur les **documents**, épaulée par des seconds regards en contexte
 frais aux mandats disjoints : `ears-verifier` (contrat : traçabilité, EARS, frontières —
 contrôles 1-11) et `slice-auditor` (découpage : verticalité, sujet unique, dimensionnement —
-12-14). Le trio `premortem-facilitator` / `premortem-validator` / `premortem-applier` pilote
-la seule passe d'écriture déléguée : le gate humain garde la décision du *quoi*, l'`exit 2` de
-`block-adr-edits` protège les ADR acceptés, et la re-passe `analyze` reconfirme la conformité.
+12-14). Hors gate, le trio `premortem-facilitator` / `premortem-validator` / `premortem-applier`
+pilote la seule écriture **déléguée** du plugin : le gate humain garde la décision du *quoi*,
+l'`exit 2` de `block-adr-edits` protège les ADR acceptés, et la re-passe `analyze` reconfirme.
 
 ## Seuils de déclenchement (repris de la constitution `CLAUDE.md`)
 
@@ -191,7 +192,6 @@ Charge **uniquement** la référence de la phase courante (la commande le fait) 
 | `tasks.md` | Lots `Rn` + tâches `Tn` (backref, mode de vérif, `[P]`) | `role` `template` `guidance` `completion` |
 | `reviewability.md` | Dimensionner les lots — chargée **avec** `tasks.md` | `role` `criteria` `splitting` `pitfalls` |
 | `analyze.md` | Gate de conformité : 14 contrôles, rapport + verdict | `role` `checks` `report` `guidance` |
-| `premortem.md` | Durcissement adverse : 3 sous-agents + gate humain | `role` `lenses` `process` `remediation-forms` `guidance` |
 | `status.md` | Tableau de bord : phase dérivée, gate journalisée, fraîcheur | `role` `report` `guidance` |
 | `ears.md` | Les 5 patterns EARS + SHALL → vérification | `patterns` `examples` `pitfalls` |
 | `delta.md` | Modèle delta brownfield (OpenSpec) | `role` `template` `guidance` |
