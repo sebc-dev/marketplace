@@ -24,8 +24,9 @@ Ratio : 30% humain / 70% AI (setup mécanique + cadrage ; l'humain tranche l'éc
 
 ## Règles absolues
 
-- **Tu ne crées aucun contenu.** Tu crées un dossier vide et une section de journal. `spec.md`,
-  `plan.md` et `tasks.md` appartiennent aux phases suivantes.
+- **Tu ne crées aucun contenu de document.** Tu crées un dossier vide — plus le marqueur
+  `DELTA.md` en mode delta — et une section de journal. `spec.md`, `plan.md` et `tasks.md`
+  appartiennent aux phases suivantes.
 - **`NNN` = `max(NNN) + 1`**, zero-paddé, scanné sur `specs/`. **Jamais réattribué**, même si
   des features antérieures sont livrées ou abandonnées. Un numéro libéré reste libre.
 - **Le socle est un prérequis strict.** Il manque → tu t'arrêtes et tu renvoies vers
@@ -60,10 +61,14 @@ Ratio : 30% humain / 70% AI (setup mécanique + cadrage ; l'humain tranche l'éc
    | décision transverse ou architecturale | **`/scd-sdd:adr` d'abord**, ou candidat dans `docs/adr/_candidates/` |
 
 5. **Tranche greenfield ou delta** : la feature **modifie un comportement existant** → mode
-   **delta** (`references/delta.md`), signalé par un `DELTA.md` dans le dossier. Sinon, spec
-   complète.
+   **delta** (`references/delta.md`), que tu signaleras en créant `DELTA.md` à l'étape 6.
+   Sinon, spec complète.
 
-6. **Attribue le `NNN` et scaffolde** `specs/NNN-<slug>/` — **le dossier seul**, aucun contenu.
+6. **Attribue le `NNN` et scaffolde** `specs/NNN-<slug>/` — **le dossier seul**, aucun contenu
+   de document. En mode **delta**, ajoute `DELTA.md` réduit à l'en-tête du template
+   (`references/delta.md` du skill `feature-specs`), sans aucune section
+   `[ADDED]`/`[MODIFIED]`/`[REMOVED]` : c'est ce marqueur que toutes les phases aval — à
+   commencer par `specify` — dérivent pour savoir que la feature est en mode delta.
 
 7. **Propose de renseigner les hooks** — voir « Hooks » ci-dessous.
 

@@ -14,7 +14,6 @@ allowed-tools:
   - Bash(git mv *)
   - Bash(git add *)
   - Bash(git commit *)
-  - Bash(ls *)
   - Bash(date *)
 ---
 
@@ -142,8 +141,8 @@ suivre. »
 ## Consigne au journal
 
 **Aucune.** Reprendre, mettre en attente ou fermer un chantier n'est pas une phase du cycle, et le
-déplacement de la fiche **est** la trace — l'archive datée par son nom porte la chronologie
-(`DECISIONS.md` §D18). Journaliser chaque pause et chaque reprise polluerait la chronologie des
+déplacement de la fiche **est** la trace — l'archive datée par son nom porte la chronologie.
+Journaliser chaque pause et chaque reprise polluerait la chronologie des
 phases avec du bruit à la paire. C'est de nature, pas un oubli.
 
 ## Skill active

@@ -111,7 +111,7 @@ Ratio : 40% humain / 60% AI (tu composes depuis la session ; l'humain valide ava
 - Tu ne fais pas le travail, tu le consignes.
 - Tu ne commites ni ne pousses le code en vol ; tu ne crées ni ne changes aucune branche.
 - Tu ne recopies aucun contenu de fichier dans la fiche — que des références.
-- Tu n'écris aucune ligne de journal : la fiche **est** le fait (`DECISIONS.md` §D18).
+- Tu n'écris aucune ligne de journal : la fiche **est** le fait.
 - Tu ne déplaces aucune fiche entre répertoires — c'est `/scd-sdd:resume` qui change l'état.
 - Tu ne consignes pas une décision **structurante** : elle va dans `docs/adr/_candidates/`. Ni un
   changement de comportement : il va dans `spec.md`.
@@ -121,7 +121,7 @@ Ratio : 40% humain / 60% AI (tu composes depuis la session ; l'humain valide ava
 
 **Aucune.** Tu ne joues aucune phase du cycle, et le fait que tu produis est la **fiche
 elle-même** — l'écrire aussi au journal mettrait la même information à deux endroits et ferait
-recroître un fichier partagé (`DECISIONS.md` §D17, §D18). C'est de nature, pas un oubli.
+recroître un fichier partagé. C'est de nature, pas un oubli.
 
 Le lien du chantier avec une feature passe par son champ `Portée`, que `/scd-sdd:status` greppe.
 

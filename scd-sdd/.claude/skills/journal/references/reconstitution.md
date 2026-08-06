@@ -14,7 +14,7 @@ Deux opérations distinctes, toutes deux réservées à `migrate` :
 
 ## Conversion — `docs/JOURNAL.md` → `docs/journal/*.md`
 
-Un projet démarré avant `DECISIONS.md` §D17 a un `docs/JOURNAL.md` unique, à sections. Il est
+Un projet démarré avant l'éclatement du journal a un `docs/JOURNAL.md` unique, à sections. Il est
 éclaté en un fichier par cible. **Aucune ligne n'est réécrite** : la règle d'ajout n° 4 du skill
 (« ne jamais réécrire ni supprimer une ligne passée ») protège contre la falsification de
 l'histoire, pas contre son classement.
@@ -86,7 +86,7 @@ Quelle que soit la commande :
 | `clarify` | il édite `spec.md`, il n'a aucun artefact propre à dater |
 | `analyze` · `premortem` | les faits non dérivables — aucune trace, ni disque ni git |
 | `run` · `sync` · `reland` | les cases `[x]` de `tasks.md` disent **quels** lots sont faits, jamais **quand**, ni par quelle PR, ni combien de fois le lot a été bloqué avant |
-| les **chantiers** | un chantier n'a laissé aucun artefact daté avant d'exister ; et il ne s'écrit pas au journal (`DECISIONS.md` §D18) |
+| les **chantiers** | un chantier n'a laissé aucun artefact daté avant d'exister ; et il ne s'écrit pas au journal |
 
 Un journal reconstitué est donc **partiel par construction**, et c'est correct : il rend la
 chronologie des artefacts, pas une histoire inventée. Les phases manquantes apparaîtront à leur

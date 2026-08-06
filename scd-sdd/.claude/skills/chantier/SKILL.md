@@ -2,15 +2,15 @@
 name: chantier
 description: |
   Contrat des fiches docs/chantiers/<état>/AAAA-MM-JJ-slug.md : l'unité de travail qui
-  ne relève d'aucune des phases du cycle, ou qu'un /clear interrompt en vol. Format,
-  état porté par le répertoire (en-cours / en-attente / archive), manifeste de contexte
-  chargé à la demande, contrôle de fraîcheur, règle de sélection par branche pour les
-  worktrees, cycle de vie. Se charge pendant /scd-sdd:pause, resume et note, et quand
-  status, status-impl ou le hook SessionStart lisent l'en-tête d'une fiche. Porte
-  UNIQUEMENT les chantiers : ni la chronologie des phases jouées (skill journal), ni la
-  dérivation de l'état du cycle depuis les fichiers (skills project-docs, feature-specs,
-  implement), ni le contenu des documents produits. Une fiche ne dit jamais où en est le
-  projet — seulement ce que quelqu'un allait faire.
+  ne relève d'aucune des phases du cycle, ou qu'un /clear interrompt en vol. Format, état
+  porté par le répertoire (en-cours / en-attente / archive), manifeste de contexte chargé
+  à la demande, contrôle de fraîcheur, sélection par branche pour les worktrees, cycle de
+  vie. Se charge pendant /scd-sdd:pause, resume et note, quand analyze ou ci écrivent
+  leur fiche (gate, durcissement), et quand une commande — les status, les phases specs
+  devant une fiche de gate — ou le hook SessionStart en lit une. Porte UNIQUEMENT les
+  chantiers : ni la chronologie des phases jouées (skill journal), ni la dérivation de
+  l'état du cycle depuis les fichiers (skills project-docs, feature-specs, implement),
+  ni le contenu des documents produits. Une fiche ne dit jamais où en est le projet.
 ---
 
 # Chantiers — `docs/chantiers/`
@@ -23,23 +23,22 @@ la progression. Deux choses échappent à ce mécanisme.
 - **Le travail hors des phases** — un flake corrigé, une montée de version, un spike, un hotfix.
   Aucun fichier de specs, aucune case, aucune PR ne le porte ; au mieux un commit, qui dit le
   *quoi* et jamais le *pourquoi* ni l'impasse.
-- **Le travail interrompu en vol** — une tâche longue coupée par un `/clear` parce que c'est plus
-  efficace ainsi. Ce qui est sur disque survit ; l'intention, la décision prise, l'étape suivante
-  et les pistes écartées sont perdues, et la reprise les rachète au prix fort.
+- **Le travail interrompu en vol** — une tâche longue coupée par un `/clear`. Ce qui est sur
+  disque survit ; l'intention, la décision prise, l'étape suivante et les pistes écartées sont
+  perdues, et la reprise les rachète au prix fort.
 
 Un chantier est **un fichier par unité de travail**. Ouvert, il porte de quoi reprendre ; fermé,
 il devient l'archive de ce qui a été fait et pourquoi.
 
 ## Ce qu'un chantier n'est pas
 
-Le repo refuse les fichiers d'état (`DECISIONS.md` §D1). Une fiche n'en est pas un, et trois
-propriétés le garantissent — elles ne sont pas décoratives, ce sont **elles** qui rendent le
-dispositif légitime :
+Le repo refuse les fichiers d'état. Une fiche n'en est pas un ; trois propriétés le
+garantissent :
 
-1. **Aucun fait dérivable n'a le droit d'y figurer.** Pas d'état de lot, pas de résultat de tests,
-   pas de verdict de gate, pas d'inventaire de fichiers, pas de pourcentage d'avancement, pas de
-   numéro de PR présenté comme un état. Un artefact qui ne contient aucun fait dérivable **ne peut
-   pas contredire les fichiers**.
+1. **Aucun fait dérivable n'a le droit d'y figurer** — état de lot, résultat de tests, verdict
+   de gate, inventaire de fichiers, pourcentage d'avancement, numéro de PR présenté comme un
+   état. Un artefact qui ne contient aucun fait dérivable **ne peut pas contredire les
+   fichiers**.
 2. **Elle parle d'intention, au passé.** « j'allais », « j'ai décidé », « j'ai écarté ». Jamais
    l'indicatif présent sur le projet. La péremption s'**entend** à la lecture.
 3. **Elle est consommée.** Un fichier d'état est fait pour durer et rester vrai ; une fiche est
@@ -68,8 +67,8 @@ docs/chantiers/
   chronologie gratuitement, dans les trois répertoires. Aucun compteur à maintenir.
 - **Versionné, et commité par la commande qui écrit**, dans un commit isolé dont le `git add` est
   **scopé à la fiche**. `git status --porcelain` non vide fait tomber `/scd-sdd:run` en
-  `blocked-dirty-tree` : une fiche non commitée casserait le niveau implémentation. Le code en vol
-  reste non commité — c'est correct, il est réellement en vol.
+  `blocked-dirty-tree` : une fiche non commitée casserait le niveau implémentation ; le code en
+  vol, lui, reste non commité.
 - **En worktree**, chaque copie de travail voit les chantiers commités *sur sa branche* : c'est ce
   qui rend la sélection par branche fiable. Corollaire assumé — la fiche d'un chantier lié à un lot
   arrive dans le diff de la PR de ce lot.
@@ -156,7 +155,7 @@ ne la recopient jamais.
 ## Contrôle de fraîcheur
 
 Une fiche est une intention datée : tout lecteur la contrôle **avant** de la restituer, comme la
-règle de péremption `DECISIONS.md` §D10 pour le journal. Trois contrôles, indépendants :
+règle de péremption du journal. Trois contrôles, indépendants :
 
 | Contrôle | Comment | Verdict |
 |---|---|---|
@@ -174,8 +173,10 @@ l'invalidation se **calcule à la lecture**, elle n'est pas un artefact.
 |---|---|---|
 | ouverture / actualisation | `pause` | écrit dans `en-cours/` après validation humaine, puis commite |
 | travail déjà terminé | `note` | écrit directement dans `archive/`, avec `## Issue` |
+| liste de corrections de gate | `analyze` | ouvre ou actualise `en-cours/…-gate-<cible>.md` ; au PRÊT, ajoute `## Issue` et archive |
+| durcissement différé | `ci` | écrit directement dans `en-attente/` (`…-durcissement-ci.md`), repris via `resume` |
 | annonce | hook `SessionStart` | lit l'en-tête, n'écrit rien, n'affirme aucune fraîcheur |
-| signalement | `status`, `status-impl` | lisent l'en-tête seul, sous contrôle de fraîcheur |
+| signalement | `status`, `status-impl`, phases specs (fiche de gate) | lisent sous contrôle de fraîcheur — l'en-tête seul pour les `status` |
 | mise de côté | `resume` | `git mv` vers `en-attente/` |
 | fermeture / abandon | `resume` | ajoute `## Issue`, `git mv` vers `archive/` |
 
@@ -187,10 +188,9 @@ tri par nom rend lisible sans index.
 > Ce qui garde de la valeur **une fois le travail terminé** va au journal ; ce qui n'a de valeur
 > que **pour le reprendre** va dans la fiche.
 
-Concrètement : `docs/journal/*.md` porte les **phases du cycle**, une ligne = un événement daté,
-immuable. `docs/chantiers/` porte **tout le reste**. Un chantier fermé n'écrit **aucune** ligne de
-journal — son lien avec une feature passe par son champ `Portée`, greppé par `status`. Contrat du
-journal : skill `journal`.
+Concrètement : `docs/journal/*.md` porte les **phases du cycle** (une ligne = un événement daté,
+immuable), `docs/chantiers/` **tout le reste**. Un chantier fermé n'écrit **aucune** ligne de
+journal — son lien avec une feature passe par `Portée`, greppé par `status`. Contrat : skill `journal`.
 
 ## Références
 

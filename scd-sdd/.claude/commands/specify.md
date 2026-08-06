@@ -67,8 +67,9 @@ Ratio : 60% humain / 40% AI (l'humain répond, tu structures en EARS).
    - Critère multi-chemins à haute valeur → propose un scénario **Gherkin** dérivé
      (`references/gherkin.md`), en complément du SHALL, jamais à sa place.
 
-5. **Compile** dans `specs/<cible>/spec.md` selon le template — ou en **delta**
-   (`[ADDED]` / `[MODIFIED]` / `[REMOVED]`) si la feature est brownfield.
+5. **Compile** dans `specs/<cible>/spec.md` selon le template — ou, si la feature est
+   brownfield, complète le `DELTA.md` du dossier selon `references/delta.md`
+   (`[ADDED]` / `[MODIFIED]` / `[REMOVED]`).
 
 6. **Relis contre le bloc `<completion>`** de `references/spec.md` et signale les critères non
    atteints plutôt que de les masquer.

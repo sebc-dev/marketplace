@@ -61,8 +61,7 @@ la péremption détectable.
 
 ## Emplacement et format
 
-**Un fichier par cible**, jamais un fichier partagé qui croîtrait sans borne
-(`DECISIONS.md` §D17) :
+**Un fichier par cible**, jamais un fichier partagé qui croîtrait sans borne :
 
 - `docs/journal/socle.md` — les phases du niveau socle, écrites une fois ;
 - `docs/journal/NNN-slug.md` — les phases d'une feature, specs **et** implémentation.
@@ -110,7 +109,7 @@ Un fichier porte un titre, un bloc de citation, et **une seule table**. Il n'a *
 
 ## Reconstitution et conversion — `migrate` seule
 
-Un projet démarré avant le journal n'a aucune chronologie ; un projet démarré avant §D17 a un
+Un projet démarré avant le journal n'a aucune chronologie ; un projet démarré avant l'éclatement du journal a un
 `docs/JOURNAL.md` monolithique. Les deux se rattrapent, et **`/scd-sdd:migrate` est la seule
 commande autorisée** à le faire : conversion par déplacement pur, reconstitution datée depuis git
 et jamais autrement.
@@ -157,8 +156,8 @@ depuis la session principale.
 C'est ce qui permet à un run **bloqué** de laisser une trace : l'agent `progress-recorder` ne tourne
 que sur le chemin de succès, il perdrait tous les `blocked-*`.
 
-Et aucun mécanisme ambiant n'écrit ici. Un hook ne connaît pas l'issue de ce qu'il consignerait
-(`DECISIONS.md` §D19) : c'est ce qui empêche structurellement le journal de devenir un verbatim de
+Et aucun mécanisme ambiant n'écrit ici. Un hook ne connaît pas l'issue de ce qu'il
+consignerait : c'est ce qui empêche structurellement le journal de devenir un verbatim de
 session.
 
 ## Conflits en mode parallèle

@@ -66,4 +66,3 @@ Termine par le bloc JSON sur une seule ligne.
 - Ne touche pas à `docs/adr/[0-9]*` (immutabilité ADR, si le hook amont est installé).
 - Ne rebase que la branche fournie ; ne rebase jamais la branche par défaut du repo sur elle-même, ni une branche non fournie.
 </constraints>
-</output>

@@ -173,4 +173,3 @@ Termine par le bloc JSON sur une seule ligne (le `body` y est une chaîne échap
 - Sections vides **omises**, jamais rendues avec « n/a » ou « aucun ».
 - Mode worktree : tout git via `git -C "<worktreeDir>"`, toute lecture en chemin absolu sous ce répertoire.
 </constraints>
-</output>

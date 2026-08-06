@@ -10,7 +10,7 @@ Sa raison d'être tient en une phrase : **la vérification doit sortir de l'agen
 implémentation atteste de lui-même que les tests sont intacts — il exécute `git diff` sur les
 fichiers de test, les restaure s'ils ont bougé, et retourne `testsUntouched: true`. Producteur et
 vérificateur sont le même acteur, ce que le plugin refuse partout ailleurs. La CI est le seul endroit
-où cette règle est vérifiée par quelqu'un d'autre (`DECISIONS.md` §D22).
+où cette règle est vérifiée par quelqu'un d'autre.
 
 **Le critère qui gouverne toute la phase**, et qu'on n'assouplit pas :
 

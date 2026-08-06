@@ -29,7 +29,7 @@ ailleurs, et c'est invisible tant que rien ne le nomme :
 
 **Deuxième provenance** : un projet suivi sous une version de `scd-sdd` **antérieure à
 l'éclatement du journal** a un `docs/JOURNAL.md` **monolithique**, à sections. Il se convertit en
-un fichier par cible (`DECISIONS.md` §D17). C'est un **déplacement de lignes**, pas une
+un fichier par cible. C'est un **déplacement de lignes**, pas une
 réécriture — et c'est toi qui le fais. Les deux provenances se cumulent sans se gêner : un projet
 peut avoir besoin de la conversion **et** de la reconstitution des phases jamais journalisées.
 

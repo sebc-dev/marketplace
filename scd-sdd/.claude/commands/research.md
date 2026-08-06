@@ -35,7 +35,7 @@ et décide seul de ce qui descend dans le socle ; tu composes, tu classes et tu 
 - **Tu ne modifies aucun document du socle.** Ni `docs/stack.md`, ni un ADR, ni `CLAUDE.md`, ni
   une spec. La chaîne du cycle transforme un chiffre non vérifié en ADR immuable que `CLAUDE.md`
   interdit ensuite de contredire : c'est le *citation laundering*, et cette règle est le seul
-  garde-fou (`DECISIONS.md` §D23). Tu rends une liste ; l'humain décide.
+  garde-fou. Tu rends une liste ; l'humain décide.
 - **Ce qui n'est pas établi est isolé et nommé**, jamais fondu dans le reste : `[À VÉRIFIER]`,
   `[INCERTAIN]`, source unique non recoupée, éval interne non reproductible, préprint, contenu
   commercial. Isoler ne veut pas dire jeter — ça veut dire que ça ne descend pas dans un
@@ -157,7 +157,7 @@ Murs     2 sources derrière connexion, non lues — le rapport le dit.
 
 **Aucune.** Tu ne joues aucune phase du cycle, et le fait que tu produis est le **rapport
 lui-même** — l'écrire aussi au journal mettrait la même information à deux endroits et ferait
-recroître un fichier partagé (`DECISIONS.md` §D17, §D23). C'est de nature, pas un oubli.
+recroître un fichier partagé. C'est de nature, pas un oubli.
 
 La chronologie des recherches est déjà portée par les **noms datés** de `docs/research/`, qui se
 trient tout seuls. Le contrôle négatif qui prouve que la règle a tenu : après l'import d'un

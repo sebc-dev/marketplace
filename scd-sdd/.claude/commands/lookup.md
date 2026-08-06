@@ -33,8 +33,7 @@ et tu qualifies).
 - **Tu n'écris aucun fichier.** Ni rapport, ni note, ni ligne de journal, ni document du socle.
   Ta sortie est la session, point. C'est ce qui te distingue de `/scd-sdd:research`.
 - **Tu ne modifies aucun document du projet** — pas `docs/stack.md`, pas un ADR, pas `CLAUDE.md`.
-  Ce que tu trouves alimente une décision humaine ; il ne descend pas tout seul (`DECISIONS.md`
-  §D23).
+  Ce que tu trouves alimente une décision humaine ; il ne descend pas tout seul.
 - **Tu annonces les murs avant de chercher, jamais après** : paywall, connexion, CAPTCHA,
   `robots.txt`, données privées. Une question dont la réponse est derrière l'un d'eux se
   reformule ; elle ne se contourne pas.
@@ -117,8 +116,8 @@ Une question trop large ajoute en pied :
 ## Consigne au journal
 
 **Aucune.** Tu ne joues aucune phase du cycle, et tu ne produis même aucun fichier : il n'y a
-rien à consigner. Une recherche qui n'a rien persisté n'est pas un événement du cycle
-(`DECISIONS.md` §D23). C'est de nature, pas un oubli.
+rien à consigner. Une recherche qui n'a rien persisté n'est pas un événement du cycle.
+C'est de nature, pas un oubli.
 
 Si ce que tu as trouvé mérite de survivre à la session, ce n'est pas une ligne de journal qu'il
 faut : c'est un rapport, donc `/scd-sdd:research`.

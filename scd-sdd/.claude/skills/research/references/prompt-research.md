@@ -6,22 +6,22 @@ le rapport. `lookup` n'en a pas besoin — il répond en session et ne compose r
 Le `SKILL.md` porte ce qui **ne bouge pas** — ancrage par citations, incertitude permise, niveaux de
 preuve, qualité de source. Ce fichier porte ce qui est **daté** : une doctrine d'éditeur et une
 génération de modèles, l'une et l'autre volatiles de l'aveu même de leurs sources. Les deux sont
-séparés pour que le second périme **visiblement** (`DECISIONS.md` §D23).
+séparés pour que le second périme **visiblement**.
 
 <peremption>
 
 ## La date en tête n'est pas décorative
 
-État arrêté au **6 août 2026**, sur la base de deux rapports suivis dans ce dépôt de développement —
-état de l'art documenté du prompting pour la recherche agentique, et fiabilité mesurée des systèmes
-de recherche agentique (`docs/research_claude/`). Ils appliquent eux-mêmes le protocole décrit ici.
+État arrêté au **6 août 2026**, sur la base de deux rapports de recherche — état de l'art documenté
+du prompting pour la recherche agentique, et fiabilité mesurée des systèmes de recherche
+agentique — qui appliquent eux-mêmes le protocole décrit ici.
 
 Avant de t'y fier :
 
 - si la date remonte à **plus de six mois**, dis-le à l'humain avant de composer, et propose de
   revérifier les points marqués ⚠ — ce sont ceux qui dépendent d'une version de modèle ou d'API ;
 - **ne cite aucun chiffre de ce fichier dans un document du socle.** Ils sont ici pour calibrer une
-  relecture, pas pour fonder une décision : c'est exactement le trajet que §D23 interdit ;
+  relecture, pas pour fonder une décision : ce serait exactement le trajet interdit ;
 - une contradiction constatée entre ce fichier et la documentation courante tranche **en faveur de
   la documentation courante**, et le fichier se corrige dans la foulée.
 
@@ -78,8 +78,8 @@ La bascule est là. On ne dit plus au modèle **comment réfléchir**, on lui di
 
 ## Le gabarit de prompt
 
-Six blocs. C'est le format que respectent les rapports déjà présents dans `docs/research_claude/` et
-`docs/playbook/` — les reprendre comme exemples est légitime, ils sont dans le dépôt.
+Six blocs. C'est le format qu'un rapport archivé dans `docs/research/` respecte — les rapports
+déjà présents dans ce dossier sont des exemples légitimes à reprendre.
 
 ```markdown
 ## Question

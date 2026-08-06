@@ -39,7 +39,7 @@ Tu croises **trois sources** :
 
 Et, en complément, l'**en-tête** des fiches de `docs/chantiers/en-cours/` : si la `Portée` d'une
 fiche nomme un lot, ce lot a été relayé par un `/scd-sdd:pause`. C'est la réparation la plus
-concrète de l'angle mort de `DECISIONS.md` §D8 — sans jamais scanner les worktrees.
+concrète de l'angle mort des runs interrompus en vol — sans jamais scanner les worktrees.
 
 Tu es la vue **détaillée du niveau implémentation**. La vue des trois niveaux est `/scd-sdd:status` ;
 le détail des specs est dans `/scd-sdd:status-specs`.
@@ -227,6 +227,12 @@ Colonne **Dernier run** — le seul fait de ce tableau qui ne vient ni des fichi
 - Tu ne convertis pas une ligne de journal en avancement : sur désaccord, les cases gagnent.
 - Tu ne lis pas le **corps** d'une fiche de chantier — seulement sa ligne `Portée` — et un chantier
   ne modifie jamais le prochain lot lançable que tu recommandes.
+
+## Consigne au journal
+
+**Aucune.** Tu ne joues aucune phase : tu **lis** le journal pour y trouver le dernier run de
+chaque lot, tu n'y ajoutes rien. Une consultation n'est pas un événement du cycle. C'est de
+nature, pas un oubli.
 
 ## Skill active
 

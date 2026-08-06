@@ -1,5 +1,5 @@
 ---
-description: "Phase 4 du socle : fige les décisions structurantes en ADR dans docs/adr/NNNN-*.md, une par candidat listé dans la Stack. Format Nygard, statut Accepté, immuables. Boucle la traçabilité bidirectionnelle avec docs/stack.md."
+description: "Phase 4 du socle : fige les décisions structurantes en ADR dans docs/adr/NNNN-*.md, une par candidat — listé dans la Stack, ou laissé en brouillon dans docs/adr/_candidates/ par le niveau specs (plan, premortem), dont c'est la voie de promotion. Format Nygard, statut Accepté, immuables. Boucle la traçabilité bidirectionnelle avec docs/stack.md."
 argument-hint: "(aucun — lit docs/stack.md)"
 allowed-tools:
   - Read
@@ -48,6 +48,11 @@ Ratio : 30% humain / 70% AI (dérivation depuis la Stack ; l'humain valide le co
    vers `/scd-sdd:stack` : les candidats ADR viennent de là. Récupère la liste
    « Décisions structurantes → candidats ADR ».
 
+   Complète-la des **brouillons** de `docs/adr/_candidates/*.md` (`Glob`), s'il y en a :
+   les décisions structurantes laissées par le niveau specs (`plan`, `premortem`)
+   attendent leur promotion **ici** — c'est cette commande que `plan` nomme pour ça.
+   Chaque brouillon se traite comme un candidat de plus, validation humaine comprise.
+
 2. **Charge le template et ses règles** : lis `references/adr.md` du skill
    `project-docs`.
 
@@ -73,23 +78,31 @@ Ratio : 30% humain / 70% AI (dérivation depuis la Stack ; l'humain valide le co
    créé. C'est la **seule** édition d'un artefact antérieur de tout le socle ; elle se
    fait par `Edit` ciblé sur les cellules concernées, sans rien réécrire d'autre.
 
-6. **Relis contre le bloc `<completion>`** de `references/adr.md` — en particulier :
+6. **Signale le sort des brouillons promus** : chaque fichier de `_candidates/` devenu un
+   ADR est à **supprimer par l'utilisateur** — tu n'as aucun outil pour le faire — sans
+   quoi il se représentera en candidat à la prochaine passe. La colonne « ADR » de
+   `docs/stack.md` (étape 5) ne concerne que les candidats issus de la Stack : un
+   brouillon promu trace vers son origine (le plan de la feature), pas vers le tableau.
+
+7. **Relis contre le bloc `<completion>`** de `references/adr.md` — en particulier :
    chaque candidat de la Stack a **exactement un** ADR, et chaque ADR a au moins une
    conséquence négative.
 
-7. **Consigne au journal** (voir ci-dessous).
+8. **Consigne au journal** (voir ci-dessous).
 
 ## Ce que tu NE fais PAS
 
 - Tu ne réédites aucun ADR existant, et tu ne changes le statut d'aucun.
 - Tu n'installes pas de hook d'immutabilité ADR : c'est de la maintenance, hors du socle
   de création — signale-le comme étape aval.
-- Tu ne crées pas d'ADR pour une décision absente de la liste des candidats sans faire
-  valider l'ajout par l'utilisateur.
+- Tu ne crées pas d'ADR pour une décision absente de la liste des candidats — Stack ou
+  `_candidates/` — sans faire valider l'ajout par l'utilisateur.
+- Tu ne supprimes ni ne modifies aucun brouillon de `_candidates/` : promu ou écarté, son
+  sort se signale à l'utilisateur, il ne s'exécute pas ici.
 - Tu ne modifies rien d'autre dans `docs/stack.md` que la colonne « ADR ».
 - Tu ne touches à aucun rapport de `docs/research/` — pas même pour y noter l'ADR qu'il a
   servi. Le lien va de l'ADR vers le rapport, jamais l'inverse : un rapport qui listerait
-  ses usages serait un fichier qui croît (`DECISIONS.md` §D23).
+  ses usages serait un fichier qui croît.
 
 ## Consigne au journal
 

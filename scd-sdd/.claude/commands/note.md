@@ -36,7 +36,7 @@ Ratio : 30% humain / 70% AI (l'humain dit ce qui mérite une fiche ; tu la compo
 - **Une invocation, une fiche.** Une session qui a fait trois choses en écrit une par sujet, ou
   une seule qui les résume. Jamais un déversement.
 - **Tu n'écris jamais de ligne de journal**, et surtout pas une ligne dont la phase serait l'une
-  des 21 phases du cycle. Ces lignes appartiennent à leur commande : un `analyze` non joué ne se
+  des phases du cycle. Ces lignes appartiennent à leur commande : un `analyze` non joué ne se
   note pas, il se joue. Sans cette règle, tu serais une porte dérobée pour fabriquer un verdict de
   gate — le fait même pour lequel le journal existe.
 - **Aucun fait dérivable dans la fiche** : pas d'état de lot, pas de verdict, pas de pourcentage.
@@ -47,7 +47,7 @@ Ratio : 30% humain / 70% AI (l'humain dit ce qui mérite une fiche ; tu la compo
 
 - **Chantier archivé** : une fiche dans `docs/chantiers/archive/AAAA-MM-JJ-slug.md`. Contrat :
   skill `chantier`.
-- **Travail hors-cycle** : ce qui ne relève d'aucune des 21 phases. Typiquement `debug`, `fix`,
+- **Travail hors-cycle** : ce qui ne relève d'aucune phase du cycle. Typiquement `debug`, `fix`,
   `refactor`, `deps`, `spike`, `ops` — ce vocabulaire sert à *penser* la fiche, pas à la baliser :
   le titre dit ce qui a été fait, en français.
 
@@ -112,8 +112,7 @@ Ratio : 30% humain / 70% AI (l'humain dit ce qui mérite une fiche ; tu la compo
 
 **Aucune.** Le travail que tu consignes ne relève d'aucune phase du cycle, et le fait que tu
 produis est la **fiche elle-même** — la dupliquer au journal mettrait la même information à deux
-endroits et ferait recroître un fichier partagé (`DECISIONS.md` §D17, §D18). C'est de nature, pas
-un oubli.
+endroits et ferait recroître un fichier partagé. C'est de nature, pas un oubli.
 
 La chronologie du hors-cycle est le **tri par nom** de `docs/chantiers/archive/`, que
 `/scd-sdd:status` lit sans ouvrir un seul fichier.

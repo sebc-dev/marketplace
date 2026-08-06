@@ -57,7 +57,9 @@ Ratio : 20% humain / 80% AI (scaffolding mécanique + établissement de l'état)
    **incomplet**, pas comme fait : signale-le nommément.
 
 3. **Scaffolde ce qui manque**, sans jamais toucher à ce qui existe :
-   - `docs/`, `docs/adr/` et `docs/journal/` (`mkdir -p`) ;
+   - `docs/`, `docs/adr/`, `docs/adr/_candidates/` et `docs/journal/` (`mkdir -p`) —
+     `_candidates/` accueillera les brouillons d'ADR laissés par le niveau specs
+     (`plan`, `premortem`) ;
    - `docs/chantiers/en-cours/`, `docs/chantiers/en-attente/` et `docs/chantiers/archive/`
      (`mkdir -p`) — les trois états d'un chantier **sont** ces répertoires (skill `chantier`) ;
    - `docs/research/` (`mkdir -p`) — l'emplacement des rapports de recherche. Il est créé

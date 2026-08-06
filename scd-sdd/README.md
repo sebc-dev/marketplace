@@ -161,6 +161,13 @@ dans `docs/ci.md` ne serait jamais relue. `docs/ci.md` porte enfin, en section o
 **ce que ces contrôles ne couvrent pas** : régression sémantique silencieuse, oracle faux,
 *building to the test*.
 
+Le hook local `format-lint.sh` (PostToolUse) est, lui, **livré inerte** — placeholders
+`FORMAT_CMD`/`LINT_CMD` vides, no-op tant qu'ils le restent — et la phase `ci` n'y touche
+pas : il vit dans le cache du plugin, remis à vide à chaque mise à jour, et un renseignement
+one-shot s'y perdrait. C'est `/scd-sdd:kickoff-feature` qui propose de le renseigner, à
+chaque feature, depuis les commandes que `CLAUDE.md` tient de `docs/ci.md` ; et
+`/scd-sdd:migrate` le re-diagnostique après une réinstallation.
+
 ## La recherche — transverse, et jamais reprise telle quelle
 
 Une recherche ne joue **aucune phase** : elle ne journalise pas, le **rapport est le fait**.
@@ -214,9 +221,9 @@ chantiers non plus : rien n'a existé avant `docs/chantiers/`, il n'y a rien à 
 
 ## Migration depuis une version antérieure de `scd-sdd`
 
-Cette version **éclate `docs/JOURNAL.md`** en un fichier par cible. C'est un changement
-**cassant** pour un projet déjà suivi, et le chemin de reprise est le même : **une fois par
-projet**, `/scd-sdd:migrate`.
+Depuis la **1.2.0**, `scd-sdd` **éclate `docs/JOURNAL.md`** en un fichier par cible. C'est un
+changement **cassant** pour un projet déjà suivi, et le chemin de reprise est le même : **une
+fois par projet**, `/scd-sdd:migrate`.
 
 > ⚠️ Le numéro de version reste en `1.x` tant que le dispositif n'a pas été éprouvé en
 > situation réelle. Il ne signale donc **pas** la rupture — `/scd-sdd:migrate` est le seul

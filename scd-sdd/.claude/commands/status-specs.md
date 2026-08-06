@@ -112,6 +112,12 @@ Ratio : 10% humain / 90% AI (lecture mécanique ; l'humain choisit la suite).
 - Tu ne rejoues pas `analyze` pour « vérifier » un verdict périmé — tu le signales et tu
   renvoies.
 
+## Consigne au journal
+
+**Aucune.** Tu ne joues aucune phase : tu **lis** le journal des features pour en extraire les
+verdicts, tu n'y ajoutes rien. Une consultation n'est pas un événement du cycle. C'est de nature,
+pas un oubli.
+
 ## Skill active
 
 - `feature-specs` — charge `references/status.md` ; table de dérivation dans la section

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # SessionStart — annonce du chantier en cours.
 # LECTURE SEULE. N'ecrit jamais de fiche : un hook ne connait pas l'issue de ce qu'il
-# consignerait (DECISIONS.md D19), et une fiche fabriquee est pire qu'un dossier vide.
+# consignerait, et une fiche fabriquee est pire qu'un dossier vide.
 #
 # Cout en contexte = ce que ce script IMPRIME, pas ce qu'il lit. Il peut donc grepper
 # autant de fiches que necessaire ; seule la sortie compte. Aucun chantier -> aucune sortie.
@@ -38,7 +38,7 @@ fi
 
 titre()  { grep -m1 '^# '            "$1" 2>/dev/null | sed 's/^# //'; }
 portee() { grep -m1 '^Portée *:'     "$1" 2>/dev/null | sed 's/^Portée *: *//'; }
-maj()    { grep -m1 '^Ouvert le '    "$1" 2>/dev/null | sed 's/.*Actualisé le \([0-9-]*\).*/\1/'; }
+maj()    { grep -m1 '^Ouvert le '    "$1" 2>/dev/null | sed -n -e 's/.*Actualisé le \([0-9-]*\).*/\1/p' -e t -e 's/^Ouvert le \([0-9-]*\).*/\1/p'; }
 
 pied() {
   [ "$attente" -gt 0 ] && printf '   · %s en attente\n' "$attente"

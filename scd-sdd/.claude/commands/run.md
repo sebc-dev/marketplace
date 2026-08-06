@@ -116,10 +116,11 @@ Ratio : 20% humain / 80% AI (l'humain valide la cible et la base ; le workflow f
      restant est trop faible : la PR s'ouvre alors avec un corps de repli minimal, jamais sans
      description.
 
-   Le workflow se lance **par son chemin de fichier** (`scriptPath`), **jamais par `name`** : un
-   workflow **bundlé dans un plugin** n'est **pas** enregistré au registre des noms — seuls les
-   workflows projet (`.claude/workflows/`) et built-in le sont. `Workflow(name: "implement-lot", …)`
-   échoue avec « Workflow not found ».
+   Le workflow se lance **par son chemin de fichier** (`scriptPath`), **jamais par `name`** : les
+   workflows de ce plugin vivent sous `.claude/workflows/`, hors du répertoire `workflows/` à la
+   racine du plugin — le seul auto-découvert — et le manifeste ne les déclare pas ; ils ne sont
+   donc pas au registre des noms. `Workflow(name: "implement-lot", …)` échoue avec
+   « Workflow not found ».
 
    **a. Résous le chemin absolu du script.** `${CLAUDE_PLUGIN_ROOT}` ne s'expande pas de façon
    fiable dans un fichier de commande markdown — ne le passe pas à `scriptPath`. Résous par Bash :

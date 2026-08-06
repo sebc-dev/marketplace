@@ -244,6 +244,12 @@ toutes, la plus récemment actualisée d'abord.
 - Tu ne lis pas le **corps** d'une fiche de chantier, tu n'en charges pas le manifeste, tu ne la
   déplaces ni ne la modifies — `/scd-sdd:resume` fait tout cela.
 
+## Consigne au journal
+
+**Aucune.** Tu ne joues aucune phase : tu **lis** le journal pour rendre une vue, tu n'y ajoutes
+rien. Une consultation n'est pas un événement du cycle — la journaliser transformerait le journal
+en log d'accès. C'est de nature, pas un oubli.
+
 ## Skill active
 
 - `feature-specs` — table de dérivation (§ « Cibler une feature ») et `references/status.md`

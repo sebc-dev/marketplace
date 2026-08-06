@@ -26,10 +26,10 @@ Trois conséquences, toutes **de nature** et jamais discrétionnaires :
 
 - **Aucune ligne de journal.** Ces commandes ne jouent aucune phase, et ce qu'elles produisent
   **est** le fait : le rapport lui-même. Même raisonnement que « la fiche est le fait » pour les
-  chantiers (`DECISIONS.md` §D18 et §D23). `lookup` ne produit même aucun fichier.
+  chantiers. `lookup` ne produit même aucun fichier.
 - **Aucun état dérivé.** `docs/research/` n'apparaît dans aucune table d'état de `status` : l'y
   faire figurer ferait croire à une phase, et un socle sans recherche n'est pas un socle incomplet.
-- **Deux verbes, pas une commande à modes** (§D7). `lookup` répond en session et n'écrit rien ;
+- **Deux verbes, pas une commande à modes**. `lookup` répond en session et n'écrit rien ;
   `research` produit un artefact, quitte la session, et revient plus tard.
 
 ## Le risque qui gouverne tout le reste
@@ -43,8 +43,7 @@ vérifie :
 Un chiffre non vérifié entré au début ressort en décision que `CLAUDE.md` interdit de contredire, et
 que la gate `analyze` protège au lieu de la questionner. Le mécanisme est mesuré ailleurs : une
 étude Columbia relayée par *STAT* compte **1 article sur 458** portant une référence fabriquée en
-2025, contre 1 sur 2 828 en 2023 *(source tierce, presse scientifique — voir
-`docs/research_claude/`)*.
+2025, contre 1 sur 2 828 en 2023 *(source tierce, presse scientifique)*.
 
 D'où la règle centrale, qui ne se négocie pas :
 
@@ -114,8 +113,8 @@ recoupé, c'est **une seule** source.
 ### 6. XML structurel, pas décoratif
 
 Les balises délimitent un rôle : documents, sources, variables, consignes. Elles ne décorent pas un
-prompt court et homogène, où elles n'ajoutent que du bruit. Même règle que dans le plugin — voir
-`CONVENTIONS.md` §1, « les balises XML ne sont pas un style ».
+prompt court et homogène, où elles n'ajoutent que du bruit. Même règle que partout dans le plugin :
+les balises XML ne sont pas un style, elles marquent un rôle.
 
 ## Ce que la recherche ne peut pas atteindre
 
@@ -147,7 +146,7 @@ docs/research/
 - **Versionné et commité** par la commande qui l'écrit, `git add` scopé au rapport.
 - **Aucun rétro-lien** vers les décisions qu'un rapport a servies. Le lien existe déjà dans l'autre
   sens — un ADR cite `docs/research/…` dans son rationale — et un rapport qui listerait ses usages
-  serait un fichier qui croît (§D23).
+  serait un fichier qui croît.
 - Le **format attendu** d'un rapport — TL;DR / Key Findings / Details / Recommendations / Caveats,
   confiance par affirmation, marqueurs `[À VÉRIFIER]` et `[INCERTAIN]` — vit dans
   `references/prompt-research.md`, chargée à la composition.
