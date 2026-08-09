@@ -38,7 +38,7 @@ valide ce qui est repris).
 - **`@import` avec parcimonie.** Les fichiers `@importés` sont chargés au lancement :
   n'importe que le stable et l'universel.
 - **Test de chaque ligne** : « sa suppression ferait-elle échouer Claude ? » Sinon, coupe.
-  Cible < 200 lignes.
+  **Cible 60-90 lignes, plafond 200.**
 - **Aucune règle de style écrite à la main.** Le style appartient au linter, qui en est
   la source de vérité.
 - **Aucune commande inventée, et plus aucune commande devinée.** Les commandes du projet
@@ -132,7 +132,7 @@ par `Edit` ciblé (crée le fichier s'il manque) :
 
 ## Skill active
 
-- `project-docs` — charge `references/claude-md.md`.
+- `project-docs` — charge `references/claude-md.md`, **tout sauf le bloc `<revision>`**.
 - `journal` — contrat de `docs/journal/*.md`.
 
 ## À la fin
@@ -150,7 +150,9 @@ Récapitule les quatre étapes recommandées, dans cet ordre :
    `/scd-sdd:revise-contract` comme la **seule** voie de mise à jour, et les quatre déclencheurs
    qui justifient de la jouer : Claude refait la même erreur une 2ᵉ fois · une revue attrape ce
    qu'il aurait dû savoir · on retape la même correction · un nouveau coéquipier aurait cherché ce
-   contexte. Ajoute le cas mécanique, qui n'attend aucun symptôme : **`docs/ci.md` a changé** — la
-   section Commandes en est une recopie, et rien ne la rejoue. Et dis pourquoi `contract` n'est pas
-   cette voie : le ré-assemblage écraserait ce que le premortem et l'humain auront ajouté.
+   contexte. Ajoute les **deux cas mécaniques**, qui n'attendent aucun symptôme et appellent un
+   retrait plutôt qu'un ajout : **`docs/ci.md` a changé** — la section Commandes en est une recopie,
+   et rien ne la rejoue — et le projet a **changé de génération de modèle**, une règle utile à
+   l'ancien pouvant nuire au nouveau. Et dis pourquoi `contract` n'est pas cette voie : le
+   ré-assemblage écraserait ce que le premortem et l'humain auront ajouté.
 4. **Discipline `/clear`** — une phase, un contexte propre.

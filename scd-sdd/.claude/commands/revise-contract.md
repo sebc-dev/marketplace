@@ -1,5 +1,5 @@
 ---
-description: "Entretien de CLAUDE.md, hors cycle : révise un contrat EXISTANT contre une checklist à deux volets — mécanique (dérive de la section Commandes contre docs/ci.md, taille, pointeurs, en-tête de maintenance) et de jugement (test de suppression, procédure réinstallée, garde-fou en prose, style manuscrit, contradiction, déductible du dépôt). Rend ses constats en deux listes, attend l'arbitrage humain, puis applique par Edit ciblés. Elle entretient et ne ré-assemble jamais. Pas une phase : rejouable, jamais réclamée par status."
+description: "Entretien de CLAUDE.md, hors cycle : révise un contrat EXISTANT contre une checklist à deux volets — mécanique (dérive de la section Commandes contre docs/ci.md, taille, pointeurs, en-tête de maintenance) et de jugement (test de suppression, procédure réinstallée, garde-fou en prose, style manuscrit, contradictions internes et inter-fichiers, déductible du dépôt). Rend ses constats en deux listes, attend l'arbitrage humain, puis applique par Edit ciblés. Elle entretient et ne ré-assemble jamais. Pas une phase : rejouable, jamais réclamée par status."
 argument-hint: "(aucun — lit CLAUDE.md et la table des commandes de docs/ci.md)"
 allowed-tools:
   - Read
@@ -38,7 +38,9 @@ Ratio : 50% humain / 50% AI (la machine détecte et propose, l'humain tranche ch
   reste. Elle subit le test de suppression comme les autres — jamais « hors template, donc à
   retirer ». Traiter le template comme un référentiel de conformité ferait de toi le destructeur
   que tu remplaces. Tu ne charges d'ailleurs pas le `<template>`, et c'est délibéré.
-- **Tu n'édites que `CLAUDE.md`.** Rien d'autre, jamais, en dehors de ta ligne de journal.
+- **Tu n'édites que le `CLAUDE.md` racine.** Rien d'autre, jamais, en dehors de ta ligne de journal.
+  Ceux des sous-dossiers se lisent — un recouvrement avec eux se **signale**, il ne se corrige pas
+  ici.
 - **Tu entretiens, tu ne ré-assembles jamais.** Aucune section n'est réécrite en bloc, aucune ligne
   n'est produite de ton cru. Enrichir le contrat appartient à `premortem socle`.
 - **La section Commandes n'a qu'une source et qu'un sens de correction** : elle se resynchronise
@@ -61,7 +63,9 @@ Ratio : 50% humain / 50% AI (la machine détecte et propose, l'humain tranche ch
 2. **Charge les deux blocs** : `references/claude-md.md` du skill `project-docs`, blocs
    **`<guidance>`** et **`<revision>`** — et **eux seuls**. Le `<template>` est exclu, la référence
    dit pourquoi. Lis ensuite `CLAUDE.md` **en entier**, et la table « Commandes du projet » de
-   `docs/ci.md`.
+   `docs/ci.md`. Recense enfin par `Glob` les **autres `CLAUDE.md` du dépôt** — ceux des
+   sous-dossiers : la hiérarchie est additive et sans précédence, donc le contrôle de contradiction
+   en a besoin. Tu les lis, tu ne les édites jamais.
 
 3. **Passe le volet mécanique** — les 4 contrôles du bloc `<revision>`, tranchés sans jugement. La
    taille se lit sur les numéros de ligne que `Read` te rend ; chaque pointeur se vérifie par
@@ -110,8 +114,11 @@ L'entretien **modifie `CLAUDE.md` sans y laisser le moindre marqueur**, et son r
 d'aucun fichier : combien de lignes sont parties, si la section Commandes a dû être resynchronisée,
 combien de signalements restent ouverts. Sans cette ligne, la passe est invisible.
 
-Charge le skill `journal` et ajoute **une ligne** dans `docs/journal/socle.md`, par `Edit` ciblé
-(crée le fichier s'il manque) :
+Charge le skill `journal` et ajoute **une ligne** dans `docs/journal/socle.md`, par `Edit` ciblé.
+Tu ne **crées** pas ce fichier s'il manque — tu n'as pas `Write`, et son absence sur un projet qui a
+déjà un `CLAUDE.md` dit autre chose qu'un oubli : le journal n'a jamais été éclaté. **Signale-le** et
+renvoie vers `/scd-sdd:migrate`, seule commande autorisée à reconstituer un journal ; la ligne se
+consignera après. Le reste de la passe, éditions comprises, reste valide.
 
 - **Phase** : `revise-contract`
 - **Résultat** : taille avant → après · état de la section Commandes · nb de signalements.
@@ -136,7 +143,10 @@ Rappelle, dans cet ordre :
 2. **Les quatre déclencheurs** qui justifient de rejouer cette révision : Claude refait la même
    erreur une 2ᵉ fois · une revue attrape ce qu'il aurait dû savoir · on retape la même correction ·
    un nouveau coéquipier aurait cherché ce contexte. Hors de ces cas, l'ajout est probablement du
-   bruit.
+   bruit. Et les **deux cas mécaniques**, qui n'attendent aucun symptôme et appellent un **retrait**
+   plutôt qu'un ajout : `docs/ci.md` a changé — la section Commandes en est une recopie, et rien ne
+   la rejoue — et le projet a **changé de génération de modèle**, une règle utile à l'ancien pouvant
+   nuire au nouveau.
 3. **Ne pas rejouer `/scd-sdd:contract`** sur ce projet : il ré-assemblerait depuis le template et
    écraserait ce que le premortem et l'humain ont ajouté. L'entretien passe par ici, et seulement
    par ici.

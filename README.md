@@ -28,7 +28,7 @@ Architectural design patterns for Claude Code plugins. Component selection (skil
 
 Interactive guided code review on the current branch. Reviews file by file in optimal order with dedicated background agents (code-reviewer + test-reviewer) for each file, JSON-based progress tracking, and blocking/suggestion classification. 5 slash commands (`/scd-review:review-init`, `/scd-review:code-review`, `/scd-review:review-followup`, `/scd-review:review-continue`, `/scd-review:review-post`). GitHub/GitLab PR posting integration.
 
-### [scd-sdd](./scd-sdd/) `v1.9.0`
+### [scd-sdd](./scd-sdd/) `v1.9.1`
 
 Complete spec-driven development cycle, from empty repo to reviewable PR — one plugin, three
 chained levels. **Foundation** (once per project): brief → PRD → stack → architecture invariants →

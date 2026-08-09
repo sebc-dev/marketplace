@@ -404,7 +404,8 @@ La révision passe **deux volets**. Le **mécanique** se mesure : divergence de 
 face à `docs/ci.md`, taille du fichier (plafond **200** lignes, cible **60-90** — il est chargé en
 entier, quelle que soit sa longueur), pointeurs qui ne résolvent plus. Le **jugement** se discute :
 test de suppression ligne à ligne, procédures réinstallées après coup, garde-fou écrit en prose là
-où il faudrait un hook, style manuscrit, contradictions internes, et ce qui est déjà déductible du
+où il faudrait un hook, style manuscrit, contradictions — **internes comme inter-fichiers**, la
+hiérarchie des `CLAUDE.md` étant additive et sans précédence —, et ce qui est déjà déductible du
 dépôt. La commande rend **deux listes** — les éditions proposées, les signalements —, **l'humain
 tranche**, puis elle applique par `Edit` ciblés, un par édition retenue.
 
@@ -413,9 +414,10 @@ Ce qu'elle ne fait pas, et qui compte autant :
 - **elle ne ré-assemble jamais.** Une ligne inconnue du template est **présumée légitime** : elle
   subit le test de suppression comme les autres, jamais « hors template, donc à retirer » — sinon
   la commande deviendrait le destructeur qu'elle remplace ;
-- **elle n'édite que `CLAUDE.md`.** Un skill à créer, une rule path-scopée, un hook, un trou dans
-  `docs/ci.md` : ce sont des **signalements**, présentés à part et jamais écrits. Ils ne
-  s'approuvent pas — ils n'ouvrent sur aucune écriture ;
+- **elle n'édite que le `CLAUDE.md` racine.** Un skill à créer, une rule path-scopée, un hook, un
+  `CLAUDE.md` de sous-dossier qui recouvre le racine, un trou dans `docs/ci.md` : ce sont des
+  **signalements**, présentés à part et jamais écrits. Ils ne s'approuvent pas — ils n'ouvrent sur
+  aucune écriture ;
 - **la section Commandes n'a qu'un sens de correction** : depuis `docs/ci.md`, jamais l'inverse.
   Corriger dans le contrat créerait une commande que la CI n'exécute pas ;
 - **elle n'ajoute rien de son cru.** Enrichir le contrat appartient au premortem.

@@ -3,25 +3,21 @@
 <role>
 `CLAUDE.md` est le **contrat opérationnel** : chargé à chaque session, il **pointe** vers les
 documents du socle (Brief, PRD, Stack, Archi, ADR, CI) sans les recopier, et **lit** les commandes
-du projet dans `docs/ci.md`. C'est ici que la **constitution est fondue** (principes
-non-négociables + seuils de déclenchement) plutôt que dans un fichier séparé. Advisory, pas
-exécutif.
+du projet dans `docs/ci.md`. C'est ici que la **constitution est fondue** (principes non-négociables
++ seuils de déclenchement) plutôt que dans un fichier séparé. Advisory, pas exécutif.
 
 **Il est chargé en entier, quelle que soit sa longueur** — la concision est une contrainte de coût,
-pas de style. Plafond **200 lignes** (« Keep CLAUDE.md under 200 lines, give it an owner, and
-review changes to it like code ») ; **cible 60-90**, ordre de grandeur mesuré sur des dépôts
-publics. Ce qui dépasse ne se coupe pas au hasard : il se **déplace**, et la section Renvois en
-garde la trace.
+pas de style. Plafond **200 lignes** (« Keep CLAUDE.md under 200 lines, give it an owner, and review
+changes to it like code ») ; **cible 60-90**, ordre de grandeur mesuré sur des dépôts publics. Ce
+qui dépasse ne se coupe pas au hasard : il se **déplace**, et la section Renvois en garde la trace.
 
 **Le contrat a un entretien, et les deux gestes s'excluent.** `contract` **assemble**, une fois, et
 ne se rejoue **pas** sur un fichier existant : il écraserait les remédiations de `premortem socle`
 et tout ajout humain. `/scd-sdd:revise-contract` **entretient** — retirer, resynchroniser, déplacer ; jamais enrichir.
 
 **Deux points de chargement, et le second est partiel :** `/scd-sdd:contract` lit **tout sauf
-`<revision>`** ; `/scd-sdd:revise-contract` ne lit que **`<guidance>` et `<revision>`**. Ne pas lui
-donner le `<template>` est délibéré : une commande qui entretient ne doit jamais avoir le
-référentiel d'assemblage sous les yeux, sous peine de traiter toute ligne hors template comme un
-écart de conformité.
+`<revision>`** ; `/scd-sdd:revise-contract` ne lit que **`<guidance>` et `<revision>`**. Lui cacher
+le `<template>` est délibéré — le bloc `<revision>` dit pourquoi.
 </role>
 
 <template>
@@ -89,13 +85,16 @@ référentiel d'assemblage sous les yeux, sous peine de traiter toute ligne hors
 - **Advisory ≠ garanti.** Écrire la Definition of Done dans CLAUDE.md ne la fait pas respecter. Ce qui DOIT arriver à 100 % est exécuté par les contrôles bloquants de `docs/ci.md`, sous protection de branche : relier chaque item de DoD au job qui le vérifie, et laisser advisory — explicitement — ce qu'aucun job ne couvre.
 - **Test de suppression.** Pour chaque ligne : « sa suppression ferait-elle échouer Claude ? » Sinon, couper. Un CLAUDE.md gonflé dilue les règles qui comptent.
 - **Commandes** : elles ne se devinent plus et ne s'inventent jamais — elles se **lisent** dans la table « Commandes du projet » de `docs/ci.md` et se recopient à l'identique. Un `[à compléter]` qui subsiste là-bas se reporte tel quel et se signale : c'est un trou de la phase `ci`, et le corriger ici créerait une commande que la CI n'exécute pas.
-- **Le pourquoi est exigé** sur toute convention non-standard : une règle sans son motif est ignorée dès que le contexte change.
+- **Le pourquoi est exigé** sur toute convention non-standard : une règle sans son motif est ignorée dès que le contexte change *(constat de terrain rapporté par des praticiens, pas une mesure)*.
 
 ## Quand mettre à jour — les quatre déclencheurs
 
 Claude **refait la même erreur une 2ᵉ fois** · une **revue attrape** ce qu'il aurait dû savoir · on
 **retape la même correction** · un **nouveau coéquipier** aurait cherché ce contexte. Hors de ces
-quatre cas, l'ajout est probablement du bruit.
+quatre cas, l'ajout est probablement du bruit. Ces quatre-là déclenchent un **ajout**. Deux cas
+mécaniques déclenchent un **retrait**, sans attendre aucun symptôme : `docs/ci.md` a changé (la
+section Commandes en est une recopie), et le projet a **changé de génération de modèle** — la
+doctrine « moins de règles » en dépend, et une règle utile à l'ancien peut nuire au nouveau.
 
 ## Où une instruction doit vivre — la table de promotion
 
@@ -152,12 +151,10 @@ CLAUDE.md est terminé quand :
 </completion>
 
 <revision>
-Bloc de l'**entretien**, chargé par `/scd-sdd:revise-contract` seule. Il ne s'applique qu'à un
-`CLAUDE.md` **existant**, et ne produit **aucune écriture** avant l'arbitrage humain. Préconditions :
+Bloc de l'**entretien**. Il ne s'applique qu'à un `CLAUDE.md` **existant**. Préconditions :
 
 - `CLAUDE.md` **absent** → arrêt, renvoi vers `/scd-sdd:contract`. L'entretien ne crée rien.
-- `docs/ci.md` **absent** → le volet Commandes est **impossible** : le signaler, renvoyer vers
-  `/scd-sdd:ci`, et poursuivre le reste de la checklist.
+- `docs/ci.md` **absent** → le volet Commandes est **impossible** : le signaler, renvoyer vers `/scd-sdd:ci`, poursuivre le reste de la checklist.
 
 ## La règle qui commande tout : une ligne inconnue est présumée légitime
 
@@ -184,14 +181,17 @@ retrait se propose **avec ce fait**, jamais sans.
 2. **Procédure réinstallée** : un runbook de plusieurs étapes a repoussé ici → **skill**.
 3. **Garde-fou en prose** : un « ne jamais » qui doit tenir à 100 % → **hook** / `permissions.deny`.
 4. **Style manuscrit** : une règle que le linter applique déjà → supprimer.
-5. **Contradiction interne** : face à un conflit, le modèle choisit arbitrairement — donc on tranche.
+5. **Contradictions, internes _et_ inter-fichiers.** La hiérarchie des `CLAUDE.md` est **additive, sans précédence** — tous sont concaténés, et « Claude may pick one arbitrarily » : un recouvrement entre la racine et un sous-dossier n'est arbitré par personne. On tranche dans le racine ; ce qui vit ailleurs se **signale**. Le niveau utilisateur (`~/.claude/`) est hors dépôt : angle mort assumé.
 6. **Déductible du dépôt** : arborescence, dépendances, vue d'architecture → supprimer.
 
 ## Signaler n'est pas écrire, et rien ne s'écrit sans l'humain
 
-L'entretien n'édite **que** `CLAUDE.md`. Un skill à créer, une rule path-scopée, un hook, un trou de
+L'entretien n'édite **que** le `CLAUDE.md` racine — sa ligne de journal exceptée. Un skill à créer,
+une rule path-scopée, un hook, un `CLAUDE.md` de sous-dossier qui recouvre le racine, un trou de
 `docs/ci.md` : ce sont des **signalements**, présentés à part et **jamais écrits**. La commande n'a
-ni `Write` ni `Bash` — la frontière est mécanique, pas une consigne de bonne volonté.
+ni `Write` ni `Bash` — la frontière est mécanique, pas une consigne de bonne volonté. Si un contrôle
+de jugement conclut « cette règle est ignorée », le doute porte d'abord sur la **délivrance** et non
+sur la qualité : `/context` dit si le fichier est seulement chargé — geste humain, hors de ta portée.
 
 Le rapport rend **deux listes séparées** : les **éditions proposées** — une par ligne : section,
 extrait visé, geste (retirer · resynchroniser · déplacer vers un renvoi), motif en une phrase —
