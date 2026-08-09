@@ -45,6 +45,10 @@ pour faire tenir un texte proposé.
   explicitement. `CLAUDE.md` est *advisory* : n'y déplace jamais une règle qui devait être un
   contrôle `ci`.
 - **Jamais `docs/brief.md`.** Il est le contexte, pas la cible.
+- **Jamais `docs/archi.md`.** Un invariant manquant s'inscrit en **candidat ADR** dans
+  `docs/adr/_candidates/`, avec la trace observable qui le rendra vérifiable — admettre un
+  invariant dans la table appartient à la phase `archi`. Une remédiation approuvée qui prétendrait
+  éditer `docs/archi.md` sort des formes légales : ne l'applique pas, signale-la.
 
 ## Cible `feature`
 

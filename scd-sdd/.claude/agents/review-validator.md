@@ -26,7 +26,8 @@ Pour chaque finding : le code cité dans `detail` existe-t-il réellement ? Le p
 ## 2. Filtrer par valeur
 Retiens **uniquement** si le finding touche :
 - la **correction** (bug, vulnérabilité confirmée, perte de données, erreur non gérée sur chemin critique), ou
-- une **exigence** du contrat (un `SHALL`/FR du brief non respecté, un chemin critique non couvert).
+- une **exigence** du contrat (un `SHALL`/FR du brief non respecté, un chemin critique non couvert), ou
+- un **invariant d'architecture** de `docs/archi.md` cité par le finding. Un invariant est une exigence : il n'est ni un bug ni un `SHALL` du brief, et sans cette ligne il tomberait sous « hors-scope » ou sous la règle du doute — le bloquant serait neutralisé au filtre alors que `code-reviewer` l'a légitimement produit. Reproduis-le comme les autres : ouvre `docs/archi.md` (sous `<worktreeDir>` en mode worktree), lis l'invariant cité (`I3`), constate le franchissement dans le diff du lot. **apply** si constaté ; **skip** (non-reproduit) si l'invariant n'existe pas dans la table ou si le franchissement ne se voit pas ; **skip** (hors-scope) si le `plan.md` du lot **déclare et justifie** la dérogation — nomme-la alors dans le motif. Ne skippe **jamais** au motif que l'invariant te paraît faux ou périmé : sa justesse tient à la phase `archi` et à l'ADR qui le porte, elle n'est pas du ressort du triage.
 
 Rejette (**skip**) :
 - **style** pur / préférence de formatage / nommage cosmétique ;

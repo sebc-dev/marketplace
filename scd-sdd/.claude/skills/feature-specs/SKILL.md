@@ -156,7 +156,8 @@ ignorée**. Les gates liées aux tests appartiennent au niveau implémentation. 
 est `analyze` — advisory, sur les **documents**, épaulée par des seconds regards en contexte
 frais aux mandats disjoints : `ears-verifier` (contrat : traçabilité, EARS, frontières —
 contrôles 1-11) et `slice-auditor` (découpage : verticalité, sujet unique, dimensionnement —
-12-14). Hors gate, le trio `premortem-facilitator` / `premortem-validator` / `premortem-applier`
+12-14). Le **15ᵉ** — les invariants d'architecture — n'est délégué à personne : la commande le
+joue elle-même, faute d'un mandat qui lui corresponde. Hors gate, le trio `premortem-facilitator` / `premortem-validator` / `premortem-applier`
 pilote la seule écriture **déléguée** du plugin : le gate humain garde la décision du *quoi*,
 l'`exit 2` de `block-adr-edits` protège les ADR acceptés, et la re-passe `analyze` reconfirme.
 
@@ -191,7 +192,7 @@ Charge **uniquement** la référence de la phase courante (la commande le fait) 
 | `plan.md` | Plan technique (réutilise stack/ADR, plan mode) | `role` `template` `guidance` `completion` |
 | `tasks.md` | Lots `Rn` + tâches `Tn` (backref, mode de vérif, `[P]`) | `role` `template` `guidance` `completion` |
 | `reviewability.md` | Dimensionner les lots — chargée **avec** `tasks.md` | `role` `criteria` `splitting` `pitfalls` |
-| `analyze.md` | Gate de conformité : 15 contrôles, rapport + verdict | `role` `checks` `report` `guidance` |
+| `analyze.md` | Gate de conformité : 15 contrôles, rapport + verdict | `role` `checks` `report` `gate` `guidance` |
 | `status.md` | Tableau de bord : phase dérivée, gate journalisée, fraîcheur | `role` `report` `guidance` |
 | `ears.md` | Les 5 patterns EARS + SHALL → vérification | `patterns` `examples` `pitfalls` |
 | `delta.md` | Modèle delta brownfield (OpenSpec) | `role` `template` `guidance` |

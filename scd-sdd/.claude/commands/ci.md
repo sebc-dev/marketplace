@@ -1,6 +1,6 @@
 ---
 description: "Phase 6 du socle : rend déterministe, et vérifiable hors de l'agent, ce que CLAUDE.md ne peut que conseiller. Dérive les contrôles bloquants du pipeline d'une grille de cinq modes de défaillance — oracle faux, suppression du vérificateur, chaîne d'approvisionnement, building to the test, invariant d'architecture —, écrit docs/ci.md et le workflow de la forge, puis rend la recette de protection de branche et le blindage local. Clean-as-you-Code : les seuils portent sur le code nouveau."
-argument-hint: "(aucun — lit docs/stack.md)"
+argument-hint: "(aucun — lit docs/stack.md, docs/archi.md et docs/adr/)"
 allowed-tools:
   - Read
   - Glob
@@ -21,8 +21,9 @@ Tu poses les **contrôles automatiques** du projet : `docs/ci.md` et le fichier 
 la forge. C'est la phase où le socle cesse d'être uniquement advisory.
 
 Deux menaces la justifient, et elles ne se recouvrent pas. Le **code généré est vulnérable** :
-mesuré sur plus de cent modèles, près de la moitié des tâches introduisent une vulnérabilité
-OWASP détectable, et un nom de paquet sur cinq n'existe pas — dont 43 % reviennent à l'identique
+un **benchmark d'éditeur** — donc à ne pas surinterpréter — mesure sur plus de cent modèles que
+près de la moitié des tâches introduisent une vulnérabilité OWASP détectable ; et, mesure
+académique celle-là, un nom de paquet sur cinq n'existe pas — dont 43 % reviennent à l'identique
 d'un run à l'autre, ce qui rend le *slopsquatting* praticable. Quelle part de ces noms est
 réellement libre à l'enregistrement n'a jamais été mesurée, et ne se cite donc pas : une phase
 qui interdit d'inventer une commande ne s'autorise pas une statistique qu'elle ne peut pas
@@ -110,8 +111,12 @@ décide que de l'outil qui les rend ; l'humain arbitre les seuils et ce qui bloq
    **dérivent** de l'écosystème via la table de la référence — `—` pour ce que l'écosystème n'a
    pas, `[à compléter]` pour ce qui n'est pas connu.
 
-6. **Charge la soupape du garde — seulement si tu retiens `verifier-guard`.** C'est le cas
-   nominal, et ce n'est pas le cas par défaut : sa soupape n'est pas un scope de commit
+6. **Charge la soupape du garde — seulement si tu retiens `verifier-guard`.** Le retenir est le
+   cas nominal : la référence le classe **bloquant sans réserve**, et le seul cas de
+   non-rétention est un dépôt **sans code source** — documentation ou configuration seules, où
+   la colonne « extensions de source » n'a rien à désigner. Partout ailleurs il est retenu, et
+   ce que l'écosystème ne donne pas s'écrit `[à compléter]`, jamais un job en moins. Sa soupape,
+   en revanche, **n'est pas celle de `quality-config-guard`** : ce n'est pas un scope de commit
    (l'agent écrit `chore(types):` aussi facilement qu'il écrit `as any`) mais une **signature
    du commit** vérifiée hors ligne. Lis alors, et alors seulement, `references/ci-signature.md`
    du skill `project-docs` — registre de clés, ordre des deux vérifications, amorçage, et ce
@@ -157,7 +162,10 @@ décide que de l'outil qui les rend ; l'humain arbitre les seuils et ce qui bloq
 10. **Fais trancher ce qui n'a pas de bonne réponse par défaut** (`AskUserQuestion`, deux ou
     trois questions, pas plus) : le seuil de couverture différentielle ; le SAST bloquant
     d'emblée sur high-severity ou en report-only le temps de mesurer ; les contrôles lents sur
-    le chemin critique ou en exécution nocturne ; la fenêtre du cooldown de dépendances.
+    le chemin critique ou en exécution nocturne. La **fenêtre du cooldown de dépendances**, elle,
+    ne se demande pas : la référence en donne une acceptable (24 h à 7 j, les versions compromises
+    étant retirées en quelques heures). Retiens-la, écris-la dans `docs/ci.md`, et n'en fais une
+    question que s'il te reste une place.
 
 11. **Écris `docs/ci.md`** selon le template, en traçant vers `docs/stack.md`. La section
     **« Ce que ces contrôles ne couvrent pas »** n'est pas optionnelle : la taire ferait croire

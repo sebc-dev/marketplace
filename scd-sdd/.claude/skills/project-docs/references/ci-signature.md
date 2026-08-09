@@ -34,7 +34,8 @@ Ordre des deux contrôles, et il n'est pas interchangeable :
    par une clé du registre **courant**, et son message de commit porte le motif, non vide.
 
 Fermeture par défaut — chacun de ces cas est un **refus**, jamais un avertissement :
-registre absent · base indéterminable · signature autre que « bonne » · contrôle 1 en échec.
+registre absent **de l'arbre courant alors qu'un motif est ajouté** · base indéterminable ·
+signature autre que « bonne » · contrôle 1 en échec.
 
 ### Ce que la soupape ne prouve pas
 - La CI lit un **type de clé**. Elle ne distingue pas une clé à passphrase jamais chargée dans
@@ -208,7 +209,10 @@ par omission.
 
 La propriété de sécurité réelle n'est pas « la phrase de passe est secrète » mais **« la clé
 n'entre jamais dans l'agent SSH »** : sans la clé dans l'agent, la signature échoue et aucun commit
-n'est créé ; après un seul chargement, elle est obtenue sans jamais connaître la phrase. C'est une
+n'est créé ; après un seul chargement, elle est obtenue sans jamais connaître la phrase.
+*(Vérifié par rejeu en dépôt jetable, 2026-08 : une mesure locale, sur une seule configuration —
+elle illustre le mécanisme, elle ne le généralise pas. Rejoue-la sur ta propre stack avant d'en
+faire une garantie.)* C'est une
 propriété de l'**environnement** — pas de terminal, pas de programme *askpass* — et non du
 protocole. **La CI ne peut donc pas la vérifier** : elle lit un type de clé, elle ne distingue pas
 une clé à phrase jamais chargée d'une clé nue.

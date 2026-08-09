@@ -55,10 +55,11 @@ Statut : Draft | Créé : [date] | Trace vers : docs/prd.md, docs/stack.md
 ## Invariants
 | # | Invariant | Classe | Trace observable | Sert | ADR |
 |---|---|---|---|---|---|
-| I1 | aucun import de `db/` hors de `server/` | 1 — sens des dépendances | ligne d'import dans un fichier hors `server/` | C1, FR-003 | [ADR-000N] |
-| I2 | [ex : un handler HTTP réside dans `routes/`] | 5 — placement | chemin du fichier | C2 | [ADR-000N] |
-[Une ligne sans trace observable n'entre pas. La colonne ADR est bouclée par la phase `adr` ;
-tant qu'elle est vide, l'invariant est un **candidat**.]
+| I1 | aucun import de `db/` hors de `server/` | 1 — sens des dépendances | ligne d'import dans un fichier hors `server/` | C1, FR-003 | *(vide)* |
+| I2 | [ex : un handler HTTP réside dans `routes/`] | 5 — placement | chemin du fichier | C2 | *(vide)* |
+[Une ligne sans trace observable n'entre pas. La colonne ADR se laisse **vide** au premier
+passage — n'y écris jamais un numéro : les ADR n'existent pas encore. Elle est bouclée par la
+phase `adr`, et tant qu'elle est vide l'invariant est un **candidat**.]
 
 ## Ce que cette architecture n'admet pas comme invariant
 - **Classe 12 — conformité sémantique de nommage à l'intention métier** : relève du jugement,
@@ -214,10 +215,12 @@ refusé faute de trace observable s'y écrit aussi — sinon la proposition revi
 - **Aucune écriture dans `docs/stack.md`.** Sa § Vue d'ensemble renvoie ici ; elle ne se rétro-édite
   pas.
 
-## Vérification — l'outillage qui rendra les invariants exécutables
+## Vérification
 
-**Cette section est celle que `/scd-sdd:ci` charge, seule et conditionnellement**, au moment de
-dériver les contrôles `arch-invariants`. Elle ne sert pas à choisir un outil pendant la phase
+L'outillage qui rendra les invariants exécutables. **Cette section est celle que `/scd-sdd:ci`
+charge, seule et conditionnellement**, au moment de dériver les contrôles `arch-invariants`. Son
+titre est exactement `## Vérification`, sans complément — c'est sous ce nom que les trois points de
+déclaration la désignent, et un titre plus long les rendrait faux. Elle ne sert pas à choisir un outil pendant la phase
 `archi` : elle existe pour qu'un invariant admis ici soit **rendable** plus tard, et pour qu'on
 sache tout de suite ce qui ne l'est pas.
 
@@ -278,8 +281,11 @@ La phase Architecture est terminée quand :
 - [ ] **Chaque invariant a une classe (1-11) et une trace observable écrite** — pas « dans le code ».
       Une ligne sans trace observable a été retirée, pas rendue vague.
 - [ ] Chaque invariant est formulé en **interdiction ou obligation vérifiable**, jamais en intention.
-- [ ] **Chaque invariant a son candidat ADR** — colonne ADR renseignée ou explicitement en attente de
-      la phase `adr`. C'est le critère de fin, et il ne s'assouplit pas.
+- [ ] **Chaque invariant a son candidat ADR** — c'est-à-dire qu'il est *admissible* comme décision
+      structurante et que la phase `adr` en écrira une. Au premier passage, la colonne ADR est
+      **vide** pour toutes les lignes, et c'est l'état conforme : un numéro y figurant désignerait
+      un ADR qui n'existe pas. Elle ne se renseigne qu'à une relecture post-`adr`. C'est le critère
+      de fin, et il ne s'assouplit pas.
 - [ ] La section « Ce que cette architecture n'admet pas » **nomme les classes 12-15**, plus ce qui a
       été proposé et refusé faute de trace observable. Elle n'est ni vide ni générique.
 - [ ] Aucun ADR n'a été écrit, `docs/ci.md` n'a pas été touché, aucun outil n'a été choisi.

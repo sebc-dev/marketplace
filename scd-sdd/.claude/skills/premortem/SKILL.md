@@ -113,7 +113,7 @@ qu'on a le droit d'écrire** et **ce qui suit**. La méthode ci-dessus, elle, es
 
 | Cible | Ce qui est jugé | Précondition | Journal | Ce qui suit |
 |---|---|---|---|---|
-| **socle** | `docs/prd.md` `stack.md` `adr/` `ci.md` `CLAUDE.md` — ceux qui existent. **Jamais `docs/brief.md`** : il est l'intention d'origine, donc du contexte | au moins le PRD | `docs/journal/socle.md` | re-lire les features en vol : leurs backrefs ont pu bouger |
+| **socle** | `docs/prd.md` `stack.md` `archi.md` `adr/` `ci.md` `CLAUDE.md` — ceux qui existent. **Jamais `docs/brief.md`** : il est l'intention d'origine, donc du contexte | au moins le PRD | `docs/journal/socle.md` | re-lire les features en vol : leurs backrefs ont pu bouger |
 | **feature** | `specs/NNN-slug/` `spec.md` `plan.md` `tasks.md` | gate `analyze` au vert | `docs/journal/NNN-slug.md` | **re-passe `analyze` imposée** |
 | **chantier** | une fiche `docs/chantiers/<état>/AAAA-MM-JJ-slug.md` | fiche présente, contrôle de fraîcheur rendu | **aucun** — la fiche est le fait | `resume` lira la fiche durcie |
 

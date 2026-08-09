@@ -31,7 +31,7 @@ jamais recopiées. Ce bloc ne tranche que le niveau.
 durcir : renvoie vers `/scd-sdd:prd`.
 
 **Ce qui est jugé** — ceux de ces documents qui existent, sans en réclamer aucun :
-`docs/prd.md` · `docs/stack.md` · `docs/adr/*.md` · `docs/ci.md` · `CLAUDE.md`.
+`docs/prd.md` · `docs/stack.md` · `docs/archi.md` · `docs/adr/*.md` · `docs/ci.md` · `CLAUDE.md`.
 
 **Le contexte, jamais jugé** : `docs/brief.md` (l'intention d'origine) et `docs/journal/socle.md`
 (la chronologie, et sa fraîcheur). Le brief **n'est jamais remédié** : un risque qui pointe vers
@@ -46,7 +46,10 @@ ce qui est une décision humaine et pas une sortie de premortem.
 Les lentilles se lisent au niveau produit et projet : le PRD mesure-t-il une issue ou une
 activité ? La Stack porte-t-elle une hypothèse de charge, de coût ou d'équipe qui n'est écrite
 nulle part ? Un ADR tient-il pour acquis un contexte qui aura changé ? La CI attrape-t-elle ce
-qui casse vraiment, ou ce qui est facile à mesurer ?
+qui casse vraiment, ou ce qui est facile à mesurer ? Et les **invariants** : la structure qui
+aura vraiment fait mal six mois plus tard est-elle dans la table, ou la table ne retient-elle que
+ce qui était facile à formuler au démarrage ? Un invariant qui, tenu à la lettre, ferait échouer
+le projet compte autant qu'un invariant manquant.
 
 **Formes de remédiation légales.**
 
@@ -63,6 +66,17 @@ qui casse vraiment, ou ce qui est facile à mesurer ?
   une règle `CLAUDE.md` là où un contrôle est possible est un faux durcissement.
 - **Candidat ADR** dans `docs/adr/_candidates/` pour une décision structurante. **Jamais** un edit
   d'ADR accepté : le hook `block-adr-edits` rend `exit 2`, et c'est voulu.
+- **Candidat ADR, encore**, pour un **invariant d'architecture manquant** — c'est la seule forme
+  par laquelle un risque sur `docs/archi.md` se referme. **Tu n'écris jamais dans `docs/archi.md` :**
+  admettre un invariant appartient à la phase `archi`, qui l'oppose à son critère de trace
+  observable dans l'arborescence ou dans les imports. Le candidat n'est donc pas un renvoi dans le
+  vide : `/scd-sdd:adr` promeut ce qui porte une trace observable, et `/scd-sdd:ci` relit
+  `docs/archi.md` **et** `docs/adr/` — l'invariant atteint son contrôle `arch-invariants` par
+  cette route. Le candidat ne se rédige qu'avec sa trace ; sans elle, ce n'est pas un invariant
+  mais une intention de design, et le risque se referme ailleurs — ou nulle part.
+- Un invariant **existant** jugé faux ou périmé n'entre dans aucune de ces formes : le rouvrir
+  demande de superséder l'ADR qui le porte. Il devient une fiche `en-attente` (voir « Le risque
+  qui n'entre dans aucune forme »), jamais une correction silencieuse de la table.
 
 **Journal.** `docs/journal/socle.md`, phase `premortem`.
 

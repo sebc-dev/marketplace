@@ -135,7 +135,7 @@ l'intégralité. Un seuil de couverture **globale** est un anti-pattern document
 indéfiniment sur du legacy et pousse à écrire des tests sans valeur pour atteindre le chiffre, ce qui
 aggrave le problème d'oracles faux du code généré.
 
-- **Sur le diff** : couverture, SAST, duplication, complexité, intégrité des tests.
+- **Sur le diff** : couverture, SAST, et les trois gardes d'intégrité.
 - **Sur le dépôt entier** : SCA et secrets. Une CVE dans une dépendance non touchée reste
   exploitable ; un secret dans un fichier non modifié reste un secret.
 

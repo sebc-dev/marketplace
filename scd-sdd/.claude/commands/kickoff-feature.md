@@ -44,6 +44,12 @@ Ratio : 30% humain / 70% AI (setup mécanique + cadrage ; l'humain tranche l'éc
    soit, **arrête-toi** : « `/scd-sdd:init-project` d'abord — ce niveau décline le socle, il ne
    l'invente pas. »
 
+   `docs/archi.md` et `docs/ci.md` **ne sont pas exigés** : les deux phases sont additives, et
+   un projet ouvert avant elles n'a aucune raison d'être bloqué ici. Leur absence n'arrête donc
+   rien — mentionne-la simplement, avec la commande qui la comblerait (`/scd-sdd:archi`,
+   `/scd-sdd:ci`). Sans `docs/archi.md`, l'étape 6 de `plan.md` et le contrôle 15 d'`analyze`
+   n'ont pas de référent : c'est un mode dégradé assumé, pas un défaut de la feature.
+
 3. **Établis les features en vol** : scanne `specs/` et dérive la phase de chacune selon la
    table de la section « Cibler une feature » du skill. S'il en existe de non validées :
    - signale-les avec leur phase et **recommande de finir la plus avancée** ;

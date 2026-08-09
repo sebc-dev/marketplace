@@ -10,7 +10,7 @@ Concis : un plan court a un meilleur taux d'acceptation qu'un plan fleuve.
 <template>
 ```markdown
 # Plan technique : [feature]
-Trace vers : specs/NNN-feature/spec.md · docs/stack.md · docs/adr/
+Trace vers : specs/NNN-feature/spec.md · docs/stack.md · docs/archi.md (s'il existe) · docs/adr/
 
 ## Approche
 [2-4 phrases : la stratégie retenue.]

@@ -7,7 +7,7 @@ Les six dimensions de la code review, le modèle de sévérité, et la disciplin
 <dimensions>
 ## Les six dimensions
 
-- **architecture** — séparation des couches, cohérence avec l'existant, couplage, patterns adaptés. Couplage fort ou violation structurelle majeure = bloquant.
+- **architecture** — **référent : `docs/archi.md`, quand il existe.** Le diff se confronte à sa table d'invariants : frontière franchie, sens de dépendance inversé, artefact placé hors du dossier prescrit, import prohibé. Une **violation d'invariant = bloquant**, sauf si le `plan.md` du lot la déclare et la justifie — l'invariant (`I3`) est alors cité dans le finding. Un invariant **ne se re-discute pas** : il tient son autorité de la phase `archi` et de l'ADR qui le porte ; le reviewer constate s'il est franchi, et s'il le juge faux ou périmé, c'est une **suggestion**, jamais un bloquant. **Repli nommé, quand `docs/archi.md` n'existe pas** : le référent redevient la cohérence avec l'**existant** — séparation des couches, couplage, patterns adaptés. C'est un mode dégradé, pas l'état normal : l'existant est la dérive déjà accumulée, pas une intention. Un couplage fort ou une violation structurelle majeure reste bloquant dans les deux cas.
 - **propreté** — lisibilité, nommage, duplication, complexité, code mort. Généralement suggestion (sauf illisibilité rendant le code non maintenable).
 - **conventions** — idiomes du langage, structure, style, cohérence avec le projet (le `CLAUDE.md` cible et les patrons existants).
 - **couverture** — modes `TDD`/`test-after` : chemins/branches du code non exercés par les tests du lot ; chemin critique de logique métier sans test = bloquant (le reviewer **signale** le trou, il ne réécrit pas les tests). Modes `check`/`inhérent` : **pas** de test automatisé attendu (c'est le contrat) — juger si la vérif observable prévue couvre les chemins critiques ; ne jamais remonter « absence de test ».
@@ -35,6 +35,8 @@ Un reviewer à qui on demande de trouver des défauts en trouvera **toujours**. 
 **Ne retenir que** ce qui touche :
 - la **correction** (bug, vuln confirmée, perte de données, erreur non gérée sur chemin critique), ou
 - une **exigence** du contrat (`SHALL`/FR non respecté, chemin critique non couvert).
+
+**Un invariant de `docs/archi.md` cité par un finding est une exigence.** Il n'est ni un bug ni un `SHALL`, et sans cette ligne il tomberait sous « hors-scope » ou sous le doute — le producteur de findings porte le référent `archi` depuis 1.8.0, le triage doit le porter aussi, sans quoi le bloquant est neutralisé au filtre. Reproduire reste requis : ouvrir `docs/archi.md`, lire l'invariant cité, constater le franchissement dans le diff. Trois issues seulement — franchissement constaté → **apply** ; franchissement non reproductible, ou invariant inexistant dans la table → **skip** (non-reproduit) ; franchissement constaté mais **déclaré et justifié dans le `plan.md` du lot** → **skip** (hors-scope), en nommant la dérogation. Ce qu'on ne fait jamais : skip parce que l'invariant paraît discutable — sa justesse n'est pas du ressort du triage.
 
 **Rejeter (skip)** :
 - **style** pur / formatage / nommage cosmétique ;

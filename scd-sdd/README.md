@@ -239,9 +239,12 @@ du vérificateur · chaîne d'approvisionnement (quatre sous-cas) · *building t
 violation d'invariant d'architecture — et chaque contrôle porte le sien. Une grille est
 agnostique par construction, là où une liste d'outils est un instantané qui périme seul.
 
-De là, **onze contrôles bloquants** dérivés de `docs/stack.md` : build et typage, tests et
-couverture *différentielle*, SCA sur lockfile committé, secrets vérifiés, SAST — plus six
-qui visent l'agent, et non le code qu'il écrit.
+De là, **onze contrôles bloquants**. Cinq se dérivent de `docs/stack.md`, puisque leurs
+commandes dépendent de l'écosystème : build et typage, tests et couverture *différentielle*,
+SCA sur lockfile committé, secrets vérifiés, SAST. Les six autres n'en dépendent pas — ce
+sont des `git diff` sur des chemins, ou une clé de résolveur. **Trois visent l'agent** et non
+le code qu'il écrit ; **trois ferment la chaîne d'approvisionnement**, où l'attaquant est un
+tiers et l'agent seulement le vecteur.
 
 | Job | Ce qu'il refuse |
 |---|---|
@@ -303,10 +306,12 @@ recette `gh` de protection de branche et le bloc `PreToolUse` qui bloque `--no-v
 local. Sans le ruleset posé — geste humain — tout ce qui précède est informatif. Le reste
 du durcissement part en fiche `docs/chantiers/en-attente/`, parce qu'une section de plus
 dans `docs/ci.md` ne serait jamais relue. `docs/ci.md` porte enfin, en section obligatoire,
-**ce que ces contrôles ne couvrent pas**, mode par mode : l'oracle faux, que seul le test
-de mutation atteint partiellement ; la régression sémantique silencieuse ; le *building to
-the test* ; et la réserve qui vaut pour les gardes eux-mêmes — **réprimer un comportement
-peut le rendre plus subtil plutôt que l'éliminer.**
+**ce que ces contrôles ne couvrent pas**, mode par mode : l'**oracle faux** (mode 1), que seul
+le test de mutation atteint partiellement, et statistiquement ; l'**invariant non encore
+formalisé** (mode 5), un contrôle maison ne valant que sa liste ; le ***building to the test***
+« propre » (mode 4) ; la logique métier et l'autorisation, que le SAST ne modélise pas ; et la
+réserve qui vaut pour tous les gardes greppables — **réprimer un comportement peut le rendre
+plus subtil plutôt que l'éliminer.**
 
 Le hook local `format-lint.sh` (PostToolUse) est, lui, **livré inerte** — placeholders
 `FORMAT_CMD`/`LINT_CMD` vides, no-op tant qu'ils le restent — et la phase `ci` n'y touche
@@ -347,7 +352,7 @@ d'écrire, jamais la méthode :
 
 | Cible | Ce qui est jugé | Ce qui suit |
 |---|---|---|
-| `/scd-sdd:premortem socle` | `prd.md` `stack.md` `adr/` `ci.md` `CLAUDE.md` | les features en vol dont les backrefs ont bougé sont **nommées** |
+| `/scd-sdd:premortem socle` | `prd.md` `stack.md` `archi.md` `adr/` `ci.md` `CLAUDE.md` | les features en vol dont les backrefs ont bougé sont **nommées** |
 | `/scd-sdd:premortem 003` | `spec.md` `plan.md` `tasks.md`, après une gate au vert | **re-passe `analyze` imposée** |
 | `/scd-sdd:premortem chantier <slug>` | une fiche de `docs/chantiers/` | rien — `resume` lira la fiche durcie |
 
