@@ -28,7 +28,7 @@ Architectural design patterns for Claude Code plugins. Component selection (skil
 
 Interactive guided code review on the current branch. Reviews file by file in optimal order with dedicated background agents (code-reviewer + test-reviewer) for each file, JSON-based progress tracking, and blocking/suggestion classification. 5 slash commands (`/scd-review:review-init`, `/scd-review:code-review`, `/scd-review:review-followup`, `/scd-review:review-continue`, `/scd-review:review-post`). GitHub/GitLab PR posting integration.
 
-### [scd-sdd](./scd-sdd/) `v1.8.1`
+### [scd-sdd](./scd-sdd/) `v1.9.0`
 
 Complete spec-driven development cycle, from empty repo to reviewable PR — one plugin, three
 chained levels. **Foundation** (once per project): brief → PRD → stack → architecture invariants →
@@ -59,8 +59,9 @@ Each one becomes an ADR, then an `arch-invariants` check; `plan` confronts every
 
 State is always derived from files, never from a state file: `/clear` wipes the context, not the
 progress. No shared file grows. Each phase appends a dated line to its own target's journal
-(`docs/journal/socle.md` or `NNN-slug.md`), the only place three facts live: the analyze verdict,
-applied premortem remediations, and a lot's outcome (including a blocked run). Work outside the
+(`docs/journal/socle.md` or `NNN-slug.md`), the only place four facts live: the analyze verdict,
+applied premortem remediations, a lot's outcome (including a blocked run), and the outcome of a
+contract revision (including a pass that changes nothing). Work outside the
 phases — or interrupted mid-flight by a `/clear` — becomes a **chantier**: a card under
 `docs/chantiers/`, whose state *is* its directory.
 
@@ -73,7 +74,17 @@ traces back to what the documents left out, on the **foundation**, a **feature**
 forms, approved by the human before anything is written; whatever no text can close becomes a
 chantier instead.
 
-28 slash commands, including three dashboards — `/scd-sdd:status` (all three levels in one view,
+`CLAUDE.md` is no longer written once and never read again. Its "Commands" section is a
+character-for-character copy of the `docs/ci.md` table, and nothing replayed that copy when the
+`ci` phase was replayed — while three consumers kept reading it. `/scd-sdd:revise-contract`
+reviews the contract against a two-part checklist (mechanical: command drift, size, dangling
+pointers — judgement: the deletion test, reinstalled procedures, guardrails written as prose),
+reports, **waits for the human**, then applies surgical edits. It never re-assembles from the
+template: a line the template doesn't know is presumed legitimate. Three writers, three disjoint
+roles — `contract` assembles once and refuses to overwrite, `revise-contract` maintains,
+`premortem` hardens.
+
+29 slash commands, including three dashboards — `/scd-sdd:status` (all three levels in one view,
 plus the next command to run), `/scd-sdd:status-specs`, `/scd-sdd:status-impl` (merge-safety of
 every lot PR) — and `/scd-sdd:migrate` to pick up a project coming from the three former plugins.
 Replaces `scd-project-docs`, `scd-feature-specs` and `scd-implement`.

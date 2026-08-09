@@ -71,6 +71,11 @@ Cycle spec-driven complet, du projet vide à la PR — en un seul plugin.
 | `/scd-sdd:lookup` | répond **en session** à une question factuelle et datée, en citant ses sources — **n'écrit aucun fichier** |
 | `/scd-sdd:research` | l'**aller** : compose un prompt Claude Research dans `docs/research/` · le **retour** : classe le rapport revenu, le relit, et rend ce qu'il ne faut **pas** reprendre comme acquis |
 
+### Entretien
+| Commande | Effet |
+|---|---|
+| `/scd-sdd:revise-contract` | révise `CLAUDE.md` contre une checklist à deux volets, présente ses constats et **attend l'humain** avant la moindre édition — elle **retire et resynchronise**, elle ne ré-assemble jamais |
+
 ### Reprise
 | Commande | Effet |
 |---|---|
@@ -90,10 +95,11 @@ fichier par cible, donc borné par construction — une commande de phase ne lit
 le sien. Seuls les trois `status` n'écrivent rien : ils lisent, et par extraction (`grep`),
 jamais en ouvrant un fichier entier.
 
-Parmi ces lignes, trois faits ne sont connaissables que là, parce qu'ils ne laissent
+Parmi ces lignes, quatre faits ne sont connaissables que là, parce qu'ils ne laissent
 aucune trace sur disque : le verdict d'une gate `analyze`, les remédiations d'un
 `premortem`, l'issue d'un lot (y compris un run bloqué, qui ne coche rien et n'ouvre
-aucune PR).
+aucune PR), et le résultat d'une `revise-contract` (y compris une passe qui ne débouche
+sur aucune édition).
 
 ### Les chantiers — ce qui est ouvert
 
@@ -371,6 +377,54 @@ comme manquante, un socle sans premortem n'est pas un socle incomplet. Contraire
 existants sans y laisser de marqueur, et sans sa ligne son passage serait dérivable de rien. Seule
 exception, la cible `chantier` : la fiche est le fait, son `Actualisé le` suffit.
 
+## L'entretien du contrat — `CLAUDE.md` n'est pas écrit une fois pour toutes
+
+`contract` assemble le contrat **une fois**. Rien ne le relisait ensuite, alors que trois
+consommateurs le **lisent** — `kickoff-feature` pour renseigner le hook de format/lint, le brief
+de lot, la dimension `conventions` de la review : ils consomment sa dérive sans pouvoir la voir.
+
+Et cette dérive est **mécanique**, pas hypothétique. La section « Commandes » du contrat est une
+recopie de la table de `docs/ci.md` *à un caractère près*, et **rien ne rejoue cette recopie**
+quand la phase `ci` est rejouée. Le plugin fabriquait donc lui-même ce que sa propre commande
+qualifie de **deux vérités concurrentes**. La seule issue apparente était piégée : rejouer
+`contract` **ré-assemble depuis le template**, donc écrase les remédiations de `premortem socle`
+et tout ajout humain — une voie de destruction qui a l'air d'une voie de mise à jour. `contract`
+refuse désormais d'écraser un `CLAUDE.md` existant, et `ci` sort vers l'entretien quand le contrat
+existe déjà.
+
+Trois écrivains, trois rôles disjoints — c'est la ligne à ne pas perdre :
+
+| Écrivain | Rôle | Geste |
+|---|---|---|
+| `/scd-sdd:contract` | **assemble**, une fois | écrit le fichier depuis le template, refuse d'écraser un fichier existant |
+| `/scd-sdd:revise-contract` | **entretient** | retire, resynchronise, déplace vers un renvoi — n'enrichit pas |
+| `/scd-sdd:premortem socle` | **durcit** | ajoute un principe ou un item de Definition of Done, borné |
+
+La révision passe **deux volets**. Le **mécanique** se mesure : divergence de la section Commandes
+face à `docs/ci.md`, taille du fichier (plafond **200** lignes, cible **60-90** — il est chargé en
+entier, quelle que soit sa longueur), pointeurs qui ne résolvent plus. Le **jugement** se discute :
+test de suppression ligne à ligne, procédures réinstallées après coup, garde-fou écrit en prose là
+où il faudrait un hook, style manuscrit, contradictions internes, et ce qui est déjà déductible du
+dépôt. La commande rend **deux listes** — les éditions proposées, les signalements —, **l'humain
+tranche**, puis elle applique par `Edit` ciblés, un par édition retenue.
+
+Ce qu'elle ne fait pas, et qui compte autant :
+
+- **elle ne ré-assemble jamais.** Une ligne inconnue du template est **présumée légitime** : elle
+  subit le test de suppression comme les autres, jamais « hors template, donc à retirer » — sinon
+  la commande deviendrait le destructeur qu'elle remplace ;
+- **elle n'édite que `CLAUDE.md`.** Un skill à créer, une rule path-scopée, un hook, un trou dans
+  `docs/ci.md` : ce sont des **signalements**, présentés à part et jamais écrits. Ils ne
+  s'approuvent pas — ils n'ouvrent sur aucune écriture ;
+- **la section Commandes n'a qu'un sens de correction** : depuis `docs/ci.md`, jamais l'inverse.
+  Corriger dans le contrat créerait une commande que la CI n'exécute pas ;
+- **elle n'ajoute rien de son cru.** Enrichir le contrat appartient au premortem.
+
+Comme la recherche et le premortem, ce n'est **pas une phase** : rejouable à volonté, jamais
+réclamée par `status`. Comme le premortem, elle **journalise** (`docs/journal/socle.md`) — elle
+modifie un document existant sans y laisser de marqueur, et une passe **sans aucune édition** se
+consigne aussi : c'est un résultat, pas une absence de fait.
+
 ## Migration depuis les trois plugins
 
 ```
@@ -399,7 +453,7 @@ puis applique les correctifs après accord, écriture par écriture. Il ne dési
 (c'est à toi) et ne réécrit aucun document.
 
 Ce qu'il ne reconstitue **jamais** : le verdict d'une gate `analyze`, un `premortem`
-appliqué, l'issue d'un lot. Ce sont les trois faits pour lesquels le journal existe — les
+appliqué, l'issue d'un lot. Ce sont des faits pour lesquels le journal existe — les
 fabriquer le viderait de son sens. Ils apparaîtront à leur prochaine exécution. Les
 chantiers non plus : rien n'a existé avant `docs/chantiers/`, il n'y a rien à dater.
 

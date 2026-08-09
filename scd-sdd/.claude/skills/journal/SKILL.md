@@ -5,9 +5,9 @@ description: |
   spec-driven : emplacement, format, règle d'ajout, vocabulaire de chaque phase, et la
   frontière événement-vs-état qui décide ce qui a le droit d'y figurer. Se charge quand une
   commande /scd-sdd:* consigne la phase qu'elle vient de jouer — les 19 commandes de phase,
-  d'init-project à reland — plus premortem, qui n'est pas une phase mais ne laisse aucun
-  marqueur. Ni lookup ni research n'y écrivent : leur rapport est le fait (skill research).
-  Porte UNIQUEMENT le journal : ni la
+  d'init-project à reland — plus premortem et revise-contract, qui ne sont pas des phases mais
+  ne laissent aucun marqueur. Ni lookup ni research n'y écrivent : leur rapport est le fait
+  (skill research). Porte UNIQUEMENT le journal : ni la
   dérivation de l'état depuis les fichiers (skills project-docs, feature-specs, implement),
   ni le travail hors des phases du cycle, qui est un chantier et non une ligne (skill
   chantier), ni le contenu des documents produits. La reconstitution vit dans
@@ -27,7 +27,7 @@ Le journal est donc la **chronologie des phases jouées** — une ligne par phas
 qui n'est dérivable de nulle part**. Chaque commande concernée y consigne son résultat ; les trois
 `status` ne consignent rien, ils lisent.
 
-Et parmi ces phases, **trois faits ne sont connaissables que là**, parce qu'ils ne laissent aucune
+Et parmi ces lignes, **quatre faits ne sont connaissables que là**, parce qu'ils ne laissent aucune
 trace sur disque :
 
 | Fait | Pourquoi il n'est pas dérivable |
@@ -35,8 +35,9 @@ trace sur disque :
 | le verdict d'une gate `analyze` | `analyze` est en lecture seule, il n'écrit aucun rapport |
 | un `premortem` appliqué | il édite les documents de sa cible sans y laisser de marqueur |
 | l'issue d'un lot | un run **bloqué** ne coche rien et ne produit aucune PR |
+| le résultat d'une `revise-contract` | elle édite `CLAUDE.md` sans y laisser de marqueur, et une passe sans édition ne laisse rien du tout |
 
-Sans le journal, ces trois-là sont perdus à la fin de la session. Les autres lignes, elles, sont
+Sans le journal, ces quatre-là sont perdus à la fin de la session. Les autres lignes, elles, sont
 redondantes avec les fichiers **par leur existence** mais pas **par leur date** : c'est ce qui rend
 la péremption détectable.
 
@@ -143,6 +144,7 @@ Court, chiffré, factuel. Ce qu'on veut relire dans six mois — pas une phrase.
 | `adr` | plage de numéros écrits · rétro-liage de `stack.md` et `archi.md` |
 | `ci` | la forge · nb de contrôles bloquants et informatifs · seuil de couverture différentielle |
 | `contract` | nb de principes · taille de la DoD |
+| `revise-contract` | taille avant → après · Commandes resynchronisées ou alignées · nb de signalements |
 | `kickoff-feature` | dossier `NNN-slug` créé · échelle · greenfield ou delta |
 | `specify` | nb FR · nb `[NEEDS CLARIFICATION]` |
 | `clarify` | nb résolus · nb restants |

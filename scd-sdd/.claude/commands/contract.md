@@ -56,10 +56,20 @@ valide ce qui est repris).
    pire qu'un contrat absent. `docs/archi.md` absent → `/scd-sdd:archi`, qui est la phase 4 ;
    `docs/ci.md` absent → `/scd-sdd:ci`, qui est la phase 6.
 
+   **Puis vérifie que `CLAUDE.md` n'existe pas** (`Glob`). S'il existe, **arrête-toi** et renvoie
+   vers `/scd-sdd:revise-contract` : tu assembles une fois, tu n'entretiens pas. Ré-assembler
+   depuis le template écraserait les remédiations de `premortem socle` et tout ajout humain — la
+   voie de mise à jour a l'air de passer par ici, elle passe par là-bas.
+
 2. **Charge le template et ses règles** : lis `references/claude-md.md` du skill
-   `project-docs`.
+   `project-docs` — **tout sauf le bloc `<revision>`**, qui appartient à
+   `/scd-sdd:revise-contract` et ne te concerne pas.
 
 3. **Assemble `CLAUDE.md`** selon le template :
+   - **En-tête en commentaires HTML** — le propriétaire, la règle « supprimer plus qu'on
+     n'ajoute », les quatre déclencheurs de mise à jour et le renvoi vers
+     `/scd-sdd:revise-contract`. Le bloc est retiré avant injection : il ne coûte **rien** en
+     contexte, et c'est lui qui donne un propriétaire à l'entretien ;
    - **Vue d'ensemble** (3-5 bullets) et **pointeurs** `@docs/brief.md`, `@docs/prd.md`,
      `@docs/stack.md`, `docs/archi.md`, `docs/adr/` — avec la consigne de ne jamais
      contredire un ADR accepté, ni franchir un **invariant** de `docs/archi.md`. Ce dernier
@@ -79,7 +89,12 @@ valide ce qui est repris).
      `docs/ci.md`**, nommés par leur job. Un item de DoD qu'aucun contrôle ne couvre reste
      légitime, mais il est advisory : ne le mélange pas avec ceux qui le sont vraiment ;
    - **Gotchas** — les comportements non-évidents qu'un agent ne peut pas deviner, dont
-     ceux que `docs/ci.md` déclare **ne pas** couvrir.
+     ceux que `docs/ci.md` déclare **ne pas** couvrir. C'est le poste où passe l'essentiel des
+     tokens du contrat : c'est ce qui ne se déduit d'aucune lecture du dépôt ;
+   - **Renvois** — les skills du projet et les `.claude/rules/` path-scopées, en pointeurs et
+     jamais inlinés. La section est admise **vide** au premier assemblage : un projet neuf n'a
+     ni skill ni rule. Elle existe quand même, parce que c'est là que l'entretien déplacera ce
+     qu'il retire — sans elle, il n'aurait nulle part où le mettre.
 
 4. **Relis contre le bloc `<completion>`** de `references/claude-md.md`.
 
@@ -94,6 +109,9 @@ valide ce qui est repris).
 
 ## Ce que tu NE fais PAS
 
+- **Tu n'écrases aucun `CLAUDE.md` existant.** Tu assembles une fois. Un contrat déjà écrit porte
+  ce que `premortem socle` y a durci et ce que l'humain y a mis : le ré-assembler le détruirait
+  sans rien signaler. L'entretien est `/scd-sdd:revise-contract`, et lui seul.
 - Tu ne recopies aucun extrait du Brief, du PRD, de la Stack, d'`archi.md`, d'un ADR — ni la
   table des contrôles de `docs/ci.md`, dont tu ne prends que les commandes. En particulier, la
   table des invariants ne se recopie pas dans `CLAUDE.md` : elle croîtrait en double.
@@ -121,11 +139,18 @@ par `Edit` ciblé (crée le fichier s'il manque) :
 
 Le socle est complet, en sept documents : Brief, PRD, Stack, **Archi**, ADR, **CI**,
 CLAUDE.md.
-Récapitule les trois étapes recommandées, dans cet ordre :
+Récapitule les quatre étapes recommandées, dans cet ordre :
 
 1. **Ce qui reste déterministe à poser** — la protection de branche si `docs/ci.md` la
    porte encore **À POSER**, puis le blindage local et le hook d'immutabilité des ADR.
    Rappelle la phrase qui décide de tout : tant que la protection de branche n'est pas
    posée, les contrôles de `docs/ci.md` sont informatifs, et `CLAUDE.md` reste seul.
 2. **Première feature** — `/clear`, puis `/scd-sdd:kickoff-feature`.
-3. **Discipline `/clear`** — une phase, un contexte propre.
+3. **L'entretien du contrat** — ce fichier ne s'écrit qu'une fois, mais il dérive. Nomme
+   `/scd-sdd:revise-contract` comme la **seule** voie de mise à jour, et les quatre déclencheurs
+   qui justifient de la jouer : Claude refait la même erreur une 2ᵉ fois · une revue attrape ce
+   qu'il aurait dû savoir · on retape la même correction · un nouveau coéquipier aurait cherché ce
+   contexte. Ajoute le cas mécanique, qui n'attend aucun symptôme : **`docs/ci.md` a changé** — la
+   section Commandes en est une recopie, et rien ne la rejoue. Et dis pourquoi `contract` n'est pas
+   cette voie : le ré-assemblage écraserait ce que le premortem et l'humain auront ajouté.
+4. **Discipline `/clear`** — une phase, un contexte propre.

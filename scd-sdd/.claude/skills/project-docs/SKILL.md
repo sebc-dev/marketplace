@@ -2,21 +2,23 @@
 name: project-docs
 description: |
   Le NIVEAU SOCLE du cycle spec-driven : les documents de gestion de projet
-  écrits une fois, au démarrage. Chaîne de traçabilité Brief → PRD → Stack →
-  Archi → ADR → CI → CLAUDE.md, méthode d'interview « une question à la fois »,
-  règles d'écriture pour un agent (verbe vérifiable, technology-agnostic, scope
-  EXCLU), la frontière advisory / déterministe et la phase ci qui la franchit,
-  les invariants d'architecture falsifiables de la phase archi, seuils de
+  écrits une fois, au démarrage — et l'entretien du seul qui en demande un,
+  CLAUDE.md. Chaîne de traçabilité Brief → PRD → Stack → Archi → ADR → CI →
+  CLAUDE.md, méthode d'interview « une question à la fois », règles d'écriture
+  pour un agent (verbe vérifiable, technology-agnostic, scope EXCLU), la
+  frontière advisory / déterministe et la phase ci qui la franchit, les
+  invariants d'architecture falsifiables de la phase archi, seuils de
   déclenchement du niveau specs, et les templates copy-paste de chaque document.
   Se charge pendant /scd-sdd:init-project, brief, prd, stack, archi, adr, ci,
-  contract et premortem (cible socle). Porte UNIQUEMENT le socle — ni les specs
-  par feature (skill feature-specs), ni l'implémentation d'un lot (skill
-  implement), ni le contrat du fichier de suivi (skill journal).
+  contract, revise-contract et premortem (cible socle). Porte UNIQUEMENT le
+  socle — ni les specs par feature (skill feature-specs), ni l'implémentation
+  d'un lot (skill implement), ni le contrat du fichier de suivi (skill journal).
 ---
 
 # Socle documentaire du projet (greenfield)
 
-Ce skill outille la **création** des documents qu'on écrit **une fois**, au démarrage.
+Ce skill outille la **création** des documents qu'on écrit **une fois**, au démarrage —
+et l'**entretien** du seul d'entre eux qui en demande un, `CLAUDE.md`.
 Sept artefacts, produits dans l'ordre :
 
 `docs/brief.md` → `docs/prd.md` → `docs/stack.md` → `docs/archi.md` →
@@ -74,6 +76,26 @@ l'intention d'origine, pas une cible.
 **Ce n'est pas une huitième phase.** Elle est optionnelle, ne figure dans aucune table de
 dérivation, et un socle sans premortem n'est pas un socle incomplet. Méthode et formes : skill
 `premortem`.
+
+## Entretenir le contrat — `/scd-sdd:revise-contract`
+
+Les six premiers documents du socle s'écrivent une fois. `CLAUDE.md` est le seul qui **dérive** :
+il recopie les commandes de `docs/ci.md`, et rien ne rejoue cette recopie quand `ci` est rejoué.
+D'où une **29ᵉ** commande, qui n'est pas une phase — rejouable à volonté, réclamée par aucun
+`status`, et « aucune édition » y est un résultat valide (`DECISIONS.md` §D29).
+
+**Trois écrivains, trois rôles disjoints**, et c'est la ligne à ne pas perdre :
+
+| Écrivain | Rôle | Geste |
+|---|---|---|
+| `contract` | **assemble**, une fois | écrit depuis le template, et refuse d'écraser un fichier existant |
+| `revise-contract` | **entretient** | retire, resynchronise, déplace vers un renvoi — n'enrichit pas |
+| `premortem socle` | **durcit** | ajoute un principe ou un item de DoD, borné (§D28) |
+
+Une commande qui ferait les trois recréerait le trou qu'elle ferme : **entretenir n'est pas
+ré-assembler**. Corollaire non négociable — une ligne que le template ne prévoit pas est
+**présumée légitime** et subit le test de suppression comme les autres, jamais « hors template,
+donc à retirer ».
 
 ## Méthode d'interview
 
@@ -162,6 +184,11 @@ Charge **uniquement** le template de la phase courante (la commande le fait pour
     garde `verifier-guard` est retenu. Un projet qui ne pose pas le garde ne la lit
     jamais — c'est la raison pour laquelle elle est séparée de `references/ci.md`.
   - Sections : `role`, `template`, `guidance`, `completion`
-- `references/claude-md.md` — assemblage de CLAUDE.md (pointeurs + Definition of Done +
-  principes fondus).
-  - Sections : `role`, `template`, `guidance`, `completion`
+- `references/claude-md.md` — le contrat `CLAUDE.md` : assemblage (pointeurs + Definition
+  of Done + principes fondus) **et entretien**.
+  - **Deux points de chargement** : par `/scd-sdd:contract`, **tout sauf `<revision>`** ;
+    et par `/scd-sdd:revise-contract`, **`<guidance>` et `<revision>` seulement**. Ne pas
+    donner le `<template>` à l'entretien est délibéré — il traiterait toute ligne hors
+    template comme un écart de conformité. L'assemblage appartient à `contract`,
+    l'entretien à `revise-contract`.
+  - Sections : `role`, `template`, `guidance`, `completion`, `revision`

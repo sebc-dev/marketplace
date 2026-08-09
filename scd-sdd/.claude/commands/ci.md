@@ -258,5 +258,16 @@ rien : **poser le registre de clés et vérifier de ses yeux la clé qu'il conti
 l'installe le fait sans preuve — il n'existe aucune clé de confiance pour signer l'arrivée de la
 première —, et ce trou est irréductible : il se surveille, il ne se contourne pas.
 
-Puis : « `/clear`, puis `/scd-sdd:contract` pour assembler CLAUDE.md — il lira les commandes du
-projet dans `docs/ci.md`. »
+Puis la suite, qui **dépend de l'existence de `CLAUDE.md`** — vérifie-la par `Glob` avant de
+l'annoncer :
+
+- **`CLAUDE.md` absent** — le socle n'est pas fini : « `/clear`, puis `/scd-sdd:contract` pour
+  assembler CLAUDE.md — il lira les commandes du projet dans `docs/ci.md`. »
+- **`CLAUDE.md` présent** — tu viens donc de **rejouer** cette phase, et la table « Commandes du
+  projet » a peut-être bougé. La section Commandes de `CLAUDE.md` en est une recopie au caractère
+  près que **rien ne rejoue** : c'est par là que deux vérités concurrentes s'installent, et c'est
+  cette section que `/scd-sdd:kickoff-feature` consomme. Donc : « `/clear`, puis
+  `/scd-sdd:revise-contract` pour resynchroniser CLAUDE.md. » Et dis-le explicitement : **ne
+  rejoue pas `/scd-sdd:contract`** — il ré-assemblerait depuis le template et écraserait les
+  remédiations de `premortem socle` et tout ajout humain. L'entretien resynchronise sans
+  ré-assembler ; c'est la seule voie.
