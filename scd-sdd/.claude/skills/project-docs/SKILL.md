@@ -138,6 +138,12 @@ Charge **uniquement** le template de la phase courante (la commande le fait pour
 - `references/ci.md` — contrôles CI (`docs/ci.md`), workflow de la forge, protection de
   branche et blindage local.
   - Sections : `role`, `template`, `guidance`, `completion`
+- `references/ci-signature.md` — la **soupape** du garde `verifier-guard` : signature du
+  commit vérifiée hors ligne contre un registre de clés versionné.
+  - **Chargée conditionnellement** : par `/scd-sdd:ci` seulement, et seulement quand le
+    garde `verifier-guard` est retenu. Un projet qui ne pose pas le garde ne la lit
+    jamais — c'est la raison pour laquelle elle est séparée de `references/ci.md`.
+  - Sections : `role`, `template`, `guidance`, `completion`
 - `references/claude-md.md` — assemblage de CLAUDE.md (pointeurs + Definition of Done +
   principes fondus).
   - Sections : `role`, `template`, `guidance`, `completion`

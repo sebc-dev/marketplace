@@ -1,5 +1,5 @@
 ---
-description: "Phase 5 du socle : rend déterministe, et vérifiable hors de l'agent, ce que CLAUDE.md ne peut que conseiller. Dérive de la Stack les contrôles bloquants du pipeline — qualité du code et intégrité des tests —, écrit docs/ci.md et le workflow de la forge, puis rend la recette de protection de branche et le blindage local. Clean-as-you-Code : les seuils portent sur le code nouveau."
+description: "Phase 5 du socle : rend déterministe, et vérifiable hors de l'agent, ce que CLAUDE.md ne peut que conseiller. Dérive les contrôles bloquants du pipeline d'une grille de cinq modes de défaillance — oracle faux, suppression du vérificateur, chaîne d'approvisionnement, building to the test, invariant d'architecture —, écrit docs/ci.md et le workflow de la forge, puis rend la recette de protection de branche et le blindage local. Clean-as-you-Code : les seuils portent sur le code nouveau."
 argument-hint: "(aucun — lit docs/stack.md)"
 allowed-tools:
   - Read
@@ -22,9 +22,19 @@ la forge. C'est la phase où le socle cesse d'être uniquement advisory.
 
 Deux menaces la justifient, et elles ne se recouvrent pas. Le **code généré est vulnérable** :
 mesuré sur plus de cent modèles, près de la moitié des tâches introduisent une vulnérabilité
-OWASP détectable, et un nom de paquet sur cinq n'existe pas — un tiers peut l'enregistrer pour
-y livrer du code malveillant. Et **l'agent qui écrit contourne ce qui le contrarie** : réécrire
-un test plutôt que le faire passer, abaisser un seuil, sauter un hook.
+OWASP détectable, et un nom de paquet sur cinq n'existe pas — dont 43 % reviennent à l'identique
+d'un run à l'autre, ce qui rend le *slopsquatting* praticable. Quelle part de ces noms est
+réellement libre à l'enregistrement n'a jamais été mesurée, et ne se cite donc pas : une phase
+qui interdit d'inventer une commande ne s'autorise pas une statistique qu'elle ne peut pas
+sourcer.
+
+Et **l'agent qui écrit contourne ce qui le contrarie** : réécrire un test plutôt que le faire
+passer, abaisser un seuil, sauter un hook, éteindre le typage sur la ligne qui échoue. Ce n'est
+pas une crainte de principe. Les system cards de Claude 3.7 et 4.5 rapportent que le modèle
+traite les cas de test en **cas particuliers** — il retourne la valeur attendue, ou modifie le
+fichier de test — au lieu d'implémenter la solution générale ; le benchmark indépendant
+EvilGenie observe un *reward hacking* explicite chez deux des trois agents de production testés.
+Ce sont ces mesures qui justifient les gardes, pas un chiffre emprunté.
 
 La seconde menace vise ce plugin en particulier. Le niveau implémentation atteste **de
 lui-même** que les tests sont intacts : il lance `git diff` sur les fichiers de test, les
@@ -32,8 +42,8 @@ restaure s'ils ont bougé, et retourne `testsUntouched: true`. Le producteur est
 vérificateur — exactement ce que le cycle refuse ailleurs. Ce que l'agent affirme de lui-même,
 la CI le **vérifie de l'extérieur**.
 
-Ratio : 40% humain / 60% AI (tu dérives les contrôles de la stack, l'humain arbitre les seuils
-et ce qui bloque).
+Ratio : 40% humain / 60% AI (tu dérives les contrôles des modes de défaillance et la Stack ne
+décide que de l'outil qui les rend ; l'humain arbitre les seuils et ce qui bloque).
 
 ## Règles absolues
 
@@ -41,6 +51,11 @@ et ce qui bloque).
   écrite dans `CLAUDE.md` a déjà été ignorée six commits d'affilée. Le backstop est le check
   serveur sous protection de branche ; tout le reste est de la défense en profondeur, et se
   présente comme tel.
+- **On dérive un contrôle d'un mode de défaillance, jamais d'un outil disponible.** Un candidat
+  qui ne se rattache à aucun des cinq modes ne se pose pas — il coûte de la latence et de la
+  maintenance pour un risque qu'on n'a pas nommé. Un mode que rien ne couvre s'écrit dans « Ce
+  que ces contrôles ne couvrent pas » : un trou déclaré vaut mieux qu'un contrôle qui *prétend*
+  le couvrir.
 - **Clean-as-you-Code.** Les seuils portent sur le **code nouveau**. Un seuil de couverture
   globale est un anti-pattern : il échoue indéfiniment sur du legacy et pousse à écrire des
   tests sans valeur — ce qui aggrave le problème d'oracles faux du code généré.
@@ -69,53 +84,94 @@ et ce qui bloque).
    annoncé comme best-effort. Aucun remote → mode dégradé, **déclaré en clair** dans
    `docs/ci.md` : la phase produit alors une intention, pas une garantie. Jamais par omission.
 
-4. **Dérive les cinq contrôles de qualité** de l'écosystème, via la table de la référence :
-   build et typage, tests et couverture différentielle, SCA sur lockfile, secrets vérifiés,
-   SAST. Pour chacun, note la **commande réelle**, sa **portée** (diff ou dépôt entier) et le
-   mode de défaillance couvert. SCA et secrets portent sur le **dépôt entier** — une CVE dans
-   une dépendance non touchée reste exploitable, un secret dans un fichier non modifié reste
-   un secret.
+4. **Pose la grille des cinq modes, puis dérive.** Les cinq modes — oracle faux · suppression du
+   vérificateur · chaîne d'approvisionnement (quatre sous-cas) · *building to the test* ·
+   violation d'invariant d'architecture — sont l'ossature, et chaque ligne du tableau que tu
+   écriras porte le sien. Dérive d'abord les **cinq contrôles de qualité** de l'écosystème, via
+   la table de la référence : build et typage, tests et couverture différentielle, SCA sur
+   lockfile, secrets vérifiés, SAST. Pour chacun, note la **commande réelle** et sa **portée**
+   (diff ou dépôt entier) — SCA et secrets portent sur le **dépôt entier**, une CVE dans une
+   dépendance non touchée reste exploitable et un secret dans un fichier non modifié reste un
+   secret. Ces cinq-là sont des **vérificateurs**, pas des détecteurs : ils *sont* ce que le
+   mode 2 éteint, et leur vert ne se lit jamais comme une couverture du mode qui les vise.
 
-5. **Ajoute les deux contrôles d'intégrité** — `test-integrity` et `quality-config-guard`. Ils
-   ne dépendent pas de l'écosystème : ce sont des `git diff` sur des chemins, que tu dérives
-   des conventions de test lues dans `docs/stack.md`. `quality-config-guard` reçoit sa
-   **soupape** (scope de commit explicite), sans quoi il bloquerait sa propre maintenance.
+5. **Ajoute les trois contrôles d'intégrité** — `test-integrity`, `quality-config-guard` et
+   `verifier-guard`. Ils ne dépendent pas de l'écosystème : ce sont des `git diff` sur des
+   chemins, que tu dérives des conventions de test lues dans `docs/stack.md`. Ils se partagent
+   le **mode 2 par chemin** — les tests, la config, les sources — et c'est cette répartition qui
+   maintient leur taux de faux positifs bas. `quality-config-guard` reçoit sa **soupape** (scope
+   de commit explicite), sans quoi il bloquerait sa propre maintenance. `verifier-guard` est
+   limité aux **extensions de source**, tests et documentation exclus : sans cette borne il se
+   bloque sur le `docs/ci.md` que tu écris, qui cite ses propres motifs. Ces motifs se
+   **dérivent** de l'écosystème via la table de la référence — `—` pour ce que l'écosystème n'a
+   pas, `[à compléter]` pour ce qui n'est pas connu.
 
-6. **Si l'outillage n'est pas décidable de mémoire** — version d'une action, outil de SCA
+6. **Charge la soupape du garde — seulement si tu retiens `verifier-guard`.** C'est le cas
+   nominal, et ce n'est pas le cas par défaut : sa soupape n'est pas un scope de commit
+   (l'agent écrit `chore(types):` aussi facilement qu'il écrit `as any`) mais une **signature
+   du commit** vérifiée hors ligne. Lis alors, et alors seulement, `references/ci-signature.md`
+   du skill `project-docs` — registre de clés, ordre des deux vérifications, amorçage, et ce
+   que le dispositif ne prouve pas. Tu **n'exécutes aucune cryptographie** : tu écris le
+   workflow qui la vérifie.
+
+7. **Dérive les trois contrôles de chaîne d'approvisionnement** — le mode 3, dont la SCA ne
+   couvre qu'un sous-cas, les **CVE connues**. `workflow-integrity` (actions épinglées à un SHA
+   complet, et un audit qui le **vérifie** — un `@v3` réintroduit par copier-coller annule
+   l'épinglage sans rien changer de couleur), `dependency-review` sur le diff du lockfile **et**
+   du manifeste, et le **cooldown de dépendances**. Le cooldown n'est pas un job : c'est une clé
+   du résolveur, elle agit à l'installation, et c'est `quality-config-guard` qui garde son
+   abaissement. Son principe est agnostique, sa clé ne l'est pas : là où le gestionnaire de
+   paquets ne l'offre pas, `[à compléter]` — jamais un job maison qui rejoue la résolution.
+
+8. **Dérive les invariants d'architecture des ADR** — le mode 5, et le **gisement principal** :
+   les défauts qui comptent dans du code généré sont des violations de contrat propres au
+   projet, qu'aucun outil générique ne connaît. Relis `docs/adr/` et pose une seule question par
+   décision : *laisse-t-elle une trace observable dans l'arborescence ou dans les imports ?* Si
+   oui, elle donne un invariant, inscrit au **registre des ADR vérifiés** avec son ADR d'origine.
+   Ils restent **informatifs** jusqu'à mesure par rejeu sur l'historique — un contrôle maison
+   neuf n'a aucun taux de faux positifs connu, et un contrôle bruyant finit désactivé.
+
+9. **Si l'outillage n'est pas décidable de mémoire** — version d'une action, outil de SCA
    courant pour cet écosystème — **propose `/scd-sdd:lookup`** plutôt que d'écrire une version
    que tu supposes. Une version inventée dans un workflow casse au premier run, ou pire :
    elle marche et n'est pas celle qu'on croit.
 
-7. **Fais trancher ce qui n'a pas de bonne réponse par défaut** (`AskUserQuestion`, deux ou
-   trois questions, pas plus) : le seuil de couverture différentielle ; le SAST bloquant
-   d'emblée sur high-severity ou en report-only le temps de mesurer ; les contrôles lents sur
-   le chemin critique ou en exécution nocturne.
+10. **Fais trancher ce qui n'a pas de bonne réponse par défaut** (`AskUserQuestion`, deux ou
+    trois questions, pas plus) : le seuil de couverture différentielle ; le SAST bloquant
+    d'emblée sur high-severity ou en report-only le temps de mesurer ; les contrôles lents sur
+    le chemin critique ou en exécution nocturne ; la fenêtre du cooldown de dépendances.
 
-8. **Écris `docs/ci.md`** selon le template, en traçant vers `docs/stack.md`. La section
-   **« Ce que ces contrôles ne couvrent pas »** n'est pas optionnelle : la taire ferait croire
-   à une garantie qui n'existe pas.
+11. **Écris `docs/ci.md`** selon le template, en traçant vers `docs/stack.md`. La section
+    **« Ce que ces contrôles ne couvrent pas »** n'est pas optionnelle : la taire ferait croire
+    à une garantie qui n'existe pas — et elle se remplit **par mode**, y compris pour les trois
+    que rien ne ferme.
 
-9. **Écris le fichier de workflow** — jobs indépendants en parallèle, ordonnés par coût
-   croissant, déclenchés sur `pull_request` **et** sur `push` de la branche par défaut. Les
-   noms de jobs sont ceux qui deviendront les checks requis : choisis-les une fois.
+12. **Écris le fichier de workflow** — jobs indépendants en parallèle, ordonnés par coût
+    croissant, déclenchés sur `pull_request` **et** sur `push` de la branche par défaut. Les
+    noms de jobs sont ceux qui deviendront les checks requis : choisis-les une fois, et
+    `verifier-guard` ne se renomme plus. Les gardes qui lisent un diff ont besoin de voir la
+    base de la PR.
 
-10. **Rends la recette de protection de branche** — la commande prête à coller, avec les checks
+13. **Rends la recette de protection de branche** — la commande prête à coller, avec les checks
     requis nommés **à l'identique**, l'interdiction de force-push et de suppression, et le
     **bypass interdit**. Tu ne l'exécutes pas. Écris son état dans `docs/ci.md` : posée avec sa
     date, ou **À POSER** avec la conséquence — sans elle, tout ce qui précède est informatif.
 
-11. **Rends le bloc de blindage local** — le hook `PreToolUse` qui refuse de sauter les hooks de
+14. **Rends le bloc de blindage local** — le hook `PreToolUse` qui refuse de sauter les hooks de
     commit, prêt à coller, **avec sa réserve** : c'est de la défense en profondeur, pas le
     backstop, et il ne voit pas un `git` appelé via un script ou un alias.
 
-12. **Ouvre le chantier de durcissement** — `docs/chantiers/en-attente/AAAA-MM-JJ-durcissement-ci.md`,
-    portée **`socle`**. Il porte le travail de mesure des faux positifs sur ~30 jours et la
-    montée en bloquant de ce qui passe le seuil. Puis `git add` **scopé à la fiche** et
-    `git commit -m "chore(chantier): durcissement ci"` — sans y ajouter autre chose.
+15. **Ouvre le chantier de durcissement** — `docs/chantiers/en-attente/AAAA-MM-JJ-durcissement-ci.md`,
+    portée **`socle`**. Il porte la mesure des faux positifs — par **rejeu sur l'historique du
+    dépôt** pour les invariants d'architecture, le volume de PR d'un développeur seul ne
+    suffisant pas à estimer un taux en temps réel —, la montée en bloquant de ce qui passe sous
+    le seuil, et la réserve qui vaut pour tous les gardes greppables : **réprimer un
+    comportement peut le rendre plus subtil plutôt que l'éliminer.** Puis `git add` **scopé à la
+    fiche** et `git commit -m "chore(chantier): durcissement ci"` — sans y ajouter autre chose.
 
-13. **Relis contre le bloc `<completion>`** de `references/ci.md`.
+16. **Relis contre le bloc `<completion>`** de `references/ci.md`.
 
-14. **Consigne au journal** (voir ci-dessous).
+17. **Consigne au journal** (voir ci-dessous).
 
 ## Ce que tu NE fais PAS
 
@@ -124,8 +180,14 @@ et ce qui bloque).
 - Tu n'installes aucun hook et tu ne modifies aucun `settings.json`.
 - Tu n'inventes aucune commande de build, test, lint — ni aucune version d'outil ou d'action.
 - Tu ne fixes aucun seuil de couverture **globale**.
-- Tu ne rends bloquant aucun contrôle dont le taux de faux positifs est inconnu : c'est le rôle
-  du chantier de durcissement.
+- Tu ne rends bloquant aucun contrôle **maison ou heuristique** dont le taux de faux positifs
+  n'est pas mesuré — les invariants d'architecture restent informatifs jusqu'au rejeu, et c'est
+  le rôle du chantier de durcissement. La borne qui autorise les gardes d'intégrité à bloquer
+  malgré un taux non publié est leur **signal déterministe et greppable**, jamais l'urgence.
+- Tu n'écris pas l'outillage de signature de l'humain — c'est le seul endroit du dispositif où
+  ton concours est un risque et non une aide, et aucun job de CI ne le voit.
+- Tu ne génères aucune clé, tu n'en publies aucune, et tu n'ajoutes aucune entrée au registre :
+  la première clé de confiance est posée par l'humain, qui vérifie de ses yeux ce qu'il pousse.
 - Tu n'installes aucune dépendance et tu n'exécutes aucun outil de scan pour « voir ».
 - Tu ne modifies aucun document du socle déjà produit — ni `stack.md`, ni le PRD, ni un ADR.
 
@@ -136,7 +198,7 @@ par `Edit` ciblé (crée le fichier s'il manque) :
 
 - **Phase** : `ci`
 - **Résultat** : la forge · nb de contrôles bloquants et informatifs · le seuil de couverture.
-  Exemple : `GitHub Actions · 7 bloquants · 4 informatifs · couverture diff 70%`.
+  Exemple : `GitHub Actions · 11 bloquants · 4 informatifs · couverture diff 70%`.
 
 Une phase jouée en mode dégradé se consigne comme telle — `aucune forge · docs/ci.md seul` est
 un résultat, pas un échec à taire.
@@ -144,6 +206,8 @@ un résultat, pas un échec à taire.
 ## Skill active
 
 - `project-docs` — charge `references/ci.md` (`role` + `template` + `guidance` + `completion`).
+  Et `references/ci-signature.md`, **conditionnellement** : à l'étape 6, seulement si tu retiens
+  `verifier-guard`. Un projet sans ce garde ne la charge jamais.
 - `chantier` — format de la fiche de durcissement, nommage, `Portée`. Tu n'as **pas** besoin de
   `references/manifeste.md` : cette fiche ne porte aucun contexte volumineux.
 - `journal` — contrat de `docs/journal/*.md`.
@@ -156,6 +220,11 @@ check requis fantôme qui bloque toutes les PR.
 
 Rappelle la seule chose qui décide si cette phase a servi à quelque chose : **tant que la
 protection de branche n'est pas posée, tous ces contrôles sont informatifs.**
+
+Si tu as retenu `verifier-guard`, rappelle aussi le geste humain sans lequel sa soupape ne vaut
+rien : **poser le registre de clés et vérifier de ses yeux la clé qu'il contient.** La PR qui
+l'installe le fait sans preuve — il n'existe aucune clé de confiance pour signer l'arrivée de la
+première —, et ce trou est irréductible : il se surveille, il ne se contourne pas.
 
 Puis : « `/clear`, puis `/scd-sdd:contract` pour assembler CLAUDE.md — il lira les commandes du
 projet dans `docs/ci.md`. »

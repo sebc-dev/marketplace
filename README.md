@@ -28,7 +28,7 @@ Architectural design patterns for Claude Code plugins. Component selection (skil
 
 Interactive guided code review on the current branch. Reviews file by file in optimal order with dedicated background agents (code-reviewer + test-reviewer) for each file, JSON-based progress tracking, and blocking/suggestion classification. 5 slash commands (`/scd-review:review-init`, `/scd-review:code-review`, `/scd-review:review-followup`, `/scd-review:review-continue`, `/scd-review:review-post`). GitHub/GitLab PR posting integration.
 
-### [scd-sdd](./scd-sdd/) `v1.6.0`
+### [scd-sdd](./scd-sdd/) `v1.7.0`
 
 Complete spec-driven development cycle, from empty repo to reviewable PR — one plugin, three
 chained levels. **Foundation** (once per project): brief → PRD → stack → foundational ADRs → CI →
@@ -41,6 +41,13 @@ dedicated branch, verification per the lot's declared mode (TDD by default, else
 check / inherent), fresh-context code review, adversarial finding triage, PR description as a
 review artifact, one ready-for-review PR per lot — with stacked-PR anti-orphaning and real
 parallelism via git worktrees.
+
+The `ci` phase derives its checks from a grid of five failure modes rather than a list of tools:
+eleven blocking jobs, six of them aimed at the agent rather than at the code it writes — including
+a guard against silencing the type checker, the linter or the SAST line by line, whose only escape
+hatch is a commit signature verified offline against a key registry versioned in the repo. The
+plugin runs no cryptography of its own: it writes the workflow that verifies it, and renders the
+branch-protection recipe without executing it.
 
 State is always derived from files, never from a state file: `/clear` wipes the context, not the
 progress. No shared file grows. Each phase appends a dated line to its own target's journal

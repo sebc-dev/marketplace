@@ -96,8 +96,8 @@ sauvegarde ». Les inscrire de force produirait une ligne creuse ; les jeter per
 constat de la séance.
 
 Ils deviennent une **fiche de chantier `en-attente`**, de la portée de la cible. C'est
-exactement l'usage prévu par le skill `chantier`, et le précédent existe : le plan de
-durcissement à 30 jours de la phase `ci`. Cette forme est légale **à toutes les cibles**.
+exactement l'usage prévu par le skill `chantier`, et le précédent existe : le chantier de
+durcissement de la phase `ci`. Cette forme est légale **à toutes les cibles**.
 
 ### 6. Le calibrage
 

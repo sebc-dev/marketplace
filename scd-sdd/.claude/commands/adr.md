@@ -41,6 +41,13 @@ Ratio : 30% humain / 70% AI (dérivation depuis la Stack ; l'humain valide le co
   `CLAUDE.md` interdit de contredire et que la gate `analyze` protège au lieu de la
   questionner. Un fait que tu ne tiens pas de mémoire se source **avant** d'être figé —
   `/scd-sdd:lookup` s'il est ponctuel, `/scd-sdd:research` s'il porte l'arbitrage.
+- **Un ADR accepté peut remonter en contrôle vérifié.** Une décision qui laisse une **trace
+  observable** — dans l'arborescence ou dans les imports — est dérivable en contrôle
+  automatique par `/scd-sdd:ci`, qui relit `docs/adr/` pour ça. C'est le sens **inverse** de
+  celui que la règle précédente interdit : un rapport ne descend jamais seul dans un ADR
+  immuable, mais ce qu'un ADR a figé peut monter en invariant vérifié. Ici tu le **repères et
+  tu le signales** — tu ne dérives aucun contrôle, et tu n'ajoutes rien à l'ADR pour le
+  marquer : la phase `ci` re-dérive depuis `docs/adr/`, qui reste la source.
 
 ## Processus
 
@@ -84,11 +91,19 @@ Ratio : 30% humain / 70% AI (dérivation depuis la Stack ; l'humain valide le co
    `docs/stack.md` (étape 5) ne concerne que les candidats issus de la Stack : un
    brouillon promu trace vers son origine (le plan de la feature), pas vers le tableau.
 
-7. **Relis contre le bloc `<completion>`** de `references/adr.md` — en particulier :
+7. **Repère les décisions à trace observable** — celles qui laisseront un contrôle
+   automatique derrière elles. Une seule question par ADR écrit : *cette décision laisse-t-elle
+   une trace dans l'arborescence ou dans les imports ?* « la couche `db/` n'est atteinte que
+   par `server/` » → oui ; « nous utiliserons PostgreSQL » → non. Note celles qui répondent oui
+   pour les nommer à la fin : `/scd-sdd:ci` relira `docs/adr/` et en dérivera des **invariants
+   d'architecture**, informatifs jusqu'à mesure. Tu ne les dérives pas ici, et rien n'est perdu
+   si tu en manques une — la phase `ci` repart des fichiers, pas de ta liste.
+
+8. **Relis contre le bloc `<completion>`** de `references/adr.md` — en particulier :
    chaque candidat de la Stack a **exactement un** ADR, et chaque ADR a au moins une
    conséquence négative.
 
-8. **Consigne au journal** (voir ci-dessous).
+9. **Consigne au journal** (voir ci-dessous).
 
 ## Ce que tu NE fais PAS
 
@@ -100,6 +115,9 @@ Ratio : 30% humain / 70% AI (dérivation depuis la Stack ; l'humain valide le co
 - Tu ne supprimes ni ne modifies aucun brouillon de `_candidates/` : promu ou écarté, son
   sort se signale à l'utilisateur, il ne s'exécute pas ici.
 - Tu ne modifies rien d'autre dans `docs/stack.md` que la colonne « ADR ».
+- Tu ne dérives aucun contrôle de CI et tu n'écris rien dans `docs/ci.md`. Repérer une trace
+  observable (étape 7) n'est pas poser un invariant : le formuler ici le figerait dans un
+  document immuable, avant même que la phase `ci` ait vu l'écosystème qui doit le rendre.
 - Tu ne touches à aucun rapport de `docs/research/` — pas même pour y noter l'ADR qu'il a
   servi. Le lien va de l'ADR vers le rapport, jamais l'inverse : un rapport qui listerait
   ses usages serait un fichier qui croît.
@@ -121,7 +139,10 @@ par `Edit` ciblé (crée le fichier s'il manque) :
 ## À la fin
 
 Liste les ADR créés et confirme, candidat par candidat, que chacun a bien le sien — puis
-que la colonne « ADR » de `docs/stack.md` est complète.
+que la colonne « ADR » de `docs/stack.md` est complète. Nomme enfin ceux qui laissent une
+**trace observable** (étape 7), s'il y en a : ce sont les invariants que la phase suivante
+ira chercher.
 
 Puis : « `/clear`, puis `/scd-sdd:ci` pour poser les contrôles automatiques — la phase qui
-rend déterministe ce que `CLAUDE.md` ne pourra que conseiller. »
+rend déterministe ce que `CLAUDE.md` ne pourra que conseiller, et qui dérivera des ADR
+acceptés ce qu'ils imposent au code. »

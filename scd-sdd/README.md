@@ -146,24 +146,85 @@ distinguer *corrigé* de *pas re-mentionné cette fois*.
 pas passer les tests. Le socle s'arrêtait là. Il gagne une phase avant sa dernière,
 `/scd-sdd:ci`, qui rend **déterministe** ce que le contrat ne peut que conseiller.
 
-Elle dérive de `docs/stack.md` **sept contrôles bloquants** — build et typage, tests et
-couverture *différentielle*, SCA sur lockfile committé, secrets vérifiés, SAST — dont deux
-qui visent l'agent et non le code qu'il écrit : **`test-integrity`** (assertion supprimée,
-`assert True`, `skip`/`xfail` ajouté, fichier de test vidé) et **`quality-config-guard`**
-(seuils abaissés, règles désactivées), ce dernier avec sa soupape `chore(ci):` pour ne pas
-bloquer sa propre maintenance.
-
 Pourquoi de l'extérieur : le niveau implémentation atteste **de lui-même** que les tests
 sont intacts. C'est la seule configuration producteur-vérificateur du plugin, et le terrain
 la dit insuffisante. La CI vérifie ce que l'agent affirme.
+
+### Les contrôles se dérivent d'une grille, pas d'une liste d'outils
+
+Une liste d'outils ne dit pas **contre quoi** on se défend : elle ne permet ni de juger
+qu'un contrôle candidat couvre un mode déjà couvert, ni de voir qu'un mode n'est couvert
+par rien. La phase part donc de **cinq modes de défaillance** — oracle faux · suppression
+du vérificateur · chaîne d'approvisionnement (quatre sous-cas) · *building to the test* ·
+violation d'invariant d'architecture — et chaque contrôle porte le sien. Une grille est
+agnostique par construction, là où une liste d'outils est un instantané qui périme seul.
+
+De là, **onze contrôles bloquants** dérivés de `docs/stack.md` : build et typage, tests et
+couverture *différentielle*, SCA sur lockfile committé, secrets vérifiés, SAST — plus six
+qui visent l'agent, et non le code qu'il écrit.
+
+| Job | Ce qu'il refuse |
+|---|---|
+| `test-integrity` | assertion supprimée, `assert True`, `skip`/`xfail` ajouté, fichier de test vidé |
+| `quality-config-guard` | seuil abaissé, règle désactivée — soupape `chore(ci):` pour sa propre maintenance |
+| `verifier-guard` | le typage, le lint ou le SAST **éteints ligne à ligne** dans du code de production |
+| `workflow-integrity` | une action de CI non épinglée par SHA immuable |
+| `dependency-review` | une dépendance ajoutée en silence, un lockfile altéré |
+| cooldown | une version publiée depuis moins de N jours — clé du résolveur, pas un job |
+
+Le troisième est le mode le plus attrapable de tous, et aucun des sept contrôles
+précédents ne le voyait : **l'agent n'écrit pas du code qui échoue au typage, il éteint le
+typage sur la ligne qui échoue.** Un `as any` dans du code de production passait
+`test-integrity`, qui regarde le diff des tests, comme `quality-config-guard`, qui regarde
+celui des configs. Sa portée est limitée aux extensions de **source**, tests et
+documentation exclus — un garde qui balaie tout se bloque sur le `docs/ci.md` du projet,
+qui cite ces motifs pour les documenter.
+
+Les trois suivants ferment ce que la SCA laissait ouvert : elle n'attrape que les **CVE
+connues**, ni un paquet hostile trop récent pour figurer dans une base, ni une action
+compromise par déplacement de tag, ni une altération directe du lockfile.
+
+S'y ajoute un contrôle **informatif promouvable**, `arch-invariants` : les invariants
+dérivés des **ADR acceptés** du projet — le gisement principal, puisque les défauts qui
+comptent dans du code généré sont des violations de contrat propres au projet, qu'aucun
+outil générique ne connaît. Un ADR y entre s'il laisse une **trace observable dans
+l'arborescence ou dans les imports** ; il reste informatif jusqu'à mesure par **rejeu sur
+l'historique**, et le seuil vaut dans les deux sens — au-delà de 15 % de faux positifs, un
+bloquant rebascule en informatif.
+
+### La soupape du garde — une signature, pas un scope de commit
+
+`verifier-guard` se déclenchera légitimement : un `as unknown as` dans un shim de types
+est un cas réel, et un garde sans sortie bloque une PR sans issue. Mais la soupape de
+`quality-config-guard` ne tient pas ici : **l'agent écrit `chore(types):` aussi facilement
+qu'il écrit `as any`**. Pour la config qualité, la soupape doit rendre le geste
+**visible**, et un scope suffit ; pour ce garde, elle doit le rendre **impossible à
+l'agent**, parce que la menace visée *est* l'agent.
+
+Elle est donc la **signature cryptographique du commit** qui introduit le motif, vérifiée
+hors ligne par le job contre un registre de clés publiques versionné dans le dépôt, en
+**fermeture par défaut** : sans registre, aucune suppression de vérificateur n'est
+acceptée. La recette vit dans une référence à part, chargée **seulement quand le garde est
+retenu** — la phase ne la paie pas quand elle ne la pose pas.
+
+Deux choses s'écrivent à côté de ce qu'elle garantit. Le dispositif arrête l'IA qui évade,
+celle qui écrit tout le dépôt y compris les gardes et sa propre attestation ; il n'arrête
+**pas** l'accès aux identifiants du poste, et vendre l'un pour l'autre serait exactement le
+vert trompeur que la phase existe pour supprimer. Et **le plugin n'exécute aucune
+cryptographie** : il écrit le workflow qui la vérifie, comme il rend la recette de
+protection de branche sans la jouer.
+
+### Ce que la phase pose, et ce qu'elle laisse à l'humain
 
 Elle écrit `docs/ci.md` et le fichier de workflow ; elle **rend sans les exécuter** la
 recette `gh` de protection de branche et le bloc `PreToolUse` qui bloque `--no-verify` en
 local. Sans le ruleset posé — geste humain — tout ce qui précède est informatif. Le reste
 du durcissement part en fiche `docs/chantiers/en-attente/`, parce qu'une section de plus
 dans `docs/ci.md` ne serait jamais relue. `docs/ci.md` porte enfin, en section obligatoire,
-**ce que ces contrôles ne couvrent pas** : régression sémantique silencieuse, oracle faux,
-*building to the test*.
+**ce que ces contrôles ne couvrent pas**, mode par mode : l'oracle faux, que seul le test
+de mutation atteint partiellement ; la régression sémantique silencieuse ; le *building to
+the test* ; et la réserve qui vaut pour les gardes eux-mêmes — **réprimer un comportement
+peut le rendre plus subtil plutôt que l'éliminer.**
 
 Le hook local `format-lint.sh` (PostToolUse) est, lui, **livré inerte** — placeholders
 `FORMAT_CMD`/`LINT_CMD` vides, no-op tant qu'ils le restent — et la phase `ci` n'y touche
