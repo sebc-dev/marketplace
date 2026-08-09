@@ -42,7 +42,7 @@ recopie (on lie).
 |---|---|---|---|
 | `docs/prd.md` (socle) | Quoi, niveau produit | Brief | `FR-xxx`, `SC-xxx` |
 | `spec.md` (feature) | Quoi, niveau feature | PRD (`FR/SC`) | `FR-xxx` feature, `SC-xxx`, `SHALL` EARS |
-| `plan.md` | Comment | spec + `docs/stack.md` + `docs/adr/` | fichiers, contrats |
+| `plan.md` | Comment | spec + `docs/stack.md` + `docs/archi.md` + `docs/adr/` | fichiers, contrats |
 | `tasks.md` | Découpage exécutable **et reviewable** | plan + spec (`_Requirements:_`) | `Rn` (lots), `Tn`, `[P]` |
 | *vérif + code* | *Preuve* | *tasks* | *— (niveau implémentation)* |
 
@@ -191,7 +191,7 @@ Charge **uniquement** la référence de la phase courante (la commande le fait) 
 | `plan.md` | Plan technique (réutilise stack/ADR, plan mode) | `role` `template` `guidance` `completion` |
 | `tasks.md` | Lots `Rn` + tâches `Tn` (backref, mode de vérif, `[P]`) | `role` `template` `guidance` `completion` |
 | `reviewability.md` | Dimensionner les lots — chargée **avec** `tasks.md` | `role` `criteria` `splitting` `pitfalls` |
-| `analyze.md` | Gate de conformité : 14 contrôles, rapport + verdict | `role` `checks` `report` `guidance` |
+| `analyze.md` | Gate de conformité : 15 contrôles, rapport + verdict | `role` `checks` `report` `guidance` |
 | `status.md` | Tableau de bord : phase dérivée, gate journalisée, fraîcheur | `role` `report` `guidance` |
 | `ears.md` | Les 5 patterns EARS + SHALL → vérification | `patterns` `examples` `pitfalls` |
 | `delta.md` | Modèle delta brownfield (OpenSpec) | `role` `template` `guidance` |

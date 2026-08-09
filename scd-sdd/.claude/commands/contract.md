@@ -1,6 +1,6 @@
 ---
-description: "Phase 6 du socle, terminale : assemble CLAUDE.md, le contrat opérationnel. Pointe vers les documents produits sans les recopier, lit les commandes du projet dans docs/ci.md, fond la constitution (principes + seuils), pose la Definition of Done. Court, haut-signal, advisory."
-argument-hint: "(aucun — lit docs/brief.md, prd.md, stack.md, adr/, ci.md)"
+description: "Phase 7 du socle, terminale : assemble CLAUDE.md, le contrat opérationnel. Pointe vers les documents produits sans les recopier, lit les commandes du projet dans docs/ci.md, fond la constitution (principes + seuils), pose la Definition of Done. Court, haut-signal, advisory."
+argument-hint: "(aucun — lit docs/brief.md, prd.md, stack.md, archi.md, adr/, ci.md)"
 allowed-tools:
   - Read
   - Glob
@@ -50,18 +50,21 @@ valide ce qui est repris).
 
 ## Processus
 
-1. **Lis les cinq prérequis** : `docs/brief.md`, `docs/prd.md`, `docs/stack.md`,
-   `docs/adr/` et `docs/ci.md`. Si l'un manque, **arrête-toi** et renvoie vers la commande
-   correspondante — un contrat qui pointe vers un document inexistant est pire qu'un
-   contrat absent. `docs/ci.md` absent → `/scd-sdd:ci`, qui est la phase 5.
+1. **Lis les six prérequis** : `docs/brief.md`, `docs/prd.md`, `docs/stack.md`,
+   `docs/archi.md`, `docs/adr/` et `docs/ci.md`. Si l'un manque, **arrête-toi** et renvoie
+   vers la commande correspondante — un contrat qui pointe vers un document inexistant est
+   pire qu'un contrat absent. `docs/archi.md` absent → `/scd-sdd:archi`, qui est la phase 4 ;
+   `docs/ci.md` absent → `/scd-sdd:ci`, qui est la phase 6.
 
 2. **Charge le template et ses règles** : lis `references/claude-md.md` du skill
    `project-docs`.
 
 3. **Assemble `CLAUDE.md`** selon le template :
    - **Vue d'ensemble** (3-5 bullets) et **pointeurs** `@docs/brief.md`, `@docs/prd.md`,
-     `@docs/stack.md`, `docs/adr/` — avec la consigne de ne jamais contredire un ADR
-     accepté ;
+     `@docs/stack.md`, `docs/archi.md`, `docs/adr/` — avec la consigne de ne jamais
+     contredire un ADR accepté, ni franchir un **invariant** de `docs/archi.md`. Ce dernier
+     pointeur n'est pas décoratif : la dimension `architecture` de la review et les contrôles
+     `arch-invariants` de la CI y renvoient tous les deux ;
    - **Commandes** du projet (build, test unitaire, lint/format, run local) : **lues dans
      la table « Commandes du projet » de `docs/ci.md`** et recopiées telles quelles. Tu
      n'interviewes plus et tu n'inventes rien. Une case que `docs/ci.md` laisse en
@@ -91,8 +94,9 @@ valide ce qui est repris).
 
 ## Ce que tu NE fais PAS
 
-- Tu ne recopies aucun extrait du Brief, du PRD, de la Stack, d'un ADR — ni la table des
-  contrôles de `docs/ci.md`, dont tu ne prends que les commandes.
+- Tu ne recopies aucun extrait du Brief, du PRD, de la Stack, d'`archi.md`, d'un ADR — ni la
+  table des contrôles de `docs/ci.md`, dont tu ne prends que les commandes. En particulier, la
+  table des invariants ne se recopie pas dans `CLAUDE.md` : elle croîtrait en double.
 - Tu n'inventes aucune commande de build, test ou lint, et tu n'en devines aucune : elles
   viennent de `docs/ci.md`, ou elles y sont un `[à compléter]` que tu reportes tel quel.
 - Tu n'installes aucun hook ici — tu les recommandes.
@@ -115,7 +119,8 @@ par `Edit` ciblé (crée le fichier s'il manque) :
 
 ## À la fin
 
-Le socle est complet, en six documents : Brief, PRD, Stack, ADR, **CI**, CLAUDE.md.
+Le socle est complet, en sept documents : Brief, PRD, Stack, **Archi**, ADR, **CI**,
+CLAUDE.md.
 Récapitule les trois étapes recommandées, dans cet ordre :
 
 1. **Ce qui reste déterministe à poser** — la protection de branche si `docs/ci.md` la

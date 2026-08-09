@@ -19,7 +19,7 @@ infiniment moins cher qu'après l'implémentation.
 </role>
 
 <checks>
-Quatorze contrôles, groupés. Chacun est **vérifiable** : ne rapporte que ce qui est constatable dans
+Quinze contrôles, groupés. Chacun est **vérifiable** : ne rapporte que ce qui est constatable dans
 les fichiers, jamais une impression.
 
 **Traçabilité (la chaîne doit être complète et sans orphelin)**
@@ -45,6 +45,9 @@ les fichiers, jamais une impression.
 12. **Verticalité** : chaque lot `Rn` de `tasks.md` traverse les couches et livre de la valeur vérifiable. Un lot horizontal (« créer la table », « créer l'API ») = Critical : sa correction ne se juge qu'en assemblage, donc il n'est pas reviewable seul.
 13. **Sujet unique & indépendance** : chaque lot est nommable en une phrase sans « et », et se comprend sans charger les lots voisins en mémoire (`dépend de :` = ordre, pas compréhension).
 14. **Dimensionnement** : aucun lot ne dépasse les signaux de scission (≈ 400 lignes estimées, ≈ 7 concepts, ≈ 5-7 critères par exigence) sans justification. Un dépassement est **Major, jamais Critical** — ces seuils sont transposés du code par analogie et le budget est une estimation, pas une mesure. Symétriquement : un lot qui ne livre aucun incrément vérifiable est une couche déguisée à refusionner.
+
+**Architecture (le socle structurel, quand il existe)**
+15. **Invariants d'architecture** : les fichiers touchés de `plan.md` respectent les invariants de `docs/archi.md` — aucune frontière franchie, aucun sens de dépendance inversé, aucun artefact placé hors du dossier prescrit —, ou la dérogation est **nommée et justifiée** dans « Réutilisation du socle » (l'étape de confrontation de `/scd-sdd:plan`). Une dérogation muette est un **Major**. Ce contrôle est **Major, jamais Critical** : bloquer la gate dessus ferait d'`analyze` un `arch-invariants` avant l'heure, alors que c'est la CI qui mesure une violation sur le code réel. **Pas de `docs/archi.md` → le contrôle est sans objet**, et son absence n'est pas un finding : la phase `archi` n'a simplement pas été jouée.
 </checks>
 
 <report>
@@ -53,7 +56,7 @@ gate** (`<gate>` ci-dessous) — sans quoi elle meurt au `/clear` suivant, et la
 repart à froid. Findings classés par ce qu'ils coûtent en aval :
 
 - **Critical** — rend l'implémentation non fiable, ou la review aval fictive : `FR` sans impl ou sans vérification observable, `[NEEDS CLARIFICATION]` restant, plan contredisant un ADR, scope EXCLU violé, critère non testable (adjectif nu), **lot horizontal**, **lot à sujets multiples**, mode `check`/`inhérent` masquant l'absence de preuve sur de la **logique métier**.
-- **Major** — fera perdre du temps : backref manquant, tâche orpheline, critère hors EARS, fuite de stack dans la spec, `FR` non atomique, **lot hors seuils de scission**, **mode de vérification ≠ `TDD` non justifié**.
+- **Major** — fera perdre du temps : backref manquant, tâche orpheline, critère hors EARS, fuite de stack dans la spec, `FR` non atomique, **lot hors seuils de scission**, **mode de vérification ≠ `TDD` non justifié**, **invariant de `docs/archi.md` franchi sans dérogation justifiée**.
 - **Minor** — améliore : `[P]` douteux, patron de référence absent, formulation perfectible.
 
 Format :
@@ -95,7 +98,8 @@ feature est grosse) :
 - `slice-auditor` — reviewability du découpage (contrôles 12-14).
 
 Ils sont indépendants : les lancer en parallèle, puis fusionner leurs findings dans un rapport
-unique sans les rejuger.
+unique sans les rejuger. **Le contrôle 15 n'est délégué ni à l'un ni à l'autre** : il se juge
+contre `docs/archi.md`, que le contexte principal a lu, et les deux mandats restent ceux-ci.
 </report>
 
 <gate>
@@ -161,7 +165,7 @@ C'est la frontière qui empêche la gate de devenir un tampon.
 **Appariement entre passes.** Un finding est identifié par le triplet **`[ID]` · fichier ·
 nature** (`[FR-003] spec.md adjectif-sans-cible`). À chaque passe :
 
-1. **Dérouler les 14 contrôles intégralement.** On ne saute **jamais** un contrôle parce que la
+1. **Dérouler les 15 contrôles intégralement.** On ne saute **jamais** un contrôle parce que la
    fiche dit « arbitré » — on détecte tout, on ne change que la *présentation*.
 2. Un finding apparié à une entrée d'`## Écarté` → bloc **« Déjà arbitrés »**, hors du décompte
    qui décide du verdict.

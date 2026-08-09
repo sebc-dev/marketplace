@@ -28,13 +28,13 @@ Architectural design patterns for Claude Code plugins. Component selection (skil
 
 Interactive guided code review on the current branch. Reviews file by file in optimal order with dedicated background agents (code-reviewer + test-reviewer) for each file, JSON-based progress tracking, and blocking/suggestion classification. 5 slash commands (`/scd-review:review-init`, `/scd-review:code-review`, `/scd-review:review-followup`, `/scd-review:review-continue`, `/scd-review:review-post`). GitHub/GitLab PR posting integration.
 
-### [scd-sdd](./scd-sdd/) `v1.7.0`
+### [scd-sdd](./scd-sdd/) `v1.8.0`
 
 Complete spec-driven development cycle, from empty repo to reviewable PR — one plugin, three
-chained levels. **Foundation** (once per project): brief → PRD → stack → foundational ADRs → CI →
-CLAUDE.md, by one-question-at-a-time interview, where the `ci` phase makes deterministic and
-verifiable *outside the agent* what CLAUDE.md can only advise. **Specs** (once per feature):
-specify → clarify → plan → tasks → analyze conformance gate (14 checks), with EARS acceptance
+chained levels. **Foundation** (once per project): brief → PRD → stack → architecture invariants →
+foundational ADRs → CI → CLAUDE.md, by one-question-at-a-time interview, where the `ci` phase makes
+deterministic and verifiable *outside the agent* what CLAUDE.md can only advise. **Specs** (once per
+feature): specify → clarify → plan → tasks → analyze conformance gate (15 checks), with EARS acceptance
 criteria, Kiro backrefs, and review lots (`Rn`) sized so a human can actually review each one.
 **Implementation** (one lot at a time): a dynamic workflow orchestrating 20 dedicated subagents —
 dedicated branch, verification per the lot's declared mode (TDD by default, else test-after /
@@ -48,6 +48,14 @@ a guard against silencing the type checker, the linter or the SAST line by line,
 hatch is a commit signature verified offline against a key registry versioned in the repo. The
 plugin runs no cryptography of its own: it writes the workflow that verifies it, and renders the
 branch-protection recipe without executing it.
+
+The `archi` phase gives that machinery its source. It produces `docs/archi.md` in three steps —
+observe what the stack already imposes (no ADR: you don't decide what is already decided), weigh
+options on the two open axes (macro decomposition, micro organisation), then compile **falsifiable
+invariants**: a rule only enters if it leaves an *observable trace in the tree or in the imports*.
+Never a design — the end criterion is that every invariant has its trace and its candidate ADR.
+Each one becomes an ADR, then an `arch-invariants` check; `plan` confronts every lot with them and
+`analyze` checks it, as its 15th control.
 
 State is always derived from files, never from a state file: `/clear` wipes the context, not the
 progress. No shared file grows. Each phase appends a dated line to its own target's journal
@@ -65,7 +73,7 @@ traces back to what the documents left out, on the **foundation**, a **feature**
 forms, approved by the human before anything is written; whatever no text can close becomes a
 chantier instead.
 
-27 slash commands, including three dashboards — `/scd-sdd:status` (all three levels in one view,
+28 slash commands, including three dashboards — `/scd-sdd:status` (all three levels in one view,
 plus the next command to run), `/scd-sdd:status-specs`, `/scd-sdd:status-impl` (merge-safety of
 every lot PR) — and `/scd-sdd:migrate` to pick up a project coming from the three former plugins.
 Replaces `scd-project-docs`, `scd-feature-specs` and `scd-implement`.

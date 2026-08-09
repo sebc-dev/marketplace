@@ -17,6 +17,8 @@ Trace vers : specs/NNN-feature/spec.md · docs/stack.md · docs/adr/
 
 ## Réutilisation du socle
 - Stack imposée par docs/stack.md : [langage/framework/DB/… déjà décidés — ne pas re-choisir]
+- Invariants d'architecture (docs/archi.md) qui s'appliquent : [I1, I3 — ou « aucun »]
+  → dérogation : [I3 franchi car <raison>] — à défaut, ne rien écrire ici
 - ADR contraignants : [ADR-NNNN : décision qui s'applique ici]
 
 ## Fichiers touchés (nommer précisément)
@@ -38,6 +40,7 @@ Trace vers : specs/NNN-feature/spec.md · docs/stack.md · docs/adr/
 <guidance>
 - **Ne re-décide rien du socle.** Langage, framework, DB, auth, déploiement sont fixés par `stack.md`/`adr/`. Le plan les *applique*. Contredire un ADR accepté = interdit (le hook `block-adr-edits` empêche d'ailleurs de le réécrire).
 - **Décision structurante nouvelle** (non couverte par un ADR) → **candidat** dans `docs/adr/_candidates/`, promu manuellement plus tard. Jamais un ADR final directement.
+- **Les invariants de `docs/archi.md` se confrontent, ils ne se re-décident pas.** Un lot qui franchit une frontière, inverse un sens de dépendance ou place un artefact hors du dossier prescrit change de découpage — ou **écrit sa dérogation avec sa raison**, en nommant l'invariant. Muette, elle est un **Major** à la gate `analyze` ; répétée d'une feature à l'autre, elle dit que l'invariant est périmé et relève de `/scd-sdd:archi`, jamais d'une édition d'ici. Pas de `docs/archi.md` → la ligne n'existe pas et l'étape est annoncée sautée.
 - **Nommer les fichiers précisément** et pointer un **patron de référence** existant plutôt que décrire abstraitement.
 - **Réutiliser l'existant** : chercher fonctions/utilitaires déjà présents avant de proposer du neuf.
 - **Étape de vérif bout-en-bout obligatoire** : une commande/test qui **prouvera** la feature. Tu la *définis*, tu ne l'exécutes pas — c'est le contrat exécutable que l'aval honorera.
@@ -47,6 +50,9 @@ Trace vers : specs/NNN-feature/spec.md · docs/stack.md · docs/adr/
 <completion>
 Le plan est terminé quand :
 - [ ] La stack et les ADR contraignants sont **cités**, pas re-décidés.
+- [ ] Si `docs/archi.md` existe : les fichiers touchés ont été **confrontés** à ses invariants, et
+      toute frontière franchie est **nommée et justifiée**. S'il n'existe pas, l'étape a été
+      annoncée sautée.
 - [ ] Chaque `FR` de la spec est couvert par une portion du plan (fichiers/contrats).
 - [ ] Les fichiers touchés sont nommés + un patron de référence est indiqué.
 - [ ] Toute décision structurante nouvelle est un **candidat ADR** dans `_candidates/`, pas un ADR final.

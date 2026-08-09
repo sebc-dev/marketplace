@@ -1,8 +1,8 @@
 # Référence — Assemblage de `CLAUDE.md`
 
 <role>
-Dernière phase du kickoff, la **sixième**. `CLAUDE.md` est le **contrat opérationnel** : chargé à
-chaque session, il **pointe** vers les docs produits (Brief, PRD, Stack, ADR, CI) sans les
+Dernière phase du kickoff, la **septième**. `CLAUDE.md` est le **contrat opérationnel** : chargé à
+chaque session, il **pointe** vers les docs produits (Brief, PRD, Stack, Archi, ADR, CI) sans les
 recopier, et il **lit** les commandes du projet dans `docs/ci.md`. C'est aussi ici
 que la **constitution est fondue** (principes non-négociables + seuils de déclenchement) plutôt
 que dans un fichier séparé. Advisory, pas exécutif : garder court, haut-signal, cible < 200 lignes.
@@ -15,6 +15,7 @@ que dans un fichier séparé. Advisory, pas exécutif : garder court, haut-signa
 ## Vue d'ensemble (3-5 bullets max)
 - Objet : [une phrase] — voir @docs/brief.md
 - Le "quoi" produit : @docs/prd.md — Les fondations techniques : @docs/stack.md
+- Ce que le code s'interdit : `docs/archi.md` — NE PAS franchir un invariant
 - Décisions figées : @docs/adr/ — NE PAS contredire un ADR accepté
 - Ce qui est vérifié automatiquement : `docs/ci.md` — les contrôles bloquants font foi
 
@@ -60,7 +61,7 @@ que dans un fichier séparé. Advisory, pas exécutif : garder court, haut-signa
 
 <completion>
 CLAUDE.md est terminé quand :
-- [ ] Il **pointe** vers `docs/brief.md`, `docs/prd.md`, `docs/stack.md`, `docs/adr/`, `docs/ci.md` — sans recopier leur contenu.
+- [ ] Il **pointe** vers `docs/brief.md`, `docs/prd.md`, `docs/stack.md`, `docs/archi.md`, `docs/adr/`, `docs/ci.md` — sans recopier leur contenu, et **sans recopier la table des invariants**.
 - [ ] La section **Commandes** est identique à la table « Commandes du projet » de `docs/ci.md` — aucune commande ajoutée, aucune reformulée.
 - [ ] La section **Definition of Done** est présente et vérifiable.
 - [ ] La section **Principes & seuils** (constitution fondue) est présente.

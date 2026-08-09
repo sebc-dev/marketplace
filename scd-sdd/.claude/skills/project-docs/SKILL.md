@@ -3,24 +3,24 @@ name: project-docs
 description: |
   Le NIVEAU SOCLE du cycle spec-driven : les documents de gestion de projet
   écrits une fois, au démarrage. Chaîne de traçabilité Brief → PRD → Stack →
-  ADR → CI → CLAUDE.md, méthode d'interview « une question à la fois », règles
-  d'écriture pour un agent (verbe vérifiable, technology-agnostic, scope EXCLU),
-  la frontière advisory / déterministe et la phase ci qui la franchit, seuils de
+  Archi → ADR → CI → CLAUDE.md, méthode d'interview « une question à la fois »,
+  règles d'écriture pour un agent (verbe vérifiable, technology-agnostic, scope
+  EXCLU), la frontière advisory / déterministe et la phase ci qui la franchit,
+  les invariants d'architecture falsifiables de la phase archi, seuils de
   déclenchement du niveau specs, et les templates copy-paste de chaque document.
-  Se charge pendant /scd-sdd:init-project, brief, prd, stack, adr, ci, premortem
-  (cible socle) et
-  contract. Porte UNIQUEMENT le socle — ni les specs par feature (skill
-  feature-specs), ni l'implémentation d'un lot (skill implement), ni le contrat
-  du fichier de suivi (skill journal).
+  Se charge pendant /scd-sdd:init-project, brief, prd, stack, archi, adr, ci,
+  contract et premortem (cible socle). Porte UNIQUEMENT le socle — ni les specs
+  par feature (skill feature-specs), ni l'implémentation d'un lot (skill
+  implement), ni le contrat du fichier de suivi (skill journal).
 ---
 
 # Socle documentaire du projet (greenfield)
 
 Ce skill outille la **création** des documents qu'on écrit **une fois**, au démarrage.
-Six artefacts, produits dans l'ordre :
+Sept artefacts, produits dans l'ordre :
 
-`docs/brief.md` → `docs/prd.md` → `docs/stack.md` → `docs/adr/NNNN-*.md` → `docs/ci.md` →
-`CLAUDE.md`
+`docs/brief.md` → `docs/prd.md` → `docs/stack.md` → `docs/archi.md` →
+`docs/adr/NNNN-*.md` → `docs/ci.md` → `CLAUDE.md`
 
 Les specs par feature (`specs/NNN-slug/{spec,plan,tasks}.md`) sont **hors périmètre** :
 elles relèvent du niveau suivant, ouvert par `/scd-sdd:kickoff-feature`. Ici on pose le
@@ -36,13 +36,23 @@ se répète (un seul endroit par info — on **lie**, on ne recopie pas).
 | Brief | Pourquoi ? périmètre macro | — (racine) | `SC-xxx` |
 | PRD | Quoi ? (produit, pas feature) | Brief | `FR-xxx`, `SC-xxx` |
 | Stack | Comment ? (fondations techniques) | PRD | — |
-| ADR | Pourquoi CE choix ? (décision figée) | Stack | `ADR-NNNN` |
-| CI | Qu'est-ce qui est **vérifié** ? (contrôles exécutés) | Stack, ADR | noms de jobs |
+| Archi | Comment ? (au niveau **structure**) | PRD, Stack | invariants → `ADR-NNNN` |
+| ADR | Pourquoi CE choix ? (décision figée) | Stack, Archi | `ADR-NNNN` |
+| CI | Qu'est-ce qui est **vérifié** ? (contrôles exécutés) | Stack, Archi, ADR | noms de jobs |
 | CLAUDE.md | Contrat opérationnel | pointe vers tous | — |
 
 Chaque `FR-xxx` du PRD devient plus tard un critère EARS puis une vérification observable
-au niveau specs. Chaque décision structurante de la phase Stack devient **un** ADR.
-Garde ces IDs stables : ils sont le fil qui relie le socle à l'implémentation.
+au niveau specs. Chaque décision structurante de la phase Stack devient **un** ADR, et
+chaque **invariant** de la phase Archi en devient un aussi. Garde ces IDs stables : ils
+sont le fil qui relie le socle à l'implémentation.
+
+`docs/archi.md` est la **source** que le reste consomme : sans lui, les invariants
+d'architecture de la phase `ci` n'ont aucun gisement et la dimension `architecture` de la
+review n'a pour référent que l'existant, c'est-à-dire la dérive déjà accumulée. Il ne porte
+que des règles **falsifiables** — une règle n'y entre que si elle laisse une trace observable
+dans l'arborescence ou dans les imports —, et chacune devient un candidat ADR. C'est pourquoi
+il vient **après** `stack` (le constat porte sur un framework déjà choisi) et **avant** `adr`
+(qui promeut ses invariants comme il promeut les décisions de la Stack).
 
 `docs/ci.md` est le seul document du socle dont la sortie n'est pas que de la prose : ses
 noms de jobs deviennent les checks requis de la forge, et `CLAUDE.md` en **lit** les
@@ -61,7 +71,7 @@ formes du niveau — critère `SC` mesurable, `FR` produit, item de scope EXCLU,
 Stack, contrôle `ci`, candidat ADR — et `docs/brief.md` n'est **jamais** remédié : il est
 l'intention d'origine, pas une cible.
 
-**Ce n'est pas une septième phase.** Elle est optionnelle, ne figure dans aucune table de
+**Ce n'est pas une huitième phase.** Elle est optionnelle, ne figure dans aucune table de
 dérivation, et un socle sans premortem n'est pas un socle incomplet. Méthode et formes : skill
 `premortem`.
 
@@ -94,7 +104,7 @@ résolu** — pas avant.
   l'écrire le garantit. **La commande qui franchit cette frontière est `/scd-sdd:ci`** :
   elle produit `docs/ci.md` et le workflow de la forge, et rend la protection de branche
   qui les rend bloquants. Une frontière qu'aucune commande ne franchit n'est pas une
-  frontière, c'est un trou — d'où la phase 5.
+  frontière, c'est un trou — d'où la phase 6.
 - **La défense vient de l'extérieur de l'agent.** Un contrôle que l'agent qui code exécute
   lui-même n'atteste que de sa propre bonne foi. Le backstop est le check serveur sous
   protection de branche ; hook local et consigne écrite sont de la défense en profondeur,
@@ -123,7 +133,7 @@ Pas de `constitution.md` séparée pour un solo : ces principes vont dans une se
   `/scd-sdd:kickoff-feature` complet (spec → plan → tasks → analyze).
 - Décision transverse / architecturale → nouvel ADR.
 
-## Les six documents (templates en progressive disclosure)
+## Les sept documents (templates en progressive disclosure)
 
 Charge **uniquement** le template de la phase courante (la commande le fait pour toi) :
 
@@ -133,7 +143,15 @@ Charge **uniquement** le template de la phase courante (la commande le fait pour
   - Sections : `role`, `template`, `guidance`, `completion`
 - `references/stack.md` — Stack technique + méthode « options justifiées ».
   - Sections : `role`, `template`, `guidance`, `completion`
-- `references/adr.md` — ADR fondateurs (Nygard, immuables), dérivés de Stack.
+- `references/archi.md` — architecture (`docs/archi.md`) : caractéristiques retenues,
+  contraintes imposées par la stack, et la table des **invariants** falsifiables.
+  - **Deux points de chargement** : par `/scd-sdd:archi`, **intégralement** ; et par
+    `/scd-sdd:ci`, **conditionnellement** et pour sa seule section `## Vérification`
+    (l'inventaire d'outillage), au moment de dériver les contrôles `arch-invariants`.
+    L'admission appartient à `archi`, la vérification à `ci`.
+  - Sections : `role`, `template`, `guidance`, `completion`
+- `references/adr.md` — ADR fondateurs (Nygard, immuables), dérivés de Stack **et** des
+  invariants d'Archi.
   - Sections : `role`, `template`, `guidance`, `completion`
 - `references/ci.md` — contrôles CI (`docs/ci.md`), workflow de la forge, protection de
   branche et blindage local.

@@ -18,8 +18,12 @@ tranche. Ce n'est pas de la politesse — un choix de stack imposé par un agent
 choix que personne ne peut défendre six mois plus tard, et il est coûteux à inverser.
 
 Ce fichier est une **synthèse**. Le rationale détaillé de chaque décision coûteuse à
-inverser part dans un ADR à la phase suivante : la sortie la plus importante de cette
+inverser part dans un ADR à la phase `adr` : la sortie la plus importante de cette
 commande n'est pas le tableau des choix, c'est la **liste des candidats ADR**.
+
+Tu ne décris **pas l'architecture** : la forme de la solution — décomposition, organisation
+interne d'un module, invariants du projet — est établie juste après, par `/scd-sdd:archi`,
+qui **part de** ce que tu tranches ici. La § Vue d'ensemble y renvoie en une phrase.
 
 Ratio : 50% humain / 50% AI (tu proposes et argumentes, l'humain arbitre).
 
@@ -103,6 +107,8 @@ par `Edit` ciblé (crée le fichier s'il manque) :
 ## À la fin
 
 Affiche la liste **« Décisions structurantes → candidats ADR »** : c'est elle qui pilote
-la phase suivante, et le moment de la corriger est maintenant, pas après.
+la phase `adr`, et le moment de la corriger est maintenant, pas après.
 
-Puis : « `/clear`, puis `/scd-sdd:adr` pour figer ces décisions. »
+Puis : « `/clear`, puis `/scd-sdd:archi` — la structure, avant de figer les décisions : elle
+constate ce que ces choix imposent déjà, et en tire les invariants que `/scd-sdd:adr` figera
+avec ceux d'ici. »

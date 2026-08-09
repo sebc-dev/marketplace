@@ -1,5 +1,5 @@
 ---
-description: "Ouvre le niveau SOCLE d'un projet : scaffolde docs/, docs/adr/, docs/research/, docs/journal/socle.md et les trois répertoires d'état de docs/chantiers/, établit ce qui est déjà fait, présente la séquence brief → prd → stack → adr → ci → contract, puis lance la première phase manquante. À jouer une fois au démarrage — rejouable sans risque pour reprendre."
+description: "Ouvre le niveau SOCLE d'un projet : scaffolde docs/, docs/adr/, docs/research/, docs/journal/socle.md et les trois répertoires d'état de docs/chantiers/, établit ce qui est déjà fait, présente la séquence brief → prd → stack → archi → adr → ci → contract, puis lance la première phase manquante. À jouer une fois au démarrage — rejouable sans risque pour reprendre."
 argument-hint: "[nom ou idée du projet — optionnel]"
 allowed-tools:
   - Read
@@ -12,7 +12,7 @@ allowed-tools:
 
 ## Contexte
 
-Tu ouvres le **niveau socle** d'un projet : les six documents qu'on écrit une fois, au
+Tu ouvres le **niveau socle** d'un projet : les sept documents qu'on écrit une fois, au
 démarrage, et sur lesquels tout le reste du cycle s'appuie. Ta mission ici est
 d'**orienter et préparer**, pas de produire les documents — chaque document a sa propre
 commande.
@@ -42,16 +42,18 @@ Ratio : 20% humain / 80% AI (scaffolding mécanique + établissement de l'état)
 1. **Charge la connaissance transverse** : lis le skill `project-docs` (chaîne de
    traçabilité, méthode d'interview, règles d'écriture).
 
-2. **Établis l'état du socle** — l'existence de chaque fichier, rien de plus :
+2. **Établis l'état du socle** — l'existence de chaque fichier, rien de plus. Le socle a
+   **sept phases** :
 
    | Fichier | Phase | Commande |
    |---|---|---|
    | `docs/brief.md` | 1 — Brief | `/scd-sdd:brief` |
    | `docs/prd.md` | 2 — PRD | `/scd-sdd:prd` |
    | `docs/stack.md` | 3 — Stack | `/scd-sdd:stack` |
-   | `docs/adr/*.md` | 4 — ADR | `/scd-sdd:adr` |
-   | `docs/ci.md` | 5 — CI | `/scd-sdd:ci` |
-   | `CLAUDE.md` | 6 — Contrat | `/scd-sdd:contract` |
+   | `docs/archi.md` | 4 — Archi | `/scd-sdd:archi` |
+   | `docs/adr/*.md` | 5 — ADR | `/scd-sdd:adr` |
+   | `docs/ci.md` | 6 — CI | `/scd-sdd:ci` |
+   | `CLAUDE.md` | 7 — Contrat | `/scd-sdd:contract` |
 
    Un fichier présent **contenant encore un `[NEEDS CLARIFICATION]`** compte comme
    **incomplet**, pas comme fait : signale-le nommément.
@@ -115,5 +117,5 @@ Annonce la première phase manquante et propose de l'enchaîner. Pour un projet 
 « Prêt ? Lance `/scd-sdd:brief $ARGUMENTS` — et fais `/clear` avant chaque phase pour
 garder le contexte propre. »
 
-Si les six phases sont déjà faites, ne relance rien : le socle est complet, la suite est
+Si les sept phases sont déjà faites, ne relance rien : le socle est complet, la suite est
 `/scd-sdd:kickoff-feature`.

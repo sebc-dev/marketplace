@@ -107,12 +107,13 @@ désinstalle les anciens plugins).
      le hook est un no-op. Cherche les commandes réelles dans `CLAUDE.md` ; à défaut, demande.
 
 4. **Diagnostique les artefacts** — tu **constates**, tu ne convertis rien :
-   - socle : lesquels des six documents existent (`docs/brief.md`, `docs/prd.md`,
-     `docs/stack.md`, `docs/adr/*.md`, `docs/ci.md`, `CLAUDE.md`). `docs/ci.md` manque
-     forcément sur un projet venu des trois anciens plugins : la phase `ci` leur est
-     postérieure. C'est un manque à **déclarer** — le socle est alors incomplet d'une
-     phase, et `/scd-sdd:ci` se joue avant de rouvrir `contract` — jamais une anomalie de
-     migration à corriger ici ;
+   - socle : lesquels des sept documents existent (`docs/brief.md`, `docs/prd.md`,
+     `docs/stack.md`, `docs/archi.md`, `docs/adr/*.md`, `docs/ci.md`, `CLAUDE.md`).
+     `docs/archi.md` et `docs/ci.md` manquent **forcément** sur un projet venu des trois
+     anciens plugins : les phases `archi` et `ci` leur sont postérieures. Ce sont des
+     manques à **déclarer** — le socle est alors incomplet de deux phases, qui se jouent
+     dans l'ordre (`archi` avant `adr`, `ci` avant de rouvrir `contract`) — jamais une
+     anomalie de migration à corriger ici ;
    - features : chaque `specs/NNN-slug/` et sa phase dérivée selon la table du skill
      `feature-specs`, plus le mode (`DELTA.md` présent → delta) ;
    - lots : les `## Rn` sans `_vérif :_` (→ traités en **`TDD`** par défaut) et sans ligne

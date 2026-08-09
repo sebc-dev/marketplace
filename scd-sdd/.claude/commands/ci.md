@@ -1,5 +1,5 @@
 ---
-description: "Phase 5 du socle : rend déterministe, et vérifiable hors de l'agent, ce que CLAUDE.md ne peut que conseiller. Dérive les contrôles bloquants du pipeline d'une grille de cinq modes de défaillance — oracle faux, suppression du vérificateur, chaîne d'approvisionnement, building to the test, invariant d'architecture —, écrit docs/ci.md et le workflow de la forge, puis rend la recette de protection de branche et le blindage local. Clean-as-you-Code : les seuils portent sur le code nouveau."
+description: "Phase 6 du socle : rend déterministe, et vérifiable hors de l'agent, ce que CLAUDE.md ne peut que conseiller. Dérive les contrôles bloquants du pipeline d'une grille de cinq modes de défaillance — oracle faux, suppression du vérificateur, chaîne d'approvisionnement, building to the test, invariant d'architecture —, écrit docs/ci.md et le workflow de la forge, puis rend la recette de protection de branche et le blindage local. Clean-as-you-Code : les seuils portent sur le code nouveau."
 argument-hint: "(aucun — lit docs/stack.md)"
 allowed-tools:
   - Read
@@ -76,7 +76,11 @@ décide que de l'outil qui les rend ; l'humain arbitre les seuils et ce qui bloq
 
 1. **Lis `docs/stack.md`** — prérequis strict. S'il manque, **arrête-toi** et renvoie vers
    `/scd-sdd:stack` : sans écosystème connu, aucun contrôle n'est dérivable. Lis aussi
-   `docs/adr/` pour ne contredire aucune décision figée, en particulier la stratégie de test.
+   `docs/archi.md` — le gisement du mode 5, dont la table des invariants est ton entrée
+   principale à l'étape 8 — et `docs/adr/` pour ne contredire aucune décision figée, en
+   particulier la stratégie de test. `docs/archi.md` absent n'arrête rien : le mode 5 se
+   dérive alors des seuls ADR, et le manque se **déclare** dans `docs/ci.md` avec le renvoi
+   vers `/scd-sdd:archi`.
 
 2. **Charge le template et ses règles** : lis `references/ci.md` du skill `project-docs`.
 
@@ -123,13 +127,27 @@ décide que de l'outil qui les rend ; l'humain arbitre les seuils et ce qui bloq
    abaissement. Son principe est agnostique, sa clé ne l'est pas : là où le gestionnaire de
    paquets ne l'offre pas, `[à compléter]` — jamais un job maison qui rejoue la résolution.
 
-8. **Dérive les invariants d'architecture des ADR** — le mode 5, et le **gisement principal** :
-   les défauts qui comptent dans du code généré sont des violations de contrat propres au
-   projet, qu'aucun outil générique ne connaît. Relis `docs/adr/` et pose une seule question par
-   décision : *laisse-t-elle une trace observable dans l'arborescence ou dans les imports ?* Si
-   oui, elle donne un invariant, inscrit au **registre des ADR vérifiés** avec son ADR d'origine.
-   Ils restent **informatifs** jusqu'à mesure par rejeu sur l'historique — un contrôle maison
-   neuf n'a aucun taux de faux positifs connu, et un contrôle bruyant finit désactivé.
+8. **Dérive les invariants d'architecture** — le mode 5, et le **gisement principal** : les
+   défauts qui comptent dans du code généré sont des violations de contrat propres au projet,
+   qu'aucun outil générique ne connaît. Ton entrée est **double**, et dans cet ordre :
+
+   - la **table des invariants de `docs/archi.md`** — la source, déjà admise et déjà classée
+     (classes 1-11), chaque ligne portant sa trace observable et son ADR. Tu ne rejoues pas
+     l'admission : tu la **rends exécutable** ;
+   - `docs/adr/`, où tu poses la question une fois de plus, pour ce qu'`archi` n'a pas vu — un
+     ADR promu depuis `_candidates/` en porte parfois un. La question est la même :
+     *laisse-t-elle une trace observable dans l'arborescence ou dans les imports ?*
+
+   `docs/archi.md` peut retarder sur les ADR : les deux sources se lisent, jamais une seule.
+   Chaque invariant retenu est inscrit au **registre des ADR vérifiés** avec son ADR d'origine,
+   et reste **informatif** jusqu'à mesure par rejeu sur l'historique — un contrôle maison neuf
+   n'a aucun taux de faux positifs connu, et un contrôle bruyant finit désactivé.
+
+   **Charge alors, et alors seulement, la section `## Vérification` de `references/archi.md`**
+   du skill `project-docs` : l'inventaire daté de l'outillage par écosystème et la borne exacte
+   du script maison. C'est ce qui décide si un invariant admis est **rendable** — un invariant
+   qui exige la résolution d'alias, les cycles transitifs ou un parseur ne se rend pas à la
+   regex. Tu ne charges rien d'autre de cette référence : l'admission appartient à `archi`.
 
 9. **Si l'outillage n'est pas décidable de mémoire** — version d'une action, outil de SCA
    courant pour cet écosystème — **propose `/scd-sdd:lookup`** plutôt que d'écrire une version
@@ -189,7 +207,9 @@ décide que de l'outil qui les rend ; l'humain arbitre les seuils et ce qui bloq
 - Tu ne génères aucune clé, tu n'en publies aucune, et tu n'ajoutes aucune entrée au registre :
   la première clé de confiance est posée par l'humain, qui vérifie de ses yeux ce qu'il pousse.
 - Tu n'installes aucune dépendance et tu n'exécutes aucun outil de scan pour « voir ».
-- Tu ne modifies aucun document du socle déjà produit — ni `stack.md`, ni le PRD, ni un ADR.
+- Tu ne modifies aucun document du socle déjà produit — ni `stack.md`, ni `archi.md`, ni le
+  PRD, ni un ADR. Un invariant que tu ne sais pas rendre exécutable se **déclare** dans « Ce
+  que ces contrôles ne couvrent pas » ; il ne se reformule pas dans `docs/archi.md`.
 
 ## Consigne au journal
 
@@ -206,8 +226,12 @@ un résultat, pas un échec à taire.
 ## Skill active
 
 - `project-docs` — charge `references/ci.md` (`role` + `template` + `guidance` + `completion`).
-  Et `references/ci-signature.md`, **conditionnellement** : à l'étape 6, seulement si tu retiens
-  `verifier-guard`. Un projet sans ce garde ne la charge jamais.
+  Et deux chargements **conditionnels**, chacun à son étape et pas avant :
+  `references/ci-signature.md` à l'étape 6, seulement si tu retiens `verifier-guard` — un projet
+  sans ce garde ne la lit jamais ; et la **seule section `## Vérification`** de
+  `references/archi.md` à l'étape 8, pour son inventaire d'outillage. Le reste de cette
+  référence — template, grille des onze classes, critère d'admission — appartient à
+  `/scd-sdd:archi` et ne se charge pas ici.
 - `chantier` — format de la fiche de durcissement, nommage, `Portée`. Tu n'as **pas** besoin de
   `references/manifeste.md` : cette fiche ne porte aucun contexte volumineux.
 - `journal` — contrat de `docs/journal/*.md`.

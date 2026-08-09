@@ -4,7 +4,7 @@ description: |
   Contrat des fichiers de suivi docs/journal/socle.md et docs/journal/NNN-slug.md du cycle
   spec-driven : emplacement, format, règle d'ajout, vocabulaire de chaque phase, et la
   frontière événement-vs-état qui décide ce qui a le droit d'y figurer. Se charge quand une
-  commande /scd-sdd:* consigne la phase qu'elle vient de jouer — les 18 commandes de phase,
+  commande /scd-sdd:* consigne la phase qu'elle vient de jouer — les 19 commandes de phase,
   d'init-project à reland — plus premortem, qui n'est pas une phase mais ne laisse aucun
   marqueur. Ni lookup ni research n'y écrivent : leur rapport est le fait (skill research).
   Porte UNIQUEMENT le journal : ni la
@@ -139,7 +139,8 @@ Court, chiffré, factuel. Ce qu'on veut relire dans six mois — pas une phrase.
 | `brief` | personas · critères de succès · exclusions |
 | `prd` | nb FR · nb SC · marqueurs restants |
 | `stack` | choix structurants · nb de décisions → ADR |
-| `adr` | plage de numéros écrits · rétro-liage de `stack.md` |
+| `archi` | nb d'invariants · nb de candidats ADR · nb de caractéristiques |
+| `adr` | plage de numéros écrits · rétro-liage de `stack.md` et `archi.md` |
 | `ci` | la forge · nb de contrôles bloquants et informatifs · seuil de couverture différentielle |
 | `contract` | nb de principes · taille de la DoD |
 | `kickoff-feature` | dossier `NNN-slug` créé · échelle · greenfield ou delta |

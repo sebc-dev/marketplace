@@ -10,7 +10,7 @@ Cycle spec-driven complet, du projet vide à la PR — en un seul plugin.
 
 | Niveau | Quand | Produit |
 |---|---|---|
-| **Socle** | une fois, au démarrage du projet | `docs/{brief,prd,stack,ci}.md`, `docs/adr/NNNN-*.md`, le workflow de CI, `CLAUDE.md` |
+| **Socle** | une fois, au démarrage du projet | `docs/{brief,prd,stack,archi,ci}.md`, `docs/adr/NNNN-*.md`, le workflow de CI, `CLAUDE.md` |
 | **Specs** | une fois par feature | `specs/NNN-slug/{spec,plan,tasks}.md` |
 | **Implémentation** | un lot de review `Rn` à la fois | code, tests, commits, une PR par lot |
 
@@ -23,6 +23,7 @@ Cycle spec-driven complet, du projet vide à la PR — en un seul plugin.
 | `/scd-sdd:brief` | `docs/brief.md` |
 | `/scd-sdd:prd` | `docs/prd.md` |
 | `/scd-sdd:stack` | `docs/stack.md` |
+| `/scd-sdd:archi` | `docs/archi.md` — caractéristiques retenues et table d'invariants falsifiables |
 | `/scd-sdd:adr` | `docs/adr/NNNN-*.md` |
 | `/scd-sdd:ci` | `docs/ci.md` + le workflow de la forge |
 | `/scd-sdd:contract` | `CLAUDE.md` |
@@ -133,12 +134,91 @@ Deux mécanismes en découlent :
 - **`specify` / `clarify` / `plan` / `tasks` lisent la fiche** avant de travailler, et
   corrigent depuis sa liste plutôt qu'en re-dérivant tout.
 - **Un Major s'arbitre une fois**, avec motif et date, dans le `## Écarté` de la fiche. Aux
-  passes suivantes il est **détecté quand même** — les 14 contrôles se déroulent toujours
+  passes suivantes il est **détecté quand même** — les 15 contrôles se déroulent toujours
   intégralement — mais présenté à part, hors du décompte du verdict. Un finding neuf ressort
   alors du bruit. **Un Critical, lui, ne s'arbitre jamais.**
 
 Le rapport gagne aussi un bloc **« Corrigés depuis »** : le signal qui manquait pour
 distinguer *corrigé* de *pas re-mentionné cette fois*.
+
+## La phase `archi` — des invariants falsifiables, jamais un design
+
+L'architecture était présente **quatre fois** dans le plugin, et uniquement du côté des
+**consommateurs** : `docs/stack.md` n'en demandait que quelques phrases de prose, `adr` ne
+posait **aucune question structurelle**, le contrôle `arch-invariants` de la phase `ci`
+était décrit de bout en bout mais branché sur une prise vide, et la dimension
+`architecture` du reviewer avait pour seul référent « l'existant » — c'est-à-dire la dérive
+déjà accumulée, pas une intention. Le tuyau était posé ; il manquait la source.
+
+C'est ce que produit `/scd-sdd:archi`, **quatrième phase du socle**, entre `stack` et `adr` :
+`docs/archi.md`. La dérive s'installe exactement par le chemin qui restait ouvert —
+*developers make ad-hoc decisions when implementing*, décision par décision, feature par
+feature (Anthony et al., ICSA 2024). Les contrôles automatiques de conformité de dépendances
+la réduisent réellement — ≈ 60 % de violations structurelles en moins avec feedback (Knodel,
+ICSM 2008) — mais imparfaitement : ≈ 77 % des dépendances détectées en moyenne sur dix outils
+(Pruijt et al., 2017). Deux mesures, pas deux promesses.
+
+### Trois temps, et un critère de fin qui se vérifie
+
+1. **Constat** — ce que la stack et le framework imposent déjà. C'est consigné comme
+   contrainte, **sans ADR** : on ne décide pas ce qui est déjà décidé. La question de
+   partage est unique — *le framework échouerait-il sans cette règle ?*
+2. **Options justifiées** sur les seuls axes réellement ouverts, et ils sont **deux** et
+   indépendants : la décomposition **macro** (modules, bounded contexts) et l'organisation
+   **micro** (couches, vertical slice, hexagonal). Les confondre est une erreur de
+   catégorie. L'agent y est **contradicteur** — il argumente pour et contre —, jamais
+   animateur d'un atelier d'évaluation : aucune méthode du domaine n'est validée en solo,
+   et ATAM/QAW se chiffrent en dizaines de jours-homme.
+3. **Compilation en invariants**, chacun passant la **question d'admission** — *la règle
+   laisse-t-elle une trace observable dans l'arborescence ou dans les imports ?*
+
+Le critère de fin est falsifiable : **chaque invariant a sa trace et son candidat ADR** —
+jamais « l'architecture est décrite ». C'est ce qui empêche la phase de dégénérer en *big
+design up front*, son risque n° 1, puisqu'une part de la structure est de toute façon
+imposée par le framework.
+
+`docs/archi.md` porte aussi les **caractéristiques architecturales retenues** — 3 à 5,
+jamais plus, chacune tracée vers des `FR`/`SC` du PRD. C'est la seule passerelle documentée
+entre exigences et structure, et au-delà de cinq on décrit une architecture générique.
+
+### Ce qui entre, et ce que la phase n'admet pas
+
+| Entre | N'entre pas |
+|---|---|
+| « la couche `db/` n'est atteinte que par `server/` » | « le code sera modulaire » |
+| « aucun import de `react` hors de `ui/` » | « les responsabilités sont bien séparées » |
+| « un handler ne dépasse pas N fichiers importés » | « l'architecture est évolutive » |
+
+La grille d'admission est une taxonomie de **onze classes statiques** — sens des
+dépendances, cycles, couches, frontières de modules, placement, nommage structurel,
+visibilité déclarée, isolation du framework, imports prohibés, métriques structurelles
+seuillées, couplage statique. Les quatre autres — sémantique, runtime, holistique — sont
+**hors périmètre par construction**, et `docs/archi.md` les **nomme** dans une section
+dédiée : taire un trou ferait croire le contraire.
+
+### Le pont : un invariant devient un contrôle
+
+Chaque ligne à colonne `ADR` vide est un **candidat** que la phase `adr` promeut — exactement
+comme les décisions de `docs/stack.md`. L'entrée de la phase `ci` devient alors **double** et
+**ordonnée** : la table de `docs/archi.md` d'abord, déjà admise et déjà classée, puis
+`docs/adr/` pour ce qu'elle n'a pas vu — un ADR promu après coup peut porter un invariant que
+la phase n'a pas vu passer. `arch-invariants` a enfin sa source.
+
+Côté specs, l'accroche est **double**, parce que l'advisory seul ne tient pas :
+`/scd-sdd:plan` confronte les fichiers touchés de chaque lot aux invariants — l'issue par
+défaut étant de **changer le découpage**, la dérogation devant être nommée et justifiée — et
+`/scd-sdd:analyze` va la chercher en **15ᵉ contrôle**, classé **Major et jamais Critical** :
+bloquer une gate documentaire ferait d'elle un `arch-invariants` avant l'heure, alors que
+c'est la CI qui mesure sur le code réel. Le reviewer, lui, prend `docs/archi.md` pour
+référent — violation d'un invariant = **bloquant** — et « cohérence avec l'existant » devient
+le **repli nommé**, écrit comme le mode dégradé qu'il est.
+
+Enfin, la phase **admet**, elle ne vérifie pas : elle n'écrit rien dans `docs/ci.md`, ne
+choisit aucun outil et **n'en exécute aucun**. L'inventaire d'outillage par écosystème vit
+dans une section de référence que seule la phase `ci` charge, au moment d'en dériver les
+contrôles — un instantané **daté**, à re-vérifier à l'adoption. Et tout est **additif** :
+sans `docs/archi.md`, `arch-invariants` reste vide, le reviewer garde son repli, le 15ᵉ
+contrôle ne se déclenche pas. Rien ne casse.
 
 ## La phase `ci` — la vérification sort de l'agent
 
@@ -184,12 +264,14 @@ Les trois suivants ferment ce que la SCA laissait ouvert : elle n'attrape que le
 connues**, ni un paquet hostile trop récent pour figurer dans une base, ni une action
 compromise par déplacement de tag, ni une altération directe du lockfile.
 
-S'y ajoute un contrôle **informatif promouvable**, `arch-invariants` : les invariants
-dérivés des **ADR acceptés** du projet — le gisement principal, puisque les défauts qui
-comptent dans du code généré sont des violations de contrat propres au projet, qu'aucun
-outil générique ne connaît. Un ADR y entre s'il laisse une **trace observable dans
-l'arborescence ou dans les imports** ; il reste informatif jusqu'à mesure par **rejeu sur
-l'historique**, et le seuil vaut dans les deux sens — au-delà de 15 % de faux positifs, un
+S'y ajoute un contrôle **informatif promouvable**, `arch-invariants` — le gisement
+principal, puisque les défauts qui comptent dans du code généré sont des violations de
+contrat propres au projet, qu'aucun outil générique ne connaît. Son entrée est **double et
+ordonnée** : la table d'invariants de `docs/archi.md`, déjà admise et déjà classée, puis les
+**ADR acceptés** pour ce qu'elle n'a pas vu. Un ADR y entre s'il laisse une **trace
+observable dans l'arborescence ou dans les imports** — le même critère, dont `archi` est
+désormais la source principale. Le contrôle reste informatif jusqu'à mesure par **rejeu sur
+l'historique**, et le seuil vaut dans les deux sens : au-delà de 15 % de faux positifs, un
 bloquant rebascule en informatif.
 
 ### La soupape du garde — une signature, pas un scope de commit
@@ -241,7 +323,7 @@ Une recherche ne joue **aucune phase** : elle ne journalise pas, le **rapport es
 `docs/research/AAAA-MM-JJ-slug.md`).
 
 La moitié qui compte est **le retour**. La chaîne de traçabilité du plugin — Brief → PRD →
-Stack → **ADR immuable** → spec → code — est un vecteur de *citation laundering* : une
+Stack → Archi → **ADR immuable** → spec → code — est un vecteur de *citation laundering* : une
 source inexistante gagne en légitimité en traversant des documents réels que personne ne
 vérifie, et ressort en décision que `CLAUDE.md` interdit de contredire. D'où la règle
 centrale : **`research` ne modifie aucun document du socle.** Il isole ce qui porte
