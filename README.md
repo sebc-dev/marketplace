@@ -28,7 +28,7 @@ Architectural design patterns for Claude Code plugins. Component selection (skil
 
 Interactive guided code review on the current branch. Reviews file by file in optimal order with dedicated background agents (code-reviewer + test-reviewer) for each file, JSON-based progress tracking, and blocking/suggestion classification. 5 slash commands (`/scd-review:review-init`, `/scd-review:code-review`, `/scd-review:review-followup`, `/scd-review:review-continue`, `/scd-review:review-post`). GitHub/GitLab PR posting integration.
 
-### [scd-sdd](./scd-sdd/) `v1.9.1`
+### [scd-sdd](./scd-sdd/) `v1.10.0`
 
 Complete spec-driven development cycle, from empty repo to reviewable PR — one plugin, three
 chained levels. **Foundation** (once per project): brief → PRD → stack → architecture invariants →
@@ -65,7 +65,7 @@ contract revision (including a pass that changes nothing). Work outside the
 phases — or interrupted mid-flight by a `/clear` — becomes a **chantier**: a card under
 `docs/chantiers/`, whose state *is* its directory.
 
-Two capabilities are **transverse**, outside the phases and never reported as missing.
+Three capabilities are **transverse**, outside the phases and never reported as missing.
 **Research**: `/scd-sdd:lookup` answers in-session and writes nothing, `/scd-sdd:research`
 composes a Claude Research prompt then files and critically re-reads the report — a report never
 descends into the foundation on its own. **Premortem**: `/scd-sdd:premortem` assumes failure and
@@ -84,7 +84,18 @@ template: a line the template doesn't know is presumed legitimate. Three writers
 roles — `contract` assembles once and refuses to overwrite, `revise-contract` maintains,
 `premortem` hardens.
 
-29 slash commands, including three dashboards — `/scd-sdd:status` (all three levels in one view,
+The third is the **Linear mirror**, and it is **opt-in**. It pushes what the repo already knows —
+features become projects, `Rn`
+review lots become issues (`Tn` tasks as a checklist, dependencies as relations), chantier cards
+become labelled issues — to the workspace where the team does its prioritisation. Those
+prioritisation facts are derivable from no file in the repo, and writing them there would recreate
+the state file the plugin refuses everywhere else. The mirror is **strictly one-way**, and that is
+not a promise in prose: `/scd-sdd:linear` has no `Write`, no `Edit` and no git command at all — its
+`allowed-tools` *is* the proof. The opt-in is a file: without `docs/linear.md`, written once by
+`/scd-sdd:linear-setup`, a project sees strictly no change. No Linear id or URL ever enters the
+repo; the file key lives in the Linear title, never the other way round.
+
+31 slash commands, including three dashboards — `/scd-sdd:status` (all three levels in one view,
 plus the next command to run), `/scd-sdd:status-specs`, `/scd-sdd:status-impl` (merge-safety of
 every lot PR) — and `/scd-sdd:migrate` to pick up a project coming from the three former plugins.
 Replaces `scd-project-docs`, `scd-feature-specs` and `scd-implement`.

@@ -6,12 +6,12 @@ description: |
   frontière événement-vs-état qui décide ce qui a le droit d'y figurer. Se charge quand une
   commande /scd-sdd:* consigne la phase qu'elle vient de jouer — les 19 commandes de phase,
   d'init-project à reland — plus premortem et revise-contract, qui ne sont pas des phases mais
-  ne laissent aucun marqueur. Ni lookup ni research n'y écrivent : leur rapport est le fait
-  (skill research). Porte UNIQUEMENT le journal : ni la
-  dérivation de l'état depuis les fichiers (skills project-docs, feature-specs, implement),
-  ni le travail hors des phases du cycle, qui est un chantier et non une ligne (skill
-  chantier), ni le contenu des documents produits. La reconstitution vit dans
-  references/reconstitution.md, que seule la commande migrate charge.
+  ne laissent aucun marqueur. Ni lookup, ni research, ni linear-setup, ni linear n'y écrivent :
+  leur rapport, ou docs/linear.md et le miroir lui-même, est le fait (skills research, linear).
+  Porte UNIQUEMENT le journal : ni la dérivation de l'état depuis les fichiers (skills
+  project-docs, feature-specs, implement), ni le travail hors des phases du cycle, qui est un
+  chantier et non une ligne (skill chantier), ni le contenu des documents produits. La
+  reconstitution vit dans references/reconstitution.md, que seule la commande migrate charge.
 ---
 
 # Journal — `docs/journal/*.md`
@@ -42,12 +42,15 @@ redondantes avec les fichiers **par leur existence** mais pas **par leur date** 
 la péremption détectable.
 
 **La règle n'est donc pas « une phase journalise ».** C'est **« ce qui n'est dérivable de nulle
-part se consigne »**. Les deux capacités transverses le montrent en s'opposant : `research`
-n'écrit **aucune** ligne, parce que le rapport qu'il produit **est** le fait ; `premortem` en
-écrit une, parce qu'il ne produit aucun artefact propre — il modifie des documents existants sans
-y laisser de marqueur — alors même qu'il n'est pas une phase et n'apparaît dans aucune table de
-dérivation. Sa seule exception : la cible `chantier`, où la fiche modifiée **est** le fait et où
-son `Actualisé le` date le durcissement (skill `chantier`).
+part se consigne »**. Les **trois** capacités transverses le montrent en se départageant :
+`research` n'écrit **aucune** ligne, parce que le rapport qu'il produit **est** le fait ; le
+miroir `linear` non plus, et pour un motif qui lui est propre — il est **idempotent et
+interrogeable chez Linear**, et le fait que produit son setup est `docs/linear.md`, non parce
+qu'il serait en lecture seule, `linear-setup` écrivant ; `premortem`, lui, écrit une ligne, parce
+qu'il ne produit aucun artefact propre — il modifie des documents existants sans y laisser de
+marqueur — alors même qu'il n'est pas une phase et n'apparaît dans aucune table de dérivation. Sa
+seule exception : la cible `chantier`, où la fiche modifiée **est** le fait et où son
+`Actualisé le` date le durcissement (skill `chantier`).
 
 ## La frontière : un événement — ni un état, ni un chantier
 

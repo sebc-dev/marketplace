@@ -76,6 +76,12 @@ Cycle spec-driven complet, du projet vide à la PR — en un seul plugin.
 |---|---|
 | `/scd-sdd:revise-contract` | révise `CLAUDE.md` contre une checklist à deux volets, présente ses constats et **attend l'humain** avant la moindre édition — elle **retire et resynchronise**, elle ne ré-assemble jamais |
 
+### Miroir Linear — **opt-in**
+| Commande | Effet |
+|---|---|
+| `/scd-sdd:linear-setup` | écrit `docs/linear.md` **une fois** — l'équipe, le nom de la variable qui porte la clé d'API, la table des statuts réels. Ce fichier **est** l'opt-in ; la commande **refuse d'écraser** un fichier existant |
+| `/scd-sdd:linear` | pousse le miroir : features → projets, lots `Rn` → issues, fiches de chantier → issues labellisées. Idempotent, et **sans aucun outil d'écriture** |
+
 ### Reprise
 | Commande | Effet |
 |---|---|
@@ -426,6 +432,87 @@ Comme la recherche et le premortem, ce n'est **pas une phase** : rejouable à vo
 réclamée par `status`. Comme le premortem, elle **journalise** (`docs/journal/socle.md`) — elle
 modifie un document existant sans y laisser de marqueur, et une passe **sans aucune édition** se
 consigne aussi : c'est un résultat, pas une absence de fait.
+
+## Le miroir Linear — opt-in, poussé, et strictement à sens unique
+
+Le suivi du cycle est **entièrement fichier**, et ça ne bouge pas. Mais une équipe qui
+utilise Linear y fait sa **priorisation** — ce qu'on prend ensuite, dans quel cycle, avec
+quelle estimation, par qui. Ces faits-là ne sont dérivables d'**aucun** fichier du dépôt,
+et les y écrire recréerait exactement le fichier d'état que le plugin refuse partout
+ailleurs. Sans miroir, un tel projet tient donc deux listes à la main — les lots dans
+`tasks.md`, les mêmes ressaisis dans Linear —, elles dérivent, et personne ne sait plus
+laquelle des deux ment.
+
+`/scd-sdd:linear` pousse la première vers la seconde. **Rien ne redescend jamais**, et ce
+n'est pas une promesse en prose : la commande n'a **ni `Write`, ni `Edit`, ni aucune
+commande git**. Son `allowed-tools` **est** la preuve du sens unique.
+
+**L'opt-in est un fichier.** `docs/linear.md` existe → le miroir existe ; il n'existe pas →
+`/scd-sdd:linear` s'arrête et le projet ne voit **strictement aucun** changement : pas une
+lecture de plus, pas une phase qui bloque, aucun `status` qui le réclame. Ce fichier est
+écrit **une fois** par `/scd-sdd:linear-setup`, qui refuse d'écraser un fichier existant —
+la mise à jour est une **édition manuelle**. Il porte le **nom** de la variable
+d'environnement qui contient la clé d'API, **jamais sa valeur** ; `LINEAR_API_KEY` n'est que
+le défaut proposé au moment de l'écrire, et les deux commandes le **lisent** ensuite dans le
+fichier plutôt que de le présumer.
+
+### Trois objets, trois portées d'état
+
+| Fichier | Objet Linear | Ce qui porte l'état |
+|---|---|---|
+| feature `specs/NNN-slug/` | **projet** | — Linear calcule l'avancement depuis les issues |
+| lot `Rn` de `tasks.md` | **issue** — tâches `Tn` en checklist, dépendances en relations | cases cochées : 0 → Backlog · partiel → In Progress · toutes → Done |
+| fiche `docs/chantiers/<état>/AAAA-MM-JJ-slug.md` | **issue** labellisée `chantier` | son **répertoire**, via la table de `docs/linear.md` |
+
+La hiérarchie reste **plate** : projet → issue → checklist. Les tâches `Tn` ne deviennent pas
+des sous-issues — une issue reste **une unité priorisable**.
+
+### Le mot « projet » ne veut pas dire la même chose qu'en Jira
+
+C'est le point sur lequel bute tout utilisateur venant de Jira, et il vaut mieux le lire
+avant le premier push qu'après :
+
+| Jira | Linear | Rôle |
+|---|---|---|
+| Projet | **Équipe** (team) | conteneur permanent : backlog, workflow states, cycles, membres |
+| Epic | **Projet** | livrable borné : jalons, date cible, % d'avancement |
+| Story / Task | Issue | unité de travail priorisable |
+| Sous-tâche | Sous-issue ou checklist | décomposition |
+
+« Un projet Linear par feature » se lit donc, en Jira : *une epic par feature*. Le conteneur
+permanent est l'**équipe**, choisie une fois au setup et fixée dans `docs/linear.md`.
+
+### La clé vit dans le titre, jamais l'inverse
+
+Le **titre** Linear porte la clé du fichier en préfixe — projet `NNN-slug`, issue
+`Rn — <intitulé>`, chantier `AAAA-MM-JJ-slug — <titre>` —, avec un marqueur de secours en
+pied de description. C'est **le seul sens autorisé** : **aucun identifiant, aucune URL Linear
+n'entre dans le dépôt, nulle part**, et il n'existe **aucun fichier de mapping** — il
+dériverait au premier `git mv`. Un renommage côté Linear se résout par **titre**, puis par
+**marqueur**, sinon par une question à l'humain. **Jamais** de duplication silencieuse.
+
+Un second push immédiat crée **0** objet : un push qui recrée est un **défaut de matching**,
+pas un run normal.
+
+### Ce que le miroir possède, et ce qu'il ne touche jamais
+
+| Champ | Propriétaire |
+|---|---|
+| préfixe-clé du titre, workflow state, relations `dépend de`, label `chantier` | **miroir** |
+| suffixe du titre, priorité, estimation, assigné, cycle, autres labels, commentaires | humain — jamais touchés |
+
+⚠️ **Une nuance qui coûte cher si on l'ignore.** La description d'une **issue de lot** est
+**reconstruite en entier** à chaque push : du texte humain écrit là est perdu. Les
+**commentaires** ne sont jamais touchés — c'est là que ça se dit. La description d'un
+**projet**, elle, n'est **jamais** réécrite : le miroir n'y possède que le marqueur, écrit à
+la création, et l'aperçu rédigé par l'équipe lui survit. Même borne pour les titres — le
+miroir rétablit le **préfixe-clé**, jamais le reste.
+
+Enfin, **ce n'est pas une synchronisation** : il n'y a aucun conflit à résoudre, les fichiers
+ont raison, toujours. Le miroir ne crée ni feature, ni chantier, ni tâche depuis une issue ;
+une issue sans contrepartie fichier n'est **ni touchée, ni signalée**. Il ne supprime ni
+n'archive jamais rien. Et comme la recherche, il ne joue **aucune phase** : aucune ligne de
+journal, aucun état dérivé, aucune accroche — son résultat est interrogeable chez Linear.
 
 ## Migration depuis les trois plugins
 
