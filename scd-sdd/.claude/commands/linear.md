@@ -95,10 +95,13 @@ compares et tu pousses).
    six mois → dis-le à l'humain **avant** de pousser.
 
 5. **Lis en lot, avant d'écrire quoi que ce soit** : les workflow states et les labels de l'équipe,
-   les projets, les issues du périmètre — **paginés** tant que `pageInfo.hasNextPage`. Un miroir qui
-   ne pagine pas rate le 51ᵉ lot en **ressemblant à un succès**. Résous ici les identifiants dont tu
-   auras besoin, **par leur nom** tel qu'il est écrit dans `docs/linear.md` : les trois états, et le
-   label de chantier. **Label introuvable → tu ne le crées pas** ; tu le notes pour le rapport.
+   les projets, les issues du périmètre — et, **seulement si `docs/linear.md` porte une rubrique
+   `initiative` ≠ `aucune`**, les initiatives du workspace avec leurs projets liés (requête n° 5) —
+   **paginés** tant que `pageInfo.hasNextPage`. Un miroir qui ne pagine pas rate le 51ᵉ lot en
+   **ressemblant à un succès**. Résous ici les identifiants dont tu auras besoin, **par leur nom**
+   tel qu'il est écrit dans `docs/linear.md` : les trois états, le label de chantier, et
+   l'initiative si la rubrique la nomme. **Label ou initiative introuvable → tu ne les crées pas** ;
+   tu les notes pour le rapport.
 
 6. **Apparie tout, et tranche les ambiguïtés maintenant.** Pour chaque objet du dépôt : match par
    **titre** (préfixe-clé), puis par **marqueur**, sinon `AskUserQuestion` — « est-ce cette issue, ou
@@ -113,12 +116,24 @@ compares et tu pousses).
    tu n'y touches pas. Un projet ne reçoit **aucun état** : Linear calcule son avancement depuis ses
    issues, et lui en imposer un serait un second chiffre qui dériverait.
 
+   **L'initiative, ensuite** — seulement si la rubrique 7 existe et ≠ `aucune` ; absente ou
+   `aucune` → comportement strictement inchangé, rien de plus à faire. Tu la résous **par son
+   nom**, et tu ne la crées **jamais** — créer appartient à `linear-setup`, le miroir exact du
+   pattern label. Introuvable → tout se pousse **sans** rattachement, avec une ligne ⚠ au rapport,
+   jamais un arrêt. Trouvée → tu rattaches chaque projet du périmètre absent de ses projets liés
+   (lus à l'étape 5) ; un lien déjà présent ne se **re-rattache jamais** — c'est là que se lit
+   l'idempotence du rattachement.
+
 8. **Upsert des issues de lots.** Une par `Rn` de `tasks.md`, rattachée au projet de sa feature.
    Titre : `Rn — <intitulé du lot>`, dont tu ne possèdes que le préfixe. Description **reconstruite
    en entier** : la checklist des `Tn` (cochées comme dans le fichier, intitulé seul — ni backref, ni
    `dépend de`, ni fichiers) puis le marqueur, et rien d'autre. État : dérivé des cases cochées selon
    la table « Les statuts par défaut » du skill, traduit en état **réel** par la table de
-   `docs/linear.md`. Tu ne poses **ni** priorité, **ni** estimation, **ni** assigné, **ni** cycle.
+   `docs/linear.md` — et poussé **seulement s'il avance vers un type supérieur** : le workflow state
+   est **co-écrit** (l'intégration GitHub est un second écrivain légitime, §D31), et **tu ne
+   rétrogrades jamais un état** posé par ailleurs — un push qui « corrigerait » un In Progress en
+   Backlog est un défaut, pas une resynchronisation. Tu ne poses **ni** priorité, **ni** estimation,
+   **ni** assigné, **ni** cycle.
 
 9. **Les relations.** Chaque `dépend de : Rk` de la ligne de métadonnées d'un lot se pousse comme
    *Rk **bloque** Rn* — dans **un seul sens**, Linear rendant l'inverse tout seul. Une relation déjà
@@ -143,9 +158,14 @@ compares et tu pousses).
    Issues de lot            2     1           1
    Issues de chantier       0     1           2
    Relations                1     —           2
+   Initiative — liens       1     —           0
+   (ligne affichée seulement si la rubrique initiative existe et ≠ aucune)
 
 ⚠  Label « chantier » introuvable dans l'équipe — 1 issue créée SANS label.
    (ligne affichée seulement si le cas se produit ; le label se crée côté Linear)
+
+⚠  Initiative « Plateforme » introuvable dans le workspace — tout est poussé SANS rattachement.
+   (ligne affichée seulement si le cas se produit ; l'initiative se crée côté Linear, jamais ici)
 
 Ambigus — RIEN n'a été poussé pour eux, ils attendent une réponse
    R4 — deux issues candidates, aucune ne porte le marqueur
@@ -213,5 +233,3 @@ Affiche le rapport, puis les trois suites, dans cet ordre :
    `tasks.md` qui bougeront l'état côté Linear, au push suivant, et jamais l'inverse.
 3. **Rejoue `/scd-sdd:linear` quand les fichiers ont bougé** — un lot terminé, une fiche archivée, un
    `tasks.md` redécoupé. Rejouer sans changement est sans effet : c'est ce que veut dire idempotent.
-</content>
-</invoke>

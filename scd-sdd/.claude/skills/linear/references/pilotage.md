@@ -1,0 +1,84 @@
+# Référence — Pilotage en lecture
+
+Chargée par `/scd-sdd:linear-review` — **seule** —, avec les blocs `<auth>` et `<pilotage>` de
+`references/api.md` et le `<contrat>` de `references/linear-md.md`.
+
+Tout ce que cette référence décrit se **rend en session et meurt avec elle** : rien n'est persisté,
+ni dans les fichiers, ni chez Linear. Les chiffres et les verbatims viennent des deux rapports
+committés du 2026-08-10 (`docs/scd-sdd/linear-workflow.md`, `linear-tools.md`), sources primaires
+Linear citées ; les requêtes qui les mesurent vivent dans le bloc `<pilotage>` d'`api.md`.
+
+<seuils>
+
+## Le garde des 250 — deux seuils
+
+Le plan Free plafonne à **250 issues non archivées**, et c'est un **mur dur**, pas une facturation
+à l'usage — verbatim de la doc officielle (`linear.app/docs/billing-and-plans`, vérifié le
+2026-08-10) : *« If you have over 250 issues, you will no longer be able to create new issues. »*
+
+| Décompte | Verdict à rendre |
+|---|---|
+| < ~200 | rien à signaler — le décompte figure au rapport, c'est tout |
+| ~200 à 249 | **avertir** : planifier une passe d'archivage (ou le passage à Basic) avant le mur |
+| 250 | **mur atteint** : plus aucune issue ne peut être créée — le prochain push échouera sur toutes ses créations |
+
+Les **archivées ne comptent pas**, et l'**auto-archivage** (réglage d'équipe, conseillé par la
+checklist de `linear-setup`) est le mécanisme qui tient sous le plafond. Le comptage est
+**workspace** — le plafond est workspace, pas équipe — et **à la demande, jamais en polling** : la
+doc Linear le décourage explicitement.
+
+</seuils>
+
+<hygiene>
+
+## L'hygiène — quatre contrôles, tous en lecture
+
+| Contrôle | Ce qu'il cherche | Ce qui se rapporte |
+|---|---|---|
+| **terminées non archivées** | `state.type` ∈ `completed`/`canceled`, non archivées | candidates à l'archivage — c'est du plafond qui se libère ; si elles s'accumulent, l'auto-archivage est probablement inactif |
+| **sans priorité** | `priority` = No priority sur des issues non terminées | à prioriser dans Linear (raccourci `P`) — sans priorité, une issue tombe en Later par défaut |
+| **`started` dormantes** | `state.type` = `started`, `updatedAt` au-delà d'un cycle de revue (2-4 semaines, la cadence recommandée en solo) | du travail commencé qui n'avance plus : à finir, re-prioriser ou rendre au backlog — dans Linear |
+| **contrepartie fichier disparue** | issue du miroir — **marqueur reconnu** en pied de description — dont la feature, le lot ou la fiche n'existe plus sur le disque | candidate à l'archivage, **rapportée et jamais touchée** — le miroir ne supprime ni n'archive rien |
+
+Le quatrième contrôle est le seul qui croise le disque : `Glob`/`Read` sur `specs/` et
+`docs/chantiers/`, en lecture seule. Une issue **sans marqueur** n'est pas du miroir : elle
+appartient à l'humain et n'apparaît dans **aucun** contrôle.
+
+</hygiene>
+
+<rendu>
+
+## Le rendu — Now / Next / Later, par priorité
+
+Trois listes, dérivées du seul champ `priority` de Linear — l'arbitrage lui-même reste à l'humain,
+chez Linear :
+
+| Liste | Priorités | Lecture |
+|---|---|---|
+| **Now** | Urgent + High | ce qui se joue maintenant |
+| **Next** | Medium | la suite proche |
+| **Later** | Low + No priority | le reste — dont ce qui n'a jamais été priorisé |
+
+Squelette du rendu — le `<report>` littéral appartient à la commande, ceci en fixe l'ossature :
+
+```
+📊 Pilotage Linear — lecture seule
+   Décompte workspace : N / 250 issues non archivées   [+ avertissement si ≥ ~200]
+
+Now    [Urgent + High]      <identifier>  <titre>   (<projet>)
+Next   [Medium]             …
+Later  [Low + No priority]  …
+
+Hygiène
+   N terminées non archivées → candidates à l'archivage
+   N sans priorité → `P` dans Linear
+   N started dormantes (> cycle de revue) → à trancher dans Linear
+   N issues du miroir sans contrepartie fichier → candidates à l'archivage, non touchées
+
+→ Rien n'a été écrit, ni dans les fichiers, ni chez Linear.
+```
+
+Les `identifier` Linear s'affichent **en session** — c'est légal, la vue meurt avec elle. Ils ne
+s'écrivent dans **aucun** fichier du dépôt.
+
+</rendu>

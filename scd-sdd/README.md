@@ -79,8 +79,9 @@ Cycle spec-driven complet, du projet vide à la PR — en un seul plugin.
 ### Miroir Linear — **opt-in**
 | Commande | Effet |
 |---|---|
-| `/scd-sdd:linear-setup` | écrit `docs/linear.md` **une fois** — l'équipe, le nom de la variable qui porte la clé d'API, la table des statuts réels. Ce fichier **est** l'opt-in ; la commande **refuse d'écraser** un fichier existant |
+| `/scd-sdd:linear-setup` | écrit `docs/linear.md` **une fois** — l'équipe, le nom de la variable qui porte la clé d'API, la table des statuts réels, l'initiative produit si tu en veux une. Ce fichier **est** l'opt-in ; la commande **refuse d'écraser** un fichier existant, et **conseille en checklist** les réglages qu'aucune API ne pose |
 | `/scd-sdd:linear` | pousse le miroir : features → projets, lots `Rn` → issues, fiches de chantier → issues labellisées. Idempotent, et **sans aucun outil d'écriture** |
+| `/scd-sdd:linear-review` | **pilotage en lecture seule** : le garde des 250 issues du plan Free, quatre contrôles d'hygiène, la vue Now/Next/Later. Rendu **en session**, jamais persisté — ni chez Linear, ni dans le dépôt |
 
 ### Reprise
 | Commande | Effet |
@@ -453,8 +454,8 @@ lecture de plus, pas une phase qui bloque, aucun `status` qui le réclame. Ce fi
 écrit **une fois** par `/scd-sdd:linear-setup`, qui refuse d'écraser un fichier existant —
 la mise à jour est une **édition manuelle**. Il porte le **nom** de la variable
 d'environnement qui contient la clé d'API, **jamais sa valeur** ; `LINEAR_API_KEY` n'est que
-le défaut proposé au moment de l'écrire, et les deux commandes le **lisent** ensuite dans le
-fichier plutôt que de le présumer.
+le défaut proposé au moment de l'écrire, et tout ce qui s'en sert ensuite — les commandes du
+miroir comme l'accroche PR — le **lit** dans le fichier plutôt que de le présumer.
 
 ### Trois objets, trois portées d'état
 
@@ -466,6 +467,16 @@ fichier plutôt que de le présumer.
 
 La hiérarchie reste **plate** : projet → issue → checklist. Les tâches `Tn` ne deviennent pas
 des sous-issues — une issue reste **une unité priorisable**.
+
+Au-dessus, une **initiative** peut regrouper les projets d'un même produit. Elle est
+**optionnelle**, et c'est une **configuration, jamais une dérivation** : aucun fichier du dépôt ne
+porte le nom d'un produit de façon stable — le titre de `docs/brief.md` est libre, le nom du dépôt
+peut changer, et un nom dérivé casserait au premier renommage. Il s'arbitre donc **une fois**, au
+setup, et vit dans la 7ᵉ rubrique de `docs/linear.md`. `/scd-sdd:linear-setup` la crée si elle
+manque ; `/scd-sdd:linear` la **résout par son nom** et y rattache les projets qui n'y sont pas
+encore — il ne la crée jamais, exactement comme pour le label `chantier`. Introuvable, il pousse
+**sans** rattachement et le dit au rapport, plutôt que de s'arrêter. Rubrique absente ou `aucune` :
+comportement strictement inchangé.
 
 ### Le mot « projet » ne veut pas dire la même chose qu'en Jira
 
@@ -510,9 +521,70 @@ miroir rétablit le **préfixe-clé**, jamais le reste.
 
 Enfin, **ce n'est pas une synchronisation** : il n'y a aucun conflit à résoudre, les fichiers
 ont raison, toujours. Le miroir ne crée ni feature, ni chantier, ni tâche depuis une issue ;
-une issue sans contrepartie fichier n'est **ni touchée, ni signalée**. Il ne supprime ni
-n'archive jamais rien. Et comme la recherche, il ne joue **aucune phase** : aucune ligne de
-journal, aucun état dérivé, aucune accroche — son résultat est interrogeable chez Linear.
+une issue sans contrepartie fichier n'est **ni touchée, ni signalée** par le push. Il ne supprime
+ni n'archive jamais rien. Et comme la recherche, il ne joue **aucune phase** : aucune ligne de
+journal, aucun état dérivé — son résultat est interrogeable chez Linear.
+
+Une nuance sur l'état, qui ne se devine pas : le workflow state est **co-écrit**. L'intégration
+GitHub de Linear le fait avancer elle aussi, et c'est légitime. Le miroir **ne rétrograde donc
+jamais** : il ne pousse l'état dérivé des cases que s'il *avance*. Un push qui « corrigerait » un
+In Progress en Backlog serait un défaut, pas une resynchronisation.
+
+### Le pilotage — `/scd-sdd:linear-review`, qui lit et ne touche à rien
+
+Le push ne dit rien de l'état du workspace, et le plan Free de Linear a un mur : **250 issues non
+archivées**, au-delà duquel plus aucune création ne passe. `/scd-sdd:linear-review` est la revue de
+backlog que la cadence solo recommande toutes les 2-4 semaines — elle compte le workspace face au
+mur, passe **quatre contrôles d'hygiène** (terminées non archivées, issues sans priorité, `started`
+dormantes au-delà d'un cycle, issues du miroir dont la contrepartie fichier a disparu) et rend la
+vue **Now / Next / Later**, dérivée du seul champ `priority` de Linear.
+
+Elle **n'écrit rien**, des deux côtés, et pour deux raisons différentes : côté dépôt c'est
+**mécanique** — ni `Write`, ni `Edit`, ni git ; côté Linear c'est **absolu** — aucune mutation
+GraphQL, nulle part. Une issue candidate à l'archivage **reste une candidate** : archiver,
+re-prioriser, trancher une dormante sont des actes de l'humain, dans Linear. Et la vue **meurt avec
+la session** — aucun fichier de rapport, aucun cache : un identifiant Linear affiché là ne se
+retrouve dans **aucun** fichier du dépôt.
+
+Ce n'est **pas un 4ᵉ `status`**. Les trois `status` dérivent l'état des fichiers du dépôt ; cette
+commande interroge un tiers. Aucun `status` ne la réclame, aucune table de dérivation ne la cite.
+
+### L'accroche PR — une ligne dans le corps, best-effort
+
+Quand `docs/linear.md` existe, la PR d'un lot porte la **magic word** Linear dans la section
+Traçabilité de son corps : `Fixes ENG-123` si la PR vise la branche par défaut du dépôt,
+`Part of ENG-123` si elle est **empilée** sur une autre branche de lot — un mot fermant y fermerait
+l'issue au merge dans un cul-de-sac. L'intégration GitHub native fait le reste : l'issue passe In
+Progress à l'ouverture, Done au merge, sans que personne y touche.
+
+⚠️ Son **prérequis est côté Linear**, et il est humain : l'intégration GitHub (*Settings →
+Integrations → GitHub*) **et** les *Pull request automations* de l'équipe. Sans elles, la ligne
+s'écrit et ne transitionne rien. `/scd-sdd:linear-setup` la rappelle en checklist, il ne la pose
+pas.
+
+Jamais dans le **titre** de la PR — le squash-merge en ferait un message de commit, donc un
+identifiant Linear dans le dépôt — ni dans le **nom de branche**, poussé dans tout clone. Et
+l'accroche est **best-effort intégral** : le flux d'implémentation tourne en arrière-plan, donc
+toute défaillance — clé absente, issue introuvable, API muette — se solde par **pas de magic word**
+et une note, jamais par une question ni par un blocage. Sans `docs/linear.md`, la PR est identique
+à ce qu'elle a toujours été : le seul coût du miroir pour un projet qui ne l'a pas est un `Glob`
+d'existence.
+
+### Le serveur MCP officiel : ton IDE, pas le plugin
+
+Linear publie un serveur MCP, et il est utile — pour *toi*, dans ton client, en langage naturel :
+
+```bash
+claude mcp add --transport http linear-server https://mcp.linear.app/mcp
+```
+
+Le plugin ne l'outille **jamais** : aucune commande ne l'appelle, aucune ne suppose sa présence.
+Un alias MCP n'est pas nommable de façon stable d'une installation à l'autre, et le miroir doit
+tenir sans lui. Les deux briques cohabitent sans se connaître — le plugin pousse par l'API, tu
+pilotes par ton IDE si tu le veux.
+
+Et ce qui n'entre dans aucune des deux : **jalons, cycles, priorités, estimations, assignations —
+c'est à toi, chez Linear.** Rien dans les fichiers n'en est la source, donc rien ne les écrase.
 
 ## Migration depuis les trois plugins
 

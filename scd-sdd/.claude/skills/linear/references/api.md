@@ -1,7 +1,12 @@
 # Référence — API Linear (GraphQL) (état au 2026-08-10, à revérifier)
 
-Chargée par `/scd-sdd:linear` — **intégralement** — et par `/scd-sdd:linear-setup` — les blocs
-`<auth>`, `<queries>` et la seule mutation de label de `<mutations>`.
+**Quatre points de chargement** :
+
+- `/scd-sdd:linear` — **intégralement** ;
+- `/scd-sdd:linear-setup` — `<auth>`, `<queries>` et les **deux mutations du setup** de
+  `<mutations>` : le label de chantier et `initiativeCreate` ;
+- `/scd-sdd:linear-review` — `<auth>` et `<pilotage>` ;
+- l'agent **`pr-describer`** — `<auth>` et `<accroche_pr>` **seuls** (accroche PR, §D31).
 
 Le `SKILL.md` porte ce qui **ne bouge pas** : granularité, clé dérivée, propriété des champs, sens
 unique. Ce fichier porte ce qui est **daté** — un schéma GraphQL tiers et les limites de service qui
@@ -67,7 +72,7 @@ Deux arrêts, tous deux **pédagogiques**, et jamais un best-effort — l'appel 
 
 <queries>
 
-## Lire — les quatre requêtes du miroir
+## Lire — les cinq requêtes du miroir
 
 ### 1. Équipes et leurs workflow states — `linear-setup`
 
@@ -129,11 +134,35 @@ query($teamId: String!, $after: String) {
 `description` est **nécessaire** : c'est là que vit le **marqueur de secours**, second recours du
 matching quand le titre a été renommé. `relations` évite de recréer une relation déjà posée.
 
+### 5. Initiatives du workspace et leurs projets liés — rubrique 7 seulement
+
+```graphql
+query($after: String) {
+  initiatives(first: 50, after: $after) {
+    nodes {
+      id name
+      projects(first: 50) { nodes { id } pageInfo { hasNextPage endCursor } }
+    }
+    pageInfo { hasNextPage endCursor }
+  }
+}
+```
+
+Ne se joue que si `docs/linear.md` porte une rubrique `initiative` ≠ `aucune`. L'initiative se
+résout **par nom** — comme le label — et `projects` donne les liens déjà posés : c'est ce qui rend
+le rattachement **idempotent**, un projet déjà lié ne se re-rattache jamais. `linear-setup` s'en
+sert pour savoir si l'initiative existe ; `linear` pour résoudre et comparer avant d'écrire.
+
+⚠ Les initiatives **s'activent** dans le workspace (*Settings → Initiatives*). Le comportement de
+la requête quand elles ne le sont pas n'est **pas documenté** au 2026-08-10 : une erreur ou une
+liste vide se traitent pareil — pas d'initiative disponible, et c'est un constat à rapporter, pas à
+contourner.
+
 </queries>
 
 <mutations>
 
-## Écrire — cinq mutations, et pas une de plus
+## Écrire — sept mutations, et pas une de plus
 
 Toute mutation rend `success` : on le **lit**, on ne le suppose pas.
 
@@ -195,13 +224,126 @@ Créée **une fois**, au setup, si la requête n° 2 ne trouve pas le label, pui
 `docs/linear.md`. **`linear` n'appelle jamais cette mutation** : elle lit, elle pose, elle ne crée
 pas de label.
 
-### Ce qu'aucune des deux commandes n'appelle
+### Initiative — `linear-setup` seule
 
-`issueDelete`, `issueArchive`, `projectDelete`, `projectArchive`, et toute mutation de commentaire,
-de cycle ou de membre. Le miroir ne supprime rien et n'archive rien : un lot disparu d'un `tasks.md`
-laisse son issue en place, et c'est l'humain qui décide de son sort.
+```graphql
+mutation($input: InitiativeCreateInput!) {
+  initiativeCreate(input: $input) { success initiative { id name } }
+}
+```
+
+`name` est le seul champ requis. Créée **une fois**, au setup, si la requête n° 5 ne trouve pas
+l'initiative retenue par l'humain, puis son **nom** est figé dans `docs/linear.md` (rubrique 7).
+**`linear` n'appelle jamais cette mutation** — initiative introuvable au push → tout se pousse
+**sans** initiative et le fait remonte au rapport : le miroir exact du pattern label, le setup
+crée, le push résout et rattache.
+
+### Rattachement projet ↔ initiative — `linear` seule
+
+```graphql
+mutation($input: InitiativeToProjectCreateInput!) {
+  initiativeToProjectCreate(input: $input) { success }
+}
+```
+
+`initiativeId` et `projectId` requis, rien d'autre. Un lien déjà présent (requête n° 5) ne se
+**re-rattache jamais** — le schéma refuse d'ailleurs qu'un projet apparaisse deux fois dans une
+hiérarchie d'initiatives.
+
+⚠ **Ce nom de mutation ne vient pas des rapports committés** — ils ne documentent pas les mutations
+d'initiative. Il a été vérifié le **2026-08-10** sur le schéma publié du SDK officiel
+(`github.com/linear/linear`, `packages/sdk/src/schema.graphql`). S'il est refusé, c'est cette
+référence qui a vieilli : le rapporter, ne pas deviner un autre nom.
+
+### Ce que personne n'appelle
+
+`issueDelete`, `issueArchive`, `projectDelete`, `projectArchive`, `initiativeUpdate`,
+`initiativeDelete`, `initiativeArchive`, `initiativeToProjectDelete`, `attachmentCreate` (écarté
+§D31 : l'intégration GitHub crée l'attachement PR ↔ issue toute seule dès que la magic word les
+lie), et toute mutation de commentaire, de cycle ou de membre. Le miroir ne supprime rien,
+n'archive rien, et ne possède de l'initiative **que le rattachement** : sa description, ses
+updates, son sort appartiennent à l'humain — comme l'issue d'un lot disparu d'un `tasks.md`.
 
 </mutations>
+
+<pilotage>
+
+## Piloter en lecture — `linear-review` seule
+
+### Le comptage du garde 250
+
+Aucun champ agrégé `count`/`totalCount` n'est exposé sur les connexions : on **pagine et on compte
+les nœuds**. Requête reprise **verbatim** du rapport committé (`docs/scd-sdd/linear-tools.md` §3) :
+
+```graphql
+query CountActiveIssues($after: String) {
+  issues(first: 250, after: $after) {
+    nodes { id }
+    pageInfo { hasNextPage endCursor }
+  }
+}
+```
+
+On boucle tant que `pageInfo.hasNextPage`, en repassant `endCursor` en `after` ; le total de
+`nodes` accumulés est le décompte. **Les archivées ne comptent pas** — exclues par défaut,
+`includeArchived` laissé au défaut, exactement la sémantique du plafond. Le comptage est
+**workspace** — pas de filtre d'équipe : le plafond est workspace, pas équipe.
+
+### Les champs d'hygiène
+
+La requête n° 4, étendue de trois champs — tout ce que l'hygiène demande :
+
+```graphql
+priority        # 0 = No priority · 1 = Urgent · 2 = High · 3 = Medium · 4 = Low (verbatim schéma)
+updatedAt       # ISO 8601 — la dormance se mesure dessus
+state { type }  # completed/canceled non archivées → candidates à l'archivage
+```
+
+Les seuils, les quatre contrôles et le rendu Now/Next/Later vivent dans `references/pilotage.md` ;
+ici, seulement ce qui dépend du schéma.
+
+</pilotage>
+
+<accroche_pr>
+
+## Résoudre l'issue d'un lot — agent `pr-describer` seul (§D31)
+
+Une seule chose à obtenir : l'**`identifier`** (`ENG-123`) de l'issue du lot, pour poser la magic
+word dans le **corps** de la PR. La résolution est l'issue au titre préfixé `Rn — ` dans le projet
+`NNN-slug` :
+
+```graphql
+query($project: String!, $prefix: String!) {
+  issues(
+    filter: { project: { name: { startsWith: $project } }, title: { startsWith: $prefix } }
+    first: 10
+  ) {
+    nodes { identifier title }
+  }
+}
+```
+
+`$project` = la clé de la feature (`001-auth`), `$prefix` = le préfixe du lot (`R2 — `).
+**Exactement un** résultat → c'est l'issue. **Zéro, ou plusieurs** → appariement ambigu : pas de
+magic word + une `note`, **jamais de question** — divergence délibérée avec la résolution
+titre → marqueur → question du push, écrite en §D31 : le flux implement tourne en arrière-plan et
+ne casse jamais.
+
+### Le choix du mot — déterministe
+
+| Base de la PR | Magic word | Pourquoi |
+|---|---|---|
+| la branche par défaut | `Fixes <identifier>` | mot **fermant** — l'issue passera Done au merge |
+| une branche de lot (PR **empilée**) | `Part of <identifier>` | mot **non-fermant** — un mot fermant fermerait l'issue au merge dans un cul-de-sac |
+
+`Fixes` et `Part of` sont repris **verbatim** de la liste des magic words de la doc Linear (rapport
+`linear-tools.md` : fermants `fix, fixes, fixed…` ; non-fermants `part of, related to…`). La ligne
+se pose dans la section **Traçabilité** du corps — **jamais le titre** (le squash-merge en ferait
+un message de commit, donc un identifiant Linear dans le dépôt), **jamais le nom de branche** (les
+refs sont le dépôt). L'`identifier` est résolu à la création de la PR et n'est **stocké nulle
+part** — comme le push re-résout tout.
+
+</accroche_pr>
 
 <pagination_erreurs>
 
