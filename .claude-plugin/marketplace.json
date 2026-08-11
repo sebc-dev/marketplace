@@ -26,16 +26,6 @@
       "category": "productivity"
     },
     {
-      "name": "scd-forge",
-      "version": "0.2.1",
-      "source": "./scd-forge",
-      "description": "Architectural design patterns for Claude Code plugins. Component selection with skill-vs-workflow guard, context budget architecture, multi-component orchestration, skill description optimization (TRIGGER/SKIP, eval methodology), correct references/ placement, and quality validation. Complements plugin-dev with holistic design guidance.",
-      "author": {
-        "name": "sebc.dev"
-      },
-      "category": "development"
-    },
-    {
       "name": "scd-svelte",
       "version": "0.1.1",
       "source": "./scd-svelte",
@@ -56,16 +46,6 @@
       "category": "development"
     },
     {
-      "name": "scd-vuejs",
-      "version": "0.2.1",
-      "source": "./scd-vuejs",
-      "description": "Skill Vue 3 (3.4+/3.5+) production. Composition API, Pinia, Vue Router v4, TypeScript, Vite. Bonnes pratiques, pieges, anti-patterns, decisions architecturales.",
-      "author": {
-        "name": "sebc.dev"
-      },
-      "category": "development"
-    },
-    {
       "name": "scd-flutter",
       "version": "0.8.0",
       "source": "./scd-flutter",
@@ -74,26 +54,6 @@
         "name": "sebc.dev"
       },
       "category": "development"
-    },
-    {
-      "name": "scd-qmd",
-      "version": "0.1.1",
-      "source": "./scd-qmd",
-      "description": "On-device search engine for project docs and crawled technical documentation. Hybrid search (BM25 + vector + LLM re-ranking) via qmd with MCP integration, collection management, web doc crawling, and progressive search workflows.",
-      "author": {
-        "name": "sebc.dev"
-      },
-      "category": "productivity"
-    },
-    {
-      "name": "scd-review",
-      "version": "1.1.1",
-      "source": "./scd-review",
-      "description": "Code review pipeline on the current branch with interactive per-observation decisions (apply/skip/defer/discuss) and persisted state for safe interruption/resume. Chained review+validation pipeline, correction_prompt for precise fixes, business context injection, model profiles, inline-only PR/MR comments. --auto-fix flag preserves the v1.0 non-interactive behavior for CI use.",
-      "author": {
-        "name": "sebc.dev"
-      },
-      "category": "productivity"
     },
     {
       "name": "scd-sdd",
@@ -117,6 +77,6 @@
     }
   ],
   "metadata": {
-    "version": "0.13.0"
+    "version": "0.14.0"
   }
 }

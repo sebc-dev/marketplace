@@ -4,29 +4,46 @@ Plugin marketplace for [Claude Code](https://claude.com/code) and [Claude Cowork
 
 ## Plugins
 
-### [scd-astro](./scd-astro/) `v0.3.0`
+### [scd-astro](./scd-astro/) `v0.4.1`
 
-Complete Astro 5.x on Cloudflare Workers/Pages skill. Rendering modes (SSG, SSR, hybrid, Server Islands), Content Layer, Cloudflare bindings (KV, D1, R2, Durable Objects), and Astro 5 breaking-change prevention. 10 critical rules encoded directly in the skill. 3 slash commands (`/scd-astro:scaffold`, `/scd-astro:audit`, `/scd-astro:debug`).
+Complete Astro 6.x on Cloudflare Workers skill. Rendering modes (SSG, SSR, hybrid, Server Islands), Content Layer, Live Collections, Cloudflare bindings via `cloudflare:workers` (KV, D1, R2, Durable Objects), Zod 4, the Fonts API, `workerd` dev, and breaking-change prevention. 3 slash commands (`/scd-astro:scaffold`, `/scd-astro:audit`, `/scd-astro:debug`).
 
-### [scd-writer](./scd-writer/) `v0.2.0`
+### [scd-writer](./scd-writer/) `v0.2.2`
 
 Human-first writing workflow in 7 phases. The human writes and thinks, Claude questions, structures, reviews, and polishes. Never generates content on the author's behalf. Includes AI-detection skills (slop vocabulary, lexical markers, symmetric structure) and 6 slash commands (`/braindump`, `/structure`, `/draft`, `/review`, `/polish`, `/translate`).
 
-### [scd-svelte](./scd-svelte/) `v0.1.0`
+### [scd-svelte](./scd-svelte/) `v0.1.1`
 
 Svelte 5 + SvelteKit 2 skill. Runes, components, routing, data loading, state management, hooks, TypeScript, testing, deployment, and ecosystem selection. Complements the Svelte MCP server with architecture decisions and anti-pattern prevention. 4 slash commands (`/scd-svelte:scaffold`, `/scd-svelte:audit`, `/scd-svelte:debug`, `/scd-svelte:migrate`).
 
-### [scd-tauri](./scd-tauri/) `v0.1.0`
+### [scd-tauri](./scd-tauri/) `v0.1.1`
 
 Tauri v2 desktop and mobile skill. Architecture, security model (capabilities, permissions, scopes, CSP), IPC bridge (commands, events, channels, state), plugin ecosystem (30+ official plugins), desktop patterns (multi-window, tray, menus, sidecars), mobile (Android, iOS), build pipeline, code signing, and updater. Uses WebFetch for official docs lookup. 3 slash commands (`/scd-tauri:scaffold`, `/scd-tauri:audit`, `/scd-tauri:debug`).
 
-### [scd-forge](./scd-forge/) `v0.1.0`
+### [scd-flutter](./scd-flutter/) `v0.8.0`
 
-Architectural design patterns for Claude Code plugins. Component selection (skill vs command vs agent vs hook vs CLAUDE.md vs MCP), plugin sizing, context budget architecture, multi-component orchestration, and quality validation. 3 slash commands (`/scd-forge:design`, `/scd-forge:audit`, `/scd-forge:distill`).
+Dart 3.x and Flutter 3.44+, in **seven skills with disjoint trigger scopes** — a question asked by a
+developer should load exactly one. `dart-idioms` holds the language and the standard library, and
+fires in *any* Dart project, CLI or server included. `flutter-architecture` holds the official guide:
+where a file goes, which layer boundary it must not cross, which state mechanism for which scope,
+plus desktop packaging. `flutter-runtime` holds what the framework rebuilds, reconciles, lays out
+and replays, and what it costs: jank, leaks, `Key` and reconciliation, hot reload, isolates.
+`flutter-testing` holds the proof: what to test at which layer, flaky tests, goldens, time control,
+driving an interaction down to the pointer. `flutter-data` fills the Repository. `flutter-ui-interaction`
+holds interaction and final presentation. `flutter-build-release` goes from source tree to a signed
+Android or iOS artifact. Every claim carries its evidence level and confidence; areas without an
+authoritative source are marked as such rather than filled in by inference.
 
-### [scd-review](./scd-review/) `v0.7.0`
+### [scd-atlas](./scd-atlas/) `v0.1.0`
 
-Interactive guided code review on the current branch. Reviews file by file in optimal order with dedicated background agents (code-reviewer + test-reviewer) for each file, JSON-based progress tracking, and blocking/suggestion classification. 5 slash commands (`/scd-review:review-init`, `/scd-review:code-review`, `/scd-review:review-followup`, `/scd-review:review-continue`, `/scd-review:review-post`). GitHub/GitLab PR posting integration.
+Authoring and updating techno plugins through deep-research campaigns. The pipeline: map the
+subjects → route each one to research / code / mixed → pre-collect canonical URLs and exact
+versions → one Claude Research prompt per subject → **the human plays them in Desktop** and drops
+the reports back → critical intake and filling of the blind spots Research cannot reach →
+distillation into a skill and its references → trigger evals. The subject map carries the campaign's
+state and survives a `/clear`. Two skills: `research-prompter` composes Research prompts for any
+subject, specialised by domain packs; `campaign` orchestrates and composes nothing itself.
+Human-in-the-loop by construction: no session can launch Research. 7 slash commands.
 
 ### [scd-sdd](./scd-sdd/) `v1.11.0`
 
@@ -118,9 +135,9 @@ Replaces `scd-project-docs`, `scd-feature-specs` and `scd-implement`.
 /plugin install scd-writer@sebc-dev-marketplace
 /plugin install scd-svelte@sebc-dev-marketplace
 /plugin install scd-tauri@sebc-dev-marketplace
-/plugin install scd-forge@sebc-dev-marketplace
-/plugin install scd-review@sebc-dev-marketplace
+/plugin install scd-flutter@sebc-dev-marketplace
 /plugin install scd-sdd@sebc-dev-marketplace
+/plugin install scd-atlas@sebc-dev-marketplace
 ```
 
 ## License

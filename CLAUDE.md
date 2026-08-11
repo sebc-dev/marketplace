@@ -6,10 +6,13 @@ Plugin marketplace for Claude Code and Claude Cowork.
 
 ```
 .claude-plugin/marketplace.json    # Marketplace manifest
-scd-astro/                         # Astro 5.x + Cloudflare plugin
+scd-astro/                         # Astro 6.x + Cloudflare plugin
 scd-writer/                        # Human-first writing workflow plugin
 scd-svelte/                        # Svelte 5 + SvelteKit 2 plugin
-scd-forge/                         # Plugin architecture design patterns
+scd-tauri/                         # Tauri v2 desktop + mobile plugin
+scd-flutter/                       # Dart 3.x + Flutter 3.44+ (7 disjoint skills)
+scd-sdd/                           # Unified spec-driven cycle (foundation → specs → impl)
+scd-atlas/                         # Techno-plugin authoring by Research campaigns
 ```
 
 ## Conventions
@@ -48,5 +51,6 @@ Each plugin is a root-level directory containing:
 /plugin install scd-astro@sebc-dev-marketplace
 /plugin install scd-writer@sebc-dev-marketplace
 /plugin install scd-svelte@sebc-dev-marketplace
-/plugin install scd-forge@sebc-dev-marketplace
+/plugin install scd-sdd@sebc-dev-marketplace
+/plugin install scd-atlas@sebc-dev-marketplace
 ```

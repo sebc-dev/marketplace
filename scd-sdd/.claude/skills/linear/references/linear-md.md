@@ -16,7 +16,7 @@ anti-écrasement, modèle de `contract`, §D29). La mise à jour est une **édit
 
 1. la **clé de l'équipe** (`ENG`) et son nom ;
 2. le **nom** de la variable d'environnement qui porte la clé d'API — **jamais sa valeur**
-   (précédent exact du `jira_auth_token_env` de `scd-review`) ;
+   (le dépôt porte le nom, l'environnement porte le secret) ;
 3. la table des **statuts** : type visé → état réel de l'équipe ;
 4. le **nom du label** de chantier ;
 5. la convention de **nommage** des titres ;
