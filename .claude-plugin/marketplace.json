@@ -104,9 +104,19 @@
         "name": "sebc.dev"
       },
       "category": "development"
+    },
+    {
+      "name": "scd-atlas",
+      "version": "0.1.0",
+      "source": "./scd-atlas",
+      "description": "Creation et mise a jour de plugins techno par campagnes de recherche approfondie. Le pipeline : cartographie des sujets -> routage de chaque sujet en research / code / mixte -> pre-collecte des URL canoniques et des versions exactes -> un prompt Claude Research par sujet -> l'humain les joue dans Desktop et depose les rapports -> intake critique et comblement des angles morts que Research n'atteint pas -> distillation en skill et references -> evals de declenchement. La carte des sujets porte l'etat de la campagne et survit au /clear. Deux skills : research-prompter compose des prompts Research pour n'importe quel sujet, specialise par packs de domaines ; campaign orchestre une campagne et ne compose rien lui-meme. Humain-au-milieu par construction : aucune session ne peut lancer Research.",
+      "author": {
+        "name": "sebc.dev"
+      },
+      "category": "development"
     }
   ],
   "metadata": {
-    "version": "0.12.0"
+    "version": "0.13.0"
   }
 }
