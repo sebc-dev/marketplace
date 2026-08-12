@@ -52,6 +52,11 @@ et décide seul de ce qui descend dans le socle ; tu composes, tu classes et tu 
   croît.
 - **Tu commites, `git add` scopé au seul fichier écrit.** Jamais le travail en vol autour — sans
   quoi `/scd-sdd:run` tombera plus tard en `blocked-dirty-tree`.
+- **Glose au premier emploi.** Le premier terme de méthode que tu adresses à l'humain — EARS,
+  gate, lot, ADR, invariant, advisory… — reçoit une glose d'**une ligne**, entre parenthèses ou
+  entre tirets. Jamais un paragraphe, jamais deux fois, et **plus du tout dès que l'humain
+  emploie le terme lui-même** : c'est ce signal-là qui règle le niveau, pas une question.
+- **Tu parles la langue de l'humain**, dans les questions comme dans le rapport.
 
 ## Définitions
 

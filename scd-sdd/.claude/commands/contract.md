@@ -1,5 +1,5 @@
 ---
-description: "Phase 7 du socle, terminale : assemble CLAUDE.md, le contrat opérationnel. Pointe vers les documents produits sans les recopier, lit les commandes du projet dans docs/ci.md, fond la constitution (principes + seuils), pose la Definition of Done. Court, haut-signal, advisory."
+description: "Phase 7 du socle, terminale : assemble CLAUDE.md, le contrat opérationnel. Pointe vers les documents produits sans les recopier, lit les commandes du projet dans docs/ci.md, fond la constitution (principes + seuils), pose la Definition of Done. Court, haut-signal, advisory (il conseille l'agent, rien ne l'exécute — ce sont les contrôles de la phase ci qui bloquent)."
 argument-hint: "(aucun — lit docs/brief.md, prd.md, stack.md, archi.md, adr/, ci.md)"
 allowed-tools:
   - Read
@@ -19,8 +19,8 @@ occupe du contexte à chaque session, sur chaque tâche. Chaque ligne inutile di
 règles qui comptent. D'où la règle du pointeur — le contenu reste dans `docs/`, tu
 n'écris que le chemin.
 
-Sa seconde propriété est d'être **advisory**. Écrire « les tests doivent passer » ne fait
-pas passer les tests. Ce qui doit arriver à 100 % est un hook, un linter ou un test — pas
+Sa seconde propriété est d'être **advisory** — il *conseille* l'agent, rien ne l'exécute.
+Écrire « les tests doivent passer » ne fait pas passer les tests. Ce qui doit arriver à 100 % est un hook, un linter ou un test — pas
 une phrase. Tu peux le noter, tu ne dois pas le présenter comme garanti.
 
 C'est exactement pourquoi la phase `ci` te précède : ce qui est déterministe existe déjà,
@@ -47,6 +47,14 @@ valide ce qui est repris).
 - **Advisory ≠ garanti.** Ne présente jamais la Definition of Done comme une contrainte
   exécutée. Ce qui est réellement exécuté, ce sont les contrôles de `docs/ci.md` sous
   protection de branche : nomme-les comme tels, et rien d'autre.
+- **Le problème avant les options.** Avant chaque arbitrage, pose le problème en deux ou trois
+  phrases : ce qui est en jeu pour ce projet, et en quoi les options diffèrent vraiment. Chaque
+  option décrit sa **conséquence en termes du projet**, jamais en jargon. Une option énoncée sans
+  son enjeu ne se choisit pas, elle se subit.
+- **Glose au premier emploi.** Le premier terme de méthode que tu adresses à l'humain — EARS,
+  gate, lot, ADR, invariant, advisory… — reçoit une glose d'**une ligne**, entre parenthèses ou
+  entre tirets. Jamais un paragraphe, jamais deux fois, et **plus du tout dès que l'humain
+  emploie le terme lui-même** : c'est ce signal-là qui règle le niveau, pas une question.
 
 ## Processus
 
@@ -96,14 +104,23 @@ valide ce qui est repris).
      ni skill ni rule. Elle existe quand même, parce que c'est là que l'entretien déplacera ce
      qu'il retire — sans elle, il n'aurait nulle part où le mettre.
 
-4. **Relis contre le bloc `<completion>`** de `references/claude-md.md`.
+4. **Relis contre le bloc `<completion>`** de `references/claude-md.md`, puis **fais valider
+   l'assemblage** par `AskUserQuestion` avant d'écrire le fichier. Deux sections seulement s'y
+   prêtent, parce qu'elles sont les seules que rien du dépôt ne dicte : les **principes
+   non-négociables** et la **Definition of Done**. Le reste est dérivé des documents du socle et ne
+   se met pas au vote.
+
+   Dis en une phrase ce qui est en jeu — ce fichier est chargé **en entier à chaque session**, donc
+   chaque ligne se paie —, et pour chaque principe proposé, ce qu'il changera concrètement au
+   travail de l'agent. Ce qui n'est pas retenu ne s'écrit pas : `/scd-sdd:revise-contract` pourra
+   l'ajouter plus tard, et retirer coûte plus cher qu'ajouter.
 
 5. **Signale les étapes aval**, hors socle. La CI n'en est plus une : elle est faite. Ce
    qui reste est l'**immutabilité des ADR** en hook, le **blindage local** — le bloc est
    déjà rendu par `docs/ci.md`, section « Blindage local », tu pointes, tu ne le recopies
    pas — et, si `docs/ci.md` porte encore **À POSER** pour la protection de branche, le
-   fait de la poser : sans elle, les contrôles sont informatifs et ta DoD retombe entière
-   dans l'advisory. Puis ouvrir la première feature.
+   fait de la poser : sans elle, les contrôles sont **informatifs** — ils signalent sans
+   rien bloquer —, et ta DoD retombe donc entière dans l'advisory. Puis ouvrir la première feature.
 
 6. **Consigne au journal** (voir ci-dessous).
 
@@ -144,7 +161,8 @@ Récapitule les quatre étapes recommandées, dans cet ordre :
 1. **Ce qui reste déterministe à poser** — la protection de branche si `docs/ci.md` la
    porte encore **À POSER**, puis le blindage local et le hook d'immutabilité des ADR.
    Rappelle la phrase qui décide de tout : tant que la protection de branche n'est pas
-   posée, les contrôles de `docs/ci.md` sont informatifs, et `CLAUDE.md` reste seul.
+   posée, les contrôles de `docs/ci.md` sont informatifs — ils signalent sans rien bloquer —,
+   et `CLAUDE.md` reste seul.
 2. **Première feature** — `/clear`, puis `/scd-sdd:kickoff-feature`.
 3. **L'entretien du contrat** — ce fichier ne s'écrit qu'une fois, mais il dérive. Nomme
    `/scd-sdd:revise-contract` comme la **seule** voie de mise à jour, et les quatre déclencheurs

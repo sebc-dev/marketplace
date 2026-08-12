@@ -163,12 +163,12 @@ Lots : 1 fait · 1 en cours · 2 à faire
 - [ ] R4 — audit log               (à faire)
 Prochain : /scd-sdd:run NNN R2
 
-| Lot | Dernier run              | PR   | État                 | Base         | Action                     |
-|-----|--------------------------|------|----------------------|--------------|----------------------------|
-| R1  | ✅ done · TDD · 5 tests  | #10  | OK (mergé, dans main)| main         | —                          |
-| R2  | ⛔ blocked-red (30/07)   | —    | non lancé            | —            | /scd-sdd:run NNN R2        |
-| R3  | —                        | —    | non lancé            | —            | bloqué par R2              |
-| R4  | ✅ done (29/07)          | #14  | ⚠️ EMPILÉ EN ATTENTE | impl/slug-R3 | merger R3, puis sync       |
+| Lot | Dernier run                                    | PR   | État                 | Base         | Action                     |
+|-----|------------------------------------------------|------|----------------------|--------------|----------------------------|
+| R1  | ✅ done · TDD · 5 tests                        | #10  | OK (mergé, dans main)| main         | —                          |
+| R2  | ⛔ blocked-red (30/07) — des tests échouent    | —    | non lancé            | —            | /scd-sdd:run NNN R2        |
+| R3  | —                                              | —    | non lancé            | —            | bloqué par R2              |
+| R4  | ✅ done (29/07)                                | #14  | ⚠️ EMPILÉ EN ATTENTE | impl/slug-R3 | merger R3, puis sync       |
 
 Sûreté de merge (base par défaut : main) — 1 PR à traiter en priorité.
 
@@ -189,8 +189,13 @@ Colonne **Dernier run** — le seul fait de ce tableau qui ne vient ni des fichi
 - `✅ done · <mode> · N tests` : dernière ligne `run Rn` au vert. La date n'est affichée que si elle
   éclaire quelque chose (lot ancien, ou désaccord avec les cases).
 - `⛔ <statut> (JJ/MM)` : dernier run **bloqué**. Le statut est repris tel quel du journal
-  (`blocked-red`, `blocked-dirty-tree`, `blocked-verify`, …). Ajouter `· worktree conservé` si la
-  ligne le mentionne — c'est là que vit le travail du lot.
+  (`blocked-red`, `blocked-dirty-tree`, `blocked-verify`, …), suivi de sa **traduction en trois
+  mots** — `blocked-red` : des tests échouent · `blocked-dirty-tree` : l'arbre git n'était pas
+  propre · `blocked-verify` : la preuve attendue n'a pas été obtenue. Les **dix** statuts d'échec
+  sont énumérés par le skill `journal` : pour les autres, la traduction se dérive du nom du statut,
+  en trois mots et **sans rien ajouter que le journal ne dise** (`blocked-rebase` : le rebase a
+  échoué). Un statut **hors de cette liste** s'affiche seul, sans invention. Ajouter
+  `· worktree conservé` si la ligne le mentionne — c'est là que vit le travail du lot.
 </report>
 > Sans `gh`/`glab` : remplace la colonne État par « PR indisponible (pas de forge) » et ne classe que
 > l'avancement, la colonne Dernier run et le signal `main` (arrivé/absent). Les colonnes PR/Base/Action

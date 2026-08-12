@@ -1,5 +1,5 @@
 ---
-description: "Phase 5 des specs : gate de conformité du contrat. Ne modifie aucun document du contrat. Atteste que spec/plan/tasks sont prêts pour l'implémentation ET que le découpage produira des unités reviewables par un humain. 15 contrôles, rapport Critical/Major/Minor, verdict PRÊT ssi zéro Critical. Consigne son verdict au journal, et porte la liste des corrections dans un chantier de gate pour qu'elle survive au /clear — avec les Major arbitrés une fois pour toutes."
+description: "Phase 5 des specs : gate de conformité du contrat (un contrôle bloquant, joué avant d'implémenter). Ne modifie aucun document du contrat. Atteste que spec/plan/tasks sont prêts pour l'implémentation ET que le découpage produira des unités reviewables par un humain. 15 contrôles, rapport à trois niveaux — Critical (bloque l'implémentation), Major (à corriger, ne bloque pas le démarrage), Minor (amélioration) —, verdict PRÊT uniquement si zéro Critical. Consigne son verdict au journal, et porte la liste des corrections dans un chantier de gate pour qu'elle survive au /clear — avec les Major arbitrés une fois pour toutes."
 argument-hint: "[NNN ou slug — optionnel, résolu sinon]"
 allowed-tools:
   - Read
@@ -71,6 +71,13 @@ passer la main).
   `docs/archi.md`, le contrôle 15 ne se déclenche pas** — ce n'est pas un finding, c'est une
   phase du socle qui n'a pas été jouée.
 - **Verdict `PRÊT` uniquement si zéro Critical.**
+- **Glose au premier emploi.** Le premier terme de méthode que tu adresses à l'humain — EARS,
+  gate, lot, ADR, invariant, advisory… — reçoit une glose d'**une ligne**, entre parenthèses ou
+  entre tirets. Jamais un paragraphe, jamais deux fois, et **plus du tout dès que l'humain
+  emploie le terme lui-même** : c'est ce signal-là qui règle le niveau, pas une question.
+- **Un ID se cite avec son intitulé** à sa première mention — « FR-003 (export CSV) », jamais
+  « FR-003 » nu. Un identifiant seul n'explique rien à qui ne l'a pas sous les yeux.
+- **Tu parles la langue de l'humain**, dans les questions comme dans le rapport.
 
 ## Processus
 
@@ -199,7 +206,8 @@ reviewable par un humain. »
 
 - Feature non triviale (chemins d'erreur nombreux, enjeu produit) → **propose la passe de
   durcissement** : « Pour chercher les modes de défaillance que la conformité ne couvre pas,
-  lance `/scd-sdd:premortem NNN` avant le passage de main. »
+  lance `/scd-sdd:premortem NNN` avant le passage de main — on y suppose que la feature a échoué,
+  et on cherche ce que les documents ont laissé passer. »
 - Sinon, la main passe au niveau implémentation : « `/clear`, puis `/scd-sdd:run NNN R1`. »
 - Si d'autres features sont en vol, renvoie plutôt vers `/scd-sdd:status-specs`.
 

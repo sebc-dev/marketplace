@@ -1,11 +1,12 @@
 ---
-description: "Phase 4 des specs : produit specs/NNN-slug/tasks.md. Lots de review Rn (vertical slices dimensionnées pour être reviewables par un humain) découpés en tâches Tn ordonnées par dépendances, marqueurs [P], backref _Requirements:_, mode de vérification déclaré par lot. Un lot ≈ une PR ; une tâche = un critère observable = un commit."
+description: "Phase 4 des specs : produit specs/NNN-slug/tasks.md. Lots de review Rn (vertical slices dimensionnées pour être reviewables par un humain : une tranche qui traverse toutes les couches et livre un morceau de fonctionnalité complet, relisable seul) découpés en tâches Tn ordonnées par dépendances, marqueurs [P] (parallélisable), backref _Requirements:_ (le fil vers les exigences couvertes), mode de vérification déclaré par lot. Un lot ≈ une PR ; une tâche = un critère observable = un commit."
 argument-hint: "[NNN ou slug — optionnel, résolu sinon]"
 allowed-tools:
   - Read
   - Glob
   - Write
   - Edit
+  - AskUserQuestion
 ---
 
 ## Contexte
@@ -44,6 +45,15 @@ Ratio : 40% humain / 60% AI (découpage mécanique ; l'humain valide l'ordre et 
 - **`[P]` seulement si aucune dépendance croisée** (fichiers disjoints) — au niveau tâche comme
   au niveau lot.
 - **Cases écrites vierges** (`- [ ]`). Elles seront cochées au niveau implémentation, pas ici.
+- **Le problème avant les options.** Avant chaque arbitrage — l'étape 5bis en est l'application —,
+  pose en deux ou trois phrases ce qui est en jeu pour ce projet et en quoi les options diffèrent.
+  Chaque option décrit sa **conséquence en termes du projet**, jamais en jargon.
+- **Glose au premier emploi.** Le premier terme de méthode que tu adresses à l'humain — EARS,
+  gate, lot, ADR, invariant, advisory… — reçoit une glose d'**une ligne**, entre parenthèses ou
+  entre tirets. Jamais un paragraphe, jamais deux fois, et **plus du tout dès que l'humain
+  emploie le terme lui-même** : c'est ce signal-là qui règle le niveau, pas une question.
+- **Un ID se cite avec son intitulé** à sa première mention — « FR-003 (export CSV) », jamais
+  « FR-003 » nu. Un identifiant seul n'explique rien à qui ne l'a pas sous les yeux.
 
 ## Processus
 
@@ -87,6 +97,21 @@ Ratio : 40% humain / 60% AI (découpage mécanique ; l'humain valide l'ordre et 
    verticalement** (étapes du workflow, variations de règle, variations de données, CRUD,
    chemins, effort). À l'inverse, un lot qui ne livre aucun incrément vérifiable est une couche
    déguisée : refusionne-le.
+
+5bis. **Fais valider le découpage** — c'est le point de validation qu'annonce le ratio, et le seul
+   moment où l'humain voit les lots avant qu'ils soient écrits ; en aval, redécouper coûte le prix
+   du code déjà écrit. Présente la liste des lots — titre, ce que chacun livre, son budget estimé,
+   ses dépendances — puis pose **une** question par `AskUserQuestion` : le découpage tient-il ?
+   Formule-la en disant d'abord ce qui est en jeu (un lot trop gros produit une review que personne
+   ne fera vraiment ; un lot trop petit ne livre rien de vérifiable), et fais porter à chaque option
+   sa conséquence sur ce projet-ci, pas en jargon.
+
+   Ce qui se valide est l'**ordre** et la **granularité** — jamais le contenu des tâches, qui
+   dérive du contrat. Un lot que l'humain veut scinder ou refusionner se rejoue à l'étape 4 ;
+   ensuite seulement on remplit.
+
+   **Une seule question, une seule fois.** Si le découpage vient d'un chantier de gate (étape 1bis)
+   et que rien n'a bougé, dis-le et n'en pose aucune : l'arbitrage a déjà été rendu.
 
 6. **Remplis chaque lot de ses tâches `Tn`** : dépendances explicites (`bloqué par : Tk`),
    marqueurs `[P]`, backref `_Requirements: FR-xxx, SC-xxx_`, ordre de vérification cohérent

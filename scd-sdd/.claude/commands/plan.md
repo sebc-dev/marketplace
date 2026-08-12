@@ -39,6 +39,16 @@ Ratio : 50% humain / 50% AI (arbitrages techniques partagés).
 - **Étape de vérif bout-en-bout obligatoire** : **une** commande ou vérification qui prouve la
   feature entière. Elle deviendra le dernier lot de `tasks.md`.
 - **Nomme des fichiers précis.** « la couche service » n'est pas un fichier touché.
+- **Le problème avant les options.** Avant chaque arbitrage, pose le problème en deux ou trois
+  phrases : ce qui est en jeu pour ce projet, et en quoi les options diffèrent vraiment. Chaque
+  option décrit sa **conséquence en termes du projet**, jamais en jargon. Une option énoncée sans
+  son enjeu ne se choisit pas, elle se subit.
+- **Glose au premier emploi.** Le premier terme de méthode que tu adresses à l'humain — EARS,
+  gate, lot, ADR, invariant, advisory… — reçoit une glose d'**une ligne**, entre parenthèses ou
+  entre tirets. Jamais un paragraphe, jamais deux fois, et **plus du tout dès que l'humain
+  emploie le terme lui-même** : c'est ce signal-là qui règle le niveau, pas une question.
+- **Un ID se cite avec son intitulé** à sa première mention — « FR-003 (export CSV) », jamais
+  « FR-003 » nu. Un identifiant seul n'explique rien à qui ne l'a pas sous les yeux.
 
 ## Processus
 
@@ -79,6 +89,12 @@ Ratio : 50% humain / 50% AI (arbitrages techniques partagés).
      précaution de confort : un candidat non sourcé est promu tel quel par `/scd-sdd:adr`,
      et devient immuable ;
    - l'**étape de vérification bout-en-bout**, unique.
+
+   **Un arbitrage réellement ouvert se pose, il ne se tranche pas en silence** : `AskUserQuestion`,
+   à réserver aux décisions **structurantes et nouvelles** — celles qui deviendront un candidat ADR,
+   donc immuables une fois promues. Pose le problème avant les options : ce qui est en jeu pour ce
+   projet, et ce que chacune coûte ou ferme. Ce qui découle de la stack, d'un ADR accepté ou d'un
+   invariant n'est **pas** un arbitrage : c'est un fait, on l'applique.
 
 6. **Confronte les fichiers touchés aux invariants de `docs/archi.md`.** Une seule question, posée
    invariant par invariant sur la liste que tu viens d'écrire : **ce lot franchit-il une frontière,

@@ -34,6 +34,17 @@ Ratio : 60% humain / 40% AI (l'humain arbitre, tu dérives et structures).
   `[NEEDS CLARIFICATION : question précise]`, résolu par interview avant de clore.
 - **IDs stables.** `FR-xxx` et `SC-xxx` sont numérotés une fois et ne sont jamais
   renumérotés : tout l'aval s'y accroche.
+- **Le problème avant les options.** Avant chaque arbitrage, pose le problème en deux ou trois
+  phrases : ce qui est en jeu pour ce projet, et en quoi les options diffèrent vraiment. Chaque
+  option décrit sa **conséquence en termes du projet**, jamais en jargon. Une option énoncée sans
+  son enjeu ne se choisit pas, elle se subit.
+- **Glose au premier emploi.** Le premier terme de méthode que tu adresses à l'humain — EARS,
+  gate, lot, ADR, invariant, advisory… — reçoit une glose d'**une ligne**, entre parenthèses ou
+  entre tirets. Jamais un paragraphe, jamais deux fois, et **plus du tout dès que l'humain
+  emploie le terme lui-même** : c'est ce signal-là qui règle le niveau, pas une question.
+- **Un ID se cite avec son intitulé** à sa première mention — « FR-003 (export CSV) », jamais
+  « FR-003 » nu. Un identifiant seul n'explique rien à qui ne l'a pas sous les yeux.
+- **Tu parles la langue de l'humain**, dans les questions comme dans le rapport.
 
 ## Processus
 
@@ -46,7 +57,10 @@ Ratio : 60% humain / 40% AI (l'humain arbitre, tu dérives et structures).
 
 3. **Dérive un premier jet** de user stories depuis le Brief et **priorise-les**
    (P1/P2/P3), en reliant chaque priorité à un `SC-xxx` du Brief. Un premier jet dérivé
-   se critique mieux qu'une page blanche — mais il se fait valider, il ne s'impose pas.
+   se critique mieux qu'une page blanche — mais il se fait valider, il ne s'impose pas :
+   présente les stories priorisées et fais trancher l'ordre par `AskUserQuestion`, en disant
+   d'abord ce que la priorité décide (ce qui sera construit en premier, donc ce qui existera si on
+   s'arrête là).
 
 4. **Interviewe pour combler**, une question à la fois :
    - les scénarios **Given/When/Then** de chaque story (entrées et sorties concrètes) ;

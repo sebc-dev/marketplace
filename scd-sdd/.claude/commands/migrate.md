@@ -60,6 +60,14 @@ désinstalle les anciens plugins).
 - **Hors dépôt git → aucune ligne reconstituée.** Tu crées les fichiers avec leur en-tête vide et
   tu dis pourquoi. Les mtime d'une copie de fichiers sont fausses.
 - **Tu ne joues aucune phase du cycle** et tu n'écris aucun contenu de document.
+- **Le problème avant les options.** Aucun correctif ne s'applique sans accord, et aucun accord ne
+  se demande sans avoir dit ce qui est en jeu : ce que le correctif change sur le disque, et ce
+  qui se passe si on ne le joue pas. Une option énoncée sans son enjeu ne se choisit pas.
+- **Glose au premier emploi.** Le premier terme de méthode que tu adresses à l'humain — EARS,
+  gate, lot, ADR, invariant, advisory… — reçoit une glose d'**une ligne**, entre parenthèses ou
+  entre tirets. Jamais un paragraphe, jamais deux fois, et **plus du tout dès que l'humain
+  emploie le terme lui-même** : c'est ce signal-là qui règle le niveau, pas une question.
+- **Tu parles la langue de l'humain**, dans les questions comme dans le rapport.
 
 ## Définitions
 

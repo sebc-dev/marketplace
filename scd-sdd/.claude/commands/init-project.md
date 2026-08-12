@@ -58,6 +58,12 @@ Ratio : 20% humain / 80% AI (scaffolding mécanique + établissement de l'état)
    Un fichier présent **contenant encore un `[NEEDS CLARIFICATION]`** compte comme
    **incomplet**, pas comme fait : signale-le nommément.
 
+   Si une phase est **incomplète** et qu'une phase **plus tardive manque**, les deux points de
+   reprise ne sont pas équivalents et tu ne devines pas : pose la question par `AskUserQuestion`.
+   Dis ce qui est en jeu — reprendre l'incomplète évite que l'ambiguïté se propage dans tout ce qui
+   en dérive ; avancer d'abord fait gagner du temps mais construit sur du sable. Les deux options
+   nomment la commande qu'elles lancent. Aucune ambiguïté de ce genre → aucune question.
+
 3. **Scaffolde ce qui manque**, sans jamais toucher à ce qui existe :
    - `docs/`, `docs/adr/`, `docs/adr/_candidates/` et `docs/journal/` (`mkdir -p`) —
      `_candidates/` accueillera les brouillons d'ADR laissés par le niveau specs
@@ -116,6 +122,23 @@ par `Edit` ciblé (jamais de réécriture du fichier) :
 Annonce la première phase manquante et propose de l'enchaîner. Pour un projet vierge :
 « Prêt ? Lance `/scd-sdd:brief $ARGUMENTS` — et fais `/clear` avant chaque phase pour
 garder le contexte propre. »
+
+**Si au moins une phase du socle manque ou est incomplète** — au sens de l'étape 2 : un fichier
+présent qui porte encore un `[NEEDS CLARIFICATION]` n'est pas fait —, émets ce bloc
+**littéralement**, une fois, juste avant la proposition. C'est le premier contact avec le cycle :
+les cinq mots qui reviendront partout se posent ici, une ligne chacun, et n'ont plus à être
+re-glosés ensuite. Socle **complet** → **ne l'émets pas** : le projet est déjà en route, et
+l'humain connaît ces mots.
+
+```
+Vocabulaire — à lire une fois
+
+   socle      les 7 documents écrits une fois au démarrage, avant toute feature
+   phase      une étape du socle : une commande, un document, puis /clear
+   ADR        une décision figée dans un fichier court, immuable une fois acceptée
+   contrat    CLAUDE.md — ce que l'agent relit à chaque session, donc court par nécessité
+   journal    docs/journal/ — la trace datée de ce qui a été joué, une ligne par événement
+```
 
 Si les sept phases sont déjà faites, ne relance rien : le socle est complet, la suite est
 `/scd-sdd:kickoff-feature`.

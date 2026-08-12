@@ -39,6 +39,17 @@ Ratio : 50% humain / 50% AI (tu proposes et argumentes, l'humain arbitre).
   les exigences, pas l'inverse.
 - **Synthèse ici, rationale dans l'ADR.** Ne duplique pas : tu prépares les ADR, tu ne
   les écris pas.
+- **Le problème avant les options.** Avant chaque arbitrage, pose le problème en deux ou trois
+  phrases : ce qui est en jeu pour ce projet, et en quoi les options diffèrent vraiment. Chaque
+  option décrit sa **conséquence en termes du projet**, jamais en jargon. Une option énoncée sans
+  son enjeu ne se choisit pas, elle se subit.
+- **Glose au premier emploi.** Le premier terme de méthode que tu adresses à l'humain — EARS,
+  gate, lot, ADR, invariant, advisory… — reçoit une glose d'**une ligne**, entre parenthèses ou
+  entre tirets. Jamais un paragraphe, jamais deux fois, et **plus du tout dès que l'humain
+  emploie le terme lui-même** : c'est ce signal-là qui règle le niveau, pas une question.
+- **Un ID se cite avec son intitulé** à sa première mention — « FR-003 (export CSV) », jamais
+  « FR-003 » nu. Un identifiant seul n'explique rien à qui ne l'a pas sous les yeux.
+- **Tu parles la langue de l'humain**, dans les questions comme dans le rapport.
 
 ## Processus
 
@@ -108,6 +119,10 @@ par `Edit` ciblé (crée le fichier s'il manque) :
 
 Affiche la liste **« Décisions structurantes → candidats ADR »** : c'est elle qui pilote
 la phase `adr`, et le moment de la corriger est maintenant, pas après.
+
+C'est la première rencontre du mot dans le flux réel — glose-le une fois, en une ligne : un **ADR**
+est une décision consignée dans un fichier court, immuable une fois acceptée ; c'est le *pourquoi*
+qu'on relira dans six mois, quand personne ne se souviendra des alternatives écartées.
 
 Puis : « `/clear`, puis `/scd-sdd:archi` — la structure, avant de figer les décisions : elle
 constate ce que ces choix imposent déjà, et en tire les invariants que `/scd-sdd:adr` figera

@@ -1,5 +1,5 @@
 ---
-description: "Ouvre le niveau SPECS pour une feature : vérifie le socle, calibre l'échelle, tranche greenfield ou delta, attribue le NNN, scaffolde specs/NNN-slug/ et sa section de journal, puis présente la séquence. À jouer une fois par feature."
+description: "Ouvre le niveau SPECS pour une feature : vérifie le socle, calibre l'échelle, tranche greenfield (un comportement neuf) ou delta (une modification de l'existant), attribue le NNN, scaffolde specs/NNN-slug/ et sa section de journal, puis présente la séquence. À jouer une fois par feature."
 argument-hint: "[nom ou description de la feature]"
 allowed-tools:
   - Read
@@ -34,6 +34,14 @@ Ratio : 30% humain / 70% AI (setup mécanique + cadrage ; l'humain tranche l'éc
 - **Tu ne bloques jamais le parallèle.** Ouvrir plusieurs features à la fois est **sans risque
   ici** : chaque phase n'écrit que dans `specs/NNN-*/`, disjoints par construction. Tu
   recommandes le séquentiel, tu ne l'imposes pas.
+- **Le problème avant les options.** Avant chaque arbitrage, pose le problème en deux ou trois
+  phrases : ce qui est en jeu pour ce projet, et en quoi les options diffèrent vraiment. Chaque
+  option décrit sa **conséquence en termes du projet**, jamais en jargon. Une option énoncée sans
+  son enjeu ne se choisit pas, elle se subit.
+- **Glose au premier emploi.** Le premier terme de méthode que tu adresses à l'humain — EARS,
+  gate, lot, ADR, invariant, advisory… — reçoit une glose d'**une ligne**, entre parenthèses ou
+  entre tirets. Jamais un paragraphe, jamais deux fois, et **plus du tout dès que l'humain
+  emploie le terme lui-même** : c'est ce signal-là qui règle le niveau, pas une question.
 
 ## Processus
 
@@ -141,5 +149,24 @@ feature n'a été ouverte.
 
 ## À la fin
 
-Rappelle le `NNN` attribué, l'échelle retenue et le mode (greenfield ou delta, séquentiel ou
-parallèle). Puis : « Prêt ? `/clear`, puis `/scd-sdd:specify NNN`. »
+Rappelle le `NNN` attribué, l'échelle retenue et le mode — greenfield (un comportement neuf, spec
+complète) ou delta (une modification de l'existant, on n'écrit que le changement), séquentiel ou
+parallèle.
+
+**Si c'est la première feature du projet** — `specs/` ne contenait rien avant toi —, émets ce bloc
+**littéralement**, une fois. C'est le premier contact avec le niveau specs, et ces six mots
+reviendront à chaque phase. Ce n'est **pas** la première → **ne l'émets pas** : le répéter à chaque
+feature en ferait du bruit.
+
+```
+Vocabulaire — à lire une fois
+
+   spec           ce que la feature doit faire, jamais comment — le quoi observable
+   critère EARS   une exigence en phrase normée (« When …, the system shall … »), donc testable
+   gate           un contrôle bloquant : on ne passe pas tant qu'il n'est pas au vert
+   lot Rn         une tranche relisable d'un bloc, qui livre un morceau complet (≈ une PR)
+   tâche Tn       un critère observable = un commit = une vérification au vert
+   mode de vérif  comment un lot prouve qu'il est fait : TDD, test-after, check ou inhérent
+```
+
+Puis : « Prêt ? `/clear`, puis `/scd-sdd:specify NNN`. »

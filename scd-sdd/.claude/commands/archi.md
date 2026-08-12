@@ -1,5 +1,5 @@
 ---
-description: "Phase 4 du socle : produit docs/archi.md — les invariants d'architecture falsifiables du projet — en trois temps : constat de ce que la stack impose déjà (sans ADR), options justifiées sur les deux axes réellement ouverts (macro et micro), compilation en invariants. Une règle n'entre que si elle laisse une trace observable dans l'arborescence ou dans les imports. Chaque invariant est un candidat ADR, et le gisement que la phase ci dérivera en contrôles arch-invariants."
+description: "Phase 4 du socle : produit docs/archi.md — les invariants d'architecture falsifiables du projet, c'est-à-dire des règles de structure qu'un contrôle automatique peut prendre en défaut, jamais un design — en trois temps : constat de ce que la stack impose déjà (sans ADR), options justifiées sur les deux axes réellement ouverts (macro et micro), compilation en invariants. Une règle n'entre que si elle laisse une trace observable dans l'arborescence ou dans les imports. Chaque invariant est un candidat ADR, et le gisement que la phase ci dérivera en contrôles arch-invariants."
 argument-hint: "(aucun — lit docs/prd.md et docs/stack.md)"
 allowed-tools:
   - Read
@@ -60,6 +60,17 @@ caractéristiques et les options des deux axes).
   invariant n'est pas une phase jouée, c'est une prose de contexte.
 - **Synthèse ici, rationale dans l'ADR.** Ne duplique pas : l'alternative écartée du temps 2
   appartient à l'ADR, pas à `docs/archi.md`.
+- **Le problème avant les options.** Avant chaque arbitrage, pose le problème en deux ou trois
+  phrases : ce qui est en jeu pour ce projet, et en quoi les options diffèrent vraiment. Chaque
+  option décrit sa **conséquence en termes du projet**, jamais en jargon. Une option énoncée sans
+  son enjeu ne se choisit pas, elle se subit.
+- **Glose au premier emploi.** Le premier terme de méthode que tu adresses à l'humain — EARS,
+  gate, lot, ADR, invariant, advisory… — reçoit une glose d'**une ligne**, entre parenthèses ou
+  entre tirets. Jamais un paragraphe, jamais deux fois, et **plus du tout dès que l'humain
+  emploie le terme lui-même** : c'est ce signal-là qui règle le niveau, pas une question.
+- **Un ID se cite avec son intitulé** à sa première mention — « FR-003 (export CSV) », jamais
+  « FR-003 » nu. Un identifiant seul n'explique rien à qui ne l'a pas sous les yeux.
+- **Tu parles la langue de l'humain**, dans les questions comme dans le rapport.
 
 ## Processus
 

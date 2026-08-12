@@ -85,10 +85,10 @@ Portée : 001-auth · lot R2
 Ouvert le 2026-08-04 · Actualisé le 2026-08-05 · branche `impl/auth-R2` · HEAD `a1b2c3d`
 
 ## Objectif
-Faire passer SHALL-4 au vert sans toucher au middleware de session.
+Faire passer FR-004 au vert sans toucher au middleware de session.
 
 ## Contexte à charger
-à lire      `specs/001-auth/spec.md` § FR-004 — le critère SHALL-4 (18 l.)
+à lire      `specs/001-auth/spec.md` § FR-004 — le critère à satisfaire (18 l.)
 à extraire  `src/legacy/router.ts` › `class RateLimiter` — 2400 l., seule cette classe compte
 à situer    PR #12 — le lot R1 mergé, ne pas relire
 

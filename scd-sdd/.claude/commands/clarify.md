@@ -1,5 +1,5 @@
 ---
-description: "Phase 2 des specs : gate de clarification. Résout chaque [NEEDS CLARIFICATION] de spec.md par questions fermées et répercute la réponse en critère EARS. Ne passe pas tant qu'il en reste un seul. À jouer avant plan."
+description: "Phase 2 des specs : gate de clarification (un contrôle bloquant : on ne passe pas tant qu'il n'est pas au vert). Résout chaque [NEEDS CLARIFICATION] de spec.md par questions fermées et répercute la réponse en critère EARS (une phrase normée, testable). Ne passe pas tant qu'il en reste un seul. À jouer avant plan."
 argument-hint: "[NNN ou slug — optionnel, résolu sinon]"
 allowed-tools:
   - Read
@@ -29,6 +29,17 @@ Ratio : 60% humain / 40% AI (l'humain tranche, tu répercutes en EARS).
 - **Les IDs restent stables.** Un `FR` clarifié garde son numéro ; ce sont les backrefs aval
   qui en dépendent.
 - **Tu ne passes pas la gate tant qu'il reste un seul `[NEEDS CLARIFICATION]`.**
+- **Le problème avant les options.** Ton `## Processus` demande déjà que chaque option décrive
+  sa conséquence ; ce qui lui manque est le début — deux ou trois phrases qui posent ce qui est
+  en jeu **avant** de proposer quoi que ce soit. Une option énoncée sans son enjeu ne se
+  choisit pas, elle se subit.
+- **Glose au premier emploi.** Le premier terme de méthode que tu adresses à l'humain — EARS,
+  gate, lot, ADR, invariant, advisory… — reçoit une glose d'**une ligne**, entre parenthèses ou
+  entre tirets. Jamais un paragraphe, jamais deux fois, et **plus du tout dès que l'humain
+  emploie le terme lui-même** : c'est ce signal-là qui règle le niveau, pas une question.
+- **Un ID se cite avec son intitulé** à sa première mention — « FR-003 (export CSV) », jamais
+  « FR-003 » nu. Un identifiant seul n'explique rien à qui ne l'a pas sous les yeux.
+- **Tu parles la langue de l'humain**, dans les questions comme dans le rapport.
 
 ## Processus
 

@@ -62,6 +62,8 @@ repart à froid. Findings classés par ce qu'ils coûtent en aval :
 Format :
 ```
 ## Validation — specs/NNN-feature
+_Critical = bloque l'implémentation · Major = à corriger, ne bloque pas le démarrage ·
+Minor = amélioration_
 ### Critical (N)
 - [FR-003] « le système doit être rapide » : adjectif sans cible → non testable.
   → Remplacer par une valeur mesurable (ex. « P99 < 50 ms »). Fichier : spec.md
@@ -79,7 +81,7 @@ Format :
 Couverture : X/Y FR ont une vérification observable + une impl · Z tâches sans backref
 Vérification : N lots (M non-`TDD` : modes déclarés + justifiés)
 Découpage : N lots · ~X lignes estimées au total · Z lots hors seuils
-Verdict : PRÊT POUR IMPLÉMENTATION | CORRIGER D'ABORD (Critical présents)
+Verdict : PRÊT POUR IMPLÉMENTATION (zéro Critical) | CORRIGER D'ABORD (Critical présents)
 ```
 
 Les deux blocs neufs n'existent qu'à partir de la deuxième passe. **« Corrigés depuis »** est le

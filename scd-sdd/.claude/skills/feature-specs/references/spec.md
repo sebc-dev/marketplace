@@ -10,7 +10,21 @@ technique (ça descend dans `plan.md`, qui s'appuie sur `stack.md`/`adr/`). Prod
 <template>
 ```markdown
 # Spec : [NOM FEATURE]
-Statut : Draft | Créé : [date] | Trace vers : docs/prd.md (FR-xxx, SC-xxx)
+Statut : Brouillon | Créé : [date] | Trace vers : docs/prd.md (FR-xxx, SC-xxx)
+
+## Légende
+- **EARS** (*Easy Approach to Requirements Syntax*) — la forme normée des critères : cinq patterns,
+  un par situation. Les mots-clés (`When`, `While`, `If…then`, `Where`, `shall`) sont la syntaxe de
+  la méthode, pas un choix de style : ils restent en anglais pour que chaque critère se relise et se
+  vérifie de la même façon partout. Le PRD, lui, n'emprunte l'anglais qu'aux trois mots-clés d'un
+  scénario (`Given`/`When`/`Then`) : il décrit le produit en français, pas un critère de test.
+- **shall** — le verbe de l'exigence : une phrase = une exigence = **une vérification observable**
+  (un test automatisé, le plus souvent).
+- **unwanted behavior** — le pattern du cas indésirable : `If <condition>, then the system shall …`
+- **_(PRD: FR-0xx)_** — la backref : le besoin produit que ce critère de feature décline. C'est le
+  fil qui permet de savoir, plus tard, pourquoi cette ligne existe.
+- **[NEEDS CLARIFICATION]** — une ambiguïté posée et **jamais tranchée en silence**. La phase
+  `/scd-sdd:clarify` les résout une par une ; il n'en reste aucune quand on passe au plan.
 
 ## Résumé
 [2-3 phrases : la capacité livrée et sa valeur. Trace vers le(s) FR du PRD couverts.]

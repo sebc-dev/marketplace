@@ -1,5 +1,5 @@
 ---
-description: "Implémentation d'UN lot Rn : lance le dynamic workflow implement-lot selon le mode de vérif du lot (_vérif :_ — TDD rouge→vert, test-after, check ou inhérent) → review → triage → apply → describe → PR ready-for-review. Résout la feature, le lot et sa base depuis le disque, exige un arbre propre, puis exécute le workflow en arrière-plan. Consigne l'issue du lot au journal, succès comme blocage."
+description: "Implémentation d'UN lot Rn : lance le dynamic workflow implement-lot selon le mode de vérif du lot (_vérif :_ — TDD rouge→vert le test avant le code, test-after le test après, check une vérification observée sans test automatisé, inhérent la preuve est le résultat lui-même) → review → triage → apply → describe → PR ready-for-review. Résout la feature, le lot et sa base depuis le disque, exige un arbre propre, puis exécute le workflow en arrière-plan. Consigne l'issue du lot au journal, succès comme blocage."
 argument-hint: "[NNN|slug] [Rn] [--base <branche>]"
 allowed-tools:
   - Read

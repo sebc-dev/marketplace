@@ -16,7 +16,7 @@ de déploiement seront. C'est précisément ce constat qu'`archi` reprend en ent
 <template>
 ```markdown
 # Stack technique — [Projet]
-Statut : Draft | Créé : [date] | Trace vers : docs/prd.md
+Statut : Brouillon | Créé : [date] | Trace vers : docs/prd.md
 
 ## Vue d'ensemble
 [Une phrase : ce que le projet est techniquement — type d'appli.]

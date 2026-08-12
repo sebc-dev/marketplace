@@ -33,7 +33,20 @@ l'admission reste du contexte, ou sort.
 <template>
 ```markdown
 # Architecture — [Projet]
-Statut : Draft | Créé : [date] | Trace vers : docs/prd.md, docs/stack.md
+Statut : Brouillon | Créé : [date] | Trace vers : docs/prd.md, docs/stack.md
+
+## Légende
+- **Invariant** — une règle de structure qui doit rester vraie tout le temps (« aucun import de
+  `db/` hors de `server/` »). Ce n'est pas un design : c'est ce qu'on s'interdit.
+- **Trace observable** — ce qu'un contrôle automatique regarderait pour prendre la règle en défaut :
+  un chemin de fichier, une ligne d'import. **Sans trace observable, la règle n'entre pas** — sinon
+  personne ne pourra jamais dire si elle est respectée.
+- **Caractéristique** — la qualité qu'on cherche à préserver (testabilité, time-to-market…). Les
+  invariants existent pour la servir ; la colonne *Sert* dit laquelle.
+- **Classe** — la famille de l'invariant (1 = sens des dépendances, 5 = placement des fichiers…),
+  utile parce que chaque famille se vérifie avec le même genre d'outil.
+- **Candidat ADR** — la colonne *ADR* reste **vide** ici : elle sera remplie par la phase
+  `/scd-sdd:adr`, qui fige le pourquoi de chaque invariant dans un fichier à part.
 
 ## Vue d'ensemble
 [2-4 phrases : type d'appli, style macro retenu (décomposition), style micro retenu

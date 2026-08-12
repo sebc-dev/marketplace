@@ -38,7 +38,7 @@ la raison pour laquelle il compte.
 
 ```markdown
 ## Contexte à charger
-à lire      `specs/001-auth/spec.md` § FR-004 — le critère SHALL-4 (18 l.)
+à lire      `specs/001-auth/spec.md` § FR-004 — le critère à satisfaire (18 l.)
 à lire      `test/auth/lockout.test.ts` — le périmètre d'édition (42 l.)
 à extraire  `src/legacy/router.ts` › `class RateLimiter` — 2400 l., seule cette classe compte
 à déléguer  `src/legacy/middleware.ts` — « dans quel ordre les handlers sont-ils résolus ? »

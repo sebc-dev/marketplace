@@ -112,7 +112,7 @@ Ratio : 15% humain / 85% AI (sélection et contrôles mécaniques ; l'humain dé
 
 Contexte chargé — 2 fichiers / 118 l. · 1 extraction (class RateLimiter) · 1 délégation · 2 situés
 
-Objectif       Faire passer SHALL-4 au vert sans toucher au middleware de session.
+Objectif       Faire passer FR-004 au vert sans toucher au middleware de session.
 Acquis         Le rate-limit passe en local (vérifié).
                « Compteur décidé dans la table login_attempt, pas le cache. »
 Prochaine       Écrire le test rouge `locks_after_fifth_failure` dans

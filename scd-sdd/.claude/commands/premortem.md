@@ -1,5 +1,5 @@
 ---
-description: "Durcissement adverse par projection d'échec, applicable au SOCLE, à une FEATURE ou à un CHANTIER. On suppose l'échec, on remonte à ce que les documents omettaient, et chaque risque retenu se referme par un changement de document. Trois sous-agents — un projette, un trie, un applique APRÈS approbation humaine. Capacité transverse, pas une phase : optionnelle, jamais réclamée par status."
+description: "Durcissement adverse par projection d'échec — on suppose que ça a échoué, et on remonte à ce que les documents omettaient qui l'a rendu possible —, applicable au SOCLE, à une FEATURE ou à un CHANTIER. Chaque risque retenu se referme par un changement de document, jamais par du code. Trois sous-agents — un projette, un trie, un applique APRÈS approbation humaine. Capacité transverse, pas une phase : optionnelle, jamais réclamée par status."
 argument-hint: "socle | NNN ou slug | chantier <slug> — la cible n'est jamais devinée"
 allowed-tools:
   - Read
@@ -53,6 +53,17 @@ le troisième applique).
   modes de défaillance que la conformité **ne voit pas**.
 - **Calibrage.** Pour un plan descriptible en une phrase, saute cette passe. Le premortem paie sur
   le non trivial, le difficile à défaire, le fort enjeu.
+- **Le problème avant les options.** Au gate d'approbation, chaque remédiation s'ouvre sur **ce
+  que le risque ferait au produit**, en langage courant — c'est ce qui se décide ; le fichier,
+  l'ID et la forme ne sont que l'endroit où l'écrire. Approuver sans avoir compris le risque
+  n'est pas approuver.
+- **Glose au premier emploi.** Le premier terme de méthode que tu adresses à l'humain — EARS,
+  gate, lot, ADR, invariant, advisory… — reçoit une glose d'**une ligne**, entre parenthèses ou
+  entre tirets. Jamais un paragraphe, jamais deux fois, et **plus du tout dès que l'humain
+  emploie le terme lui-même** : c'est ce signal-là qui règle le niveau, pas une question.
+- **Un ID se cite avec son intitulé** à sa première mention — « FR-003 (export CSV) », jamais
+  « FR-003 » nu. Un identifiant seul n'explique rien à qui ne l'a pas sous les yeux.
+- **Tu parles la langue de l'humain**, dans les questions comme dans le rapport.
 
 ## Définitions
 
@@ -95,7 +106,9 @@ est **limitative par cible** ; ce qui n'y entre pas prend la sortie de secours (
    concrètes. *(Séquentiel : le valideur a besoin de la sortie du facilitateur.)*
 
 6. **Gate d'approbation humain** — présente les remédiations retenues en **liste numérotée**,
-   chacune avec : fichier, ID ou rubrique cible, forme, texte proposé. Présente **à part** les
+   chacune ouverte par **ce que le risque ferait au produit**, en une phrase de langage courant et
+   sans jargon — c'est ce qui se décide ; le reste n'est que l'endroit où l'écrire. Puis, sur la
+   même entrée : fichier, ID ou rubrique cible, forme, texte proposé. Présente **à part** les
    sorties de secours (chantier `en-attente`) et les **signalements hors cible**, qui s'approuvent
    séparément. Demande lesquelles appliquer — toutes, une sélection par numéro, ou aucune.
    - ≤ 4 remédiations → `AskUserQuestion` avec `multiSelect` ;

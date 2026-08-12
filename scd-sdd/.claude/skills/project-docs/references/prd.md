@@ -10,7 +10,20 @@ workflow specs viendra décliner en spec/plan/tasks par feature.
 <template>
 ```markdown
 # PRD — [Projet]
-Statut : Draft | Créé : [date] | Trace vers : docs/brief.md
+Statut : Brouillon | Créé : [date] | Trace vers : docs/brief.md
+
+## Légende
+- **PRD** — *Product Requirements Document* : ce que le produit fait, jamais comment il le fait.
+- **FR-xxx** — une **exigence fonctionnelle** : une capacité du produit, énoncée assez précisément
+  pour qu'on puisse dire oui ou non si elle est là.
+- **SC-xxx** — un **critère de succès** : comment on mesure que c'est réussi. Un chiffre ou un fait
+  constatable, pas une appréciation.
+- **User story** — un parcours vu du côté de la personne qui s'en sert, avec sa priorité (P1 = sans
+  ça, le produit ne sert à rien).
+- **Given / When / Then** — la forme d'un scénario d'acceptation : l'état de départ, l'action, le
+  résultat attendu. Les trois mots-clés restent en anglais, comme partout ailleurs ; **la phrase,
+  elle, s'écrit en français**.
+- **[NEEDS CLARIFICATION]** — une ambiguïté posée et **jamais tranchée en silence**.
 
 ## User stories (priorisées, niveau produit)
 ### US1 — [titre] (Priorité : P1)

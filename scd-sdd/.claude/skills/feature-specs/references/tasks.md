@@ -20,11 +20,16 @@ Trace vers : plan.md (fichiers) · spec.md (FR/SC/SHALL)
 
 ## Légende
 - [ ] à faire · [x] fait · [P] parallélisable (aucune dépendance avec les autres [P])
-- `Rn` = lot de review : une vertical slice, unité de livraison recommandée (≈ une PR reviewable)
-- _vérif : <mode>_ = mode de vérification du lot — `TDD` (défaut) · `test-after` · `check` · `inhérent` (cf. guidance)
-- _Requirements:_ backref vers les FR/SC couverts (style Kiro)
+- `Rn` = **lot de review** : une *vertical slice* — une tranche qui traverse toutes les couches et
+  livre un morceau de fonctionnalité complet, relisable seul (≈ une PR)
+- `Tn` = **tâche** : un critère observable = un commit = une vérification au vert
+- _vérif : <mode>_ = comment le lot prouve qu'il est fait — `TDD` (le test avant le code, défaut) ·
+  `test-after` (le test après) · `check` (pas de test auto : une vérification observée) ·
+  `inhérent` (la preuve est le résultat lui-même, ex. le pipeline CI qui passe au vert)
+- _Requirements:_ = **backref** : les FR/SC que la tâche couvre — le fil qui dit pourquoi elle
+  existe (notation empruntée à l'outil Kiro d'AWS)
 
-## R1 — [capability nommable en une phrase]
+## R1 — [la capacité livrée, nommable en une phrase]
 _Livre : FR-001, FR-002_ · _vérif : TDD_ · _~180 lignes est._ · _3 concepts_ · dépend de : —
 Fichiers : `api/signup.ts`, `db/users.ts`, `ui/SignupForm.tsx`
 
@@ -33,7 +38,7 @@ Fichiers : `api/signup.ts`, `db/users.ts`, `ui/SignupForm.tsx`
 - [ ] T3 [P] — Écrire le test pour FR-002 _Requirements: FR-002_ ; dépend de : —
 - [ ] T4 — Implémenter FR-002 _Requirements: FR-002_ ; bloqué par : T3
 
-## R2 [P] — [autre capability]
+## R2 [P] — [une autre capacité livrée]
 _Livre : FR-003_ · _vérif : TDD_ · _~120 lignes est._ · _2 concepts_ · dépend de : —
 Fichiers : `api/reset.ts`, `ui/ResetForm.tsx`
 

@@ -1,5 +1,5 @@
 ---
-description: "Phase 5 du socle : fige les décisions structurantes en ADR dans docs/adr/NNNN-*.md, une par candidat — listé dans la Stack, posé en invariant par docs/archi.md, ou laissé en brouillon dans docs/adr/_candidates/ par le niveau specs (plan, premortem), dont c'est la voie de promotion. Format Nygard, statut Accepté, immuables. Boucle la traçabilité bidirectionnelle avec docs/stack.md et docs/archi.md."
+description: "Phase 5 du socle : fige les décisions structurantes en ADR (Architecture Decision Record : une décision consignée dans un fichier court et immuable une fois acceptée — le pourquoi qu'on relira dans six mois) dans docs/adr/NNNN-*.md, une par candidat — listé dans la Stack, posé en invariant par docs/archi.md, ou laissé en brouillon dans docs/adr/_candidates/ par le niveau specs (plan, premortem), dont c'est la voie de promotion. Format Nygard (contexte · décision · conséquences), statut Accepté, immuables. Boucle la traçabilité bidirectionnelle avec docs/stack.md et docs/archi.md."
 argument-hint: "(aucun — lit docs/stack.md et docs/archi.md)"
 allowed-tools:
   - Read
@@ -50,6 +50,16 @@ Ratio : 30% humain / 70% AI (dérivation depuis la Stack ; l'humain valide le co
   immuable, mais ce qu'un ADR a figé peut monter en invariant vérifié. Ici tu le **repères et
   tu le signales** — tu ne dérives aucun contrôle, et tu n'ajoutes rien à l'ADR pour le
   marquer : la phase `ci` re-dérive depuis `docs/adr/`, qui reste la source.
+- **Le problème avant les options.** Avant chaque arbitrage, pose le problème en deux ou trois
+  phrases : ce qui est en jeu pour ce projet, et en quoi les options diffèrent vraiment. Chaque
+  option décrit sa **conséquence en termes du projet**, jamais en jargon. Une option énoncée sans
+  son enjeu ne se choisit pas, elle se subit.
+- **Glose au premier emploi.** Le premier terme de méthode que tu adresses à l'humain — EARS,
+  gate, lot, ADR, invariant, advisory… — reçoit une glose d'**une ligne**, entre parenthèses ou
+  entre tirets. Jamais un paragraphe, jamais deux fois, et **plus du tout dès que l'humain
+  emploie le terme lui-même** : c'est ce signal-là qui règle le niveau, pas une question.
+- **Un ID se cite avec son intitulé** à sa première mention — « FR-003 (export CSV) », jamais
+  « FR-003 » nu. Un identifiant seul n'explique rien à qui ne l'a pas sous les yeux.
 
 ## Processus
 
@@ -86,7 +96,11 @@ Ratio : 30% humain / 70% AI (dérivation depuis la Stack ; l'humain valide le co
    - **Conséquences** — positives **et** négatives ; ce à quoi le code s'engage désormais ;
    - **Alternatives considérées** — au moins une, écartée, avec sa raison.
 
-   **Fais valider le contenu par l'utilisateur** avant de figer le statut « Accepté ».
+   **Fais valider le contenu par l'utilisateur** avant de figer le statut « Accepté » —
+   `AskUserQuestion`, **un ADR à la fois**, jamais un lot de dix d'un coup. Un ADR accepté est
+   **immuable** : c'est la seule occasion de le corriger, et c'est ce qu'il faut dire en posant la
+   question. Présente d'abord ce que la décision engage — ce à quoi le code se lie, ce qu'on ne
+   pourra plus faire sans coût —, puis demande : figer, amender, ou écarter le candidat.
 
 5. **Boucle la traçabilité — des deux côtés** : l'étape que rien d'autre ne rattrape.
    Renseigne la colonne « ADR » du tableau « Choix retenus » de `docs/stack.md` pour chaque

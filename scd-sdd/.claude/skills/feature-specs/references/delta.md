@@ -12,6 +12,17 @@ le delta fusionne dans la spec de vérité de la feature.
 # Delta : [changement] sur [feature existante]
 Statut : Proposé | Cible : specs/NNN-feature/spec.md · Créé : [date]
 
+## Légende
+- **Delta** — on ne réécrit pas la spec existante, on écrit **le seul changement**. Il fusionnera
+  dans la spec de vérité à l'archivage.
+- **EARS** (*Easy Approach to Requirements Syntax*) — la forme normée des critères. Les mots-clés
+  (`When`, `While`, `If…then`, `Where`, `shall`) sont la syntaxe de la méthode, pas un choix de
+  style, et restent donc en anglais.
+- **shall** — le verbe de l'exigence : une phrase = une exigence = **une vérification observable**.
+- **[ADDED] · [MODIFIED] · [REMOVED]** — la nature de chaque changement, pour qu'on sache d'un coup
+  d'œil ce qui est neuf, ce qui bouge et ce qui disparaît.
+- **_(PRD: FR-0xx)_** — la backref : le besoin produit que ce critère décline.
+
 ## Intention
 [Pourquoi ce changement, en 1-2 phrases. Trace vers le FR/SC déclencheur.]
 

@@ -586,6 +586,40 @@ pilotes par ton IDE si tu le veux.
 Et ce qui n'entre dans aucune des deux : **jalons, cycles, priorités, estimations, assignations —
 c'est à toi, chez Linear.** Rien dans les fichiers n'en est la source, donc rien ne les écrase.
 
+## Le langage envers l'humain — expliqué une fois, jamais deux
+
+Le cycle a son vocabulaire — lot `Rn`, gate, EARS, invariant, ADR, chantier, advisory — et il est
+volontairement précis, stable et greppable. Ce qui coûtait, ce n'était pas le mot : c'était qu'il
+n'était **défini nulle part pour l'humain**. Le plugin ne portait aucun glossaire, et aucune
+consigne ne demandait d'expliquer un terme au premier contact ; ses `## Définitions` s'adressent au
+modèle, pas à toi.
+
+Rien n'a été retiré du vocabulaire. Ce qui a été ajouté, ce sont des définitions, à trois endroits
+et pas un de plus :
+
+- **dans les documents produits** — cinq templates portent une `## Légende` (`spec`, `delta`,
+  `prd`, `archi`, `tasks`) : elle définit les notations là où on les lit, et pas dans un fichier
+  qu'on n'ouvrira jamais. C'est aussi elle qui dit enfin **pourquoi les critères EARS sont en
+  anglais** : les cinq mots-clés (`When`, `While`, `If…then`, `Where`, `shall`) sont la syntaxe de
+  la méthode, pas un choix de style — le PRD, lui, n'emprunte l'anglais qu'aux trois mots-clés d'un
+  scénario (`Given`/`When`/`Then`), glosés dans sa propre Légende ;
+- **dans ce que la commande t'affiche** — descriptions du menu `/`, rapports, sorties de fin. Le
+  rapport d'`analyze` dit désormais ce que son échelle signifie ; le gate de `premortem` ouvre
+  chaque remédiation sur *ce que le risque ferait au produit*, avant le fichier et l'ID ; un
+  statut `blocked-*` s'affiche avec sa traduction ;
+- **en session** — les 17 commandes qui dialoguent posent **le problème avant les options**, et
+  chaque option décrit sa conséquence en termes du projet, jamais en jargon. Une option énoncée
+  sans son enjeu ne se choisit pas, elle se subit.
+
+Deux commandes d'entrée — `/scd-sdd:init-project` et `/scd-sdd:kickoff-feature` — affichent en plus
+un bloc **« Vocabulaire — à lire une fois »**. Il est **conditionnel** : seulement si le socle est
+encore incomplet pour la première, seulement pour la première feature du projet pour la seconde.
+
+Et la règle qui borne tout le reste, parce que sans elle le remède serait pire que le mal : **une
+glose fait une ligne, arrive une fois, et s'arrête complètement dès que tu emploies le terme
+toi-même.** C'est ce signal-là qui règle le niveau — le plugin ne te demandera jamais si tu
+connais un mot.
+
 ## Migration depuis les trois plugins
 
 ```

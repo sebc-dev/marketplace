@@ -1,5 +1,5 @@
 ---
-description: "Phase 1 des specs : produit specs/NNN-slug/spec.md par interview « une question à la fois ». Critères d'acceptation en EARS, FR atomiques traçant vers le PRD, scope EXCLU, marqueurs [NEEDS CLARIFICATION] posés et non résolus. Technology-agnostic. Racine de la traçabilité feature."
+description: "Phase 1 des specs : produit specs/NNN-slug/spec.md par interview « une question à la fois ». Critères d'acceptation en EARS (des exigences en phrases normées, directement traduisibles en test), FR atomiques traçant vers le PRD, scope EXCLU, marqueurs [NEEDS CLARIFICATION] posés et non résolus (les ambiguïtés sont marquées, jamais tranchées en silence). Technology-agnostic (aucun choix technique n'entre ici). Racine de la traçabilité feature."
 argument-hint: "[NNN ou slug — optionnel, résolu sinon]"
 allowed-tools:
   - Read
@@ -32,6 +32,17 @@ Ratio : 60% humain / 40% AI (l'humain répond, tu structures en EARS).
   `[NEEDS CLARIFICATION : …]`. Trancher en silence est le défaut que `clarify` existe pour
   rattraper.
 - N'écris le fichier qu'**après** que l'interview a couvert le template.
+- **Le problème avant les options.** Avant chaque arbitrage, pose le problème en deux ou trois
+  phrases : ce qui est en jeu pour ce projet, et en quoi les options diffèrent vraiment. Chaque
+  option décrit sa **conséquence en termes du projet**, jamais en jargon. Une option énoncée sans
+  son enjeu ne se choisit pas, elle se subit.
+- **Glose au premier emploi.** Le premier terme de méthode que tu adresses à l'humain — EARS,
+  gate, lot, ADR, invariant, advisory… — reçoit une glose d'**une ligne**, entre parenthèses ou
+  entre tirets. Jamais un paragraphe, jamais deux fois, et **plus du tout dès que l'humain
+  emploie le terme lui-même** : c'est ce signal-là qui règle le niveau, pas une question.
+- **Un ID se cite avec son intitulé** à sa première mention — « FR-003 (export CSV) », jamais
+  « FR-003 » nu. Un identifiant seul n'explique rien à qui ne l'a pas sous les yeux.
+- **Tu parles la langue de l'humain**, dans les questions comme dans le rapport.
 
 ## Processus
 

@@ -1,5 +1,5 @@
 ---
-description: "Curatif anti-orphelinage : re-rebase les PR de lot déjà ouvertes quand la dépendance dont elles dépendent vient d'être mergée (le cas « R1 mergé → rebase R2 »). Détecte la dérive depuis tasks.md et l'état des PR, calcule base/oldBase de façon déterministe, délègue le rebase à l'agent rebaser, puis retargete la base de la PR vers la branche par défaut, la passe ready et retire le label needs-sync. Ne résout aucun conflit automatiquement. Consigne l'action au journal."
+description: "Curatif anti-orphelinage (orphelinage : une PR de lot mergée dans une branche de lot intermédiaire au lieu de la branche par défaut — son code n'arrive jamais dans le produit) : re-rebase les PR de lot déjà ouvertes quand la dépendance dont elles dépendent vient d'être mergée (le cas « R1 mergé → rebase R2 »). Détecte la dérive depuis tasks.md et l'état des PR, calcule base/oldBase de façon déterministe, délègue le rebase à l'agent rebaser, puis retargete la base de la PR vers la branche par défaut, la passe ready et retire le label needs-sync. Ne résout aucun conflit automatiquement. Consigne l'action au journal."
 argument-hint: "[NNN|slug] [Rn]"
 allowed-tools:
   - Read

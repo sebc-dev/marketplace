@@ -17,7 +17,8 @@ Produit par interview « une question à la fois » — c'est le document le plu
 [Le "done" au niveau produit, mesurable si possible.]
 
 ## Utilisateurs & cas d'usage principaux
-- [persona] → [job-to-be-done]
+- [persona] → [job-to-be-done : ce que cette personne cherche à accomplir, pas la fonctionnalité
+  qu'elle demanderait]
 
 ## Périmètre
 - Inclus (v1) : [...]
