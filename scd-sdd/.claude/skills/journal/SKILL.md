@@ -5,8 +5,8 @@ description: |
   spec-driven : emplacement, format, règle d'ajout, vocabulaire de chaque phase, et la
   frontière événement-vs-état qui décide ce qui a le droit d'y figurer. Se charge quand une
   commande /scd-sdd:* consigne la phase qu'elle vient de jouer — les 19 commandes de phase,
-  d'init-project à reland — plus premortem et revise-contract, qui ne sont pas des phases mais
-  ne laissent aucun marqueur. Ni lookup, ni research, ni les commandes linear* n'y écrivent :
+  d'init-project à reland — plus premortem, revise-contract et audit, qui ne sont pas des phases
+  mais dont le résultat ne se dérive d'aucun fichier. Ni lookup, ni research, ni les commandes linear* n'y écrivent :
   leur rapport, ou docs/linear.md et le miroir lui-même, est le fait (skills research, linear).
   Porte UNIQUEMENT le journal : ni la dérivation de l'état depuis les fichiers (skills
   project-docs, feature-specs, implement), ni le travail hors des phases du cycle, qui est un
@@ -27,7 +27,7 @@ Le journal est donc la **chronologie des phases jouées** — une ligne par phas
 qui n'est dérivable de nulle part**. Chaque commande concernée y consigne son résultat ; les trois
 `status` ne consignent rien, ils lisent.
 
-Et parmi ces lignes, **quatre faits ne sont connaissables que là**, parce qu'ils ne laissent aucune
+Et parmi ces lignes, **cinq faits ne sont connaissables que là**, parce qu'ils ne laissent aucune
 trace sur disque :
 
 | Fait | Pourquoi il n'est pas dérivable |
@@ -36,13 +36,14 @@ trace sur disque :
 | un `premortem` appliqué | il édite les documents de sa cible sans y laisser de marqueur |
 | l'issue d'un lot | un run **bloqué** ne coche rien et ne produit aucune PR |
 | le résultat d'une `revise-contract` | elle édite `CLAUDE.md` sans y laisser de marqueur, et une passe sans édition ne laisse rien du tout |
+| le verdict d'un `audit` | le document jugé sort **bit pour bit identique**, et la fiche qu'il ouvre porte la liste de travail, **jamais** le verdict — une passe `CONFORME` peut même n'ouvrir aucune fiche |
 
-Sans le journal, ces quatre-là sont perdus à la fin de la session. Les autres lignes, elles, sont
+Sans le journal, ces cinq-là sont perdus à la fin de la session. Les autres lignes, elles, sont
 redondantes avec les fichiers **par leur existence** mais pas **par leur date** : c'est ce qui rend
 la péremption détectable.
 
 **La règle n'est donc pas « une phase journalise ».** C'est **« ce qui n'est dérivable de nulle
-part se consigne »**. Les **trois** capacités transverses le montrent en se départageant :
+part se consigne »**. Les **quatre** capacités transverses le montrent en se départageant :
 `research` n'écrit **aucune** ligne, parce que le rapport qu'il produit **est** le fait ; le
 miroir `linear` non plus, et pour **deux** motifs qui lui sont propres — le setup et le push
 parce que le miroir est **idempotent et interrogeable chez Linear** et que le fait produit par le
@@ -52,7 +53,8 @@ laissé à consigner ; `premortem`, lui, écrit une ligne, parce
 qu'il ne produit aucun artefact propre — il modifie des documents existants sans y laisser de
 marqueur — alors même qu'il n'est pas une phase et n'apparaît dans aucune table de dérivation. Sa
 seule exception : la cible `chantier`, où la fiche modifiée **est** le fait et où son
-`Actualisé le` date le durcissement (skill `chantier`).
+`Actualisé le` date le durcissement (skill `chantier`). L'`audit`, lui, écrit une ligne parce qu'il
+**n'écrit rien** dans ce qu'il juge : sa fiche porte la liste de travail, jamais le verdict.
 
 ## La frontière : un événement — ni un état, ni un chantier
 
@@ -150,6 +152,7 @@ Court, chiffré, factuel. Ce qu'on veut relire dans six mois — pas une phrase.
 | `ci` | la forge · nb de contrôles bloquants et informatifs · seuil de couverture différentielle |
 | `contract` | nb de principes · taille de la DoD |
 | `revise-contract` | taille avant → après · Commandes resynchronisées ou alignées · nb de signalements |
+| `audit` | **verdict en gras** — la cible auditée · nb Critical (avec leur cause en clair) · nb Major, arbitrés ou non |
 | `kickoff-feature` | dossier `NNN-slug` créé · échelle · greenfield ou delta |
 | `specify` | nb FR · nb `[NEEDS CLARIFICATION]` |
 | `clarify` | nb résolus · nb restants |

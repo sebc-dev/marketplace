@@ -76,6 +76,14 @@ Ratio : 50% humain / 50% AI (la machine détecte et propose, l'humain tranche ch
    sous-dossiers : la hiérarchie est additive et sans précédence, donc le contrôle de contradiction
    en a besoin. Tu les lis, tu ne les édites jamais.
 
+   Cherche enfin, toujours par `Glob`, une **fiche d'audit ouverte** :
+   `docs/chantiers/en-cours/*-audit-claude-md.md`. Si elle existe, son `## À corriger` — **Lot C** —
+   porte des constats déjà établis sur ce contrat par `/scd-sdd:audit claude-md`, dont c'est la
+   seule voie de traitement : l'audit **détecte** et renvoie ici, il n'édite jamais `CLAUDE.md`. Tu
+   les reprends comme des **constats d'entrée**, au même titre que les tiens, et ils passent par le
+   **même gate** — un audit ne décide pas à la place de l'humain. Aucune fiche → rien à reprendre,
+   ce n'est pas une anomalie.
+
 3. **Passe le volet mécanique** — les 4 contrôles du bloc `<revision>`, tranchés sans jugement. La
    taille se lit sur les numéros de ligne que `Read` te rend ; chaque pointeur se vérifie par
    `Glob` — un `@chemin` ou un chemin en backticks qui ne résout pas fait croire à un document.
@@ -87,7 +95,8 @@ Ratio : 50% humain / 50% AI (la machine détecte et propose, l'humain tranche ch
 
 5. **Rends le rapport en deux listes séparées**, dans la forme que fixe le bloc `<revision>` : les
    **éditions proposées** — une par ligne, numérotée : section, extrait visé, geste (retirer ·
-   resynchroniser · déplacer vers un renvoi), motif en une phrase —, puis les **signalements** —
+   resynchroniser · déplacer vers un renvoi), motif en une phrase, et sa **provenance** quand elle
+   vient de la fiche d'audit plutôt que de tes contrôles —, puis les **signalements** —
    mécanisme visé, ce qui y appartiendrait, qui doit le créer. Si les deux listes sont vides,
    dis-le : le contrat tient tel quel.
 
@@ -115,6 +124,9 @@ Ratio : 50% humain / 50% AI (la machine détecte et propose, l'humain tranche ch
 - Tu ne crées ni skill, ni rule, ni hook, ni fichier d'aucune sorte — tu les nommes.
 - Tu ne corriges pas `docs/ci.md` depuis `CLAUDE.md`, et tu ne complètes aucun `[à compléter]`.
 - Tu ne crées pas `CLAUDE.md` s'il manque, et tu ne touches à aucun autre document du socle.
+- **Tu ne touches pas à la fiche d'audit** : tu la lis, tu ne la coches pas, tu ne l'archives pas.
+  C'est `/scd-sdd:audit claude-md`, rejoué, qui constate ce qui a disparu et referme la fiche — et
+  tu n'as de toute façon ni `Write` ni `git mv`.
 - Tu n'écris rien avant que l'humain ait tranché.
 
 ## Consigne au journal
@@ -156,6 +168,9 @@ Rappelle, dans cet ordre :
    plutôt qu'un ajout : `docs/ci.md` a changé — la section Commandes en est une recopie, et rien ne
    la rejoue — et le projet a **changé de génération de modèle**, une règle utile à l'ancien pouvant
    nuire au nouveau.
-3. **Ne pas rejouer `/scd-sdd:contract`** sur ce projet : il ré-assemblerait depuis le template et
+3. **La fiche d'audit**, si tu en as consommé une : elle reste **ouverte**, et c'est voulu — tu ne
+   la refermes pas. Renvoie vers « `/clear`, puis `/scd-sdd:audit claude-md` » : la passe suivante
+   constatera ce qui a disparu, et archivera la fiche si plus rien ne reste.
+4. **Ne pas rejouer `/scd-sdd:contract`** sur ce projet : il ré-assemblerait depuis le template et
    écraserait ce que le premortem et l'humain ont ajouté. L'entretien passe par ici, et seulement
    par ici.

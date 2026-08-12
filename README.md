@@ -45,7 +45,7 @@ state and survives a `/clear`. Two skills: `research-prompter` composes Research
 subject, specialised by domain packs; `campaign` orchestrates and composes nothing itself.
 Human-in-the-loop by construction: no session can launch Research. 7 slash commands.
 
-### [scd-sdd](./scd-sdd/) `v1.12.3`
+### [scd-sdd](./scd-sdd/) `v1.13.0`
 
 Complete spec-driven development cycle, from empty repo to reviewable PR — one plugin, three
 chained levels. **Foundation** (once per project): brief → PRD → stack → architecture invariants →
@@ -53,7 +53,7 @@ foundational ADRs → CI → CLAUDE.md, by one-question-at-a-time interview, whe
 deterministic and verifiable *outside the agent* what CLAUDE.md can only advise. **Specs** (once per
 feature): specify → clarify → plan → tasks → analyze conformance gate (15 checks), with EARS acceptance
 criteria, Kiro backrefs, and review lots (`Rn`) sized so a human can actually review each one.
-**Implementation** (one lot at a time): a dynamic workflow orchestrating 20 dedicated subagents —
+**Implementation** (one lot at a time): a dynamic workflow orchestrating 21 dedicated subagents —
 dedicated branch, verification per the lot's declared mode (TDD by default, else test-after /
 check / inherent), fresh-context code review, adversarial finding triage, PR description as a
 review artifact, one ready-for-review PR per lot — with stacked-PR anti-orphaning and real
@@ -76,13 +76,14 @@ Each one becomes an ADR, then an `arch-invariants` check; `plan` confronts every
 
 State is always derived from files, never from a state file: `/clear` wipes the context, not the
 progress. No shared file grows. Each phase appends a dated line to its own target's journal
-(`docs/journal/socle.md` or `NNN-slug.md`), the only place four facts live: the analyze verdict,
+(`docs/journal/socle.md` or `NNN-slug.md`), the only place five facts live: the analyze verdict,
 applied premortem remediations, a lot's outcome (including a blocked run), and the outcome of a
-contract revision (including a pass that changes nothing). Work outside the
+contract revision (including a pass that changes nothing), and an audit verdict — the judged
+document comes out byte-for-byte identical, so nothing else carries it. Work outside the
 phases — or interrupted mid-flight by a `/clear` — becomes a **chantier**: a card under
 `docs/chantiers/`, whose state *is* its directory.
 
-Three capabilities are **transverse**, outside the phases and never reported as missing.
+Four capabilities are **transverse**, outside the phases and never reported as missing.
 **Research**: `/scd-sdd:lookup` answers in-session and writes nothing, `/scd-sdd:research`
 composes a Claude Research prompt then files and critically re-reads the report — a report never
 descends into the foundation on its own. **Premortem**: `/scd-sdd:premortem` assumes failure and
@@ -119,10 +120,24 @@ stacked) so the native GitHub integration transitions the issue — best-effort,
 never in the title or the branch name. Linear's official MCP server is documented as *your IDE's*
 equipment; no command ever calls it.
 
+The fourth is the **audit**. Foundation documents were written by interview and then consumed
+as-is: the specs level has `analyze`, the foundation had nothing, and the three dashboards only
+test that a document *exists*. `/scd-sdd:audit` judges **one** of them — `brief`, `prd`, `stack`,
+`archi`, `adr`, `ci` or `CLAUDE.md` — against a conformance grid: completeness against its
+template, leftover markers, every ID and cross-reference resolving upstream, coherence, form. A
+read-only explorer **collects evidence without judging** (verbatim quotes, line numbers), the
+session judges, the human arbitrates the Majors, and only then does the command write — **exactly
+two things**: the verdict as a dated journal line (`CONFORME` only on zero Critical), and the
+work list as an ordinary chantier card, grouped by correction route. The judged document is never
+one of them: it comes out byte-for-byte identical, `CLAUDE.md` findings are routed to
+`/scd-sdd:revise-contract` rather than edited, and an accepted ADR can only be superseded. It is
+a capability with **dimensions**, not a one-off audit — a future dimension is one more block in
+the dimensions reference, not a new command.
+
 Throughout, the plugin **explains its own vocabulary once**. Its terms — review lot `Rn`, gate,
 EARS, invariant, ADR — stay precise and greppable; what changed is that they are now defined where
 you meet them: a `## Légende` in five produced-document templates (including *why* EARS criteria
-stay in normed English), a glossed term in every command description and report, and — in the 22
+stay in normed English), a glossed term in every command description and report, and — in the 23
 commands that hold a dialogue — **the problem stated before the options**, each option carrying its
 consequence in project terms rather than jargon. Work-in-progress management is part of that:
 `/scd-sdd:resume` no longer just lists four possible follow-ups, it says what each one does — and
@@ -133,7 +148,7 @@ shows the repo object next to the Linear candidate and states what the wrong ans
 **two issues for the same lot, which the mirror will never remove**.
 A gloss is one line, appears once, and stops entirely as soon as you use the term yourself.
 
-32 slash commands, including three dashboards — `/scd-sdd:status` (all three levels in one view,
+33 slash commands, including three dashboards — `/scd-sdd:status` (all three levels in one view,
 plus the next command to run), `/scd-sdd:status-specs`, `/scd-sdd:status-impl` (merge-safety of
 every lot PR) — and `/scd-sdd:migrate` to pick up a project coming from the three former plugins.
 Replaces `scd-project-docs`, `scd-feature-specs` and `scd-implement`.

@@ -5,10 +5,10 @@ description: |
   ne relève d'aucune des phases du cycle, ou qu'un /clear interrompt en vol. Format, état
   porté par le répertoire (en-cours / en-attente / archive), manifeste de contexte chargé
   à la demande, contrôle de fraîcheur, sélection par branche pour les worktrees, cycle de
-  vie. Se charge pendant /scd-sdd:pause, resume et note, quand analyze, ci ou premortem
-  écrivent leur fiche, et quand une commande — les status, les phases specs devant une
-  fiche de gate — ou le hook SessionStart en lit une. Porte UNIQUEMENT les chantiers : ni
-  la chronologie des phases jouées (skill journal), ni la dérivation de l'état du cycle
+  vie. Se charge pendant /scd-sdd:pause, resume et note, quand analyze, ci, premortem ou
+  audit écrivent leur fiche, et quand une commande — les status, les phases specs devant
+  une fiche de gate — ou le hook SessionStart en lit une. Porte UNIQUEMENT les chantiers :
+  ni la chronologie des phases jouées (skill journal), ni la dérivation de l'état du cycle
   depuis les fichiers (skills project-docs, feature-specs, implement), ni le contenu des
   documents produits. Une fiche ne dit jamais où en est le projet.
 ---
@@ -105,8 +105,9 @@ Faire passer FR-004 au vert sans toucher au middleware de session.
 ```
 
 - **`Portée`**, vocabulaire fermé donc greppable : `NNN-slug · lot Rn` | `NNN-slug · gate` |
-  `NNN-slug` | `socle` | `hors-cycle`. La portée `· gate` est la liste de corrections laissée par
-  `/scd-sdd:analyze` — contrat dans `feature-specs/references/analyze.md`, section `<gate>`.
+  `NNN-slug` | `socle` | `socle · audit` | `hors-cycle`. Deux sont des listes de corrections :
+  `· gate`, laissée par `/scd-sdd:analyze` (contrat `feature-specs/references/analyze.md`, section
+  `<gate>`), et `socle · audit`, laissée par `/scd-sdd:audit` (`audit/references/dimensions.md`).
 - **`branche`** porte une double charge : c'est l'**ancre de fraîcheur** *et* la **clé de sélection
   par worktree**. Ne l'omets jamais.
 - **`## Écarté` est la rubrique de plus forte valeur** : rien d'autre dans le projet ne porte les
@@ -173,7 +174,7 @@ l'invalidation se **calcule à la lecture**, elle n'est pas un artefact.
 |---|---|---|
 | ouverture / actualisation | `pause` | écrit dans `en-cours/` après validation humaine, puis commite |
 | travail déjà terminé | `note` | écrit directement dans `archive/`, avec `## Issue` |
-| liste de corrections de gate | `analyze` | ouvre ou actualise `en-cours/…-gate-<cible>.md` ; au PRÊT, ajoute `## Issue` et archive |
+| liste de corrections | `analyze` (gate de specs) · `audit` (document du socle) | ouvre ou actualise `en-cours/…-gate-<cible>.md`, ou `…-audit-<document>.md` ; au verdict vert — `PRÊT`, `CONFORME` —, ajoute `## Issue` et archive. L'audit ne touche **jamais** le document jugé |
 | durcissement différé | `ci` · `premortem` | écrivent dans `en-attente/` — plan de durcissement CI, ou risque de premortem qui ne se referme par aucun texte ; repris via `resume`. La cible `chantier` de `premortem` édite la fiche et actualise `Actualisé le`, **sans ligne de journal** |
 | annonce | hook `SessionStart` | lit l'en-tête, n'écrit rien, n'affirme aucune fraîcheur |
 | signalement | `status`, `status-impl`, phases specs (fiche de gate) | lisent sous contrôle de fraîcheur — l'en-tête seul pour les `status` |

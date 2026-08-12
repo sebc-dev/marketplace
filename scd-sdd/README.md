@@ -76,6 +76,11 @@ Cycle spec-driven complet, du projet vide à la PR — en un seul plugin.
 |---|---|
 | `/scd-sdd:revise-contract` | révise `CLAUDE.md` contre une checklist à deux volets, présente ses constats et **attend l'humain** avant la moindre édition — elle **retire et resynchronise**, elle ne ré-assemble jamais |
 
+### Audit
+| Commande | Effet |
+|---|---|
+| `/scd-sdd:audit` | juge **un** document du socle — `brief` `prd` `stack` `archi` `adr` `ci` `claude-md` — contre une grille de conformité. Verdict `CONFORME` ou `À CORRIGER` au journal, corrections dans une fiche de chantier ; **le document jugé sort bit pour bit identique** |
+
 ### Miroir Linear — **opt-in**
 | Commande | Effet |
 |---|---|
@@ -102,11 +107,12 @@ fichier par cible, donc borné par construction — une commande de phase ne lit
 le sien. Seuls les trois `status` n'écrivent rien : ils lisent, et par extraction (`grep`),
 jamais en ouvrant un fichier entier.
 
-Parmi ces lignes, quatre faits ne sont connaissables que là, parce qu'ils ne laissent
+Parmi ces lignes, cinq faits ne sont connaissables que là, parce qu'ils ne laissent
 aucune trace sur disque : le verdict d'une gate `analyze`, les remédiations d'un
 `premortem`, l'issue d'un lot (y compris un run bloqué, qui ne coche rien et n'ouvre
-aucune PR), et le résultat d'une `revise-contract` (y compris une passe qui ne débouche
-sur aucune édition).
+aucune PR), le résultat d'une `revise-contract` (y compris une passe qui ne débouche
+sur aucune édition), et le verdict d'un `audit` — le document jugé sortant **bit pour
+bit identique**, rien d'autre ne le porte.
 
 ### Les chantiers — ce qui est ouvert
 
@@ -434,6 +440,58 @@ réclamée par `status`. Comme le premortem, elle **journalise** (`docs/journal/
 modifie un document existant sans y laisser de marqueur, et une passe **sans aucune édition** se
 consigne aussi : c'est un résultat, pas une absence de fait.
 
+## L'audit — juger un document produit, sans jamais le réécrire
+
+Le socle s'écrit par interview, puis se consomme tel quel. Le niveau specs a `analyze` — 15
+contrôles, un verdict, une fiche de gate ; le socle n'avait **rien** d'équivalent, et les trois
+`status` ne testent que l'**existence** des documents. La chaîne
+`Brief → PRD → Stack → Archi → ADR → CI → CLAUDE.md` propageait donc un défaut d'amont sans que
+rien ne le voie : un `FR` sans lien vers le Brief, un candidat ADR listé dans `stack.md` que la
+phase `adr` n'a jamais instruit, un invariant sans trace observable, un pointeur mort dans
+`CLAUDE.md`.
+
+`/scd-sdd:audit` juge **un** document, frais de sa phase, contre une grille — complétude face au
+template, marqueurs restants, traçabilité vers l'amont, cohérence, forme —, plus les contrôles
+propres à ce document. La méthode tient en **quatre temps** : un explorateur en lecture seule
+**collecte les preuves sans juger** (citations verbatim, numéros de ligne, résolution de chaque
+ID et de chaque renvoi), la **session juge**, l'**humain arbitre** les Major, puis la commande
+écrit. Verdict binaire — **`CONFORME` uniquement si zéro Critical** —, et son vocabulaire est
+délibérément distinct du `PRÊT | CORRIGER D'ABORD` d'`analyze` : deux gates différentes ne
+portent pas le même mot.
+
+La propriété qui la rend rejouable sans risque : **elle écrit exactement deux choses**, et le
+document jugé n'en fait pas partie.
+
+| Écriture | Où | Quoi |
+|---|---|---|
+| le **verdict** | `docs/journal/socle.md` | une ligne datée — c'est le seul endroit où il existe. Une passe `CONFORME` **sans fiche** se consigne aussi : l'absence de ligne se lirait comme un audit jamais joué |
+| la **liste de travail** | `docs/chantiers/en-cours/…-audit-<document>.md` | une fiche **ordinaire**, portée `socle · audit` — les Critical, les Major non arbitrés, les arbitrages en `## Écarté`. Les Minor restent en conversation |
+
+Le `## À corriger` est organisé **en lots par voie de correction**, et deux documents ont une voie
+d'exception : **Lot A**, éditions chirurgicales reprises par `/scd-sdd:resume audit-<document>` —
+la fiche n'a besoin d'**aucun outillage neuf** ; **Lot B**, candidat ou supersede dans
+`docs/adr/_candidates/` — **seule** voie pour la cible `adr`, un ADR accepté étant immuable ;
+**Lot C**, renvois et signalements — les findings de `CLAUDE.md` renvoient vers
+`/scd-sdd:revise-contract`, l'audit **détectant sans jamais éditer** (trois écrivains du contrat,
+pas quatre), et un défaut vu dans l'**amont** est **nommé** avec la commande qui le traiterait,
+jamais corrigé ici.
+
+Deux choses la tiennent en place. Le `/clear` **prescrit dans le texte** des sept accroches : la
+session qui juge n'est pas celle qui a rédigé, et si elle l'est, la commande le **signale** —
+`producteur ≠ vérificateur` ne se décrète pas, il s'organise. Et l'**appariement entre passes** :
+relancée, la commande relit la fiche ouverte et distingue ce qui a été corrigé de ce qui revient,
+au lieu de repartir de zéro.
+
+Enfin, la commande est une **capacité à dimensions**, pas un audit unique : la dimension change
+les documents jugés et la grille, jamais la méthode. Une seule est livrée — `validation-socle`,
+sur les sept documents du socle. Une dimension future — sécurité, UX, cohérence documentaire —
+est **un bloc de plus** dans la référence des dimensions, et rien d'autre : ni commande neuve, ni
+skill neuf, ni agent neuf.
+
+Comme la recherche, le premortem et l'entretien, ce n'est **pas une phase** : rien ne la réclame,
+`status` ne la signale jamais comme manquante, et un document non audité n'est pas un document
+incomplet.
+
 ## Le miroir Linear — opt-in, poussé, et strictement à sens unique
 
 Le suivi du cycle est **entièrement fichier**, et ça ne bouge pas. Mais une équipe qui
@@ -607,7 +665,7 @@ et pas un de plus :
   rapport d'`analyze` dit désormais ce que son échelle signifie ; le gate de `premortem` ouvre
   chaque remédiation sur *ce que le risque ferait au produit*, avant le fichier et l'ID ; un
   statut `blocked-*` s'affiche avec sa traduction ;
-- **en session** — les 22 commandes qui dialoguent posent **le problème avant les options**, et
+- **en session** — les 23 commandes qui dialoguent posent **le problème avant les options**, et
   chaque option décrit sa conséquence en termes du projet, jamais en jargon. Une option énoncée
   sans son enjeu ne se choisit pas, elle se subit. La gestion de chantier en fait partie :
   `/scd-sdd:resume` ne se contente plus de lister quatre suites possibles, il dit ce que chacune

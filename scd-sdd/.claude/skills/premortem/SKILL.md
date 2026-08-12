@@ -131,6 +131,11 @@ que l'implémentation suivra pendant des mois. Son `Actualisé le` suffit à dat
 - **Pas une gate.** Il ne rend aucun verdict, ne bloque rien, n'atteste de rien. `analyze` juge la
   **conformité** ; le premortem pose une question orthogonale — *conforme, et pourtant condamné ?*
   Ne double jamais les findings d'`analyze`, d'`ears-verifier` ou de `slice-auditor`.
+- **Pas un audit.** `/scd-sdd:audit` juge la **conformité** d'**UN** document frais — complétude
+  face à son template, traçabilité vers l'amont, cohérence avec lui. Ces trois-là sont **l'affaire
+  de l'audit** ; toi, tu cherches ce que la conformité ne voit pas : *conforme, et pourtant
+  condamné ?* Un document parfaitement conforme peut porter l'hypothèse qui coule le projet, et
+  c'est la seule chose que tu remontes.
 - **Pas une revue de code.** Il travaille sur des documents. Le code n'existe pas encore, ou n'est
   pas le sujet : on ne lit pas d'implémentation, on n'exécute aucun test.
 - **Pas une session de conception.** Il ne prescrit pas *comment* faire. Une décision structurante

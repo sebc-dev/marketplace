@@ -15,9 +15,13 @@ qui dépasse ne se coupe pas au hasard : il se **déplace**, et la section Renvo
 ne se rejoue **pas** sur un fichier existant : il écraserait les remédiations de `premortem socle`
 et tout ajout humain. `/scd-sdd:revise-contract` **entretient** — retirer, resynchroniser, déplacer ; jamais enrichir.
 
-**Deux points de chargement, et le second est partiel :** `/scd-sdd:contract` lit **tout sauf
-`<revision>`** ; `/scd-sdd:revise-contract` ne lit que **`<guidance>` et `<revision>`**. Lui cacher
-le `<template>` est délibéré — le bloc `<revision>` dit pourquoi.
+**Trois points de chargement, et aucun n'est intégral :** `/scd-sdd:contract` lit **tout sauf
+`<revision>`** ; `/scd-sdd:revise-contract` ne lit que **`<guidance>` et `<revision>`** — lui cacher
+le `<template>` est délibéré, le bloc `<revision>` dit pourquoi ; et l'agent **`audit-explorer`** ne
+lit que le **`<template>`**, quand `/scd-sdd:audit claude-md` juge le contrat. Il n'en tire que la
+**liste des sections attendues** et ne le recopie nulle part (`DECISIONS.md` §D20). L'audit
+**détecte et renvoie ici** : il n'édite jamais `CLAUDE.md`, qui garde **trois** écrivains et pas
+quatre (§D29).
 </role>
 
 <template>

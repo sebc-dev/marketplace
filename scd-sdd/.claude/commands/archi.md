@@ -184,5 +184,12 @@ Rappelle ce que la phase laisse ouvert : les invariants sont des **candidats** t
 colonne ADR est vide, et ils ne seront **vérifiés** que si `/scd-sdd:ci` en dérive des
 contrôles — informatifs jusqu'à mesure.
 
+Propose ensuite l'**audit**, optionnel : « Pour vérifier que `docs/archi.md` est complet, que chaque
+invariant nomme sa trace observable et que les caractéristiques tracent vers le PRD : `/clear`, puis
+`/scd-sdd:audit archi`. L'audit confronte le document à une grille et rend une **liste de travail** —
+il ne touche jamais au document lui-même. Le `/clear` n'est pas cosmétique : juger ce qu'on vient
+d'écrire, c'est relire ses intentions au lieu du texte. Rien ne l'exige — sans audit, la suite est
+`/scd-sdd:adr`. »
+
 Puis : « `/clear`, puis `/scd-sdd:adr` — qui promeut les candidats de la Stack **et** les
 invariants d'`archi`. »

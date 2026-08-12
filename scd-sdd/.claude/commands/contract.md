@@ -156,7 +156,15 @@ par `Edit` ciblé (crée le fichier s'il manque) :
 
 Le socle est complet, en sept documents : Brief, PRD, Stack, **Archi**, ADR, **CI**,
 CLAUDE.md.
-Récapitule les quatre étapes recommandées, dans cet ordre :
+Propose l'**audit**, optionnel : « Pour vérifier que `CLAUDE.md` est complet, que ses pointeurs
+résolvent et que sa section Commandes correspond à `docs/ci.md` : `/clear`, puis
+`/scd-sdd:audit claude-md`. L'audit confronte le document à une grille et rend une **liste de
+travail** — il ne touche **jamais** à `CLAUDE.md` : ce qu'il remonte se traite par
+`/scd-sdd:revise-contract`. L'audit détecte, l'entretien édite ; ils ne se remplacent pas. Le
+`/clear` n'est pas cosmétique : juger ce qu'on vient d'écrire, c'est relire ses intentions au lieu
+du texte. Rien ne l'exige. »
+
+Récapitule ensuite les quatre étapes recommandées, dans cet ordre :
 
 1. **Ce qui reste déterministe à poser** — la protection de branche si `docs/ci.md` la
    porte encore **À POSER**, puis le blindage local et le hook d'immutabilité des ADR.

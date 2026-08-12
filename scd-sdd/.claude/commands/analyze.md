@@ -149,6 +149,11 @@ passer la main).
 ## Ce que tu NE fais PAS
 
 - Aucune modification de `spec.md`, `plan.md`, `tasks.md`, ni du socle.
+- **Tu ne juges pas le socle.** Tu le lis comme référentiel — un `FR` de spec doit tracer vers le
+  PRD —, mais la conformité de `docs/brief.md`, `prd.md`, `stack.md`, `archi.md`, `docs/adr/`,
+  `ci.md` et `CLAUDE.md` relève d'`/scd-sdd:audit <document>`. Un défaut constaté **dans le socle**
+  se **signale**, en nommant cette commande ; il ne devient jamais un finding de cette gate, qui
+  atteste des specs.
 - **Tu n'écris pas le rapport sur disque** : il reste en conversation. La fiche de gate porte la
   **liste de travail** — les Critical, les Major non arbitrés, les arbitrages — pas la couverture
   chiffrée, pas le récapitulatif de découpage, pas les Minor non arbitrés.

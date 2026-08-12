@@ -22,6 +22,14 @@ sous ~10-15 % après réglage · latence compatible avec le budget de la PR · c
 sans réglage récurrent. Il en rate un → **informatif** (il annote la PR, il ne bloque pas). Le coût
 opérationnel fait partie du calcul : **un contrôle bruyant finit désactivé**, et son efficacité
 théorique tombe alors à zéro.
+
+**Où cette référence se charge — deux points, et le second est partiel :**
+
+1. par `/scd-sdd:ci`, **intégralement** : c'est le template et la méthode de la phase ;
+2. par l'agent **`audit-explorer`**, le **seul bloc `<template>`**, quand `/scd-sdd:audit ci` juge
+   ce document. Il n'en tire que la **liste des sections attendues** et ne le recopie nulle part
+   (`DECISIONS.md` §D20) : produire le document appartient à la phase, constater ce qui y manque à
+   l'audit.
 </role>
 
 <template>

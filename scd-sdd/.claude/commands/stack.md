@@ -124,6 +124,12 @@ C'est la première rencontre du mot dans le flux réel — glose-le une fois, en
 est une décision consignée dans un fichier court, immuable une fois acceptée ; c'est le *pourquoi*
 qu'on relira dans six mois, quand personne ne se souviendra des alternatives écartées.
 
+Propose ensuite l'**audit**, optionnel : « Pour vérifier que `docs/stack.md` est complet, relié aux
+`FR`/`SC` du PRD et cohérent avec lui : `/clear`, puis `/scd-sdd:audit stack`. L'audit confronte le
+document à une grille et rend une **liste de travail** — il ne touche jamais au document lui-même.
+Le `/clear` n'est pas cosmétique : juger ce qu'on vient d'écrire, c'est relire ses intentions au
+lieu du texte. Rien ne l'exige — sans audit, la suite est `/scd-sdd:archi`. »
+
 Puis : « `/clear`, puis `/scd-sdd:archi` — la structure, avant de figer les décisions : elle
 constate ce que ces choix imposent déjà, et en tire les invariants que `/scd-sdd:adr` figera
 avec ceux d'ici. »

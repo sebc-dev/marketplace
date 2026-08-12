@@ -11,6 +11,14 @@ la **synthèse** ; les ADR portent le rationale détaillé, un par décision.
 interne d'un module, invariants du projet — est produite par la phase **suivante**, `/scd-sdd:archi`,
 dans `docs/archi.md`. Ici on tranche les **fondations** : ce que le langage, le framework et la cible
 de déploiement seront. C'est précisément ce constat qu'`archi` reprend en entrée.
+
+**Où cette référence se charge — deux points, et le second est partiel :**
+
+1. par `/scd-sdd:stack`, **intégralement** : c'est le template et la méthode de la phase ;
+2. par l'agent **`audit-explorer`**, le **seul bloc `<template>`**, quand `/scd-sdd:audit stack`
+   juge ce document. Il n'en tire que la **liste des sections attendues** et ne le recopie nulle
+   part (`DECISIONS.md` §D20) : produire le document appartient à la phase, constater ce qui y
+   manque à l'audit.
 </role>
 
 <template>

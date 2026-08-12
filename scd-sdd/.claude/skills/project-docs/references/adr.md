@@ -6,6 +6,14 @@ directement de la phase Stack (chaque « décision structurante → candidat ADR
 un ADR n'est jamais réédité ; s'il devient faux, on en écrit un nouveau qui le remplace
 (statut « Remplacé par ADR-XXXX »). C'est le journal fiable des choix — il évite les décisions
 « dans la tête » et donne à l'agent un socle stable dès le jour 1.
+
+**Où cette référence se charge — deux points, et le second est partiel :**
+
+1. par `/scd-sdd:adr`, **intégralement** : c'est le template et la méthode de la phase ;
+2. par l'agent **`audit-explorer`**, le **seul bloc `<template>`**, quand `/scd-sdd:audit adr` juge
+   le répertoire `docs/adr/`. Il n'en tire que la **liste des sections attendues** et ne le recopie
+   nulle part (`DECISIONS.md` §D20) : l'audit constate, il n'édite rien — un ADR accepté est
+   immuable, et ce qu'il remonte se referme par un candidat ou un supersede.
 </role>
 
 <template>

@@ -269,6 +269,13 @@ rien : **poser le registre de clés et vérifier de ses yeux la clé qu'il conti
 l'installe le fait sans preuve — il n'existe aucune clé de confiance pour signer l'arrivée de la
 première —, et ce trou est irréductible : il se surveille, il ne se contourne pas.
 
+Propose ensuite l'**audit**, optionnel : « Pour vérifier que `docs/ci.md` est complet, que chaque
+contrôle dérive d'un mode de défaillance et qu'aucun bloquant ne l'est sans mesure : `/clear`, puis
+`/scd-sdd:audit ci`. L'audit confronte le document à une grille et rend une **liste de travail** —
+il ne touche jamais au document lui-même. Le `/clear` n'est pas cosmétique : juger ce qu'on vient
+d'écrire, c'est relire ses intentions au lieu du texte. Rien ne l'exige — sans audit, la suite est
+celle qui vient. »
+
 Puis la suite, qui **dépend de l'existence de `CLAUDE.md`** — vérifie-la par `Glob` avant de
 l'annoncer :
 

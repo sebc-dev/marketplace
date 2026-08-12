@@ -103,4 +103,10 @@ par `Edit` ciblé (crée le fichier s'il manque) :
 Récapitule le **scope EXCLU** — c'est le champ que l'utilisateur doit relire en priorité,
 parce que c'est celui qui contraindra le plus l'agent en aval.
 
+Propose ensuite l'**audit**, optionnel : « Pour vérifier que `docs/brief.md` est complet, mesurable
+et sans marqueur laissé en place : `/clear`, puis `/scd-sdd:audit brief`. L'audit confronte le
+document à une grille et rend une **liste de travail** — il ne touche jamais au document lui-même.
+Le `/clear` n'est pas cosmétique : juger ce qu'on vient d'écrire, c'est relire ses intentions au
+lieu du texte. Rien ne l'exige — sans audit, la suite est `/scd-sdd:prd`. »
+
 Puis : « `/clear`, puis `/scd-sdd:prd` pour le PRD. »

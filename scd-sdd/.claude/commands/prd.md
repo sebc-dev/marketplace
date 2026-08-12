@@ -109,4 +109,10 @@ par `Edit` ciblé (crée le fichier s'il manque) :
 Confirme explicitement les deux conditions de sortie : **aucun `[NEEDS CLARIFICATION]`
 ne subsiste** et **aucun choix technique n'a fuité**.
 
+Propose ensuite l'**audit**, optionnel : « Pour vérifier que `docs/prd.md` est complet, tracé vers
+le Brief et cohérent avec lui : `/clear`, puis `/scd-sdd:audit prd`. L'audit confronte le document à
+une grille et rend une **liste de travail** — il ne touche jamais au document lui-même. Le `/clear`
+n'est pas cosmétique : juger ce qu'on vient d'écrire, c'est relire ses intentions au lieu du texte.
+Rien ne l'exige — sans audit, la suite est `/scd-sdd:stack`. »
+
 Puis : « `/clear`, puis `/scd-sdd:stack`. »

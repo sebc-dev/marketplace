@@ -176,6 +176,13 @@ table des invariants de `docs/archi.md`. Nomme enfin ceux qui laissent une **tra
 observable** (étape 7), s'il y en a : ce sont les invariants que la phase suivante ira
 chercher.
 
+Propose ensuite l'**audit**, optionnel : « Pour vérifier que `docs/adr/` est complet — un ADR par
+candidat, traçabilité bidirectionnelle, format et statut — : `/clear`, puis `/scd-sdd:audit adr`.
+L'audit confronte le répertoire entier à une grille et rend une **liste de travail** — il ne touche
+jamais aux ADR, qui sont immuables : ce qu'il remonte se referme par un candidat ou un supersede. Le
+`/clear` n'est pas cosmétique : juger ce qu'on vient d'écrire, c'est relire ses intentions au lieu
+du texte. Rien ne l'exige — sans audit, la suite est `/scd-sdd:ci`. »
+
 Puis : « `/clear`, puis `/scd-sdd:ci` pour poser les contrôles automatiques — la phase qui
 rend déterministe ce que `CLAUDE.md` ne pourra que conseiller, et qui dérivera de
 `docs/archi.md` et des ADR acceptés ce qu'ils imposent au code. »

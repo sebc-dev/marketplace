@@ -38,6 +38,12 @@ durcir : renvoie vers `/scd-sdd:prd`.
 lui dit que le PRD le lit mal — c'est une remédiation du PRD — ou qu'on veut changer d'intention,
 ce qui est une décision humaine et pas une sortie de premortem.
 
+**Ce que tu ne cherches pas ici.** La **complétude** face au template, la **traçabilité** vers
+l'amont et la **cohérence** avec lui sont l'affaire de `/scd-sdd:audit`, qui juge un document à la
+fois. Toi, tu cherches ce que la conformité ne voit pas — un socle irréprochable peut porter
+l'hypothèse qui coule le projet. Une section vide ou un renvoi mort constaté au passage se **dit**,
+en renvoyant vers l'audit du document concerné ; ce n'est pas un risque de premortem.
+
 **Scénario-cadre.**
 
 > « Six mois après le démarrage, le projet a échoué — ou il a coûté trois fois le prévu, ou on l'a

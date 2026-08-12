@@ -22,12 +22,16 @@ part de la structure est de toute façon imposée par le framework. Le plafond d
 Context + Container **en prose courte** (Brown, **praticien reconnu**) ; ce qui ne passe pas
 l'admission reste du contexte, ou sort.
 
-**Où cette référence se charge — deux points, et le second est conditionnel :**
+**Où cette référence se charge — trois points, et seul le premier est intégral :**
 
 1. par `/scd-sdd:archi`, **intégralement** : c'est le template et la méthode de la phase ;
 2. par `/scd-sdd:ci`, **la seule section `## Vérification` de la `<guidance>`**, et seulement au
    moment de dériver les contrôles `arch-invariants`. L'admission appartient à `archi`, la
-   vérification à `ci` — un seul endroit par information.
+   vérification à `ci` — un seul endroit par information ;
+3. par l'agent **`audit-explorer`**, le **seul bloc `<template>`**, quand `/scd-sdd:audit archi`
+   juge ce document. Il n'en tire que la **liste des sections attendues** et ne le recopie nulle
+   part (`DECISIONS.md` §D20) : admettre un invariant appartient à `archi`, constater ce qui manque
+   à l'audit.
 </role>
 
 <template>

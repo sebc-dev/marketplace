@@ -5,6 +5,14 @@ Répond au **quoi**, au niveau **produit/projet** (pas per-feature). User storie
 exigences fonctionnelles atomiques, critères mesurables. **Technology-agnostic** : aucun choix
 technique. Trace vers le Brief. Produit par interview. Source de vérité produit qu'un futur
 workflow specs viendra décliner en spec/plan/tasks par feature.
+
+**Où cette référence se charge — deux points, et le second est partiel :**
+
+1. par `/scd-sdd:prd`, **intégralement** : c'est le template et la méthode de la phase ;
+2. par l'agent **`audit-explorer`**, le **seul bloc `<template>`**, quand `/scd-sdd:audit prd` juge
+   ce document. Il n'en tire que la **liste des sections attendues** et ne le recopie nulle part
+   (`DECISIONS.md` §D20) : produire le document appartient à la phase, constater ce qui y manque à
+   l'audit.
 </role>
 
 <template>

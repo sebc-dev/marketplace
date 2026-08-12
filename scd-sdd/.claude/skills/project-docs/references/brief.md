@@ -4,6 +4,14 @@
 Racine de la chaîne de traçabilité. Répond au **pourquoi** et fixe le **périmètre macro**.
 Léger, écrit une fois, stable. Tout le reste (PRD, Stack, ADR) trace vers lui.
 Produit par interview « une question à la fois » — c'est le document le plus amont, donc le plus ambigu.
+
+**Où cette référence se charge — deux points, et le second est partiel :**
+
+1. par `/scd-sdd:brief`, **intégralement** : c'est le template et la méthode de la phase ;
+2. par l'agent **`audit-explorer`**, le **seul bloc `<template>`**, quand `/scd-sdd:audit brief`
+   juge ce document. Il n'en tire que la **liste des sections attendues** et ne le recopie nulle
+   part (`DECISIONS.md` §D20) : produire le document appartient à la phase, constater ce qui y
+   manque à l'audit.
 </role>
 
 <template>

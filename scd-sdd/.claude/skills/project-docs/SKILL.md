@@ -159,6 +159,11 @@ Pas de `constitution.md` séparée pour un solo : ces principes vont dans une se
 
 Charge **uniquement** le template de la phase courante (la commande le fait pour toi) :
 
+**Un lecteur de plus, commun aux sept.** L'agent `audit-explorer` charge le **seul bloc
+`<template>`** de la référence du document jugé quand `/scd-sdd:audit` juge celui-ci (§D20) : il en
+tire la liste des sections attendues, et n'écrit jamais. **Troisième** cas d'une référence chargée
+par un **agent** — après `slice-auditor` → `reviewability.md` et `pr-describer` → `api.md`.
+
 - `references/brief.md` — Brief / Vision.
   - Sections : `role`, `template`, `guidance`, `completion`
 - `references/prd.md` — PRD / spec produit (niveau projet, pas feature).
@@ -167,10 +172,10 @@ Charge **uniquement** le template de la phase courante (la commande le fait pour
   - Sections : `role`, `template`, `guidance`, `completion`
 - `references/archi.md` — architecture (`docs/archi.md`) : caractéristiques retenues,
   contraintes imposées par la stack, et la table des **invariants** falsifiables.
-  - **Deux points de chargement** : par `/scd-sdd:archi`, **intégralement** ; et par
-    `/scd-sdd:ci`, **conditionnellement** et pour sa seule section `## Vérification`
-    (l'inventaire d'outillage), au moment de dériver les contrôles `arch-invariants`.
-    L'admission appartient à `archi`, la vérification à `ci`.
+  - **Deux points en commande** (plus l'audit, ci-dessus) : par `/scd-sdd:archi`,
+    **intégralement** ; et par `/scd-sdd:ci`, **conditionnellement** et pour sa seule section
+    `## Vérification` (l'inventaire d'outillage), au moment de dériver les contrôles
+    `arch-invariants`. L'admission appartient à `archi`, la vérification à `ci`.
   - Sections : `role`, `template`, `guidance`, `completion`
 - `references/adr.md` — ADR fondateurs (Nygard, immuables), dérivés de Stack **et** des
   invariants d'Archi.
@@ -186,9 +191,9 @@ Charge **uniquement** le template de la phase courante (la commande le fait pour
   - Sections : `role`, `template`, `guidance`, `completion`
 - `references/claude-md.md` — le contrat `CLAUDE.md` : assemblage (pointeurs + Definition
   of Done + principes fondus) **et entretien**.
-  - **Deux points de chargement** : par `/scd-sdd:contract`, **tout sauf `<revision>`** ;
-    et par `/scd-sdd:revise-contract`, **`<guidance>` et `<revision>` seulement**. Ne pas
-    donner le `<template>` à l'entretien est délibéré — il traiterait toute ligne hors
-    template comme un écart de conformité. L'assemblage appartient à `contract`,
-    l'entretien à `revise-contract`.
+  - **Deux points en commande** (plus l'audit, ci-dessus) : par `/scd-sdd:contract`, **tout
+    sauf `<revision>`** ; et par `/scd-sdd:revise-contract`, **`<guidance>` et `<revision>`
+    seulement**. Ne pas donner le `<template>` à l'entretien est délibéré — il traiterait
+    toute ligne hors template comme un écart de conformité. L'assemblage appartient à
+    `contract`, l'entretien à `revise-contract`.
   - Sections : `role`, `template`, `guidance`, `completion`, `revision`
