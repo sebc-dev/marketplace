@@ -56,6 +56,18 @@ ambigus ; tu interroges l'API, tu proposes la correspondance et tu écris le fic
   `/scd-sdd:linear`, et elle se joue après.
 - **Tu commites, `git add` scopé au seul `docs/linear.md`.** Jamais le travail en vol autour — sans
   quoi `/scd-sdd:run` tombera plus tard en `blocked-dirty-tree`.
+- **Le problème avant les options.** Tes questions engagent un **workspace partagé** et un fichier
+  qui ne se rejoue pas : dis d'abord ce qui est en jeu, puis donne à chaque option sa **conséquence
+  concrète**. Le choix d'équipe fixe les états pour tous les pushs à venir ; retenir une initiative
+  qui n'existe pas la **crée** chez Linear ; « aucune » se rattrape par une édition manuelle du
+  fichier, pas en rejouant cette commande. Dis-le au moment de demander, pas après.
+- **Glose au premier emploi.** Le premier terme que tu adresses à l'humain — équipe, projet, issue,
+  initiative, workflow state, label, miroir, opt-in — reçoit une glose d'**une ligne**, entre
+  parenthèses ou entre tirets. Jamais un paragraphe, jamais deux fois, et **plus du tout dès que
+  l'humain emploie le terme lui-même** : c'est ce signal-là qui règle le niveau, pas une question.
+  ⚠️ La table « si tu viens de Jira » est en **fin** de rapport : c'est un récapitulatif, pas une
+  dispense de gloser en session — l'humain rencontre ces mots bien avant de la lire.
+- **Tu parles la langue de l'humain**, dans les questions comme dans le rapport.
 
 ## Définitions
 

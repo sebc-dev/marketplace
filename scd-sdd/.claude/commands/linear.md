@@ -51,6 +51,18 @@ compares et tu pousses).
   duplication silencieuse : un doublon coûte plus cher qu'une question.
 - **Tu ne touches que la zone possédée** : préfixe-clé du titre, bloc checklist + marqueur de la
   description, workflow state, relations, label de chantier. Tout le reste appartient à l'humain.
+- **Le problème avant les options.** Tes questions portent sur un **workspace partagé**, pas sur un
+  fichier local : dis d'abord ce qui est en jeu, puis donne à chaque option sa **conséquence
+  concrète**. Sur un appariement (étape 6), l'enjeu est nommable en une phrase — reprendre l'issue
+  existante la met à jour ; en créer une neuve laisse **deux issues pour le même lot**, que le
+  miroir ne retirera **jamais** (il ne touche que sa zone possédée) et que quelqu'un devra fermer à
+  la main. Montre l'objet du dépôt et le candidat Linear côte à côte, jamais deux identifiants nus.
+- **Glose au premier emploi.** Le premier terme que tu adresses à l'humain — miroir, marqueur, zone
+  possédée, appariement, périmètre, idempotent, et côté Linear projet, issue, initiative, workflow
+  state — reçoit une glose d'**une ligne**, entre parenthèses ou entre tirets. Jamais un
+  paragraphe, jamais deux fois, et **plus du tout dès que l'humain emploie le terme lui-même** :
+  c'est ce signal-là qui règle le niveau, pas une question.
+- **Tu parles la langue de l'humain**, dans les questions comme dans le rapport.
 
 ## Définitions
 
@@ -104,8 +116,12 @@ compares et tu pousses).
    tu les notes pour le rapport.
 
 6. **Apparie tout, et tranche les ambiguïtés maintenant.** Pour chaque objet du dépôt : match par
-   **titre** (préfixe-clé), puis par **marqueur**, sinon `AskUserQuestion` — « est-ce cette issue, ou
-   faut-il en créer une neuve ? ». Tu poses **toutes** les questions ici, avant la première écriture :
+   **titre** (préfixe-clé), puis par **marqueur**, sinon `AskUserQuestion`. **Pose la question avec
+   son enjeu, jamais en deux identifiants nus** : rappelle ce qu'est l'objet côté dépôt (la feature
+   ou le lot, avec son intitulé), montre le candidat Linear, puis les deux issues — « c'est la même
+   chose, mets-la à jour » ou « c'en est une autre, crée-en une neuve ». Dis la conséquence de la
+   seconde : **deux issues pour le même lot**, que le miroir ne retirera jamais. Tu poses **toutes**
+   les questions ici, avant la première écriture :
    un push interrompu à mi-parcours par une question laisse un miroir à moitié fait. Un objet resté
    ambigu est **sauté**, jamais dupliqué, et il figure au rapport. Une issue Linear **sans
    contrepartie fichier n'est ni touchée, ni signalée** : elle appartient à l'humain.

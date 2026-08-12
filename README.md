@@ -45,7 +45,7 @@ state and survives a `/clear`. Two skills: `research-prompter` composes Research
 subject, specialised by domain packs; `campaign` orchestrates and composes nothing itself.
 Human-in-the-loop by construction: no session can launch Research. 7 slash commands.
 
-### [scd-sdd](./scd-sdd/) `v1.12.2`
+### [scd-sdd](./scd-sdd/) `v1.12.3`
 
 Complete spec-driven development cycle, from empty repo to reviewable PR — one plugin, three
 chained levels. **Foundation** (once per project): brief → PRD → stack → architecture invariants →
@@ -122,11 +122,15 @@ equipment; no command ever calls it.
 Throughout, the plugin **explains its own vocabulary once**. Its terms — review lot `Rn`, gate,
 EARS, invariant, ADR — stay precise and greppable; what changed is that they are now defined where
 you meet them: a `## Légende` in five produced-document templates (including *why* EARS criteria
-stay in normed English), a glossed term in every command description and report, and — in the 20
+stay in normed English), a glossed term in every command description and report, and — in the 22
 commands that hold a dialogue — **the problem stated before the options**, each option carrying its
 consequence in project terms rather than jargon. Work-in-progress management is part of that:
 `/scd-sdd:resume` no longer just lists four possible follow-ups, it says what each one does — and
 above all that putting a chantier on hold is reversible, while closing or abandoning it is not.
+So is the Linear mirror, where the stakes are higher because the answer is written into someone
+else's workspace: `/scd-sdd:linear` no longer asks "is this the issue?" with two bare IDs — it
+shows the repo object next to the Linear candidate and states what the wrong answer costs, namely
+**two issues for the same lot, which the mirror will never remove**.
 A gloss is one line, appears once, and stops entirely as soon as you use the term yourself.
 
 32 slash commands, including three dashboards — `/scd-sdd:status` (all three levels in one view,
