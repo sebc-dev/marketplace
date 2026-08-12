@@ -684,6 +684,40 @@ glose fait une ligne, arrive une fois, et s'arrête complètement dès que tu em
 toi-même.** C'est ce signal-là qui règle le niveau — le plugin ne te demandera jamais si tu
 connais un mot.
 
+### Quand il faut trancher — l'exposition, et pas seulement les mots
+
+Tout ce qui précède gouverne la **phrase**. Ça ne suffit pas, et on le sait par un cas réel : un
+texte qui respectait **quatre des six règles** est resté indécidable pour la personne qui devait
+choisir. L'obstacle n'était pas dans les mots — il était dans l'**ordre**. La commande avait
+restitué dans l'ordre de son travail (ce qu'elle avait mesuré d'abord, puis ses objections, puis
+les options), qui suppose acquis tout ce que l'instruction lui avait appris.
+
+Dix commandes chargent donc un skill dédié au moment où elles te font trancher — `stack`, `archi`,
+`adr`, `ci`, `research`, `resume`, `premortem`, `audit`, `revise-contract`, `migrate`. Ce qu'il
+change, concrètement :
+
+- **l'objet vient avant le problème.** À quoi sert la chose dont on parle, et quelle exigence la
+  demande — avant ce qui cloche avec elle ;
+- **le mécanisme est expliqué quand le choix en dépend.** Une glose d'une ligne nomme un terme ;
+  elle ne fait pas comprendre une propriété. Si tu ne peux pas choisir sans connaître cette
+  propriété, elle n'est pas un préambule — elle *est* l'argument ;
+- **un raisonnement se raconte** — un acteur, un geste, un résultat — au lieu de s'énoncer ;
+- **un chiffre arrive dans l'unité de la décision**, le calcul intermédiaire restant en coulisse ;
+- **un identifiant porte ce que sa décision a fait**, pas seulement son intitulé ;
+- **la longueur se règle sur l'enjeu**, pas sur un plafond. Un texte trop court coûte un
+  aller-retour complet.
+
+Le skill a **deux régimes**, parce que faire choisir et faire approuver ne se ressemblent pas.
+Quand la commande construit des issues concurrentes, l'ordre sert à **faire comprendre** un sujet.
+Quand elle te fait passer une liste — le gate de `premortem`, celui d'`audit`, les éditions de
+`revise-contract`, les écritures de `migrate` —, l'ordre sert à **trier** : le décor se pose une
+fois en tête, jamais répété à chaque entrée, et chaque entrée porte ce qui lui est propre plus **ce
+qui se passe si tu ne l'approuves pas**.
+
+Deux choses qu'il ne fait pas. Ce n'est **pas un plan-type** : huit sections numérotées sur une
+question qui en demande deux seraient le même défaut par l'autre bout. Et ce n'est **pas de la
+vulgarisation systématique** — on explique ce dont le choix dépend, le reste se nomme et se laisse.
+
 ## Migration depuis les trois plugins
 
 ```

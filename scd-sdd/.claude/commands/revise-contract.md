@@ -93,7 +93,10 @@ Ratio : 50% humain / 50% AI (la machine détecte et propose, l'humain tranche ch
    provenance décrit dans le bloc : une ligne apparue après une passe de durcissement a un écrivain
    connu, et son retrait se propose **avec ce fait**, jamais sans.
 
-5. **Rends le rapport en deux listes séparées**, dans la forme que fixe le bloc `<revision>` : les
+5. **Charge le skill `exposition`** — **régime *gate*** : le décor se pose **une fois en tête** (ce
+   qui a été relu, contre quoi), et chaque entrée ne porte ensuite que ce qui lui est propre, plus
+   ce qui se passe si on ne l'approuve pas. Puis **rends le rapport en deux listes séparées**,
+   dans la forme que fixe le bloc `<revision>` : les
    **éditions proposées** — une par ligne, numérotée : section, extrait visé, geste (retirer ·
    resynchroniser · déplacer vers un renvoi), motif en une phrase, et sa **provenance** quand elle
    vient de la fiche d'audit plutôt que de tes contrôles —, puis les **signalements** —
@@ -153,6 +156,7 @@ se lirait comme une révision jamais jouée.
 
 - `project-docs` — charge `references/claude-md.md`, blocs **`<guidance>`** et **`<revision>`**
   uniquement.
+- `exposition` — **régime *gate***, chargé à l'étape 5. Aucune `references/`.
 - `journal` — contrat de `docs/journal/*.md`.
 
 ## À la fin

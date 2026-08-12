@@ -69,7 +69,9 @@ caractéristiques et les options des deux axes).
   entre tirets. Jamais un paragraphe, jamais deux fois, et **plus du tout dès que l'humain
   emploie le terme lui-même** : c'est ce signal-là qui règle le niveau, pas une question.
 - **Un ID se cite avec son intitulé** à sa première mention — « FR-003 (export CSV) », jamais
-  « FR-003 » nu. Un identifiant seul n'explique rien à qui ne l'a pas sous les yeux.
+  « FR-003 » nu. La règle vaut pour **tout** identifiant que tu emploies, y compris ceux que le
+  projet ou la session viennent de créer et que le plugin ne connaît pas. Un identifiant seul
+  n'explique rien à qui ne l'a pas sous les yeux.
 - **Tu parles la langue de l'humain**, dans les questions comme dans le rapport.
 
 ## Processus
@@ -102,6 +104,9 @@ caractéristiques et les options des deux axes).
    axe, avec les critères de choix et le coût de la référence, chacune reliée aux
    caractéristiques retenues et aux `FR`/`SC` qu'elles servent — puis **fais trancher
    l'utilisateur** (`AskUserQuestion`), axe par axe.
+
+   **Au premier axe, charge le skill `exposition`** — **régime *options***. Un axe d'architecture
+   se tranche rarement sans que le mécanisme en jeu soit compris : c'est le cas type du point 2.
 
    Un axe que le temps 1 a fermé **ne se rouvre pas** : on ne propose pas d'options sur ce
    que le framework impose. Note l'alternative écartée et sa raison pour la phase `adr` —
@@ -171,6 +176,8 @@ par `Edit` ciblé (crée le fichier s'il manque) :
   `guidance` + `completion`). Sa section « Vérification » est celle que `/scd-sdd:ci`
   rechargera plus tard, seule : ici tu la lis pour savoir ce qui sera **rendable**, pas pour
   choisir un outil.
+- `exposition` — **régime *options***, chargé au temps 2 (étape 5), au premier axe. Aucune
+  `references/`.
 - `journal` — contrat de `docs/journal/*.md`.
 
 ## À la fin

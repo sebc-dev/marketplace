@@ -48,7 +48,9 @@ Ratio : 50% humain / 50% AI (tu proposes et argumentes, l'humain arbitre).
   entre tirets. Jamais un paragraphe, jamais deux fois, et **plus du tout dès que l'humain
   emploie le terme lui-même** : c'est ce signal-là qui règle le niveau, pas une question.
 - **Un ID se cite avec son intitulé** à sa première mention — « FR-003 (export CSV) », jamais
-  « FR-003 » nu. Un identifiant seul n'explique rien à qui ne l'a pas sous les yeux.
+  « FR-003 » nu. La règle vaut pour **tout** identifiant que tu emploies, y compris ceux que le
+  projet ou la session viennent de créer et que le plugin ne connaît pas. Un identifiant seul
+  n'explique rien à qui ne l'a pas sous les yeux.
 - **Tu parles la langue de l'humain**, dans les questions comme dans le rapport.
 
 ## Processus
@@ -62,6 +64,9 @@ Ratio : 50% humain / 50% AI (tu proposes et argumentes, l'humain arbitre).
 3. **Traite chaque domaine structurant** — **langage, framework, base de données, auth,
    cible de déploiement, stratégie de test**, plus tout domaine propre au projet. Pour
    chacun :
+   - **au premier domaine, charge le skill `exposition`** — **régime *options*** : il porte
+     l'ordre d'exposition (l'objet avant le problème, le mécanisme quand le choix en dépend, ce
+     qu'on paie par option), jamais le contenu des options ;
    - présente **2-3 options** avec pour/contre **reliés aux `FR`/`SC` concernés** ;
    - **si l'arbitrage dépend d'un fait que tu ne tiens pas de mémoire** — maturité réelle
      d'un framework, limite d'un service géré, état d'un écosystème —, **fais-le sourcer
@@ -113,6 +118,8 @@ par `Edit` ciblé (crée le fichier s'il manque) :
 ## Skill active
 
 - `project-docs` — charge `references/stack.md`.
+- `exposition` — **régime *options***, chargé à l'étape 3, au premier domaine traité. Aucune
+  `references/`. Il porte l'ordre d'exposition, pas le contenu des options.
 - `journal` — contrat de `docs/journal/*.md`.
 
 ## À la fin

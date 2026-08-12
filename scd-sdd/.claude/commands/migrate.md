@@ -142,7 +142,10 @@ désinstalle les anciens plugins).
    Un projet déjà éclaté n'a donc rien à convertir ; un projet venu des trois anciens plugins n'a
    rien à convertir non plus, mais tout à reconstituer ; un projet à moitié suivi a besoin des deux.
 
-6. **Demande l'accord, écriture par écriture** (`AskUserQuestion`) — jamais un accord global :
+6. **Charge le skill `exposition`** — **régime *gate*** —, puis **demande l'accord, écriture par
+   écriture** (`AskUserQuestion`) — jamais un accord global. Le décor se pose **une fois** : ce
+   que le diagnostic a trouvé et ce que la migration change. Chaque écriture ne porte ensuite que
+   ce qui lui est propre, plus **ce qui se passe si on la refuse** :
    - convertir `docs/JOURNAL.md` en `docs/journal/*.md` (et le supprimer **seulement** après que
      le compte de lignes est vérifié) ;
    - créer les `docs/journal/<cible>.md` manquants (avec ou sans lignes reconstituées) ;
@@ -231,6 +234,7 @@ a eu lieu, c'est un événement. Elle ne l'est pas si `docs/journal/socle.md` n'
 - `chantier` — uniquement pour l'arborescence de `docs/chantiers/` que tu scaffoldes.
 - `feature-specs` — table « Cibler une feature » pour dériver la phase de chaque feature.
 - `implement` — `references/tasks-parsing.md` pour lire les lots `Rn` et leurs lignes méta.
+- `exposition` — **régime *gate***, chargé à l'étape 6. Aucune `references/`.
 
 ## À la fin
 

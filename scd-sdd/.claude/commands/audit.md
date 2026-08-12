@@ -67,7 +67,9 @@ décide de corriger).
   **plus du tout dès que l'humain emploie le terme lui-même** : c'est ce signal-là qui règle le
   niveau, pas une question.
 - **Un ID se cite avec son intitulé** à sa première mention — « FR-003 (export CSV) », jamais
-  « FR-003 » nu. Un identifiant seul n'explique rien à qui ne l'a pas sous les yeux.
+  « FR-003 » nu. La règle vaut pour **tout** identifiant que tu emploies, y compris ceux que le
+  projet ou la session viennent de créer et que le plugin ne connaît pas. Un identifiant seul
+  n'explique rien à qui ne l'a pas sous les yeux.
 - **Tu parles la langue de l'humain**, dans les questions comme dans le rapport.
 
 ## Définitions
@@ -135,7 +137,9 @@ signalements. Un lot vide ne s'écrit pas.
    Rends **un seul rapport** en conversation : les findings par sévérité, chacun avec sa **voie de
    correction** (lot A, B ou C), les deux blocs d'appariement, et le **Verdict**.
 
-7. **Gate d'arbitrage humain** (`AskUserQuestion`) — s'il reste des Major non arbitrés, demande
+7. **Gate d'arbitrage humain** (`AskUserQuestion`) — **charge le skill `exposition`**, **régime
+   *gate*** : le décor de l'audit se pose **une fois en tête**, et chaque finding ne porte ensuite
+   que ce qui lui est propre. S'il reste des Major non arbitrés, demande
    lesquels sont assumés et **exige un motif** pour chacun. Chaque finding s'ouvre sur **ce que le
    défaut coûterait en aval**, en langage courant, avant le triplet fichier / ID / correction
    proposée. Un refus de trancher est une réponse valide : le Major reste dans la liste.
@@ -202,6 +206,7 @@ d'audit.
 - `chantier` — format de la fiche, nommage, `Portée`, cycle de vie. Tu n'as **pas** besoin de
   `references/manifeste.md` : le `## Contexte à charger` d'une fiche d'audit se réduit au document
   jugé et à son amont, tous `à lire`.
+- `exposition` — **régime *gate***, chargé à l'étape 7. Aucune `references/`.
 - `journal` — contrat de `docs/journal/socle.md`.
 - Subagent : `audit-explorer`, **modèle imposé à l'appel**. Il ne charge pas `dimensions.md` — c'est
   toi qui lui **passes** la grille.

@@ -116,7 +116,8 @@ et décide seul de ce qui descend dans le socle ; tu composes, tu classes et tu 
    - **contrôle les murs** : ce que le rapport dit avoir manqué faute d'accès est une limite du
      résultat, pas un détail de méthode.
 
-8. **Rends la liste** (voir le bloc ci-dessous) et **arrête-toi là**. Tu ne descends rien dans
+8. **Charge le skill `exposition`** — **régime *options*** — et **rends la liste** (voir le bloc
+   ci-dessous), puis **arrête-toi là**. Tu ne descends rien dans
    `docs/stack.md` ni dans un ADR : tu nommes la commande qui le ferait, l'humain la joue.
 
 9. **Commite** : `git add <le rapport>` puis `git commit -m "docs(research): <slug>"`, scopé au
@@ -174,10 +175,12 @@ rapport, `docs/journal/socle.md` n'a **pas** grossi.
   l'absence de rétro-lien, et la relecture critique. Charge `references/prompt-research.md` — le
   gabarit à six blocs, la table `<obsolete>`, les caveats de fiabilité, le bloc `<completion>` —
   à l'aller pour composer, au retour pour relire.
+- `exposition` — **régime *options***, chargé à l'étape 8, pour rendre la liste. Aucune
+  `references/`.
 
-**Un seul skill, et c'est volontaire.** Nommer la phase que le rapport doit servir ne demande pas
-de charger `project-docs` : aucun document du socle ne sort d'ici, et charger le skill qui les
-écrit rendrait tentant de le faire.
+**`project-docs` n'est pas chargé, et c'est volontaire.** Nommer la phase que le rapport doit
+servir ne demande pas de le charger : aucun document du socle ne sort d'ici, et charger le skill
+qui les écrit rendrait tentant de le faire.
 
 ## À la fin
 

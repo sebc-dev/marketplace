@@ -62,7 +62,9 @@ le troisième applique).
   entre tirets. Jamais un paragraphe, jamais deux fois, et **plus du tout dès que l'humain
   emploie le terme lui-même** : c'est ce signal-là qui règle le niveau, pas une question.
 - **Un ID se cite avec son intitulé** à sa première mention — « FR-003 (export CSV) », jamais
-  « FR-003 » nu. Un identifiant seul n'explique rien à qui ne l'a pas sous les yeux.
+  « FR-003 » nu. La règle vaut pour **tout** identifiant que tu emploies, y compris ceux que le
+  projet ou la session viennent de créer et que le plugin ne connaît pas. Un identifiant seul
+  n'explique rien à qui ne l'a pas sous les yeux.
 - **Tu parles la langue de l'humain**, dans les questions comme dans le rapport.
 
 ## Définitions
@@ -105,7 +107,9 @@ est **limitative par cible** ; ce qui n'y entre pas prend la sortie de secours (
    le scope creep et le style ; il retient les vrais trous et les normalise en remédiations
    concrètes. *(Séquentiel : le valideur a besoin de la sortie du facilitateur.)*
 
-6. **Gate d'approbation humain** — présente les remédiations retenues en **liste numérotée**,
+6. **Gate d'approbation humain** — **charge le skill `exposition`**, **régime *gate*** : un décor
+   commun **une fois en tête**, jamais répété par item, puis des entrées qui se jugent seules.
+   Présente les remédiations retenues en **liste numérotée**,
    chacune ouverte par **ce que le risque ferait au produit**, en une phrase de langage courant et
    sans jargon — c'est ce qui se décide ; le reste n'est que l'endroit où l'écrire. Puis, sur la
    même entrée : fichier, ID ou rubrique cible, forme, texte proposé. Présente **à part** les
@@ -174,6 +178,7 @@ C'est un fait utile, et l'absence de ligne se lirait comme un premortem jamais j
 - Le skill du niveau de la cible, pour les invariants des documents remédiés : `project-docs`
   (socle) · `feature-specs` (feature) · `chantier` (chantier, et toute sortie de secours) — plus
   `chantier/references/manifeste.md` dès qu'un manifeste de contexte est lu ou écrit.
+- `exposition` — **régime *gate***, chargé à l'étape 6. Aucune `references/`.
 - `journal` — contrat de `docs/journal/*.md`. **Pas pour une cible `chantier`.**
 - Subagents, dans cet ordre : `premortem-facilitator` → `premortem-validator` → *[gate humain]* →
   `premortem-applier`.

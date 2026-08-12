@@ -53,7 +53,9 @@ Ratio : 40% humain / 60% AI (découpage mécanique ; l'humain valide l'ordre et 
   entre tirets. Jamais un paragraphe, jamais deux fois, et **plus du tout dès que l'humain
   emploie le terme lui-même** : c'est ce signal-là qui règle le niveau, pas une question.
 - **Un ID se cite avec son intitulé** à sa première mention — « FR-003 (export CSV) », jamais
-  « FR-003 » nu. Un identifiant seul n'explique rien à qui ne l'a pas sous les yeux.
+  « FR-003 » nu. La règle vaut pour **tout** identifiant que tu emploies, y compris ceux que le
+  projet ou la session viennent de créer et que le plugin ne connaît pas. Un identifiant seul
+  n'explique rien à qui ne l'a pas sous les yeux.
 
 ## Processus
 

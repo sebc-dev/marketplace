@@ -45,7 +45,7 @@ state and survives a `/clear`. Two skills: `research-prompter` composes Research
 subject, specialised by domain packs; `campaign` orchestrates and composes nothing itself.
 Human-in-the-loop by construction: no session can launch Research. 7 slash commands.
 
-### [scd-sdd](./scd-sdd/) `v1.13.0`
+### [scd-sdd](./scd-sdd/) `v1.14.1`
 
 Complete spec-driven development cycle, from empty repo to reviewable PR — one plugin, three
 chained levels. **Foundation** (once per project): brief → PRD → stack → architecture invariants →
@@ -147,6 +147,20 @@ else's workspace: `/scd-sdd:linear` no longer asks "is this the issue?" with two
 shows the repo object next to the Linear candidate and states what the wrong answer costs, namely
 **two issues for the same lot, which the mirror will never remove**.
 A gloss is one line, appears once, and stops entirely as soon as you use the term yourself.
+
+Those rules govern the *sentence*. When you actually have to **decide**, ten commands — `stack`,
+`archi`, `adr`, `ci`, `research`, `resume`, `premortem`, `audit`, `revise-contract`, `migrate` —
+also load a dedicated skill that governs the *exposition*: the object before the problem, the
+mechanism explained whenever the choice depends on one of its properties (a one-line gloss names a
+term, it does not make you understand a property), reasoning told as a scene rather than stated as
+an abstraction, figures given in the unit the decision is made in, an identifier carrying what its
+decision actually did, and length set by what is at stake rather than by a ceiling — a text too
+short costs a full round trip. It has **two regimes**: presenting competing options uses order to
+*explain* one subject; walking you through a list — the `premortem` and `audit` gates, the
+`revise-contract` edits, the `migrate` writes — uses order to *sort*, setting the scene once up
+front and giving each entry only what is specific to it, plus what happens if you do not approve
+it. It is not a template, and not blanket popularisation: what the choice depends on gets
+explained, the rest gets named.
 
 33 slash commands, including three dashboards — `/scd-sdd:status` (all three levels in one view,
 plus the next command to run), `/scd-sdd:status-specs`, `/scd-sdd:status-impl` (merge-safety of

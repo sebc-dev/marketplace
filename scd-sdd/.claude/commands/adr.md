@@ -59,7 +59,9 @@ Ratio : 30% humain / 70% AI (dérivation depuis la Stack ; l'humain valide le co
   entre tirets. Jamais un paragraphe, jamais deux fois, et **plus du tout dès que l'humain
   emploie le terme lui-même** : c'est ce signal-là qui règle le niveau, pas une question.
 - **Un ID se cite avec son intitulé** à sa première mention — « FR-003 (export CSV) », jamais
-  « FR-003 » nu. Un identifiant seul n'explique rien à qui ne l'a pas sous les yeux.
+  « FR-003 » nu. La règle vaut pour **tout** identifiant que tu emploies, y compris ceux que le
+  projet ou la session viennent de créer et que le plugin ne connaît pas. Un identifiant seul
+  n'explique rien à qui ne l'a pas sous les yeux.
 
 ## Processus
 
@@ -95,6 +97,8 @@ Ratio : 30% humain / 70% AI (dérivation depuis la Stack ; l'humain valide le co
      utilisé » ;
    - **Conséquences** — positives **et** négatives ; ce à quoi le code s'engage désormais ;
    - **Alternatives considérées** — au moins une, écartée, avec sa raison.
+
+   **Charge le skill `exposition`** au premier ADR présenté — **régime *options***.
 
    **Fais valider le contenu par l'utilisateur** avant de figer le statut « Accepté » —
    `AskUserQuestion`, **un ADR à la fois**, jamais un lot de dix d'un coup. Un ADR accepté est
@@ -166,6 +170,8 @@ par `Edit` ciblé (crée le fichier s'il manque) :
 ## Skill active
 
 - `project-docs` — charge `references/adr.md`.
+- `exposition` — **régime *options***, chargé à l'étape 4, au premier ADR présenté. Aucune
+  `references/`.
 - `journal` — contrat de `docs/journal/*.md`.
 
 ## À la fin

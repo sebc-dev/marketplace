@@ -102,7 +102,8 @@ Ratio : 15% humain / 85% AI (sélection et contrôles mécaniques ; l'humain dé
    étape, et les pistes écartées — celles-ci intégralement, ce sont elles qui évitent de
    ré-explorer.
 
-6. **Demande la suite** (`AskUserQuestion`). **Pose d'abord le problème en une ou deux phrases** —
+6. **Charge le skill `exposition`** — **régime *options*** — puis **demande la suite**
+   (`AskUserQuestion`). **Pose d'abord le problème en une ou deux phrases** —
    ce que les contrôles viennent de dire de cette fiche, et ce que ça change : une fiche à jour
    se reprend, une fiche consommée se referme, une fiche suspecte se relit avant d'être suivie.
    Puis les quatre options, **chacune avec sa conséquence dite en clair**, jamais réduite à son
@@ -179,6 +180,8 @@ phases avec du bruit à la paire. C'est de nature, pas un oubli.
 - `chantier` — contrat de `docs/chantiers/` : § « Cibler un chantier », § « Contrôle de
   fraîcheur », cycle de vie. Charge `references/manifeste.md` pour les quatre classes.
 - `feature-specs` — section « Cibler une feature », si la portée doit être rattachée à une feature.
+- `exposition` — **régime *options***, chargé à l'étape 6. Aucune `references/`. Les quatre suites
+  sont des issues concurrentes, pas une liste à trier.
 
 ## À la fin
 

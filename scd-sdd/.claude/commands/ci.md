@@ -81,7 +81,9 @@ décide que de l'outil qui les rend ; l'humain arbitre les seuils et ce qui bloq
   entre tirets. Jamais un paragraphe, jamais deux fois, et **plus du tout dès que l'humain
   emploie le terme lui-même** : c'est ce signal-là qui règle le niveau, pas une question.
 - **Un ID se cite avec son intitulé** à sa première mention — « FR-003 (export CSV) », jamais
-  « FR-003 » nu. Un identifiant seul n'explique rien à qui ne l'a pas sous les yeux.
+  « FR-003 » nu. La règle vaut pour **tout** identifiant que tu emploies, y compris ceux que le
+  projet ou la session viennent de créer et que le plugin ne connaît pas. Un identifiant seul
+  n'explique rien à qui ne l'a pas sous les yeux.
 - **Tu parles la langue de l'humain**, dans les questions comme dans le rapport.
 
 ## Processus
@@ -170,7 +172,8 @@ décide que de l'outil qui les rend ; l'humain arbitre les seuils et ce qui bloq
    que tu supposes. Une version inventée dans un workflow casse au premier run, ou pire :
    elle marche et n'est pas celle qu'on croit.
 
-10. **Fais trancher ce qui n'a pas de bonne réponse par défaut** (`AskUserQuestion`, deux ou
+10. **Charge le skill `exposition`** — **régime *options*** —, puis **fais trancher ce qui n'a pas
+    de bonne réponse par défaut** (`AskUserQuestion`, deux ou
     trois questions, pas plus) : le seuil de couverture différentielle ; le SAST bloquant
     d'emblée sur high-severity ou en report-only le temps de mesurer ; les contrôles lents sur
     le chemin critique ou en exécution nocturne. La **fenêtre du cooldown de dépendances**, elle,
@@ -251,6 +254,7 @@ un résultat, pas un échec à taire.
   `references/archi.md` à l'étape 8, pour son inventaire d'outillage. Le reste de cette
   référence — template, grille des onze classes, critère d'admission — appartient à
   `/scd-sdd:archi` et ne se charge pas ici.
+- `exposition` — **régime *options***, chargé à l'étape 10. Aucune `references/`.
 - `chantier` — format de la fiche de durcissement, nommage, `Portée`. Tu n'as **pas** besoin de
   `references/manifeste.md` : cette fiche ne porte aucun contexte volumineux.
 - `journal` — contrat de `docs/journal/*.md`.
