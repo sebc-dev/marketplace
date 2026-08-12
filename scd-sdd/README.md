@@ -136,6 +136,17 @@ contenu recopié, et chacune déclare comment elle se charge : `à lire` (intég
 contexte isolé), `à situer` (jamais chargée). Le suivi reste léger ; le contexte se
 recharge à la demande, et seulement celui-là.
 
+**Une fiche plafonne à ~50 lignes, et le dépassement se lit selon sa nature.** Une fiche de
+travail qui déborde à l'écriture initiale est une feature déguisée — renvoi vers
+`kickoff-feature`. À l'**actualisation**, `pause` **élague d'abord** : un acquis que le disque
+porte désormais est redevenu un fait dérivable, il sort — chaque retrait annoncé, avec son motif,
+au gate de validation ; `## Écarté`, lui, ne s'élague jamais, les pistes mortes ne vivant nulle
+part ailleurs. Une fiche d'**archive** qui déborde héberge la connaissance au lieu de l'indexer :
+le surplus se route (candidat ADR, spec, message de commit). Une **fiche-liste** (gate, audit)
+suit le nombre de findings : une ligne par finding, cible annoncée jamais bloquante, liste
+**jamais tronquée** — un dépassement massif dit que le contrat est cassé, pas que la fiche est
+trop longue.
+
 Un hook `SessionStart` annonce, après un `/clear`, la fiche dont la **branche** correspond
 à celle du worktree courant — ce qui rend la reprise déterministe même avec plusieurs lots
 en parallèle. Il lit, il n'écrit jamais : un hook ne connaît pas l'issue de ce qu'il

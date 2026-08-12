@@ -46,8 +46,10 @@ Ratio : 40% humain / 60% AI (tu composes depuis la session ; l'humain valide ava
   quoi `/scd-sdd:run` tombera en `blocked-dirty-tree`. Tu ne commites **jamais** le code en vol.
 - **Tu n'écris aucun contenu de document et tu ne joues aucune phase.** Pas de `spec.md`, pas de
   `tasks.md`, pas de ligne de journal.
-- **Plafond ~50 lignes.** Au-delà, ce n'est plus un chantier mais une feature : dis-le et renvoie
-  vers `/scd-sdd:kickoff-feature`.
+- **Plafond ~50 lignes.** À l'**écriture initiale**, dépasser signale un périmètre de feature :
+  dis-le et renvoie vers `/scd-sdd:kickoff-feature`. À l'**actualisation**, ça signale
+  l'accumulation : élague d'abord (étape 4) — le renvoi ne vaut que si la fiche élaguée dépasse
+  encore.
 - **Le problème avant les options.** Avant de faire valider ou de faire trancher, dis en deux ou
   trois phrases ce qui est en jeu : ce que la fiche va porter, et ce qu'elle ne portera pas. Chaque
   option décrit sa **conséquence concrète** — ce qui sera écrit, commité, ou perdu au `/clear` —,
@@ -82,9 +84,13 @@ Ratio : 40% humain / 60% AI (tu composes depuis la session ; l'humain valide ava
    worktree** — ne l'omets jamais.
 
 4. **Charge `references/fiche.md`** du skill `chantier` — **intégralement**, c'est elle qui porte le
-   template et les interdits — puis **compose les rubriques** depuis la session, sous l'interdiction
-   de contenu ci-dessus : `## Objectif`, `## Contexte à charger`, `## Acquis`,
-   `## Prochaine étape`, `## Écarté`.
+   template, les interdits et l'élagage. **Si tu actualises une fiche existante, élague d'abord**,
+   selon le bloc `<elagage>` : relis chaque ligne existante contre le disque — un acquis désormais
+   porté par un commit ou un document sort (en cas de doute, il reste), une référence consommée
+   sort ou se déclasse, une prochaine étape faite se remplace, `## Écarté` ne s'élague jamais —
+   et garde chaque retrait, avec son motif, pour l'annoncer à l'étape 7. Puis **compose les
+   rubriques** depuis la session, sous l'interdiction de contenu ci-dessus : `## Objectif`,
+   `## Contexte à charger`, `## Acquis`, `## Prochaine étape`, `## Écarté`.
 
 5. **Contrôle le manifeste**, selon `references/manifeste.md` du skill `chantier` — blocs
    **`<regle_maitresse>`**, **`<classes>`** et **`<controles>`**, et **eux seuls** : `<lecture>` et
@@ -97,11 +103,14 @@ Ratio : 40% humain / 60% AI (tu composes depuis la session ; l'humain valide ava
      puis écris quand même si l'humain passe outre ;
    - une cible introuvable est **retirée** et signalée, jamais conservée au cas où.
 
-6. **Contrôle le plafond** de ~50 lignes, et l'arbre de travail (`git status --porcelain`). Du
+6. **Contrôle le plafond** de ~50 lignes — à l'actualisation, il se contrôle **après** l'élagage :
+   une fiche élaguée qui dépasse encore, c'est le périmètre — et l'arbre de travail
+   (`git status --porcelain`). Du
    travail non commité substantiel → **dis-le** et propose un commit WIP *avant* la fiche : un
    demi-diff se porte infiniment mieux dans un commit que dans une fiche.
 
-7. **Affiche la fiche en entier et fais-la valider** (`AskUserQuestion`). C'est le seul garde-fou
+7. **Affiche la fiche en entier — et, à l'actualisation, les lignes retirées par l'élagage, avec
+   leur motif — puis fais-la valider** (`AskUserQuestion`). C'est le seul garde-fou
    contre une fiche fabriquée. **Dis en une phrase ce que tu demandes de vérifier** — le contenu
    est inféré de la session, donc c'est le récit, pas l'orthographe, qui est en jeu — et ce que
    chaque réponse entraîne : valider écrit le fichier et le commite ; refuser n'écrit **rien**,
@@ -152,7 +161,8 @@ Le lien du chantier avec une feature passe par son champ `Portée`, que `/scd-sd
 
 - `chantier` — contrat de `docs/chantiers/` : états, § « Cibler un chantier », contrôle de
   fraîcheur. Tu **écris** une fiche, donc tu charges ses deux références, **bloc par bloc** :
-  `references/fiche.md` **intégralement** (le *pourquoi*, les interdits, le template et le commit),
+  `references/fiche.md` **intégralement** (le *pourquoi*, les interdits, le template, le commit —
+  et `<elagage>`, dont tu es le **seul** applicateur, à l'actualisation),
   et `references/manifeste.md` blocs **`<regle_maitresse>`** `<classes>` `<controles>` — **pas**
   `<lecture>` ni `<delegation>`, qui appartiennent à `resume`.
 - `feature-specs` — section « Cibler une feature », uniquement pour résoudre la portée quand le

@@ -187,7 +187,9 @@ quelqu'un qui a tout le contexte en tête, pour quelqu'un qui n'en aura plus rie
 
 - **Le plafond de ~50 lignes tient.** Si les remédiations approuvées le font déborder, on ne
   gonfle pas : on **distille** (une conclusion remplace trois lignes de contexte) ou on **scinde**
-  en un second chantier. Une fiche qui dépasse durablement n'est plus un chantier mais une
+  en un second chantier. Le dépassement par **accumulation** se referme au prochain
+  `/scd-sdd:pause` — l'élagage appartient à l'écrivain de la fiche, le premortem **signale**, il
+  n'élague pas. Une fiche qui dépasse durablement n'est plus un chantier mais une
   feature — renvoyer vers `/scd-sdd:kickoff-feature`.
 - **Aucun fait dérivable n'entre.** Pas d'état de lot, pas de résultat de tests, pas de verdict de
   gate, pas de pourcentage, pas de numéro de PR présenté comme un état. C'est ce qui empêche une

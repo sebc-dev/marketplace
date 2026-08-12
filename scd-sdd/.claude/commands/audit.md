@@ -109,7 +109,8 @@ signalements. Un lot vide ne s'écrit pas.
    - `ls docs/chantiers/en-cours/*-audit-<document>.md` → une fiche ouverte ? Lis-la : son
      `## À corriger` est la liste de la passe précédente, son `## Écarté` les arbitrages en vigueur.
    - Aucune fiche ouverte → `ls docs/chantiers/archive/*-audit-<document>.md` et prends la **plus
-     récente** : tu en reprends le `## Écarté`, et lui seul. Un arbitrage est une décision, pas une
+     récente** : tu en reprends le `## Écarté`, et lui seul — en **élaguant** : une entrée dont
+     l'objet n'existe plus ne se reprend pas, et tu le dis. Un arbitrage est une décision, pas une
      note de passage.
    - Rien nulle part → première passe, tu pars de zéro. Ce n'est pas une anomalie.
 

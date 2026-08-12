@@ -136,10 +136,8 @@ Passer la gate de conformité de 001-auth : zéro Critical.
 
 ## À corriger
 ### Critical (2)
-- [FR-003] `spec.md` — adjectif sans cible → non testable.
-  → Mettre une valeur mesurable (ex. « P99 < 50 ms »). Phase : `specify`
-- [R2] `tasks.md` — lot horizontal → non reviewable seul.
-  → Scinder par étape : R2a « s'inscrire », R2b « se connecter ». Phase : `tasks`
+- [FR-003] `spec.md` — adjectif sans cible, non testable → mettre une valeur mesurable (« P99 < 50 ms »). Phase : `specify`
+- [R2] `tasks.md` — lot horizontal, non reviewable seul → scinder : R2a « s'inscrire », R2b « se connecter ». Phase : `tasks`
 ### Major (5)
 - …
 
@@ -154,7 +152,11 @@ Corriger FR-003 par `/scd-sdd:specify 001`, puis R2 par `/scd-sdd:tasks 001`.
 **Ce que la fiche porte, et ce qu'elle ne porte pas.** Les **Critical** et les **Major non
 arbitrés**, plus **tout arbitrage** dans `## Écarté`. Les Minor non arbitrés restent en
 conversation : les porter recréerait exactement le bruit qu'on supprime, et ils se re-dérivent pour
-rien. Le plafond de ~50 lignes du skill `chantier` tient ainsi sans exception.
+rien. **Le format est serré parce que la taille suit les findings** : une ligne par finding —
+défaut et correction sur la même ligne —, une ligne par entrée d'`## Écarté`. Le plafond de
+~50 lignes du skill `chantier` est ici une **cible annoncée, jamais bloquante** (le régime du
+budget du manifeste) : on ne tronque **jamais** la liste, et un dépassement massif malgré le
+format dit que le contrat est très cassé — l'issue est de le corriger, pas de raccourcir la fiche.
 
 **L'arbitrage.** `## Écarté` est le registre des findings qu'on assume, avec **motif et date**.
 
@@ -181,7 +183,10 @@ ajouter `## Issue` (ce qui a été corrigé, en combien de passes) et l'archiver
 **Les arbitrages survivent à l'archivage.** À l'ouverture d'une nouvelle fiche de gate pour la même
 feature, reprendre le `## Écarté` de la **dernière fiche archivée** de cette feature
 (`docs/chantiers/archive/*-gate-NNN-slug.md`, la plus récente). Un arbitrage est une décision, pas
-une note de passage : le re-litiger à chaque re-gate serait exactement la boucle qu'on ferme.
+une note de passage : le re-litiger à chaque re-gate serait exactement la boucle qu'on ferme. Le
+ré-import s'**élague** : une entrée dont l'objet n'existe plus — FR retiré, lot rescindé — ne se
+ré-importe pas, et le retrait se dit en conversation. L'arbitrage tombe avec son **objet**, jamais
+avec l'avis.
 </gate>
 
 <guidance>

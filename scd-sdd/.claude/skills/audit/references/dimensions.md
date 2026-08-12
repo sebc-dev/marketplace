@@ -117,8 +117,10 @@ perfectible, un ordre de sections inhabituel → **Minor**.
 ### 5. La fiche et ses lots
 
 `docs/chantiers/en-cours/AAAA-MM-JJ-audit-<document>.md`, **portée `socle · audit`**. C'est un
-chantier **ordinaire** (skill `chantier`) : plafond **~50 lignes**, aucun fait dérivable, aucun
-verdict. **`/scd-sdd:resume` n'a besoin d'aucun outillage neuf pour la traiter.**
+chantier **ordinaire** (skill `chantier`), au **régime des fiches-listes** : une ligne par
+finding, une par entrée d'`## Écarté`, cible ~50 lignes **annoncée jamais bloquante**, liste
+**jamais tronquée** (`chantier/references/fiche.md`, bloc `<template>`) ; aucun fait dérivable,
+aucun verdict. **`/scd-sdd:resume` n'a besoin d'aucun outillage neuf pour la traiter.**
 
 Elle porte les **Critical** et les **Major non arbitrés**, plus **tout arbitrage** dans
 `## Écarté`. Les **Minor** restent en conversation : les porter recréerait le bruit qu'on
@@ -152,13 +154,10 @@ Rendre `docs/prd.md` conforme : zéro Critical.
 
 ## À corriger
 ### Lot A — éditions dans `docs/prd.md`
-- **[FR-012] Critical** — « exporter les données » ne trace vers aucun `SC` du Brief.
-  → Ajouter `_(Brief: SC-002)_`, ou justifier l'écart en une ligne.
-- **[NON inclus] Major** — la section existe mais est vide.
-  → Nommer ce que la v1 ne fait pas : facturation, multi-tenant.
+- **[FR-012] Critical** — « exporter les données » ne trace vers aucun `SC` du Brief → ajouter `_(Brief: SC-002)_`, ou justifier l'écart en une ligne.
+- **[NON inclus] Major** — section vide → nommer ce que la v1 ne fait pas : facturation, multi-tenant.
 ### Lot C — renvois et signalements
-- **[SC-002] Major** — signalement **amont** : le critère du Brief est un adjectif nu
-  (« rapide »), donc rien ne peut y tracer proprement. → `/scd-sdd:audit brief`.
+- **[SC-002] Major** — signalement **amont** : le critère du Brief est un adjectif nu (« rapide »), rien ne peut y tracer → `/scd-sdd:audit brief`.
 
 ## Prochaine étape
 `/scd-sdd:resume audit-prd` pour traiter le Lot A, puis relancer `/scd-sdd:audit prd`.

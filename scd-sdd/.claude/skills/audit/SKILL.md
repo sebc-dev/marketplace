@@ -109,7 +109,9 @@ Un finding est identifié par le triplet **`[ID]` · fichier · nature**. À cha
 
 **Les arbitrages survivent à l'archivage.** À l'ouverture d'une nouvelle fiche pour le même
 document, reprendre le `## Écarté` de la **dernière fiche archivée** — et lui seul. Un arbitrage
-est une décision, pas une note de passage.
+est une décision, pas une note de passage. Le ré-import s'**élague** : une entrée dont l'objet
+n'existe plus (ID retiré, section disparue) ne se ré-importe pas, et le retrait se dit en
+conversation — l'arbitrage tombe avec son **objet**, jamais avec l'avis.
 
 > **On n'arbitre jamais un Critical.** Seuls les Major et les Minor s'écartent, avec motif et
 > date. Une demande d'arbitrage sur un Critical se refuse en le disant.

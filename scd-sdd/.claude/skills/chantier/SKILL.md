@@ -49,9 +49,10 @@ docs/chantiers/
 ## Anatomie de la fiche
 
 Un titre `#`, la ligne `Portée`, la ligne d'en-tête datée, puis `## Objectif`,
-`## Contexte à charger`, `## Acquis`, `## Prochaine étape`, `## Écarté`. Plafond **~50 lignes**.
-Le **template complet** est dans `references/fiche.md`, bloc `<template>` — il ne se charge que
-pour écrire.
+`## Contexte à charger`, `## Acquis`, `## Prochaine étape`, `## Écarté`. Plafond **~50 lignes** —
+même valeur partout, mais ce qu'un dépassement signale dépend de la **nature** de la fiche
+(`references/fiche.md`, bloc `<template>`). Le **template complet** est dans le même bloc — il ne
+se charge que pour écrire.
 
 - **`Portée`**, vocabulaire fermé donc greppable : `NNN-slug · lot Rn` | `NNN-slug · gate` |
   `NNN-slug` | `socle` | `socle · audit` | `hors-cycle`. Deux sont des listes de corrections :
@@ -127,5 +128,5 @@ charge aucune des deux.
 
 | Fichier | Qui la charge, et quels blocs |
 |---|---|
-| `references/fiche.md` | **écrire une fiche** — `pause` et `note` intégralement ; `analyze`, `ci`, `audit` et `premortem` (cible `chantier`) : `<interdits>` et `<template>` |
+| `references/fiche.md` | **écrire une fiche** — `pause` intégralement (seul applicateur de `<elagage>`, à l'actualisation) ; `note` intégralement sauf `<elagage>` ; `analyze`, `ci`, `audit` et `premortem` (cible `chantier`) : `<interdits>` et `<template>` |
 | `references/manifeste.md` | **le contexte à charger** — `pause` : `<regle_maitresse>` `<classes>` `<controles>` ; `resume` : `<classes>` `<lecture>` `<delegation>` ; `premortem` (cible `chantier`) : les trois d'écriture pour écrire, `<classes>` `<lecture>` pour lire |

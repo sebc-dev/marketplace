@@ -40,6 +40,9 @@ Ratio : 30% humain / 70% AI (l'humain dit ce qui mérite une fiche ; tu la compo
   note pas, il se joue. Sans cette règle, tu serais une porte dérobée pour fabriquer un verdict de
   gate — le fait même pour lequel le journal existe.
 - **Aucun fait dérivable dans la fiche** : pas d'état de lot, pas de verdict, pas de pourcentage.
+- **Plafond ~50 lignes.** Un dépassement ne peut pas signaler une feature — le travail est
+  terminé. Il signale que la fiche **héberge** la connaissance au lieu de l'**indexer** : route le
+  surplus (candidat ADR, `spec.md`, message de commit) et garde l'index.
 - **Tu commites la fiche**, `git add` scopé au fichier, sans jamais toucher au reste de l'arbre.
 - **Tu ne fais pas le travail** que tu consignes. Il a déjà eu lieu.
 - **Le problème avant les options.** Quand tu demandes de trancher — la portée, ou s'il faut une
@@ -130,8 +133,9 @@ La chronologie du hors-cycle est le **tri par nom** de `docs/chantiers/archive/`
 ## Skill active
 
 - `chantier` — contrat de `docs/chantiers/` : anatomie, nommage, `Portée`, cycle de vie. Tu
-  **écris** une fiche, donc tu charges `references/fiche.md` **intégralement** — le *pourquoi*, les
-  interdits, le template et les règles de commit. Tu n'as **pas** besoin de
+  **écris** une fiche, donc tu charges `references/fiche.md` **intégralement sauf `<elagage>`** —
+  le *pourquoi*, les interdits, le template et les règles de commit ; l'élagage appartient à
+  `pause`, une fiche d'archive naît fermée. Tu n'as **pas** besoin de
   `references/manifeste.md` : une fiche archivée n'a en général pas de manifeste.
 - `feature-specs` — section « Cibler une feature », uniquement pour résoudre la portée.
 

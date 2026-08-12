@@ -1,8 +1,9 @@
 # Référence — La fiche de chantier
 
-Chargée par les commandes qui **écrivent** une fiche : `/scd-sdd:pause` et `/scd-sdd:note`
-(intégralement), `/scd-sdd:analyze`, `/scd-sdd:ci`, `/scd-sdd:audit` et `/scd-sdd:premortem` de cible
-`chantier` (`<interdits>` et `<template>`, plus `<frontiere>` pour ceux qui journalisent par
+Chargée par les commandes qui **écrivent** une fiche : `/scd-sdd:pause` (intégralement — seul
+applicateur de `<elagage>`), `/scd-sdd:note` (intégralement **sauf `<elagage>`** — une fiche
+d'archive naît fermée), `/scd-sdd:analyze`, `/scd-sdd:ci`, `/scd-sdd:audit` et `/scd-sdd:premortem`
+de cible `chantier` (`<interdits>` et `<template>`, plus `<frontiere>` pour ceux qui journalisent par
 ailleurs). Les commandes qui **lisent** une fiche — les trois `status`, les phases specs devant une
 fiche de gate, `linear`, le hook `SessionStart` — n'en ont **pas** besoin : l'anatomie de la fiche et
 la ligne `Portée` sont dans le `SKILL.md`.
@@ -52,8 +53,14 @@ de commit.
 
 ## Le format complet
 
-Plafond **~50 lignes**. Au-delà, ce n'est plus un chantier mais une feature : renvoyer vers
-`/scd-sdd:kickoff-feature`.
+**Plafond ~50 lignes** — la valeur est la même pour toutes les fiches ; ce qu'un dépassement veut
+dire dépend de la **nature** de la fiche, et l'issue avec :
+
+| Nature | Un dépassement signale | L'issue |
+|---|---|---|
+| travail ouvert (`pause`) | à l'écriture initiale : un périmètre de feature ; à l'actualisation : l'accumulation | renvoyer vers `/scd-sdd:kickoff-feature` ; **élaguer d'abord** (bloc `<elagage>`), le renvoi ne vaut que si la fiche élaguée dépasse encore |
+| archive (`note`) | la fiche **héberge** la connaissance au lieu de l'**indexer** — le travail est terminé, ce n'est jamais une feature | router le surplus — candidat ADR, `spec.md`, message de commit — et garder l'index |
+| liste de corrections (`analyze` · gate, `audit`) | un contrat très cassé — la taille suit le nombre de findings | format serré (une ligne par finding), coût annoncé, **jamais tronquer** : corriger le contrat, pas raccourcir la fiche |
 
 ```markdown
 # Verrouillage du compte après 5 échecs
@@ -94,6 +101,33 @@ implémentation ; le code en vol, lui, reste non commité. Corollaire assumé �
 lié à un lot arrive dans le diff de la PR de ce lot.
 
 </template>
+
+<elagage>
+
+## L'élagage à l'actualisation — `pause` seul
+
+Appliqué par `/scd-sdd:pause` quand il **actualise** une fiche existante — jamais à l'écriture
+initiale, jamais par un autre écrivain (`premortem` **signale** un dépassement, il n'élague pas).
+Ce n'est pas une compression : une actualisation ajoute et rien ne retirait, si bien que la fiche
+finissait par porter des faits que le disque porte désormais — l'élagage est le contrôle de
+l'interdit n° 1 **dans le temps**.
+
+Relis chaque ligne existante contre le disque, **avant** d'ajouter quoi que ce soit :
+
+- un **Acquis** dont le fait est maintenant porté par un commit, un document ou une spec est
+  devenu **dérivable** → il sort. En cas de doute — le fait n'est que partiellement sur le
+  disque —, il **reste** ;
+- une ligne du **manifeste** dont la cible a été consommée — intégrée, mergée, supprimée — sort,
+  ou se déclasse en `à situer` ;
+- une **Prochaine étape** faite se **remplace**, elle ne s'empile jamais ;
+- **`## Écarté` ne s'élague jamais** : les pistes mortes ne sont dérivables de nulle part — c'est
+  la rubrique de plus forte valeur, et la seule dont la croissance est légitime.
+
+**Tout retrait est annoncé au gate de validation**, ligne par ligne, avec son motif (« porté par
+`a1b2c3d` », « intégré à `spec.md` FR-004 »). Le contenu d'une fiche est inféré de la session : un
+retrait silencieux perdrait un acquis sans témoin.
+
+</elagage>
 
 <frontiere>
 
