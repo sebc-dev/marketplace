@@ -149,7 +149,7 @@ Ratio : 5% humain / 95% AI (lecture mécanique ; l'humain choisit la suite).
 <report>
 ```
 ### Chantiers — docs/chantiers/
-⏸ « Verrouillage du compte après 5 échecs » — 001-auth · lot R2
+⏸ « Verrouillage du compte après 5 échecs » — portée 001-auth · lot R2
    actualisé le 05/08 sur `impl/auth-R2` · à jour
    → /scd-sdd:resume avant de suivre la prochaine commande ci-dessous
 · 2 en attente · dernier archivé : 2026-08-02-vitest-3
@@ -196,10 +196,13 @@ Le bloc **Chantiers** ouvre le rapport parce qu'il est le plus périssable, **pa
 prime. Ce qu'il peut porter après le titre et la portée :
 
 - `à jour` — l'ancre tient, la fiche a moins de 14 jours ;
-- `⚠ suspect — enregistré sur impl/auth-R2, tu es sur main` : l'ancre ne tient plus ;
+- `⚠ suspect — écrit sur impl/auth-R2, tu es sur main` : l'ancre ne tient plus ;
 - `⚠ ancien (24 j)` ;
-- `✔ consommé — le test locks_after_fifth_failure existe déjà` → suggère `/scd-sdd:resume` pour le
-  refermer.
+- `✔ consommé (déjà fait) — le test locks_after_fifth_failure existe` → suggère `/scd-sdd:resume`
+  pour le refermer.
+
+Ces quatre mentions se lisent seules : chacune porte son motif dans la même ligne. C'est ce qui
+dispense d'expliquer le vocabulaire des chantiers dans un rapport qui doit rester court.
 
 Plusieurs fiches dans `en-cours/` n'est pas une anomalie : c'est le mode worktree. Liste-les
 toutes, la plus récemment actualisée d'abord.

@@ -42,6 +42,16 @@ Ratio : 30% humain / 70% AI (l'humain dit ce qui mérite une fiche ; tu la compo
 - **Aucun fait dérivable dans la fiche** : pas d'état de lot, pas de verdict, pas de pourcentage.
 - **Tu commites la fiche**, `git add` scopé au fichier, sans jamais toucher au reste de l'arbre.
 - **Tu ne fais pas le travail** que tu consignes. Il a déjà eu lieu.
+- **Le problème avant les options.** Quand tu demandes de trancher — la portée, ou s'il faut une
+  fiche du tout —, dis d'abord en une ou deux phrases ce qui est en jeu, et donne à chaque option
+  sa **conséquence concrète** : où la fiche atterrira, et qui la retrouvera. Quand tu refuses
+  d'écrire au titre du test des trois conditions, **dis laquelle a manqué et pourquoi** — un refus
+  non motivé se lit comme une panne.
+- **Glose au premier emploi.** Le premier terme de méthode que tu adresses à l'humain —
+  chantier, portée, hors-cycle, archive… — reçoit une glose d'**une ligne**, entre parenthèses ou
+  entre tirets. Jamais un paragraphe, jamais deux fois, et **plus du tout dès que l'humain emploie
+  le terme lui-même** : c'est ce signal-là qui règle le niveau, pas une question.
+- **Tu parles la langue de l'humain**, dans les questions comme dans le rapport.
 
 ## Définitions
 

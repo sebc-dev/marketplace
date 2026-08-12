@@ -607,9 +607,12 @@ et pas un de plus :
   rapport d'`analyze` dit désormais ce que son échelle signifie ; le gate de `premortem` ouvre
   chaque remédiation sur *ce que le risque ferait au produit*, avant le fichier et l'ID ; un
   statut `blocked-*` s'affiche avec sa traduction ;
-- **en session** — les 17 commandes qui dialoguent posent **le problème avant les options**, et
+- **en session** — les 20 commandes qui dialoguent posent **le problème avant les options**, et
   chaque option décrit sa conséquence en termes du projet, jamais en jargon. Une option énoncée
-  sans son enjeu ne se choisit pas, elle se subit.
+  sans son enjeu ne se choisit pas, elle se subit. La gestion de chantier en fait partie :
+  `/scd-sdd:resume` ne se contente plus de lister quatre suites possibles, il dit ce que chacune
+  entraîne — et surtout que **mettre un chantier en attente se rouvre, alors que le fermer ou
+  l'abandonner non**.
 
 Deux commandes d'entrée — `/scd-sdd:init-project` et `/scd-sdd:kickoff-feature` — affichent en plus
 un bloc **« Vocabulaire — à lire une fois »**. Il est **conditionnel** : seulement si le socle est

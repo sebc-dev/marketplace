@@ -60,7 +60,8 @@ fi
 if [ -z "$match" ]; then
   printf '⏸ %s chantiers en cours, aucun sur la branche courante :\n' "${#fiches[@]}"
   for f in "${fiches[@]}"; do
-    printf '   · %s — %s\n' "$(titre "$f")" "$(portee "$f")"
+    p="$(portee "$f")"
+    printf '   · %s%s\n' "$(titre "$f")" "${p:+ — portée $p}"
   done
   printf '   → /scd-sdd:resume <slug> pour en charger un\n'
   pied
@@ -72,7 +73,8 @@ fi
 #    Le contenu des fichiers pointes n'est JAMAIS injecte ici — c'est resume qui charge,
 #    apres controle de fraicheur. Ce hook annonce, il n'atteste rien.
 printf '⏸ Chantier en cours — « %s »\n' "$(titre "$match")"
-printf '   %s · actualisé le %s' "$(portee "$match")" "$(maj "$match")"
+p="$(portee "$match")"
+printf '   %sactualisé le %s' "${p:+portée $p · }" "$(maj "$match")"
 [ -n "$branch" ] && printf ' sur `%s`' "$branch"
 printf '\n'
 
