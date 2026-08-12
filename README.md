@@ -45,7 +45,7 @@ state and survives a `/clear`. Two skills: `research-prompter` composes Research
 subject, specialised by domain packs; `campaign` orchestrates and composes nothing itself.
 Human-in-the-loop by construction: no session can launch Research. 7 slash commands.
 
-### [scd-sdd](./scd-sdd/) `v1.14.1`
+### [scd-sdd](./scd-sdd/) `v1.15.0`
 
 Complete spec-driven development cycle, from empty repo to reviewable PR — one plugin, three
 chained levels. **Foundation** (once per project): brief → PRD → stack → architecture invariants →

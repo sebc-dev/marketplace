@@ -92,10 +92,11 @@ est **limitative par cible** ; ce qui n'y entre pas prend la sortie de secours (
    et contrôle de fraîcheur rendu pour un chantier. Si elle n'est pas tenue, **arrête-toi** et
    renvoie vers la commande qui la rétablit.
 
-   Cible `chantier` : charge aussi `references/manifeste.md` du skill `chantier` — c'est lui qui
-   porte les quatre classes de référence et leurs seuils. **Résous ici les lignes `à déléguer`** du
-   manifeste, via `chantier-reader` : le facilitateur n'a pas `Task` et ne peut pas le faire
-   lui-même. Tu lui passeras les réponses ancrées avec le reste.
+   Cible `chantier` : charge aussi `references/manifeste.md` du skill `chantier`, **bloc par
+   bloc** — `<classes>` et `<lecture>` pour **lire** le manifeste ; `<regle_maitresse>` et
+   `<controles>` **en plus**, et seulement si tu vas en **écrire** une ligne. **Résous ici les
+   lignes `à déléguer`** du manifeste, via `chantier-reader` : le facilitateur n'a pas `Task` et ne
+   peut pas le faire lui-même. Tu lui passeras les réponses ancrées avec le reste.
 
 4. **Anime le premortem** — délègue à `premortem-facilitator` (outil `Task`) en lui passant **la
    cible résolue et son chemin**, puis le **bloc de cible** intégralement : documents jugés,
@@ -176,8 +177,10 @@ C'est un fait utile, et l'absence de ligne se lirait comme un premortem jamais j
 - `premortem` — la méthode et la table des cibles ; charge `references/cibles.md`, **bloc de la
   cible résolue** + `<hors-forme>`.
 - Le skill du niveau de la cible, pour les invariants des documents remédiés : `project-docs`
-  (socle) · `feature-specs` (feature) · `chantier` (chantier, et toute sortie de secours) — plus
-  `chantier/references/manifeste.md` dès qu'un manifeste de contexte est lu ou écrit.
+  (socle) · `feature-specs` (feature) · `chantier` (chantier, et toute sortie de secours) — plus,
+  **bloc par bloc**, `chantier/references/fiche.md` (`<interdits>` et `<template>`) dès qu'une
+  fiche est écrite, et `chantier/references/manifeste.md` (`<classes>` `<lecture>` pour lire ;
+  `<regle_maitresse>` `<controles>` en plus pour écrire) dès qu'un manifeste de contexte est en jeu.
 - `exposition` — **régime *gate***, chargé à l'étape 6. Aucune `references/`.
 - `journal` — contrat de `docs/journal/*.md`. **Pas pour une cible `chantier`.**
 - Subagents, dans cet ordre : `premortem-facilitator` → `premortem-validator` → *[gate humain]* →

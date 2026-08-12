@@ -203,9 +203,10 @@ d'audit.
 - `audit` — la méthode : les quatre temps, l'échelle, le verdict binaire, l'appariement, la garde
   anti-boucle. Charge `references/dimensions.md`, bloc `<resolution>` à l'étape 1, puis **le seul
   bloc de la dimension résolue**.
-- `chantier` — format de la fiche, nommage, `Portée`, cycle de vie. Tu n'as **pas** besoin de
-  `references/manifeste.md` : le `## Contexte à charger` d'une fiche d'audit se réduit au document
-  jugé et à son amont, tous `à lire`.
+- `chantier` — anatomie, nommage, `Portée`, cycle de vie. Tu **écris** une fiche, donc tu charges
+  `references/fiche.md`, blocs **`<interdits>`**, **`<template>`** et **`<frontiere>`**. Tu n'as
+  **pas** besoin de `references/manifeste.md` : le `## Contexte à charger` d'une fiche d'audit se
+  réduit au document jugé et à son amont, tous `à lire`.
 - `exposition` — **régime *gate***, chargé à l'étape 7. Aucune `references/`.
 - `journal` — contrat de `docs/journal/socle.md`.
 - Subagent : `audit-explorer`, **modèle imposé à l'appel**. Il ne charge pas `dimensions.md` — c'est

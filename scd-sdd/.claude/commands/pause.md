@@ -81,10 +81,14 @@ Ratio : 40% humain / 60% AI (tu composes depuis la session ; l'humain valide ava
    date du jour. Le champ `branche` sert **d'ancre de fraîcheur et de clé de sélection par
    worktree** — ne l'omets jamais.
 
-4. **Compose les rubriques** depuis la session, sous l'interdiction de contenu ci-dessus :
-   `## Objectif`, `## Contexte à charger`, `## Acquis`, `## Prochaine étape`, `## Écarté`.
+4. **Charge `references/fiche.md`** du skill `chantier` — **intégralement**, c'est elle qui porte le
+   template et les interdits — puis **compose les rubriques** depuis la session, sous l'interdiction
+   de contenu ci-dessus : `## Objectif`, `## Contexte à charger`, `## Acquis`,
+   `## Prochaine étape`, `## Écarté`.
 
-5. **Contrôle le manifeste**, selon `references/manifeste.md` du skill `chantier` :
+5. **Contrôle le manifeste**, selon `references/manifeste.md` du skill `chantier` — blocs
+   **`<regle_maitresse>`**, **`<classes>`** et **`<controles>`**, et **eux seuls** : `<lecture>` et
+   `<delegation>` décrivent ce que `resume` fera au retour, tu n'en as pas besoin pour écrire.
    - avant tout, applique la **règle maîtresse** — ce qui est une *conclusion* va dans `## Acquis`,
      pas en référence ;
    - `wc -l` sur chaque cible existante. **Chemin nu au-delà de ~300 lignes → refusé** : exige une
@@ -146,8 +150,11 @@ Le lien du chantier avec une feature passe par son champ `Portée`, que `/scd-sd
 
 ## Skill active
 
-- `chantier` — contrat de `docs/chantiers/` : format, états, § « Cibler un chantier », contrôle de
-  fraîcheur. Charge `references/manifeste.md` pour les quatre classes et leurs seuils.
+- `chantier` — contrat de `docs/chantiers/` : états, § « Cibler un chantier », contrôle de
+  fraîcheur. Tu **écris** une fiche, donc tu charges ses deux références, **bloc par bloc** :
+  `references/fiche.md` **intégralement** (le *pourquoi*, les interdits, le template et le commit),
+  et `references/manifeste.md` blocs **`<regle_maitresse>`** `<classes>` `<controles>` — **pas**
+  `<lecture>` ni `<delegation>`, qui appartiennent à `resume`.
 - `feature-specs` — section « Cibler une feature », uniquement pour résoudre la portée quand le
   travail touche une feature.
 

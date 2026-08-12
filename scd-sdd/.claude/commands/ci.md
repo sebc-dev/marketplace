@@ -255,8 +255,9 @@ un résultat, pas un échec à taire.
   référence — template, grille des onze classes, critère d'admission — appartient à
   `/scd-sdd:archi` et ne se charge pas ici.
 - `exposition` — **régime *options***, chargé à l'étape 10. Aucune `references/`.
-- `chantier` — format de la fiche de durcissement, nommage, `Portée`. Tu n'as **pas** besoin de
-  `references/manifeste.md` : cette fiche ne porte aucun contexte volumineux.
+- `chantier` — anatomie de la fiche de durcissement, nommage, `Portée`. Tu **écris** une fiche,
+  donc tu charges `references/fiche.md`, blocs **`<interdits>`** et **`<template>`**. Tu n'as
+  **pas** besoin de `references/manifeste.md` : cette fiche ne porte aucun contexte volumineux.
 - `journal` — contrat de `docs/journal/*.md`.
 
 ## À la fin

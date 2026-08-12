@@ -129,9 +129,10 @@ La chronologie du hors-cycle est le **tri par nom** de `docs/chantiers/archive/`
 
 ## Skill active
 
-- `chantier` — contrat de `docs/chantiers/` : format de la fiche, nommage, `Portée`, cycle de vie.
-  Tu n'as **pas** besoin de `references/manifeste.md` : une fiche archivée n'a en général pas de
-  manifeste.
+- `chantier` — contrat de `docs/chantiers/` : anatomie, nommage, `Portée`, cycle de vie. Tu
+  **écris** une fiche, donc tu charges `references/fiche.md` **intégralement** — le *pourquoi*, les
+  interdits, le template et les règles de commit. Tu n'as **pas** besoin de
+  `references/manifeste.md` : une fiche archivée n'a en général pas de manifeste.
 - `feature-specs` — section « Cibler une feature », uniquement pour résoudre la portée.
 
 ## À la fin

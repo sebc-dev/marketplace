@@ -92,7 +92,9 @@ pour faire tenir un texte proposé.
 - **Chantier `en-attente`** — crée `docs/chantiers/en-attente/AAAA-MM-JJ-slug.md` au format du
   skill `chantier` : titre, `Portée`, date d'ouverture, `## Objectif`, `## Prochaine étape`. Un
   premortem n'ouvre qu'une portée `socle`, `NNN-slug` ou `hors-cycle` ; le vocabulaire complet est
-  fixé par `chantier/SKILL.md` § Format, qui fait foi. Tu ne le commites pas — la commande le fait.
+  fixé par `chantier/SKILL.md` § « Anatomie de la fiche », et le template par
+  `chantier/references/fiche.md` bloc `<template>` — ce sont eux qui font foi. Tu ne le commites
+  pas — la commande le fait.
 </process>
 
 <output_format>

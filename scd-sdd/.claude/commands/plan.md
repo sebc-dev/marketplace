@@ -142,8 +142,9 @@ par `Edit` ciblé :
 ## Skill active
 
 - `feature-specs` — charge `references/plan.md`.
-- `chantier` — format de la fiche de gate, pour la LIRE seulement. Tu ne l'écris ni
-  ne la modifies : c'est `/scd-sdd:analyze` qui l'actualise.
+- `chantier` — **anatomie** de la fiche de gate, pour la LIRE seulement. Tu ne l'écris ni
+  ne la modifies : c'est `/scd-sdd:analyze` qui l'actualise. Tu ne charges **aucune** de ses deux
+  références : `fiche.md` sert à écrire, `manifeste.md` à recharger un contexte.
 - `journal` — contrat de `docs/journal/*.md`.
 
 ## À la fin

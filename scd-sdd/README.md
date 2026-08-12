@@ -141,6 +141,17 @@ Un hook `SessionStart` annonce, après un `/clear`, la fiche dont la **branche**
 en parallèle. Il lit, il n'écrit jamais : un hook ne connaît pas l'issue de ce qu'il
 consignerait, et une fiche fabriquée est pire qu'un dossier vide.
 
+**Le dispositif se paie lui-même, et ça se mesure.** Le contrat des chantiers est partagé
+en **lecteurs** et **écrivains** : `chantier/SKILL.md` porte ce qu'on lit d'une fiche —
+anatomie, résolution de cible, contrôle de fraîcheur, cycle de vie —, et ses deux
+références portent le reste, chargées **bloc par bloc**. `fiche.md` sert à en écrire une,
+`manifeste.md` à recharger un contexte, et **treize des dix-neuf commandes qui chargent le
+skill n'ont besoin d'aucune des deux**. `/scd-sdd:resume` charge de même `exposition`
+**seulement quand la fiche est ressortie suspecte, ancienne ou consommée** — c'est-à-dire
+quand il y a réellement un arbitrage à exposer ; sur une fiche fraîche, « reprendre » est
+l'issue évidente. Le critère est le **produit** taille × nombre de consommateurs, jamais la
+taille seule.
+
 ### Le chantier de gate — ce qui ferme la boucle `tasks` ↔ `analyze`
 
 `analyze` ne modifie aucun document du contrat et ne persiste aucun verdict — mais sa

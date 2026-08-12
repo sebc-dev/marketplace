@@ -23,8 +23,7 @@ Une fiche de chantier dit ce que quelqu'un **allait faire**, à une date, depuis
 peut donc avoir vieilli : le dépôt a bougé, l'étape a déjà été franchie, la branche n'existe plus.
 
 Tu la sélectionnes, tu la **contrôles avant de la croire**, tu recharges exactement le contexte
-qu'elle désigne — ni plus, ni moins — et tu rends la main pour le travail. Le manifeste sépare le
-suivi du contexte : c'est toi qui honores cette séparation, référence par référence.
+qu'elle désigne — ni plus, ni moins — et tu rends la main pour le travail.
 
 Ratio : 15% humain / 85% AI (sélection et contrôles mécaniques ; l'humain décide de la suite).
 
@@ -58,54 +57,44 @@ Ratio : 15% humain / 85% AI (sélection et contrôles mécaniques ; l'humain dé
   question.
 - **Tu parles la langue de l'humain**, dans les questions comme dans le rapport.
 
-## Définitions
-
-- **Ancre** : le couple `branche` / `HEAD` enregistré dans l'en-tête de la fiche. Il sert au
-  contrôle de fraîcheur **et** à la sélection par worktree.
-- **Consommée** : la `Prochaine étape` de la fiche est déjà faite sur disque. La fiche a rempli son
-  office ; il faut la refermer, pas la suivre.
-
 ## Processus
 
 1. **Sélectionne la fiche** selon la section « Cibler un chantier » du skill `chantier` —
-   référencée, jamais recopiée. En résumé : argument → fragment de slug ou date ; sinon la fiche de
-   `en-cours/` dont le champ `branche` vaut la branche courante (**le cas worktree**) ; sinon
-   l'unique fiche de `en-cours/`, annoncée ; sinon liste et `AskUserQuestion`.
+   **chargée, donc jamais recopiée ici**.
 
    Aucune fiche nulle part → dis-le, renvoie vers `/scd-sdd:status`, et **rien d'autre**. Tu n'en
    crées pas : c'est `/scd-sdd:pause`.
 
-2. **Contrôle la fraîcheur** — les trois contrôles du skill `chantier`, indépendants :
-   - **ancre** : `git rev-parse --abbrev-ref HEAD` ≠ champ `branche`, ou
-     `git merge-base --is-ancestor <HEAD enregistré> HEAD` ≠ 0 → **⚠ suspect** ;
-   - **âge** : `Actualisé le` à plus de 14 jours → **⚠ ancien** ;
-   - **consommation** : la `Prochaine étape` nomme un fichier, un test, un symbole — vérifie-le
-     contre les fichiers. Déjà fait → **✔ consommé**, et propose la fermeture d'emblée.
-
-   Une fiche peut être à jour en âge et suspecte en ancre : affiche les deux.
+2. **Contrôle la fraîcheur** — la table des trois contrôles du skill `chantier`, appliquée telle
+   quelle. Un ✔ consommé → propose la fermeture d'emblée. **Retiens les trois verdicts** : ils
+   commandent la restitution, et ils décident seuls du chargement de l'étape 6.
 
 3. **Vérifie chaque affirmation** de `## Acquis` et `## Prochaine étape` contre les fichiers, dans
    la mesure du possible. Ce qui se vérifie est rendu comme un fait ; ce qui ne se vérifie pas est
    rendu **entre guillemets**, attribué à la fiche.
 
-4. **Recharge le contexte**, classe par classe (`chantier/references/manifeste.md`) :
-   - `à lire` → `Read` intégral ;
-   - `à extraire` → `Grep` / `Read` par offset sur **l'ancre seule**, jamais le fichier entier ;
-   - `à déléguer` → délègue à **`chantier-reader`** (outil `Task`) en lui passant la cible et la
-     question, **rien d'autre**. Une ligne `à déléguer` sans question est invalide : signale-la et
-     ne charge rien ;
-   - `à situer` → **ne charge rien**. Mentionne son existence, c'est tout.
+4. **Recharge le contexte**, classe par classe. Charge `chantier/references/manifeste.md`, blocs
+   **`<classes>` `<lecture>` `<delegation>`** et **eux seuls** — `<regle_maitresse>` et
+   `<controles>` gouvernent l'**écriture** d'un manifeste, travail de `/scd-sdd:pause`. La table de
+   `<classes>` dit ce que chaque classe devient ; applique-la sans la réinterpréter.
 
-   Une cible disparue depuis l'écriture de la fiche est **signalée**, pas cherchée ailleurs.
+   Deux règles à toi : une ligne `à déléguer` **sans question** est invalide — signale-la et ne
+   charge rien ; une cible **disparue** est **signalée**, pas cherchée ailleurs.
 
 5. **Rends tes comptes** en une ligne, puis restitue : l'objectif, l'acquis vérifié, la prochaine
    étape, et les pistes écartées — celles-ci intégralement, ce sont elles qui évitent de
    ré-explorer.
 
-6. **Charge le skill `exposition`** — **régime *options*** — puis **demande la suite**
-   (`AskUserQuestion`). **Pose d'abord le problème en une ou deux phrases** —
+6. **Demande la suite** (`AskUserQuestion`). **Pose d'abord le problème en une ou deux phrases** —
    ce que les contrôles viennent de dire de cette fiche, et ce que ça change : une fiche à jour
    se reprend, une fiche consommée se referme, une fiche suspecte se relit avant d'être suivie.
+
+   **Charge `exposition` — régime *options* — si et seulement si l'étape 2 a rendu au moins un ⚠ ou
+   un ✔ consommé** : il y a alors un arbitrage réel, *suivre une intention désancrée ou la
+   refermer*. Fraîche sur les trois, la fiche n'en ouvre aucun — « reprendre » est l'issue évidente
+   et les options ci-dessous portent déjà leur conséquence. La condition ne se mesure pas : elle est
+   **déjà rendue** à l'étape 2.
+
    Puis les quatre options, **chacune avec sa conséquence dite en clair**, jamais réduite à son
    `git mv` :
 
@@ -145,10 +134,8 @@ Prochaine       Écrire le test rouge `locks_after_fifth_failure` dans
 Écarté         Redis (absent de docs/stack.md) · middleware rateLimit (compte par IP).
 ```
 
-La ligne `Contexte rechargé` **dit ce que chaque classe a fait**, elle ne récite pas ses noms :
-`à lire` → « lus », `à extraire` → « extrait ciblé », `à déléguer` → « question déléguée »,
-`à situer` → « signalés, non chargés ». C'est le seul endroit où ces quatre classes atteignent
-l'humain ; les nommer en clair une fois vaut mieux que les définir.
+La ligne `Contexte rechargé` **dit ce que chaque classe a fait**, elle ne récite pas ses noms — la
+correspondance est dans le bloc `<lecture>` du manifeste.
 
 Une fiche **suspecte** remplace la ligne `Fraîcheur` par, par exemple :
 `⚠ suspect — la fiche a été écrite sur impl/auth-R2, tu es sur main, et le dépôt a avancé
@@ -160,10 +147,9 @@ ailleurs depuis (HEAD a1b2c3d n'est plus un ancêtre)`, et le rapport ajoute en 
 
 - Tu n'écris aucun contenu de document, tu ne joues aucune phase, tu ne lances aucune gate.
 - Tu ne lances pas la commande de cycle que tu recommandes.
-- Tu ne charges pas une référence `à situer`, ni le fichier entier d'une référence `à extraire`.
 - Tu ne remplaces pas une fiche fermée par un fichier vide « consommé » : un fichier vide est un
   fichier d'état à zéro. **Le déplacement dans `archive/` est le signal.**
-- Tu ne supprimes aucune fiche, tu ne renommes aucune fiche.
+- Tu ne renommes aucune fiche.
 - Tu ne crées pas de chantier — c'est `/scd-sdd:pause`.
 - Tu ne récrits pas l'histoire d'une fiche : `## Acquis` et `## Écarté` se complètent, jamais ne
   se corrigent rétroactivement.
@@ -178,10 +164,15 @@ phases avec du bruit à la paire. C'est de nature, pas un oubli.
 ## Skill active
 
 - `chantier` — contrat de `docs/chantiers/` : § « Cibler un chantier », § « Contrôle de
-  fraîcheur », cycle de vie. Charge `references/manifeste.md` pour les quatre classes.
-- `feature-specs` — section « Cibler une feature », si la portée doit être rattachée à une feature.
-- `exposition` — **régime *options***, chargé à l'étape 6. Aucune `references/`. Les quatre suites
-  sont des issues concurrentes, pas une liste à trier.
+  fraîcheur », anatomie de la fiche, cycle de vie. Charge `references/manifeste.md`, blocs
+  **`<classes>` `<lecture>` `<delegation>`** et eux seuls. **Pas** `references/fiche.md` : tu ne
+  rédiges aucune fiche — tu ajoutes au plus un `## Issue` à la fermeture.
+- `exposition` — **régime *options***, **conditionnel** : chargé à l'étape 6 **seulement si**
+  l'étape 2 a rendu au moins un ⚠ suspect, ⚠ ancien ou ✔ consommé. Aucune `references/`. Les quatre
+  suites sont des issues concurrentes, pas une liste à trier.
+- **Pas `feature-specs`.** La `Portée` de la fiche est **déjà résolue** (`001-auth · lot R2`) : tu
+  la lis, tu ne la résous pas. « Cibler une feature » répond à *quelle feature est en cours après
+  un `/clear`* — question que tu n'as pas. Un `Glob specs/NNN-*/` suffit à vérifier l'existence.
 
 ## À la fin
 

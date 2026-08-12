@@ -196,7 +196,9 @@ Une gate au rouge se consigne **aussi** : c'est la moitié de l'histoire qui a d
 ## Skill active
 
 - `feature-specs` — charge `references/analyze.md`, dont sa section `<gate>`.
-- `chantier` — format de la fiche, nommage, `Portée`, cycle de vie. Tu n'as **pas** besoin de
+- `chantier` — anatomie, nommage, `Portée`, cycle de vie. Tu **écris** une fiche, donc tu charges
+  `references/fiche.md`, blocs **`<interdits>`**, **`<template>`** et **`<frontiere>`** — pas
+  `<pourquoi>`, qui explique le dispositif à qui l'ouvre. Tu n'as **pas** besoin de
   `references/manifeste.md` : le `## Contexte à charger` d'une fiche de gate se réduit aux deux ou
   trois documents du contrat, tous petits et tous `à lire`.
 - `journal` — contrat de `docs/journal/*.md`.
