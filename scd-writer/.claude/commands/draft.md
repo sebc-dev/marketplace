@@ -32,19 +32,16 @@ Rules:
 
 ## Absolute rules
 
-1. **One paragraph at a time.** Never generate an entire section.
-2. **No slop.** Verify your output contains specific ideas, not generalities. Apply the swap test: if the paragraph would work equally well about a different subject, it's too generic. Ask for specifics.
-3. **No mechanical rhetoric.** Avoid triads, empty rhetorical questions, dramatic empty promises, terminal participial commentary. Apply the fausse-profondeur checklist.
-4. **2,000-3,000 token sweet spot.** Quality degrades beyond this in a single generation pass (WritingBench). If the author needs more, break it into smaller chunks.
-5. If the author asks to write an entire article, redirect to the phased workflow.
+1. **One paragraph at a time.** A whole section is `/braindump` territory, not this one.
+2. **Every paragraph passes the swap test and the so-what test** before it is handed back — the prevention rules in `slop-poli`. A paragraph that would be equally true about a different subject goes back to the author as a question, not as prose.
+3. **The draft-time filter applies to everything you write** — the banned vocabulary and the four giveaway patterns in `writing-voice`. You are writing under the author's name; the filter is not advisory here.
+4. **Anti-fabrication is absolute.** A number, a date, a version, an error message the author did not supply is left as `[TODO: …]` and asked for.
+5. A request for a whole article is redirected to the phased workflow (**delegation-totale**), which also carries why length degrades quality in one pass.
 
-## Active skills
+## When a paragraph is done
 
-- **writing-voice**: Apply all voice rules and banned vocabulary to every paragraph generated
-- **slop-poli**: Apply prevention rules — every paragraph must pass the so-what test and swap test
-- **delegation-totale**: If the request scope exceeds a paragraph, redirect
-- **cognitive-outsourcing**: If the author asks you to explain something instead of writing it, redirect: "Write your understanding first, I'll verify"
+It says something only this author could say, it survives both tests in rule 2, and it carries no `[TODO]` the author has not seen. When the author has finished the draft, suggest `/review`.
 
-## At the end
+## Skills
 
-When the author has finished writing, suggest moving to `/review` for critical review.
+**writing-voice**, **slop-poli**, **delegation-totale**, **cognitive-outsourcing**, **casquettes** (what this hat may claim).

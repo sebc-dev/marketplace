@@ -1,11 +1,12 @@
 ---
 name: article-types
 description: |
-  Context-dependent. Activated when the author specifies article type (technical, REX,
-  tutorial, opinion) or when context makes it clear. Provides per-type calibration tables,
-  specific questions for /braindump, structural expectations for /structure, review focus
-  areas for /review, and tolerance levels for each detection skill.
+  Calibration by kind of piece — technical, REX, tutorial, opinion. Reach it once the type is
+  stated or clear, for that type's braindump questions, structural expectations, review focus
+  and detector tolerance. The axis: what kind of piece.
 ---
+
+Two things this skill deliberately does not carry. The **per-genre slop risk** is in `slop-poli`, section *Genre-specific slop markers* — read there what each type fails at when it fails on substance. The **detector tolerances** are one table, at the bottom of this file; the per-type sections below carry only what is not a tolerance.
 
 ## Technical / dev article
 
@@ -27,19 +28,9 @@ The author solved a problem, discovered something non-obvious, or compared appro
 - No "Understanding X" or "The Importance of Y" subheadings
 
 ### Review focus areas for /review
-- **Biggest slop risk (R5):** Fluency without understanding — the article reads well but the author hasn't actually done what they describe. Look for: no error messages, no version numbers, no "gotchas", no mention of what didn't work.
 - **Argumentation:** Are technical claims supported by evidence or just asserted?
 - **Completeness:** Would a reader get stuck following this? Are there implicit steps?
 - **Specificity:** Version numbers, dates, concrete benchmarks, actual error messages.
-
-### Calibration table
-| Detection skill | Tolerance | Rationale |
-|----------------|-----------|-----------|
-| slop-vocabulary | Medium | Technical jargon creates false positives ("robust" in statistics is fine) |
-| fausse-profondeur | Medium | Some technical explanation patterns look like LLM patterns |
-| marqueurs-lexicaux | Medium | Jargon repetition is normal in technical writing |
-| structure-symetrique | Medium | Technical articles have legitimate structural regularity |
-| slop-poli | Low | Technical articles must demonstrate understanding, not just fluency |
 
 ## Experience report (REX)
 
@@ -61,19 +52,9 @@ A real story with a learning arc: initial assumption → what actually happened 
 - No template structure (intro → context → what happened → conclusion)
 
 ### Review focus areas for /review
-- **Biggest slop risk (R5):** Absence of learning arc. Events presented chronologically without analysis. No "what I'd do differently."
 - **Authenticity:** Is there specific lived experience? Names, dates, concrete situations?
 - **Voice:** Does this sound like someone recounting a real experience or summarizing someone else's?
 - **Value:** Would another developer gain something actionable from reading this?
-
-### Calibration table
-| Detection skill | Tolerance | Rationale |
-|----------------|-----------|-----------|
-| slop-vocabulary | Low | Lived experience has its own vocabulary, not LLM vocabulary |
-| fausse-profondeur | Low | REX should be grounded, not rhetorical |
-| marqueurs-lexicaux | Low | Burstiness should be high — stories are naturally bursty |
-| structure-symetrique | Low | Narrative is naturally irregular |
-| slop-poli | Very low | REX without substance is just a timeline |
 
 ## Tutorial / guide
 
@@ -95,20 +76,10 @@ A reader with the stated prerequisites can follow every step without getting stu
 - Expected outcomes stated ("after this step, you should see X")
 
 ### Review focus areas for /review
-- **Biggest slop risk (R5):** Paraphrased documentation — the tutorial adds nothing beyond what the official docs already say.
 - **Completeness:** Can a reader actually follow this from start to finish without getting stuck?
 - **Order:** Is the sequence natural for the target skill level?
 - **Prerequisites:** Are they realistic and explicit?
-- **Note from R4:** Step-by-step tutorials naturally resemble LLM output. Structural symmetry tolerance is high. Focus on content quality, not structural patterns.
-
-### Calibration table
-| Detection skill | Tolerance | Rationale |
-|----------------|-----------|-----------|
-| slop-vocabulary | Medium-high | Instructional language overlaps with LLM patterns |
-| fausse-profondeur | Medium | Instructional tone can seem mechanical |
-| marqueurs-lexicaux | Medium-low | Low burstiness is natural for step-by-step, but vocabulary should still vary |
-| structure-symetrique | High | Structural regularity is expected and legitimate |
-| slop-poli | Medium | A tutorial can be useful without being deeply personal |
+- **Note from R4:** Step-by-step tutorials naturally resemble LLM output. Judge content quality, not structural patterns.
 
 ## Opinion / reflection
 
@@ -130,22 +101,15 @@ A clear thesis the reader can disagree with, supported by evidence and honest en
 - No false balance ("on one hand... on the other hand..." without concluding)
 
 ### Review focus areas for /review
-- **Biggest risk (R3):** Register leveling — the opinion piece sounds like a report instead of a person arguing a position. If it could be published under anyone's name, it lacks voice.
-- **Biggest rhetorical risk (R7):** Hedging patterns ("it's possible that...", "one could argue that...") are the most common failure in opinion pieces. Track and flag every hedge.
+- **Register leveling** is the failure mode here, and it is a `marqueurs-lexicaux` hit: the piece sounds like a report instead of a person arguing a position.
+- **Hedging** is the second, and a `fausse-profondeur` #4 hit. Track every hedge — it is the most common failure in opinion pieces.
 - **Thesis strength:** Is the thesis specific and contestable? "AI will change everything" is not a thesis. "Companies should ban AI writing tools for junior developers because they prevent skill development" is.
 - **Counter-arguments:** Are they the strongest possible, or straw men?
 - **Voice:** Does the reader know exactly what the author thinks? Any ambiguity means the opinion is too weak.
 
-### Calibration table
-| Detection skill | Tolerance | Rationale |
-|----------------|-----------|-----------|
-| slop-vocabulary | Very low | Personal writing should have the least LLM footprint |
-| fausse-profondeur | Very low | Rhetorical patterns are most visible in opinion writing |
-| marqueurs-lexicaux | Very low | Register leveling is the biggest risk — must sound personal |
-| structure-symetrique | Very low | Personal thought doesn't follow templates |
-| slop-poli | Very low | An opinion without substance is just noise |
+## Detector tolerance by type
 
-## Cross-type calibration summary
+The one calibration table. Every detector reads its own row here rather than keeping a copy.
 
 | Detection skill | Technical | REX | Tutorial | Opinion |
 |----------------|-----------|-----|----------|---------|
@@ -154,3 +118,7 @@ A clear thesis the reader can disagree with, supported by evidence and honest en
 | marqueurs-lexicaux | Medium | Low | Medium-low | Very low |
 | structure-symetrique | Medium | Low | High | Very low |
 | slop-poli | Low | Very low | Medium | Very low |
+
+Two rationales are worth stating because they are not obvious from the type. **Tutorial** tolerates structural regularity because step-by-step instructions are legitimately uniform. **Technical** tolerates vocabulary because domain jargon overlaps the catalogs — `robust` in a statistics sentence is the word, not a marker. Everywhere else the tolerance restates the type: personal writing carries the least LLM footprint, and a REX without substance is a timeline.
+
+Form calibration multiplies with this table rather than replacing it — see **canaux**.

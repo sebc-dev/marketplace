@@ -17,7 +17,7 @@
     },
     {
       "name": "scd-writer",
-      "version": "0.2.2",
+      "version": "0.3.0",
       "source": "./scd-writer",
       "description": "Workflow d'ecriture en 7 phases pour developpeur-auteur. L'humain ecrit et pense, Claude questionne, structure et polit. Ne genere jamais de contenu a la place de l'auteur.",
       "author": {

@@ -1,19 +1,26 @@
 ---
 name: marqueurs-lexicaux
 description: |
-  Active during /review and /polish. Analyzes the statistical signature of text to detect
-  LLM origin — beyond individual words (slop-vocabulary) into distribution patterns, lexical
-  diversity metrics, n-gram analysis, burstiness, and register leveling. Provides concrete
-  checklist for /review. Source: R3 (Les empreintes invisibles des LLM).
+  Statistical signature of a text — lexical diversity, burstiness, register leveling — and what
+  of it has actually been measured in French. Reach it to judge a draft's distribution rather
+  than its words.
 ---
 
-## Scope: what vs how
+Even when an LLM avoids every word on the banned list, its text still carries a statistical fingerprint — a biased token probability distribution that creates involuntary watermarking. That fingerprint is what this file measures.
 
-This skill is clearly separated from slop-vocabulary:
-- **slop-vocabulary** = *what* to detect (specific words and expressions with excess ratios)
-- **marqueurs-lexicaux** = *how* to detect (statistical methods that reveal AI origin even when individual words seem normal)
+## What is measured in French, and on what
 
-Even when an LLM avoids every word on the banned list, its text still carries a statistical fingerprint — a biased token probability distribution that creates involuntary watermarking.
+Every threshold in this file comes from English work. Three of the metrics have been measured on French corpora too — and knowing which three, and on what, is what keeps the numbers from being quoted as if they were French numbers.
+
+**Measured in French** (Alavoine et al., LREC-COLING 2024): ChatGPT answers are markedly **more uniform in length** than human ones, have **lower lexical richness** (MSTTR, MATTR), and produce **deeper syntax trees**. Schaaff et al. (2023) add **lower perplexity** and higher measured subjectivity. So burstiness, MTLD and register leveling do have a French footing — the direction transfers.
+
+**What does not transfer is the calibration.** The French corpora are small and off-genre: 49 Quora questions for Alavoine, 100 short encyclopedic articles for Schaaff. Both are 2023-2024 and both test ChatGPT-era models. Nothing in French has been measured on the long-form editorial genre this plugin actually serves.
+
+Three consequences, in order of how often they bite:
+
+1. **The CV thresholds in the checklist below are English-derived boundaries applied to French.** Use them to rank passages against each other and against the author's earlier pieces — not as verdicts. A CV of 0.14 means "the flattest passage in this draft", not "AI".
+2. **The exact figures — MTLD F1 = 94 %, the 6-gram AUROC, the PNAS content/function ratios — are English measurements.** Cite them as the reason a metric is worth watching, never as a French result.
+3. **No binary origin verdict is issued on a French piece.** The best published French detector (CamemBERTa, Antoun et al.) reaches F1 0.97 in-domain and collapses to 33.57 on adversarial text; its own authors state it is not intended for production. `faux-positifs` carries the full statement of this limit and the reason it cannot be closed.
 
 ## Key metrics
 
@@ -79,14 +86,18 @@ AI text is "mostly green and yellow." Human text has more red and purple tokens 
 
 **Practical application:** When reviewing text, ask: how many words in this paragraph would surprise a predictive model? If the answer is "almost none," it's suspiciously smooth.
 
-## Calibration by article type
+## Calibration
 
-| Article type | Key metric to watch | Sensitivity |
-|-------------|-------------------|-------------|
-| Opinion/reflection | Register leveling — biggest risk. Should sound personal, not academic. | High |
-| Experience report (REX) | Burstiness — lived stories are naturally bursty. Flat = suspect. | High |
-| Technical/dev | N-gram patterns — technical jargon creates legitimate repetition. Raise thresholds. | Medium |
-| Tutorial/guide | Low burstiness is somewhat natural for step-by-step. Focus on MTLD and register instead. | Medium-low |
+Tolerance is the `marqueurs-lexicaux` row of the one table in **article-types**. What changes per type is *which metric carries the verdict*, and that is not a tolerance:
+
+| Article type | Metric that decides |
+|-------------|-------------------|
+| Opinion/reflection | Register leveling — should sound personal, not academic |
+| Experience report (REX) | Burstiness — lived stories are naturally bursty, flat is suspect |
+| Technical/dev | N-gram patterns — jargon creates legitimate repetition, raise the thresholds |
+| Tutorial/guide | MTLD and register — low burstiness is natural for step-by-step |
+
+Below ~400 words the distribution metrics have no sample and are suppressed outright (**canaux**).
 
 ## Concrete /review checklist
 
@@ -117,10 +128,3 @@ Human text contains: sentence fragments, informal connectors ("And", "But", "So"
 
 ### 6. Vocabulary recycling
 Does the text reuse the same descriptors across sections? Does every technology get called "powerful" or "flexible"? Does every benefit get introduced with "importantly"? Vocabulary recycling across paragraphs is a sign of limited token diversity.
-
-## Relationship with other skills
-
-- **slop-vocabulary**: This skill provides the *what*, marqueurs-lexicaux provides the *how*. Use both together.
-- **structure-symetrique**: Handles structural patterns (section lengths, templates). This skill handles within-paragraph textual patterns.
-- **fausse-profondeur**: Handles rhetorical figures. This skill handles statistical distribution.
-- **writing-voice**: Consumes findings from this skill — burstiness and register variation are core to "what makes human writing recognizable."

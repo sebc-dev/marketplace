@@ -29,26 +29,44 @@ Writing is thinking. When you write to learn, the cognitive effort of formulatin
 
 ## Skills
 
-### Always active
-| Skill | Purpose |
-|-------|---------|
-| `writing-voice` | Editorial identity — voice, tone, banned words (EN+FR), 12 forbidden rhetorical patterns |
-| `delegation-totale` | Guardrail against full-article generation in a single prompt |
-| `cognitive-outsourcing` | Protects the learning benefit of writing — questions instead of explaining |
+15 skills, grouped by the job they do. Each one's own description says when it fires — this table is the human index, not a second copy of them.
 
-### Active during `/review` and `/polish`
-| Skill | Purpose |
-|-------|---------|
-| `slop-vocabulary` | Detects words statistically overrepresented in LLM outputs (EN+FR catalogs with Kobak ratios) |
-| `marqueurs-lexicaux` | Analyzes statistical signature — TTR, MTLD, burstiness, register leveling |
-| `structure-symetrique` | Detects artificial structural regularity — 16 patterns + Bouchard structural test |
-| `slop-poli` | Detects surface polish without substance — 5 diagnostic tests + VERMILLION framework |
-| `fausse-profondeur` | Detects mechanical rhetorical figures — 12 categories with EN+FR examples |
+### The voice, and the three axes that vary under it
+| Skill | Owns |
+|-------|------|
+| `writing-voice` | Editorial identity: six voice rules, anti-fabrication, the draft-time filter — and the definition of the three axes below |
+| `casquettes` | Who is speaking — personal dev, AI Manager at CEGAPE, founder of Isometria |
+| `canaux` | Where and how long — form drives the detectors, platform drives the surface |
+| `article-types` | What kind of piece — the one detector-tolerance table |
 
-### Context-dependent
-| Skill | Purpose |
-|-------|---------|
-| `article-types` | Adjusts detection thresholds per article type (technical, REX, tutorial, opinion) |
+### The guardrails
+| Skill | Owns |
+|-------|------|
+| `delegation-totale` | A whole article from one prompt: the redirect, and the exceptions |
+| `cognitive-outsourcing` | Offloading a task vs handing over the understanding — the Socratic redirect |
+
+### The detectors
+| Skill | Owns |
+|-------|------|
+| `slop-poli` | Whether the piece says anything. Outranks every surface finding |
+| `marqueurs-lexicaux` | The statistical distribution — burstiness, register leveling, recycling |
+| `structure-symetrique` | The document's shape — 16 patterns, Bouchard test, genre matrix |
+| `fausse-profondeur` | Mechanical rhetorical figures — 12 categories, paragraph by paragraph |
+| `slop-vocabulary` | Words and expressions overrepresented in LLM output, EN and FR |
+
+### The arbiter
+| Skill | Owns |
+|-------|------|
+| `faux-positifs` | What to do when a detector fires on legitimate writing. Every finding passes through it before the report is written |
+
+### On demand
+| Skill | Owns |
+|-------|------|
+| `lisibilite-fr` | French readability by pure counting — LIX, ARI, and what corrupts them |
+| `seo-editorial` | On-page editorial SEO — Google publishes no character limit, only a pixel budget |
+| `skills-tiers` | Whether a third-party writing skill can be installed, forked or trusted |
+
+Some skills carry a `references/` folder — dated sources, tooling notes, the evidence behind a guardrail. Those load only when asked for; nothing in a `SKILL.md` depends on having read them.
 
 ## Quick start
 

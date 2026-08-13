@@ -1,11 +1,10 @@
 ---
 name: cognitive-outsourcing
 description: |
-  Always active, reinforced vigilance during /braindump and /draft. Protects the learning
-  benefit of writing by distinguishing cognitive offloading (adaptive) from cognitive
-  outsourcing (delegating understanding). Based on R6 with quantitative data from Barcaui
-  RCT, Wharton study, Fan et al., and MIT EEG research. Enforces the correct sequence:
-  author writes first, Claude verifies after.
+  Whenever the author asks for an explanation, a summary, key points, or the introduction to
+  their own piece — the requests that hand over the thinking rather than a mechanical task.
+  Reach it before answering the question as asked: it carries the line between the two and the
+  Socratic redirect. The sequence: author writes first, Claude verifies after.
 ---
 
 ## Core distinction
@@ -18,34 +17,10 @@ Delegating the understanding itself to the tool. Asking Claude to explain a conc
 
 **The line:** Offloading frees working memory. Outsourcing prevents learning.
 
-## Quantitative evidence
-
-### Generation effect: d = 0.40
-Meta-analysis across 86 studies: generating information yourself produces significantly better retention than passively reading it. Writing activates the IFG, PHG, ACC, and LOC neural network. Copying an AI explanation does not.
-
-### Testing effect: g = 0.50
-Three meta-analyses (Rowland 2014, Adesope 2017, Yang 2021): retrieving information from memory strengthens retention more than additional study. When AI provides the answer directly, the testing effect is eliminated.
-
-### Barcaui RCT (2025, N=120)
-ChatGPT group: 57.5% retention at 45 days vs 68.5% for traditional learning. **Gap = 11 points, d = 0.68 (medium-large), p = 0.002.** Direct experimental evidence that AI-assisted learning can reduce retention.
-
-### Wharton study (Bastani et al., 2024, ~1,000 Turkish students)
-- GPT Base group: +48% on practice exercises but **-17% on unassisted exams**
-- GPT Tutor group (Socratic interface): **no degradation**
-
-This is the critical finding: it's not AI itself that causes degradation — it's the interaction design. A Socratic interface that forces the student to think first preserves learning. A direct-answer interface destroys it.
-
-### Fan et al. (2024, BJET, N=117)
-ChatGPT significantly improved essay quality but produced **zero gain in knowledge acquisition or transfer.** The essays looked better but the authors didn't learn anything. This is the definition of outsourcing: output quality up, learning down.
-
-### MIT "Your Brain on ChatGPT" (Kosmyna et al., 2025, N=54, 4 months, 32-channel EEG)
-- ChatGPT users showed **lowest brain connectivity** of all groups
-- Neural connectivity reduced by **55%** vs autonomous writers
-- **83%** of LLM users could not cite passages from their own essays
-- Effects were **persistent** after tool withdrawal
-
-### Fernandes et al. (2026, N=~500)
-ChatGPT users systematically **overestimate their cognitive performance.** They believe they understand better than they actually do. The Dunning-Kruger effect ceases to exist with AI — everyone thinks they're competent.
+**The evidence is in `references/preuves.md`** — the two effect sizes this guardrail protects, the four
+experiments that measured the loss, and the Wharton result that explains why the response is a
+Socratic redirect rather than a refusal. Load it when the author contests the redirect or asks where
+the numbers come from; nothing below depends on having read it.
 
 ## Five demarcation criteria
 
@@ -73,7 +48,7 @@ This preserves the generation effect (d = 0.40) and the testing effect (g = 0.50
 Author asks → Claude explains → Author copies
 ```
 
-This bypasses both effects. The author gets a better essay but learns nothing (Fan et al., 2024). Over time, this leads to skill atrophy (deskilling) — documented in GPS navigation (Dahmani & Bohbot, 2020: greater GPS use predicts more pronounced spatial memory decline over 3 years) and medical AI (Budzyn et al., 2025, Lancet: adenoma detection dropped from 28.4% to 22.4% after routine AI-assisted detection was removed).
+This bypasses both effects. The author gets a better essay and learns nothing (Fan et al., 2024), and over time the skill itself atrophies — deskilling, documented outside writing in GPS navigation and in medicine (`references/preuves.md`).
 
 ## Detection signals
 
@@ -97,13 +72,11 @@ The introduction is the section that most requires the author's own thinking —
 
 ## Response when outsourcing is detected
 
-Follow the Socratic protocol (Chowdhury, Zouhar & Sachan, 2024, ACM Learning@Scale):
+Follow the Socratic protocol — one step at a time, which is what doubles the learning gain against a full explanation:
 
 **D1 — Open question:** "What do you think about this? Write your understanding, even if approximate."
 **D2 — Targeted hint if D1 fails:** "You're on the right track with [X]. What do you think happens when [Y]?"
-**D3 — Direct explanation if D2 fails:** Only after two attempts, provide a direct explanation. Never give the full solution in one response.
-
-Key prompt principle (from Khan Academy's Khanmigo): respond in Socratic style, never give the student the answer directly. Harvard (2025, Scientific Reports) found that "Only give away ONE STEP AT A TIME" **doubles** learning gains vs providing the full explanation.
+**D3 — Direct explanation if D2 fails:** Only after two attempts, and one step at a time.
 
 ## Exceptions
 
@@ -114,14 +87,12 @@ Direct explanation is legitimate when:
 - The concept is a minor prerequisite, not the article's main subject
 - The author has already demonstrated understanding and wants to deepen it
 
-## Self-reinforcing cycle warning
+## Intervene early
 
-Each outsourcing act makes the next more probable (Storm et al., 2017). If the author starts asking Claude to explain concepts, the habit will escalate. The guardrail must intervene early, before the pattern establishes.
+Each outsourcing act makes the next more probable, so the guardrail fires on the first request rather than on the established habit.
 
-**Monitoring rule:** After each AI interaction, the implicit question should be: "Do I understand better, or do I *believe* I understand better?" (Fernandes et al.: ChatGPT users systematically overestimate their competence.)
+**Monitoring rule:** after each AI interaction, the implicit question is "do I understand better, or do I *believe* I understand better?" — the second is the documented state, and it feels identical from inside.
 
-## Relationship with other skills
+## Where this outranks everything else
 
-- **delegation-totale**: Protects production quality. This skill protects comprehension. Together they form the guardrail layer.
-- **writing-voice**: The voice can only exist if the author does the thinking. Outsourced understanding produces outsourced voice.
-- **slop-poli**: Outsourced writing produces slop by definition — Level 1-2 quality without the Level 3-4 substance that comes from genuine understanding.
+If the author didn't do the thinking, style findings are premature: a piece scored, calibrated and de-slopped on top of outsourced understanding is a well-dressed failure. This is the deepest cause in the arbitration table (`faux-positifs`) and it is reported before anything else.

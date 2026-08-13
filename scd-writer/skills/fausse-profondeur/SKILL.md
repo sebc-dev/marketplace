@@ -1,18 +1,15 @@
 ---
 name: fausse-profondeur
 description: |
-  Active during /review and /polish. Detects mechanical rhetorical figures that simulate
-  eloquence without adding meaning. Covers R7's 12 major categories with EN + FR examples,
-  operational detection tests, and legitimate-use exceptions. Provides a per-paragraph
-  detection grid for /review. Complements slop-vocabulary (vocabulary) and
-  marqueurs-lexicaux (statistical distribution).
+  Twelve named rhetorical figures that simulate eloquence sentence by sentence — the "it's not X,
+  it's Y" reframe, the mechanical triad, the empty rhetorical question, the trailing participial
+  clause. Reach it to scan a draft paragraph by paragraph, each figure with its suppression test
+  and its legitimate-use exception. Whether the piece says anything at all is slop-poli.
 ---
 
-## What this skill detects
+Rhetorical structures that create the illusion of depth, engagement or eloquence while adding zero information — the output of reward models that optimize for "sounds good" over "says something".
 
-Mechanical rhetoric is not about vocabulary (that's slop-vocabulary) or statistical patterns (that's marqueurs-lexicaux). It's about rhetorical structures that create the illusion of depth, engagement, or eloquence while adding zero information. These patterns are the output of reward models that optimize for "sounds good" over "says something."
-
-Source: R7, Inventaire des figures rhetoriques mecaniques des LLM, with data from Reinhart et al. (PNAS 2025), Jiang & Hyland (2025), Guo (2025), Lehmann (2025), Stockton (2025).
+Source: R7, *Inventaire des figures rhetoriques mecaniques des LLM*, with data from Reinhart et al. (PNAS 2025), Jiang & Hyland (2025), Guo (2025), Lehmann (2025), Stockton (2025).
 
 ## The 12 categories
 
@@ -125,41 +122,15 @@ Sentences ending with -ing (EN) or -ant (FR) clauses that add empty analytical c
 **Detection test:** Delete the participial clause. Does the sentence lose concrete information? If the clause only adds vague commentary ("opening possibilities"), flag it.
 **Legitimate use:** When the participial clause contains specific, verifiable information: "...reducing build time from 45s to 12s" is fine.
 
-## Functional taxonomy
+## Scan procedure for /review
 
-These 12 categories serve 5 functions in LLM text:
-1. **Filler rhetoric** (#3, #5, #6, #11): Occupies space without information
-2. **Authority simulation** (#9, #4): Simulates expertise without foundations
-3. **Engagement simulation** (#1, #3, #10): Simulates reader relationship
-4. **Smoothing** (#4, #7, #12): Eliminates voice, doubt, and tension
-5. **Structure simulation** (#1, #8, #9): Simulates logical organization without real thought
+Every paragraph goes through all twelve. The bar is *every paragraph, all twelve* — not *until something turns up*. Each category's detection test is in its own section above; the list here is an index, not a second definition of them.
 
-## Detection grid for /review
-
-For each paragraph, check:
-
-1. [ ] **Reframe?** Does it use "It's not X, it's Y" — is the distinction genuine?
-2. [ ] **Em-dash clause?** Remove it — does the sentence lose information?
-3. [ ] **Transition?** Delete it — does the text flow better without it?
-4. [ ] **Hedge/concession?** Does the author eventually take a position?
-5. [ ] **Amplifier?** Replace with plain language — does meaning change?
-6. [ ] **Generic opening/closing?** Could it apply to any article?
-7. [ ] **Flat rhythm?** Are all sentences within 20% of average length?
-8. [ ] **Triad?** Suppression test + specificity test
-9. [ ] **Dramatic promise?** Does the next sentence deliver?
-10. [ ] **Rhetorical question?** Is the answer non-obvious?
-11. [ ] **Reformulation?** Does it add new information?
-12. [ ] **Participial ending?** Does the clause contain specifics?
+1 reframe · 2 em dash · 3 transition · 4 hedge · 5 amplifier · 6 generic opening or closing · 7 flat rhythm · 8 triad · 9 dramatic promise · 10 rhetorical question · 11 reformulation · 12 participial ending
 
 **Severity:**
 - 1-2 instances in the whole article: Minor (mention in review summary)
 - Pattern in multiple paragraphs: Major (flag each instance)
 - Systematic across the article: Critical (structural problem, likely AI-influenced passage)
 
-## Relationship with other skills
-
-- **slop-vocabulary**: Handles word-level markers. This skill handles rhetorical structures — patterns, not vocabulary.
-- **marqueurs-lexicaux**: Handles statistical distribution patterns. This skill handles identifiable rhetorical figures.
-- **structure-symetrique**: Handles document-level structural patterns. This skill works at paragraph level.
-- **slop-poli**: Evaluates whether substance exists. This skill evaluates whether the rhetoric adds meaning.
-- **writing-voice**: Consumes the 12 forbidden patterns from this skill for the always-active voice filter.
+Tolerance by type is the `fausse-profondeur` row of the one table in **article-types**. These figures are visible in a single sentence, so nothing here is suppressed by form — a 150-word post is scanned in full.

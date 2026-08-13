@@ -1,100 +1,110 @@
 ---
 name: writing-voice
 description: |
-  Always active. Editorial identity for a freelance web developer who writes to learn
-  and share. Defines voice, tone, banned vocabulary (EN + FR), forbidden rhetorical
-  patterns, and what makes human writing recognizable. Cardinal principle: react to the
-  author's text, never rewrite it.
+  The author's editorial identity — six voice rules, the anti-fabrication rule, and the
+  draft-time filter of banned vocabulary and rhetorical patterns that belongs in context while
+  writing. Reach it whenever the author's text is written, reviewed, polished or translated.
+  Cardinal principle: react, don't rewrite.
 ---
 
 ## Editorial identity
 
-The author is a freelance web developer who writes to learn and to share what he learns. Audience is bilingual FR/EN, mostly intermediate-to-senior developers. Articles are written in French first, then translated to English.
+**The author writes to learn.** That is the invariant. Everything else — the hat, the channel, the kind of piece — varies underneath it, and if a piece teaches the author nothing, it shouldn't exist.
 
-The writing exists to clarify the author's own thinking. If the article doesn't teach the author something, it shouldn't exist.
+The invariant descends differently depending on who is speaking:
+
+- **Personal dev, on the blog** — learning in public, in the open, with the unfinished parts left visible. This is the descent the rest of this file was originally written for.
+- **AI Manager at CEGAPE, on LinkedIn** — learning from professional work, raised to the pattern, never the incident.
+- **Founder of Isometria, on LinkedIn** — learning by building, where wanting something from the reader is legitimate.
+
+The three are specified in **casquettes**. Do not treat the personal-dev descent as the whole author: it is one of three, and it is the only one with no institutional stake in being wrong.
+
+Audience is bilingual FR/EN, mostly intermediate-to-senior developers. Everything is written in French first, then translated to English via `/translate`.
+
+## Fixed voice, variable tone
+
+**The voice is fixed. The tone moves.**
+
+The voice is the six rules below, the banned vocabulary, the forbidden patterns, and the anti-fabrication rule. It is identical in a blog article, a LinkedIn article, and a LinkedIn post. It does not soften for an employer or sharpen for a prospect.
+
+The tone is the register, the distance to the reader, the first person, and how much may be claimed. It moves with the hat (**casquettes**) and with the surface (**canaux**).
+
+A change of tone is never a licence to change voice. If a draft stops sounding like the author, the hat or the channel was used as an excuse — and that is a finding, not a style choice.
+
+### The three axes
+
+Three things vary under the fixed voice, and none of them is derivable from the others. The blog is always the personal-dev hat, but LinkedIn carries two; a type never implies a hat or a channel. Each axis is resolved separately, and each of the three skills below carries only its own.
+
+| Axis | Skill | Drives |
+|------|-------|--------|
+| Who is speaking | **casquettes** | First person, claims, stakes, disclosure |
+| Where and how long | **canaux** | Detector calibration, surface conventions |
+| What kind of piece | **article-types** | Structure, per-type detector tolerance |
 
 ## Voice rules
 
-- **Direct.** Say what you mean. No throat-clearing, no "In today's rapidly evolving world."
-- **Technical but accessible.** Use precise terms, but explain them when a reader outside the niche wouldn't know them.
-- **Conversational.** Write like you'd explain to a colleague over coffee. Contractions are fine. Short sentences are fine. Asides are fine.
-- **Concrete over abstract.** Every claim needs an example, a number, or a story. "X is useful" is not a sentence — "X saved me 3 hours on project Y" is.
-- **Developed paragraphs over bullet lists.** Lists are for reference docs and changelogs. Articles are prose. One analogy per article maximum.
-- **Opinions welcome.** Take a position. Hedge only when genuinely uncertain, not out of politeness.
+Six rules. Each carries a **Confused with** line: the way the rule fails when it is applied too hard, which is also the most common false positive during `/review`. When a finding turns on one of these lines, it goes through **faux-positifs**.
 
-## Banned vocabulary — English
+### 1. Direct
 
-Words and expressions statistically overrepresented in LLM outputs. Based on Kobak et al. (2025, Science Advances, 15.1M PubMed abstracts) and community catalogs.
+**Rule.** Say what you mean. No throat-clearing, no "In today's rapidly evolving world."
+**Protects.** The reader's first thirty seconds — on a feed, the only ones you get.
+**Confused with.** Curtness. Direct means no preamble; it does not mean no warmth, no asides, no explanation.
+**Test.** Delete the first sentence of each section. If nothing is lost, it was throat-clearing.
 
-### Extreme overuse (>10x human baseline)
-delve (28x), showcasing (10.7x), underscores (10.4x), potential (7.5x), landscape (6.8x), comprehensive (5.2x), multifaceted (5.1x), commendable (4.8x), meticulous (4.6x), intricate (4.5x), pivotal (4.3x), nuanced (4.2x), noteworthy (3.8x), invaluable (3.5x), foster (3.3x), realm (3.2x), beacon (3.0x)
+### 2. Technical but accessible
 
-### High overuse (3-10x)
-utilize, leverage, facilitate, harness, tapestry, robust, plethora, embark, testament, elevate, navigate, supercharge, game-changer, empower, embrace, illuminate, underscore, underpin, bolster, catalyze, galvanize, augment, ameliorate, endeavor, paramount, indispensable, myriad, ubiquitous, burgeoning, nascent, salient, erstwhile
+**Rule.** Use precise terms, and explain them when a reader outside the niche wouldn't know them.
+**Protects.** The bilingual intermediate-to-senior audience, which is expert in *some* corner and not in this one.
+**Confused with.** Dilution. Explaining a term is one clause, not a paragraph, and never a reason to pick the vaguer word.
+**Test.** Every jargon term either gets a five-word gloss on first use or is load-bearing enough that the reader will look it up.
 
-### Suspicious expressions (stronger signal than individual words)
-"plays a crucial role in shaping" (182x), "notable works include" (120x), "a testament to" (45x), "it's worth noting that", "it's important to remember", "studies have shown", "experts agree", "in the ever-changing landscape of", "navigate the complexities of", "at the forefront of", "paving the way for", "a holistic approach", "best practices", "key takeaways"
+### 3. Conversational
 
-### Co-occurrence rule (Gray, 2024)
-2+ markers in the same article = +468% signal amplification. A single "comprehensive" is noise. "Comprehensive" + "multifaceted" + "pivotal" in the same paragraph is a flare.
+**Rule.** Write like you'd explain it to a colleague over coffee. Contractions are fine. Short sentences are fine. Asides are fine.
+**Protects.** Register variation — the thing LLMs flatten first (marqueurs-lexicaux).
+**Confused with.** Chattiness. Filler ("So, here's the thing"), forced enthusiasm, and emoji punctuation are not conversation; they are `fausse-profondeur` #8 with a friendly face.
+**Test.** Read it aloud. Anything you would not say to a colleague, cut — including anything you would be embarrassed to say.
 
-## Banned vocabulary — French
+### 4. Concrete over abstract
 
-From R1 Table 2 and francophone practitioner catalogs.
+**Rule.** Every claim needs an example, a number, or a story. "X is useful" is not a sentence — "X saved me three hours on project Y" is.
+**Protects.** Lived-experience markers, the strongest human signal there is.
+**Confused with.** Fabricated specificity. An invented number is worse than the abstraction it replaced — see *Anti-fabrication* below.
+**Test.** For each claim, name the source of the detail. If the answer is "it sounded plausible", delete it and ask the author.
 
-### Connector cascades
-de plus, en outre, par ailleurs, neanmoins, cependant, toutefois, par consequent, en somme, en effet, il convient de noter, force est de constater, il est important de souligner
+### 5. Developed paragraphs over bullet lists
 
-### Hyper-formal register
-crucial (documented #1 French LLM marker by 4+ independent sources), essentiel, indispensable, fondamental, incontournable, indeniablement, mettre en place, mettre en oeuvre, permettre de, se positionne comme, au coeur de
+**Rule.** Lists are for reference docs and changelogs. Articles are prose. One analogy per article maximum.
+**Protects.** Progressive argument — the thing a list lets a writer skip.
+**Confused with.** A blanket ban. This rule is about *argument*, and it is form-dependent: tutorials have steps, and short LinkedIn posts are built on line breaks (**canaux**). Applying it to a 150-word post flags every legitimate post the author writes.
+**Test.** Could the list be a paragraph without losing anything? Then it should be. Are the items sequential steps or reference entries? Then it shouldn't.
 
-### Formulaic openings
-"Dans un monde ou...", "A l'ere de...", "Au coeur de...", "Plongez dans l'univers des...", "Que vous soyez... ou que vous soyez...", "Dans un paysage en constante evolution"
+### 6. Opinions welcome
 
-### English calques (16% of French LLM errors — Rigouts Terryn, LREC-COLING 2024)
-"faire du sens" (calque of "make sense"), "adresser un probleme" (calque of "address a problem"), "naviguer le paysage" (calque of "navigate the landscape"), Oxford comma before "et", American-style em dashes, Title Case in French
+**Rule.** Take a position. Hedge only when genuinely uncertain, not out of politeness.
+**Protects.** Voice itself. A piece publishable under anyone's name has none.
+**Confused with.** Suppressing honest doubt. Epistemic honesty is a protected human signal — "I'm not sure the cause is X" is voice, not hedging. What is banned is the symmetric concession that neutralizes both positions.
+**Test.** After reading, can the reader state what the author thinks in one sentence? If not, the position is too weak — or absent.
 
-## Forbidden rhetorical patterns
+## The draft-time filter
 
-From R7 (Inventaire des figures rhetoriques mecaniques). These are structural patterns, not vocabulary — they simulate eloquence without adding meaning.
+The exhaustive catalogs live in the detectors, which load at `/review` and `/polish`. What follows is the short list, and it stays always-active for one reason: it has to be in context while the draft is being *written*. A marker not written costs nothing; the same marker caught later costs a round trip.
 
-### 1. Negation-affirmation reframe
-"It's not X, it's Y." / "Ce n'est pas X, c'est Y." Most distinctive LLM pattern of 2025. Variants: "No X. No Y. Just Z.", "It's less about X and more about Y", "Not a rant. A reflection."
-**Exception:** Legitimate when introducing a genuine conceptual distinction the reader wouldn't expect.
+**Words.** delve, showcasing, underscores, potential, landscape, comprehensive, multifaceted, meticulous, intricate, pivotal, nuanced, noteworthy, invaluable, foster, realm — then utilize, leverage, facilitate, harness, robust, plethora, embark, testament, elevate, navigate, empower, embrace, myriad, paramount, indispensable.
 
-### 2. Triadic structures
-Three adjectives, nouns, or verbs in a burst creating rhythm without nuance. "Fast, scalable, and reliable." / "Clarte, precision et elegance." GPT-4o uses phrasal coordination ~1.9x more than humans (Reinhart, PNAS 2025, d = 0.81).
-**Tests:** (1) Remove one element — does meaning change? (2) Are terms interchangeable with near-synonyms? If both yes, it's filler.
+**Mots.** crucial (the documented #1 French marker), essentiel, indispensable, fondamental, incontournable, indeniablement, mettre en place, mettre en oeuvre, permettre de, se positionne comme, au coeur de — and the connector cascades: de plus, en outre, par ailleurs, neanmoins, toutefois, par consequent, en somme, il convient de noter, force est de constater.
 
-### 3. Pseudo-profundity
-Dramatic promise followed by banality. "Something shifted." / "But here's the crucial point." / "La verite, c'est que..." If the "revelation" is something everyone already knows, flag it.
+One marker is noise. **Two in the same piece amplify each other by ~470%** (Gray, 2024), which is why density and not presence is the signal. The thresholds, the expression-level catalog and the per-type calibration are in **slop-vocabulary**.
 
-### 4. Empty rhetorical questions
-Question + immediate obvious answer. "The solution? Simpler than you think." / "Pourquoi est-ce important ? Parce que..." If the question can be deleted and replaced by a declarative sentence without information loss, it's mechanical.
+**Patterns.** The four that give a draft away fastest:
 
-### 5. Terminal participial commentary
-Sentences ending with -ing clauses (EN) or -ant clauses (FR) adding empty analytical commentary. "...opening new possibilities" / "...ouvrant de nouvelles possibilites." GPT-4o uses present participial clauses at 5.3x the human rate (Reinhart, PNAS 2025).
+1. **Negation-affirmation reframe** — "It's not X, it's Y." / "Ce n'est pas X, c'est Y." The most distinctive LLM pattern of 2025. Legitimate only when it introduces a genuine conceptual distinction the reader wouldn't expect.
+2. **Triadic structures** — three adjectives, nouns or verbs in a burst. Remove one element: if the meaning doesn't change, it was rhythm without nuance.
+3. **Empty rhetorical questions** — a question followed by its own obvious answer. If a declarative sentence loses nothing, the question was mechanical.
+4. **Terminal participial commentary** — sentences trailing off into -ing or -ant clauses: "...opening new possibilities" / "...ouvrant de nouvelles possibilites." GPT-4o produces these at 5.3x the human rate (Reinhart, PNAS 2025).
 
-### 6. Circular conclusions
-The conclusion repeats the introduction with different words. No intellectual progression between start and end.
-
-### 7. Valueless reformulations
-"In other words..." / "En d'autres termes..." followed by a paraphrase that adds nothing. If the reformulation says exactly the same thing, delete it.
-
-### 8. Formulaic transitions
-"Let's dive in", "Here's the thing", "Enter: [thing]", "Cela nous amene a un point important...", "Examinons maintenant..." — filler that adds nothing.
-
-### 9. Flat rhythm
-All sentences approximately the same length. Human writing naturally alternates short punchy sentences with long complex ones.
-
-### 10. Excessive hedging
-"While X is true, it's also important to consider Y" — false symmetric concession neutralizing both positions. Hedge only when genuinely uncertain.
-
-### 11. Dead metaphors and amplifiers
-"Game-changer", "tapestry of", "navigate the landscape", "embark on a journey", "a testament to", "left an indelible mark", "beacon". If a metaphor appears on the AI Phrase Finder top-50, don't use it.
-
-### 12. Generic openings/closings
-"In today's rapidly evolving world", "As technology continues to evolve", "By following these steps, you can..." — say nothing, waste the reader's time.
+The other eight categories, their French variants and their legitimate-use exceptions are in **fausse-profondeur**. Nothing above is a copy: these lists are deliberately shorter than the detectors', they serve a different moment, and where the two disagree, the detector wins. They are not a copy to keep in sync.
 
 ## What makes human writing recognizable
 
@@ -115,6 +125,20 @@ Specific dates, project names, version numbers, error messages, "I tried X and i
 ### Epistemic honesty
 "I'm not sure about this", "I think", "in my experience" — hedging from genuine uncertainty, not from politeness. Reduced epistemic markers are a documented LLM signal (Herbold 2023).
 
+## Anti-fabrication
+
+**Never supply a fact the author did not.** No statistic, benchmark figure, date, version number, client or colleague name, error message, quotation, or "I tried X and it broke because Y."
+
+Lived-experience markers are the strongest human signal in the list above, which makes them the most tempting thing to counterfeit. A fabricated one is worse than none: the author publishes it under their own name, and a single invented detail discredits the accurate ones around it. The rule is absolute — it is not relaxed by plausibility, by "as an example", or by the piece needing one more concrete detail to work.
+
+When a passage needs a concrete detail that hasn't been given:
+
+- Leave `[TODO: number of hours, from the actual project]` in place and ask. Never fill the hole and never round.
+- Same for sources. R1–R7 are in `docs/rapports/`; anything else needs a link the author supplied or that has been verified. A study title, an author name, and a year are three fabrications, not one.
+- Same for the author's history. Do not write "as I said last year" unless the author says so.
+
+A draft returned with three honest `[TODO]`s is finished work. A draft returned with three invented numbers is a liability.
+
 ## Cardinal principle
 
 **React, don't rewrite.** When reviewing or polishing the author's text:
@@ -123,3 +147,4 @@ Specific dates, project names, version numbers, error messages, "I tried X and i
 - Preserve the author's imperfections — they're often what makes the writing human
 - If something sounds awkward but authentic, leave it alone
 - The goal is the author's best writing, not generic "good" writing
+- When a marker is defensible, report it *with* the doubt rather than suppressing either — the format is in **faux-positifs**

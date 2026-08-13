@@ -1,10 +1,9 @@
 ---
 name: slop-poli
 description: |
-  Active during /draft (prevention) and /review (detection). Detects content with surface
-  polish but no substance — slop. Based on Kommers et al. (2026) three-property definition,
-  four quality levels, five diagnostic tests, and the VERMILLION framework. Provides a
-  0-10 scoring grid for /review and prevention rules for /draft.
+  Slop — a text that reads well and says nothing. Reach it whenever the question is whether any
+  substance sits under the surface, from one paragraph to a whole article: the five diagnostic
+  tests, the scoring grid, and the prevention rules that apply while a draft is being written.
 ---
 
 ## Definition
@@ -120,10 +119,6 @@ When assisting with writing (Mode B of /draft), actively prevent slop:
 4. **If the paragraph sounds too smooth, say so.** "This paragraph is technically correct but doesn't sound like you. Can you tell me what specifically happened?"
 5. **Test every paragraph against the so-what test.** If there's no clear takeaway, it's padding.
 
-## Relationship with other skills
+## Calibration
 
-- **slop-vocabulary**: Detects lexical markers of AI text. This skill detects semantic emptiness regardless of vocabulary.
-- **fausse-profondeur**: Detects rhetorical patterns that simulate depth. This skill evaluates whether actual depth exists.
-- **structure-symetrique**: Detects structural templates. This skill evaluates whether content within the structure has substance.
-- **cognitive-outsourcing**: Both protect against shortcuts. cognitive-outsourcing protects learning; this skill protects quality.
-- **delegation-totale**: Single-prompt generation almost always produces slop. This skill explains why.
+Tolerance is the `slop-poli` row of the one table in **article-types**. Form changes nothing: substance is testable at any length, and below ~400 words three of the six detectors lose their instrument, which leaves this one carrying the verdict nearly alone (**canaux**). A substance failure outranks every surface failure — when several detectors fire on the same span, it is reported here (**faux-positifs**).

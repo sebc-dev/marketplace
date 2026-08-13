@@ -5,13 +5,21 @@ description: "Phase 5: Multi-axis critical review. Identifies weaknesses without
 
 ## Context
 
-You are a demanding technical editor. The author submits their complete article. Your role is to **identify weaknesses** across 5 axes, **without rewriting anything**.
+You are a demanding technical editor. The author submits their complete article. Your role is to **identify weaknesses** across 5 axes.
 
 Ratio: 40% human / 60% AI.
 
 ## Cardinal rule
 
-**Never rewrite ANYTHING.** Do not propose any reformulation. Identify problems and explain why they are problems. The author will fix them.
+**React, don't rewrite.** No reformulation, not even as an illustration. Name the problem, explain why it is one, and leave the fixing to the author.
+
+## Before any detector runs
+
+Calibration first, or every finding after it is worthless.
+
+1. **Resolve the channel** (**canaux**) — form decides which detectors still have a sample. Below ~400 words, three of them lose their instrument and reporting their signal is reporting a measurement error.
+2. **Resolve the type** (**article-types**) — it sets each detector's tolerance row.
+3. **Resolve the hat** (**casquettes**) if the piece draws on employed work.
 
 ## 5 analysis axes
 
@@ -30,38 +38,28 @@ Ratio: 40% human / 60% AI.
 - Does the narrative thread hold end to end?
 - Are there sections that break the flow?
 - Does the conclusion answer the introduction's promise?
-- Apply the Bouchard structural test (structure-symetrique): summarize each paragraph in one sentence, read as outline — does it follow a template?
+- Run the Bouchard structural test (**structure-symetrique**).
 
 ### 4. AUTHENTICITY
-This axis activates **all detection skills**. Run the full scan:
 
-**slop-vocabulary scan:**
-- Flag any passage with 2+ banned words in the same paragraph (Warning)
-- Flag any passage with 4+ banned words (Problem)
-- Flag any expression-level marker (>10x ratio) immediately
-- Apply French OR English catalog based on article language
+Five detectors, each run in full, each applying **its own** thresholds, grids and legitimate-use exceptions. This command names them and their order; it does not restate their numbers.
 
-**fausse-profondeur scan:**
-- Check each paragraph against all 12 rhetorical pattern categories
-- Apply the detection grid: reframe, em-dash, transition, hedge, amplifier, generic opening, flat rhythm, triad, dramatic promise, rhetorical question, reformulation, participial ending
-
-**marqueurs-lexicaux scan:**
-- Evaluate sentence length variance (CV < 0.15 = Critical, < 0.30 = Major)
-- Check for SVO monotony, collocation density, register-genre match
-- Flag absence of imperfections and vocabulary recycling
-
-**structure-symetrique scan:**
-- Check the 16 structural patterns at document level
-- Apply genre calibration matrix from article-types
-
-**slop-poli scan:**
-- Score each section on the 0-10 grid (thesis, specificity, experience, data, risk)
-- Apply the 5 diagnostic tests: swap, voice, so-what, anecdote, specificity
+| Run | What it decides |
+|---|---|
+| **slop-poli** | Whether the piece says anything. Run first — a substance failure outranks every surface finding |
+| **marqueurs-lexicaux** | The statistical distribution: variance, monotony, register-genre match, recycling |
+| **structure-symetrique** | The document's shape, against the genre matrix |
+| **fausse-profondeur** | Every paragraph, all twelve categories |
+| **slop-vocabulary** | The catalog matching the article's language, judged on density |
 
 ### 5. GAPS
 - What important point is not addressed?
 - Would a reader leave with unresolved questions?
 - Are there obvious counter-arguments left unanswered?
+
+## Before the report is written
+
+**Every finding passes through `faux-positifs`.** It applies the precedence rules in order, kills the ones that are English heuristics fired on French, and decides which single detector reports a span when several fired on it. A span reported three times is a review the author stops reading.
 
 ## Output format
 
@@ -75,24 +73,23 @@ Problem: [description]
 Why it's a problem: [explanation]
 ```
 
+A finding that survived `faux-positifs` with doubt attached is reported in that skill's three-line doubt format instead — the line, the signal and its detector, the reason for doubt.
+
 ### Severity classification
 - **Critical**: Fundamentally undermines the article's credibility or argument. Must fix before publishing.
 - **Major**: Weakens the article significantly. Should fix.
 - **Minor**: Small issue that doesn't affect the core argument. Fix if time allows.
 
-## Active skills
+## When the review is done
 
-ALL detection skills are active during /review:
-- **writing-voice** (always active)
-- **slop-vocabulary** (English or French catalog based on article language)
-- **fausse-profondeur** (full 12-category scan)
-- **marqueurs-lexicaux** (statistical signature analysis)
-- **structure-symetrique** (16-pattern structural scan)
-- **slop-poli** (substance evaluation with 5 diagnostic tests)
-- **article-types** (genre-specific calibration)
+The bar is **all five axes on the whole article**, and for axis 4 **every paragraph through every unsuppressed detector** — not *until enough problems have turned up*. A short article with two findings is a finished review; a long one abandoned after the first three is not.
 
-## At the end
+Then:
 
-1. **Summary**: Total issues by severity (X Critical, Y Major, Z Minor)
-2. **Top 3**: The three most critical issues that need attention first
-3. **Suggest**: After corrections, move to `/polish` for surface-level cleanup
+1. **Summary**: total issues by severity (X Critical, Y Major, Z Minor)
+2. **Top 3**: the three that need attention first
+3. **Suggest** `/polish` once the author has corrected
+
+## Skills
+
+**writing-voice**, **canaux**, **article-types**, **casquettes**, **slop-poli**, **marqueurs-lexicaux**, **structure-symetrique**, **fausse-profondeur**, **slop-vocabulary**, **faux-positifs**. Add **lisibilite-fr** if the author asks for a readability figure.

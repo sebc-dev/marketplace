@@ -1,11 +1,9 @@
 ---
 name: structure-symetrique
 description: |
-  Active during /review and /structure. Detects artificial structural regularity in text.
-  Covers all 16 structural patterns from R4 (Signatures structurelles du texte LLM),
-  the Bouchard structural test, genre calibration matrix, and strategies to break symmetry.
-  Works at document level, complementing paragraph-level skills (slop-vocabulary,
-  marqueurs-lexicaux, fausse-profondeur).
+  Artificial structural regularity, at document level. Reach it to judge an outline or a whole
+  draft's shape — the 16 patterns, the Bouchard test, and the genre calibration that says which
+  of them apply.
 ---
 
 ## The 16 structural patterns
@@ -119,6 +117,8 @@ Not all genres tolerate the same level of structural regularity.
 **Universal signals** (reliable in all genres): #3 (coherence), #5 (syntactic complexity), #13 (em dashes).
 **Most genre-dependent signals:** #1, #8, #11, #12.
 
+This matrix is finer than the `structure-symetrique` row of the table in **article-types**, and it wins: that row summarises in one word what resolves here pattern by pattern. Below ~400 words the whole skill is suppressed — a post has no document level (**canaux**).
+
 ## Strategies to break symmetry
 
 When excessive symmetry is detected during /review, suggest:
@@ -131,10 +131,4 @@ When excessive symmetry is detected during /review, suggest:
 - **Vary subheadings.** Mix questions, fragments, statements, provocations. Not always "The [Noun] of [Noun]."
 - **Break the third wall.** Use "I", "you", asides to the reader, self-corrections.
 
-## Relationship with other skills
-
-- **fausse-profondeur**: Paragraph-level rhetorical patterns. This skill works at document level.
-- **marqueurs-lexicaux**: Within-paragraph statistical patterns. This skill analyzes cross-paragraph structure.
-- **slop-poli**: Evaluates substance. This skill evaluates structure — they complement each other (template structure + empty content = slop).
-- **article-types**: Provides genre-specific calibration that this skill applies through the matrix above.
-- **writing-voice**: "What makes human writing recognizable" section describes the opposite of these 16 patterns.
+These are suggestions to hand the author, never edits to make. React, don't rewrite.

@@ -8,9 +8,9 @@ Plugin marketplace for [Claude Code](https://claude.com/code) and [Claude Cowork
 
 Complete Astro 6.x on Cloudflare Workers skill. Rendering modes (SSG, SSR, hybrid, Server Islands), Content Layer, Live Collections, Cloudflare bindings via `cloudflare:workers` (KV, D1, R2, Durable Objects), Zod 4, the Fonts API, `workerd` dev, and breaking-change prevention. 3 slash commands (`/scd-astro:scaffold`, `/scd-astro:audit`, `/scd-astro:debug`).
 
-### [scd-writer](./scd-writer/) `v0.2.2`
+### [scd-writer](./scd-writer/) `v0.3.0`
 
-Human-first writing workflow in 7 phases. The human writes and thinks, Claude questions, structures, reviews, and polishes. Never generates content on the author's behalf. Includes AI-detection skills (slop vocabulary, lexical markers, symmetric structure) and 6 slash commands (`/braindump`, `/structure`, `/draft`, `/review`, `/polish`, `/translate`).
+Human-first writing workflow in 8 phases, for developer-authors. The human writes and thinks, Claude questions, structures, reviews, and polishes — never generating content on the author's behalf, the human/AI ratio going from 100%/0% at capture to 40%/60% at review and never to 0%/100%. Articles are written in French first, then translated via `/translate`. **15 skills, grouped by the job they do**: the editorial voice and the three axes that vary under it (who speaks, which channel, which article type); two guardrails that redirect a request to outsource the thinking rather than the typing; five AI-slop detectors, from "does the piece say anything at all" down to the words and the shape of the sentences; an arbiter every finding passes through before it is reported, because a detector firing on legitimate writing is the failure mode that matters; and three on-demand skills — French readability by pure counting, on-page editorial SEO, and whether a third-party writing skill can be trusted. 6 slash commands (`/braindump`, `/structure`, `/draft`, `/review`, `/polish`, `/translate`).
 
 ### [scd-svelte](./scd-svelte/) `v0.1.1`
 

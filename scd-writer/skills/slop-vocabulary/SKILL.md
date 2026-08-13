@@ -1,18 +1,12 @@
 ---
 name: slop-vocabulary
 description: |
-  Active during /review and /polish. Detects words and expressions statistically
-  overrepresented in LLM outputs. Provides quantitative ratios from Kobak et al. (2025),
-  English and French catalogs organized by linguistic function, expression-level signals,
-  co-occurrence rules, and density-based detection thresholds. Complements marqueurs-lexicaux
-  (which handles statistical distribution patterns, not word catalogs).
+  Words and expressions overrepresented in LLM output, English and French. Reach it to scan a
+  draft's vocabulary — the catalogs, and the density thresholds that decide when a marker is a
+  finding rather than noise.
 ---
 
-## Source and methodology
-
-Primary source: Kobak et al. (2025), "Delving into ChatGPT usage in academic writing through excess vocabulary", Science Advances, based on 15.1 million PubMed abstracts (2010-2024). Pre/post ChatGPT frequency comparison yields excess usage ratios per word.
-
-Secondary sources: Gray (2024) co-occurrence amplification study, AI Phrase Finder (50,000+ texts), Reinhart et al. (PNAS 2025) for syntactic markers, Rigouts Terryn (LREC-COLING 2024) for French calques.
+Every excess ratio below comes from Kobak et al. (2025), *Delving into ChatGPT usage in academic writing through excess vocabulary*, Science Advances — 15.1 million PubMed abstracts, pre/post-ChatGPT frequency comparison. Secondary: Gray (2024) for co-occurrence, Reinhart et al. (PNAS 2025) for syntax, Rigouts Terryn (LREC-COLING 2024) for French calques.
 
 ## English catalog — organized by linguistic function
 
@@ -90,6 +84,38 @@ Expressions are stronger markers than individual words because they're less like
 
 ## French catalog
 
+**The French catalog is not of the same evidential class as the English one above.** The English
+ratios come from Kobak's 15.1 million abstracts. **No measured list of French "AI words" exists** —
+no French corpus study has computed excess-usage ratios the way Kobak did for English. The entries
+below are converging observations from several sources, not measurements, and **no ratio should ever
+be attached to them**. Treat them as a watch list whose weight comes from density and co-occurrence,
+never from a number.
+
+Two consequences that are easy to get wrong:
+
+- **Do not transpose the English catalog by translating it.** *delve*, *tapestry*, *landscape* have
+  no validated French equivalents. A translated blocklist is superstition with a French accent.
+- **Words are the weakest French signal available.** In French, what is actually measured is
+  statistical (`marqueurs-lexicaux`) and rhetorical (`fausse-profondeur`). If only vocabulary fires,
+  the finding is thin.
+
+### Didactic-style markers (the one qualitatively sourced French family)
+
+Antoun et al. (2023, CORIA-TALN), the French reference work on ChatGPT detection: *"ChatGPT uses an
+impersonal and didactic style… It often reformulates the question in its answer."* Concretely:
+
+- an opening that reformulates or redefines the question it is answering;
+- recommendation formulas — "il est important de…", "je vous recommande de…", "il convient de…";
+- conditional propositions where a claim belongs — "cela pourrait entraîner…";
+- a closing offer of help — "J'espère que cela vous aidera", "N'hésitez pas à…";
+- the **absence** of any opinion marker: no "je pense que", no "à mon avis", no position taken.
+
+**Status: expert observation, illustrated but not quantified.** It is the strongest thing anyone has
+published on French AI style, and it is still not a measurement. So the action is different from the
+rest of this skill: **flag these as passages to rewrite, never as evidence of AI origin.** The last
+item is the one that matters most for this author — an article with no position is a `writing-voice`
+rule 6 failure whatever produced it.
+
 ### Connector cascades (most frequent French LLM signal)
 de plus, en outre, par ailleurs, neanmoins, cependant, toutefois, par consequent, en somme, en effet, il convient de noter, force est de constater, il est important de souligner, a cet egard, dans cette optique
 
@@ -133,24 +159,10 @@ From Gray (2024): 2+ markers in the same article produce +468% signal amplificat
 - Never replace a marker with another marker from the banned list
 - Context matters: "robust" in a statistics context is legitimate; "robust solution" in a blog post is slop
 
-## Calibration by article type
+## Calibration
 
-Tolerance levels vary. See article-types skill for full calibration tables.
-
-| Article type | Tolerance | Rationale |
-|-------------|-----------|-----------|
-| Opinion/reflection | Very low | Personal writing should have the least LLM footprint |
-| Experience report (REX) | Low | Lived experience has its own vocabulary |
-| Technical/dev | Medium | Technical jargon can trigger false positives |
-| Tutorial/guide | Medium-high | Instructional format naturally overlaps with LLM patterns |
+Type tolerance is the `slop-vocabulary` row of the one table in **article-types**. Form tolerance is in **canaux**: this catalog keeps its full weight in short form, but the density thresholds above have to be recomputed there — one marker in 150 words is a high ratio and a low count.
 
 ## Temporal note
 
 Marker lists are not static. "Delve" has declined since widespread awareness (late 2024). "Significant" and "crucial" are rising. New markers emerge as models update. The ratios in this skill reflect 2024-2025 data and should be treated as directional, not absolute.
-
-## Relationship with other skills
-
-- **writing-voice**: Consumes the banned word lists from this skill for the always-active voice filter
-- **marqueurs-lexicaux**: Complements this skill — slop-vocabulary detects *what* (specific words), marqueurs-lexicaux detects *how* (statistical distribution patterns like TTR, entropy, burstiness)
-- **fausse-profondeur**: Handles rhetorical patterns (structural), not vocabulary
-- **slop-poli**: Uses vocabulary detection as one input to the broader "substance vs polish" evaluation

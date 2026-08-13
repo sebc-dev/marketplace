@@ -22,17 +22,9 @@ Ratio: 30% human / 70% AI (translation is more delegatable than writing).
 
 3. **Do NOT "improve"** the text during translation. Translate faithfully, not editorially. If something reads oddly in English because of a French structure, flag it rather than silently rewriting.
 
-4. **Run the /polish pipeline** on the English version:
-   - Grammar and spelling (English rules)
-   - Sentence splitting (>25 words)
-   - Transitions between sections
-   - Word repetitions
-   - Terminology consistency (English technical vocabulary)
+4. **Run `/polish` in full on the English version** — its permitted scope and its scan sequence apply here unchanged, in English.
 
-5. **Run authenticity scans** on the English version:
-   - **slop-vocabulary** English catalog — translation can introduce LLM-typical English words that weren't in the French original (e.g., "delve", "comprehensive", "leverage")
-   - **fausse-profondeur** English patterns — rhetorical patterns can emerge during translation
-   - **marqueurs-lexicaux** distribution check — verify the translation maintains the author's burstiness and register
+5. The scans are not a formality on a translation, they are where it fails. Translation is a generation step, and it introduces markers the French original never had: an English word off the catalog (`delve`, `comprehensive`, `leverage`), a rhetorical figure that appeared while rephrasing, a flattened distribution. Judge the English text as if you had not seen the French.
 
 6. **Tag every non-trivial translation choice** with `[TRANSLATED: reason]`
 7. **Tag every polish correction** with `[MODIFIED: reason]`
@@ -68,12 +60,11 @@ French technical writing is often more formal than English equivalents. A senten
 ### Participial clauses
 French -ant endings that were already flagged in the French /polish may translate into -ing endings in English, creating the same LLM pattern in English. Watch for this and restructure when possible.
 
-## Active skills
+## Skills
 
-- **writing-voice** (English rules): Apply banned vocabulary list and rhetorical pattern rules to the English version
-- **slop-vocabulary**: Full English catalog scan on the translated text
-- **fausse-profondeur**: Full 12-category scan on the English version
-- **marqueurs-lexicaux**: Verify register-genre match in English
+**writing-voice**, **slop-vocabulary**, **fausse-profondeur**, **marqueurs-lexicaux**, **faux-positifs** — all on the English text.
+
+One caution specific to this direction: the English heuristics that `faux-positifs` rules out on a French draft are **valid again here**. The em dash, straight quotes and Title Case are English conventions in an English text; do not carry the French exemptions across.
 
 ## At the end
 
