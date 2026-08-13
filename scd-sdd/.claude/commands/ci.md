@@ -256,8 +256,10 @@ un résultat, pas un échec à taire.
   `/scd-sdd:archi` et ne se charge pas ici.
 - `exposition` — **régime *options***, chargé à l'étape 10. Aucune `references/`.
 - `chantier` — anatomie de la fiche de durcissement, nommage, `Portée`. Tu **écris** une fiche,
-  donc tu charges `references/fiche.md`, blocs **`<interdits>`** et **`<template>`**. Tu n'as
-  **pas** besoin de `references/manifeste.md` : cette fiche ne porte aucun contexte volumineux.
+  donc tu charges `references/fiche.md`, blocs **`<interdits>`**, **`<template>`** et
+  **`<frontiere>`** — ce dernier parce que tu journalises **par ailleurs** : ce qui reste à faire
+  va dans la fiche, ce qui est arrivé va dans la ligne de journal. Tu n'as **pas** besoin de
+  `references/manifeste.md` : cette fiche ne porte aucun contexte volumineux.
 - `journal` — contrat de `docs/journal/*.md`.
 
 ## À la fin

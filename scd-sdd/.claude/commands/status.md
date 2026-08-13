@@ -26,9 +26,9 @@ Refaire leur travail ici rendrait cette vue illisible et ces deux commandes inut
 Tu croises **quatre sources** :
 
 - **les fichiers**, qui donnent l'état courant des trois niveaux — robuste, rien à maintenir ;
-- **`docs/journal/*.md`**, qui donnent ce que les fichiers ne portent pas : verdict d'une gate
-  `analyze`, `premortem` appliqué, issue d'un lot (y compris un run **bloqué**, qui ne coche rien
-  et n'ouvre aucune PR) ;
+- **`docs/journal/*.md`**, qui donnent les cinq faits que les fichiers ne portent pas : verdict
+  d'une gate `analyze`, verdict d'un `audit`, `premortem` appliqué, contrat révisé, issue d'un lot
+  (y compris un run **bloqué**, qui ne coche rien et n'ouvre aucune PR) ;
 - **`docs/chantiers/`**, dont l'arborescence donne le travail ouvert hors des phases, ou interrompu
   en vol — l'état est le répertoire, donc un `ls` suffit ;
 - **les dates**, qui décident si une ligne de journal ou une fiche vaut encore quelque chose.
@@ -261,9 +261,12 @@ en log d'accès. C'est de nature, pas un oubli.
   (colonne `Gate`, règle de fraîcheur).
 - `implement` — `references/tasks-parsing.md` pour l'état des lots `Rn`.
 - `project-docs` — chaîne du socle (brief → prd → stack → archi → adr → ci → CLAUDE.md).
-- `journal` — contrat de `docs/journal/*.md` (**lecture seule ici**).
 - `chantier` — § « Contrôle de fraîcheur » et format de l'en-tête (**en-tête seul, lecture seule
   ici** ; tu ne charges pas `references/manifeste.md`).
+- **Pas** le skill `journal`. Tu **lis** le journal, tu ne l'écris jamais, et ce dont tu as besoin
+  est déjà chez toi : les trois règles de lecture dans tes `## Règles absolues`, les motifs
+  d'extraction à l'étape 5. Charger le contrat par-dessus serait le doublon que
+  `DECISIONS.md` §D35 interdit.
 
 ## À la fin
 

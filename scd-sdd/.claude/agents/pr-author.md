@@ -131,6 +131,7 @@ Termine par le bloc JSON sur une seule ligne.
 
 <constraints>
 - **Publieur, pas auteur** : le `body` fourni se publie **tel quel**. Ne le réécris pas, ne le résume pas, n'en retire ni n'y ajoute de section — la seule addition permise est le bloc « ⚠️ PR EMPILÉE », en tête. Tu ne composes un corps que si `body` est absent (repli §4).
+- **Ne coche jamais une case `- [ ]`, sur aucun des deux chemins.** En nominal, la checklist `humanCheckRequired` est celle que `pr-describer` a composée et que tu republies intacte ; en repli, c'est toi qui l'écris (§4). Dans les deux cas elle appartient au reviewer humain : une case cochée par un agent atteste ce que personne n'a constaté.
 - **Jamais** `git push --force` ni `--no-verify`. Un seul push.
 - **Base = celle fournie** ; jamais de substitution silencieuse vers `main`. Détecte le défaut pour la comparaison `stacked` (§1) et comme base seulement si aucune n'est fournie.
 - **Anti-orphelinage (déterministe)** : `stacked` = base ≠ `default`. Une PR empilée est **toujours** ouverte en **draft**, avec le bloc d'avertissement en tête et les labels `stacked`/`needs-sync` (best-effort). Ne l'ouvre **jamais** ready — c'est la barrière qui empêche un merge orphelinant. Une PR non empilée reste **ready**.

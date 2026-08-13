@@ -40,8 +40,10 @@ le troisième applique).
 
 ## Règles absolues
 
-- **La cible ne se devine jamais entre niveaux.** Sans argument, tu énumères et tu demandes. Un
-  premortem écrit : se tromper de cible, c'est éditer le mauvais document avant de s'en apercevoir.
+- **La cible ne se devine jamais entre niveaux.** Sans argument, tu énumères et tu demandes. *(La
+  règle et son motif vivent dans le bloc `<resolution>` que tu charges à l'étape 1 ; l'absolu est
+  rappelé ici — et ici seulement — parce que c'est le seul texte que tu lis avant tout chargement,
+  et qu'aucune gate n'attrape une cible mal résolue.)*
 - **Rien n'est modifié avant l'approbation humaine.** Les remédiations validées sont *proposées*,
   jamais appliquées d'office.
 - **Tu n'appliques que l'ensemble approuvé.** Aucun ajout de ton cru en cours de route — ce serait
@@ -87,16 +89,16 @@ est **limitative par cible** ; ce qui n'y entre pas prend la sortie de secours (
 2. **Charge la référence** : `references/cibles.md` du skill `premortem` — **le bloc de la cible
    résolue**, plus le bloc `<hors-forme>`, qui vaut pour les trois.
 
-3. **Vérifie la précondition de la cible** — elle est propre à chacune : PRD présent pour le
-   socle, gate `analyze` au vert et documents non modifiés depuis pour une feature, fiche présente
-   et contrôle de fraîcheur rendu pour un chantier. Si elle n'est pas tenue, **arrête-toi** et
-   renvoie vers la commande qui la rétablit.
+3. **Vérifie la précondition de la cible** — elle est propre à chacune, et le bloc chargé à
+   l'étape 2 la porte **en entier** : applique-la telle qu'elle y est écrite, ne la complète pas de
+   mémoire. Si elle n'est pas tenue, **arrête-toi** et renvoie vers la commande qui la rétablit.
 
    Cible `chantier` : charge aussi `references/manifeste.md` du skill `chantier`, **bloc par
-   bloc** — `<classes>` et `<lecture>` pour **lire** le manifeste ; `<regle_maitresse>` et
-   `<controles>` **en plus**, et seulement si tu vas en **écrire** une ligne. **Résous ici les
-   lignes `à déléguer`** du manifeste, via `chantier-reader` : le facilitateur n'a pas `Task` et ne
-   peut pas le faire lui-même. Tu lui passeras les réponses ancrées avec le reste.
+   bloc** — `<classes>` et `<lecture>` pour **honorer** le manifeste ; `<delegation>` s'il porte une
+   ligne `à déléguer` ; `<regle_maitresse>` et `<controles>` **en plus**, et seulement si tu vas en
+   **écrire** une ligne. **Résous ici les lignes `à déléguer`**, via `chantier-reader`, avant tout
+   appel — le bloc de cible dit pourquoi c'est à toi de le faire. Tu passeras les réponses ancrées
+   au facilitateur avec le reste.
 
 4. **Anime le premortem** — délègue à `premortem-facilitator` (outil `Task`) en lui passant **la
    cible résolue et son chemin**, puis le **bloc de cible** intégralement : documents jugés,
@@ -157,7 +159,12 @@ Le premortem **édite les documents de sa cible sans y laisser le moindre marque
 n'est dérivable d'aucun fichier. Sans cette ligne, il est invisible — c'est pourquoi il
 n'apparaît dans aucune table de dérivation.
 
-Charge le skill `journal` et ajoute **une ligne**, par `Edit` ciblé, dans le fichier de la cible :
+Charge le skill `journal` et ajoute **une ligne**, par `Edit` ciblé, dans le fichier de la cible.
+Tu ne **crées** pas ce fichier s'il manque — tu n'as pas `Write` : signale-le et renvoie vers
+`/scd-sdd:migrate`, la ligne se consignera après, et les remédiations déjà appliquées restent
+valides. ⚠️ Tu ne la fais **pas** créer par `premortem-applier` sous prétexte qu'il a `Write` : il
+inscrit des remédiations dans les documents de la cible, et élargir son mandat rouvrirait la
+frontière de §D24.
 
 | Cible | Fichier | Phase |
 |---|---|---|
@@ -174,13 +181,14 @@ C'est un fait utile, et l'absence de ligne se lirait comme un premortem jamais j
 
 ## Skill active
 
-- `premortem` — la méthode et la table des cibles ; charge `references/cibles.md`, **bloc de la
-  cible résolue** + `<hors-forme>`.
+- `premortem` — la méthode et la table des cibles ; charge `references/cibles.md`, **bloc par
+  bloc** : `<resolution>` + **bloc de la cible résolue** + `<hors-forme>`.
 - Le skill du niveau de la cible, pour les invariants des documents remédiés : `project-docs`
   (socle) · `feature-specs` (feature) · `chantier` (chantier, et toute sortie de secours) — plus,
   **bloc par bloc**, `chantier/references/fiche.md` (`<interdits>` et `<template>`) dès qu'une
-  fiche est écrite, et `chantier/references/manifeste.md` (`<classes>` `<lecture>` pour lire ;
-  `<regle_maitresse>` `<controles>` en plus pour écrire) dès qu'un manifeste de contexte est en jeu.
+  fiche est écrite, et `chantier/references/manifeste.md` (`<classes>` `<lecture>` pour honorer ;
+  `<delegation>` s'il y a une ligne `à déléguer` ; `<regle_maitresse>` `<controles>` en plus pour
+  écrire) dès qu'un manifeste de contexte est en jeu.
 - `exposition` — **régime *gate***, chargé à l'étape 6. Aucune `references/`.
 - `journal` — contrat de `docs/journal/*.md`. **Pas pour une cible `chantier`.**
 - Subagents, dans cet ordre : `premortem-facilitator` → `premortem-validator` → *[gate humain]* →

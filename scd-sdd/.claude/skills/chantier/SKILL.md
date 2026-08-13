@@ -7,11 +7,12 @@ description: |
   sélection par branche pour les worktrees, contrôle de fraîcheur, cycle de vie. Deux
   références chargées bloc par bloc : fiche.md pour qui ÉCRIT, manifeste.md pour le
   contexte rechargé à la reprise. Se charge pendant /scd-sdd:pause, resume et note, quand
-  analyze, ci, premortem ou audit écrivent leur fiche, et quand une commande — les status,
-  les phases specs devant une fiche de gate — ou le hook SessionStart en lit une. Porte
-  UNIQUEMENT les chantiers : ni la chronologie des phases jouées (skill journal), ni la
-  dérivation de l'état du cycle depuis les fichiers (skills project-docs, feature-specs,
-  implement), ni le contenu des documents produits. Une fiche ne dit jamais où en est le projet.
+  analyze, ci, premortem ou audit écrivent leur fiche, quand status, status-impl, une phase
+  specs devant une fiche de gate, linear ou le hook SessionStart en lisent une sans
+  l'écrire, et quand migrate scaffolde les trois répertoires. Porte UNIQUEMENT les
+  chantiers : ni la chronologie des phases jouées (skill journal), ni la dérivation de
+  l'état du cycle depuis les fichiers (skills project-docs, feature-specs, implement), ni le
+  contenu des documents produits. Une fiche ne dit jamais où en est le projet.
 ---
 
 # Chantiers — `docs/chantiers/`
@@ -20,10 +21,9 @@ Un chantier est **un fichier par unité de travail** — celle qui ne relève d'
 ou qu'un `/clear` interrompt en vol. Ouvert, il porte de quoi reprendre ; fermé, il devient
 l'archive de ce qui a été fait et pourquoi (`references/fiche.md`, bloc `<pourquoi>`).
 
-⚠️ **Aucun fait dérivable n'a le droit de figurer dans une fiche** — état de lot, résultat de tests,
-verdict de gate, pourcentage d'avancement, numéro de PR présenté comme un état. C'est ce qui
-l'empêche d'être un fichier d'état, donc d'être démentie par les fichiers. Les deux autres
-propriétés qui le garantissent : `references/fiche.md`, bloc `<interdits>`.
+⚠️ **Aucun fait dérivable n'a le droit de figurer dans une fiche.** C'est ce qui l'empêche d'être un
+fichier d'état, donc d'être démentie par les fichiers. Ce qui compte comme fait dérivable, et les
+deux autres propriétés qui le garantissent : `references/fiche.md`, bloc `<interdits>`.
 
 ## Emplacement, état, nommage
 
@@ -123,10 +123,13 @@ bloc `<frontiere>`.
 
 ## Références
 
-Les deux se chargent **bloc par bloc** (`DECISIONS.md` §D20, §D35). Une commande qui n'écrit pas ne
-charge aucune des deux.
+Les deux se chargent **bloc par bloc** (`DECISIONS.md` §D20, §D35), sur deux critères distincts :
+**écrire une fiche** charge `references/fiche.md` ; **écrire ou honorer son manifeste de contexte**
+charge `references/manifeste.md`. Ce qui ne fait ni l'un ni l'autre n'en charge **aucune** : lire
+l'en-tête d'une fiche, sa ligne `Portée`, la règle de résolution, ou scaffolder l'arborescence se
+fait avec ce `SKILL.md` et lui seul.
 
 | Fichier | Qui la charge, et quels blocs |
 |---|---|
-| `references/fiche.md` | **écrire une fiche** — `pause` intégralement (seul applicateur de `<elagage>`, à l'actualisation) ; `note` intégralement sauf `<elagage>` ; `analyze`, `ci`, `audit` et `premortem` (cible `chantier`) : `<interdits>` et `<template>` |
-| `references/manifeste.md` | **le contexte à charger** — `pause` : `<regle_maitresse>` `<classes>` `<controles>` ; `resume` : `<classes>` `<lecture>` `<delegation>` ; `premortem` (cible `chantier`) : les trois d'écriture pour écrire, `<classes>` `<lecture>` pour lire |
+| `references/fiche.md` | **écrire une fiche** — `pause` intégralement (seul applicateur de `<elagage>`, à l'actualisation) ; `note` intégralement sauf `<elagage>` ; `analyze`, `audit` et `ci` : `<interdits>`, `<template>` et `<frontiere>`, parce qu'elles journalisent par ailleurs ; `premortem` (cible `chantier`) : `<interdits>` et `<template>`, elle ne journalise pas ; l'agent `premortem-applier` : `<template>` seul |
+| `references/manifeste.md` | **le contexte à charger** — `pause` : `<regle_maitresse>` `<classes>` `<controles>` ; `resume` : `<classes>` `<lecture>` `<delegation>` ; `premortem` (cible `chantier`) : les trois d'écriture pour écrire, `<classes>` `<lecture>` pour lire, plus `<delegation>` s'il résout une ligne `à déléguer` |

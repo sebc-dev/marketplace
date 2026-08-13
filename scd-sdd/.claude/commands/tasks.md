@@ -94,11 +94,10 @@ Ratio : 40% humain / 60% AI (découpage mécanique ; l'humain valide l'ordre et 
    Le budget en lignes est un **ordre de grandeur dérivé des « Fichiers touchés » du plan** —
    pas une mesure : ce niveau ne lit pas le code.
 
-5. **Applique les signaux de scission** de `references/reviewability.md` (≈ 400 lignes
-   estimées, ≈ 7 concepts, ≈ 5-7 critères par exigence). Un dépassement → **scinde
-   verticalement** (étapes du workflow, variations de règle, variations de données, CRUD,
-   chemins, effort). À l'inverse, un lot qui ne livre aucun incrément vérifiable est une couche
-   déguisée : refusionne-le.
+5. **Applique les signaux de scission** du bloc `<criteria>` de `references/reviewability.md` —
+   les trois seuils chiffrés sont là, et nulle part dans cette commande. Un dépassement →
+   **scinde verticalement** (patterns du bloc `<splitting>`). À l'inverse, un lot qui ne livre
+   aucun incrément vérifiable est une couche déguisée : refusionne-le.
 
 5bis. **Fais valider le découpage** — c'est le point de validation qu'annonce le ratio, et le seul
    moment où l'humain voit les lots avant qu'ils soient écrits ; en aval, redécouper coûte le prix

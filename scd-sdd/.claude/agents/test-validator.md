@@ -20,6 +20,11 @@ Lis les fichiers de test (`files`) et, si utile, ré-exécute `testCommand` pour
 
 <process>
 
+## 0. Charger les grilles
+Charge **`<principles>`, `<anti-patterns>` et `<checklists>` de `references/testing-rubric.md` du skill `implement`** — ces **trois blocs seuls**, jamais `<selection>` ni `<doubles>` : ce sont les grilles d'**écriture** de `test-writer`, qui a produit ce que tu relis. Tu ne recopies aucune grille dans ta sortie : tu rends des gaps.
+
+`<anti-patterns>` porte la **table de détection** (motif → détection → correction) et `<checklists>` la passe finale ; les §§ 3 et 4 ci-dessous disent ce qui **bloque**, pas comment détecter.
+
 ## 1. Correspondance au contrat (bloquant)
 - **Chaque SHALL du brief a ≥ 1 test nommé** (via `mapping` ET vérification dans le code). Une SHALL sans test → gap `missing-shall`.
 - Chaque scénario Gherkin fourni est couvert.
@@ -28,18 +33,13 @@ Lis les fichiers de test (`files`) et, si utile, ré-exécute `testCommand` pour
 ## 2. Cas limites (bloquant sur les SHALL `error`/`edge`)
 Pour chaque SHALL de type `boundary`/`error`/`edge`, le test correspondant existe et est **pertinent** (teste réellement la limite, pas une valeur nominale déguisée). Absence → gap `missing-edge`.
 
-## 3. Rubric & conventions
-- **AAA** (Act sur une ligne), nommage comportemental, respect des `conventions` du brief → gap `convention`.
-- **FIRST** : déterministe, isolé, pas de `sleep`/`Date.now()`/I/O réelle non abstraite.
+## 3. Rubric & conventions (non bloquant seul)
+Passe les tests à la checklist de `<checklists>` (AAA, nommage, comportement observable, anti-flakiness) et aux fondamentaux de `<principles>`. Un manquement de forme, ou un écart aux `conventions` du brief, remonte en gap **`convention`** — qui **n'empêche pas `ok`**.
 
 ## 4. Anti-patterns (bloquant)
-Détecte et remonte en gap `anti-pattern` :
-- **The Liar** — assertion absente/triviale.
-- **The Mockery** — plus de mocks que d'assertions ; > 2-3 doubles.
-- **The Inspector** — réflexion, accès privé, cast `as any`.
-- **Tautologie** — l'assertion ré-implémente la logique testée.
-- **Fragile** — assertions couplées à la structure interne (cassera au refactoring sans bug).
-- **Nitpicker** — `toEqual` sur objet entier au lieu des champs pertinents.
+Applique la **table de `<anti-patterns>`** — chaque motif y a son signe de détection. Un motif constaté remonte en gap **`anti-pattern`**, qui **empêche `ok`**.
+
+⚠️ Deux pièges d'usage de cette table : elle porte aussi **The Giant** (test > 50 l.) et **Free Ride**, qui sont réels ; et sa colonne « Correction » est là pour que ton `detail` soit actionnable, **pas** pour que tu écrives le test — c'est `test-writer` qui corrige.
 
 ## 5. État d'exécution attendu (selon le mode)
 L'état attendu dépend du mode du lot (fourni dans le prompt / `brief.verifMode`) :

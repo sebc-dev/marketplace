@@ -1,16 +1,21 @@
 # Référence — API Linear (GraphQL) (état au 2026-08-10, à revérifier)
 
-**Quatre points de chargement** :
+**Quatre points de chargement**, chacun borné aux blocs dont son lecteur a réellement besoin :
 
-- `/scd-sdd:linear` — **intégralement** ;
-- `/scd-sdd:linear-setup` — `<auth>`, `<queries>` et les **deux mutations du setup** de
-  `<mutations>` : le label de chantier et `initiativeCreate` ;
-- `/scd-sdd:linear-review` — `<auth>` et `<pilotage>` ;
-- l'agent **`pr-describer`** — `<auth>` et `<accroche_pr>` **seuls** (accroche PR, §D31).
+| Lecteur | Blocs chargés |
+|---|---|
+| `/scd-sdd:linear` | **intégralement** — elle écrit chez un tiers, elle n'a aucun bloc à ignorer |
+| `/scd-sdd:linear-setup` | `<auth>`, `<queries_config>`, `<mutations_setup>`, `<pagination>` |
+| `/scd-sdd:linear-review` | `<auth>`, `<pilotage>` |
+| l'agent **`pr-describer`** | `<auth>`, `<accroche_pr>` (accroche PR, §D31) |
+
+La **date en tête** se lit dans tous les cas, quel que soit le bloc chargé.
 
 Le `SKILL.md` porte ce qui **ne bouge pas** : granularité, clé dérivée, propriété des champs, sens
 unique. Ce fichier porte ce qui est **daté** — un schéma GraphQL tiers et les limites de service qui
 vont avec, volatiles par nature. Les deux sont séparés pour que le second périme **visiblement**.
+Conséquence qui borne tout ce qui suit : **un fait stable ne se redit pas ici**, il se renvoie au
+`SKILL.md` — sans quoi la partition qui fait périmer visiblement cesse de tenir.
 
 <peremption>
 
@@ -70,33 +75,90 @@ Deux arrêts, tous deux **pédagogiques**, et jamais un best-effort — l'appel 
 
 </auth>
 
-<queries>
+<queries_config>
 
-## Lire — les cinq requêtes du miroir
+## Lire — les objets résolus par leur nom : équipe, label, initiative
 
-### 1. Équipes et leurs workflow states — `linear-setup`
+**Trois** des cinq requêtes du miroir — les **n° 1, 2 et 5**. Les deux autres, le matching des
+projets et des issues, vivent dans `<queries_miroir>`, que `linear-setup` ne charge pas : elle ne
+pousse rien. **La numérotation est celle des cinq requêtes et ne bouge pas** — les deux commandes la
+citent ; c'est le découpage qui suit les **lecteurs**, pas les numéros.
 
-Linear ne fixe pas les **noms** d'états ; il en fixe les **types** : `triage`, `backlog`,
-`unstarted`, `started`, `completed`, `canceled`. Le miroir raisonne sur les types, `docs/linear.md`
-fige la correspondance vers les états **réels** de l'équipe.
+⚠ **Une connexion imbriquée rend ses 50 premiers nœuds et rien de plus** — les `states` d'une
+équipe, les `labels` d'une équipe, les `projects` d'une initiative. Le miroir n'y cherche qu'un
+objet **par son nom** ; si `pageInfo.hasNextPage` y est vrai, c'est un **constat à rapporter**, pas
+un cas à contourner en devinant.
+
+### 1. Équipes et leurs workflow states — les deux commandes
+
+Le miroir raisonne sur le **`type`** d'un état, jamais sur son `name` — la correspondance vers les
+états réels vit dans `docs/linear.md`, et sa règle au § « Les statuts par défaut » du `SKILL.md`.
 
 ```graphql
-query {
-  teams { nodes { id key name states { nodes { id name type position } } } }
+query($after: String) {
+  teams(first: 50, after: $after) {
+    nodes { id key name states { nodes { id name type position } } }
+    pageInfo { hasNextPage endCursor }
+  }
 }
 ```
+
+`linear-setup` s'en sert pour **faire choisir** l'équipe et lire ses états réels ; `linear` pour
+**résoudre l'identifiant** de l'équipe dont `docs/linear.md` ne porte que la clé (`ENG`).
+⚠ **Elle se pagine comme les autres.** Sans la boucle, un workspace de plus de 50 équipes en cache
+la suite : le setup ferait choisir dans une liste incomplète, et **rien ne le dirait**.
 
 ### 2. Labels de l'équipe — les deux commandes
 
 ```graphql
-query($teamId: String!) {
-  team(id: $teamId) { labels { nodes { id name } } }
+query($teamId: String!, $after: String) {
+  team(id: $teamId) {
+    labels(first: 50, after: $after) {
+      nodes { id name }
+      pageInfo { hasNextPage endCursor }
+    }
+  }
 }
 ```
 
 `linear-setup` s'en sert pour savoir si le label de chantier existe ; `linear` pour en **résoudre
 l'identifiant**. ⚠ **`linear` ne le crée jamais** — label introuvable → l'issue est créée **sans**
-label, et le fait remonte au rapport.
+label, et le fait remonte au rapport. ⚠ **Paginée pour la même raison** : une liste tronquée ferait
+conclure « absent » sur un label présent, et le setup en créerait un **doublon**.
+
+### 5. Initiatives du workspace et leurs projets liés — rubrique 7 seulement
+
+```graphql
+query($after: String) {
+  initiatives(first: 50, after: $after) {
+    nodes {
+      id name
+      projects(first: 50) { nodes { id } pageInfo { hasNextPage endCursor } }
+    }
+    pageInfo { hasNextPage endCursor }
+  }
+}
+```
+
+Ne se joue que si `docs/linear.md` porte une rubrique `initiative` ≠ `aucune`. L'initiative se
+résout **par nom** — comme le label — et `projects` donne les liens déjà posés : c'est ce qui rend
+le rattachement **idempotent**, un projet déjà lié ne se re-rattache jamais. `linear-setup` s'en
+sert pour savoir si l'initiative existe ; `linear` pour résoudre et comparer avant d'écrire.
+
+⚠ Les initiatives **s'activent** dans le workspace (*Settings → Initiatives*). Le comportement de
+la requête quand elles ne le sont pas n'est **pas documenté** au 2026-08-10 : une erreur ou une
+liste vide se traitent pareil — pas d'initiative disponible, et c'est un constat à rapporter, pas à
+contourner.
+
+</queries_config>
+
+<queries_miroir>
+
+## Lire — les objets du miroir : projets et issues
+
+Les requêtes **n° 3 et 4** des cinq — le matching. `/scd-sdd:linear` **seule** : ce sont les deux
+seules lectures qui servent à décider d'une **écriture** d'objet du miroir, et le setup n'en fait
+aucune.
 
 ### 3. Projets de l'équipe — le matching des features
 
@@ -134,37 +196,50 @@ query($teamId: String!, $after: String) {
 `description` est **nécessaire** : c'est là que vit le **marqueur de secours**, second recours du
 matching quand le titre a été renommé. `relations` évite de recréer une relation déjà posée.
 
-### 5. Initiatives du workspace et leurs projets liés — rubrique 7 seulement
+</queries_miroir>
+
+<mutations_setup>
+
+## Écrire — les deux mutations du setup
+
+**Huit** mutations en tout, et pas une de plus : les **deux** de ce bloc — jouées une seule fois, au
+setup, et seulement si l'objet manque — puis les **six** de `<mutations_push>`. Toute mutation rend
+`success` : on le **lit**, on ne le suppose pas.
+
+### Label de chantier — `linear-setup` seule
 
 ```graphql
-query($after: String) {
-  initiatives(first: 50, after: $after) {
-    nodes {
-      id name
-      projects(first: 50) { nodes { id } pageInfo { hasNextPage endCursor } }
-    }
-    pageInfo { hasNextPage endCursor }
-  }
+mutation($input: IssueLabelCreateInput!) {
+  issueLabelCreate(input: $input) { success issueLabel { id name } }
 }
 ```
 
-Ne se joue que si `docs/linear.md` porte une rubrique `initiative` ≠ `aucune`. L'initiative se
-résout **par nom** — comme le label — et `projects` donne les liens déjà posés : c'est ce qui rend
-le rattachement **idempotent**, un projet déjà lié ne se re-rattache jamais. `linear-setup` s'en
-sert pour savoir si l'initiative existe ; `linear` pour résoudre et comparer avant d'écrire.
+Créée **une fois**, au setup, si la requête n° 2 ne trouve pas le label, puis son nom est figé dans
+`docs/linear.md`. **`linear` n'appelle jamais cette mutation** : elle lit, elle pose, elle ne crée
+pas de label.
 
-⚠ Les initiatives **s'activent** dans le workspace (*Settings → Initiatives*). Le comportement de
-la requête quand elles ne le sont pas n'est **pas documenté** au 2026-08-10 : une erreur ou une
-liste vide se traitent pareil — pas d'initiative disponible, et c'est un constat à rapporter, pas à
-contourner.
+### Initiative — `linear-setup` seule
 
-</queries>
+```graphql
+mutation($input: InitiativeCreateInput!) {
+  initiativeCreate(input: $input) { success initiative { id name } }
+}
+```
 
-<mutations>
+`name` est le seul champ requis. Créée **une fois**, au setup, si la requête n° 5 ne trouve pas
+l'initiative retenue par l'humain, puis son **nom** est figé dans `docs/linear.md` (rubrique 7).
+**`linear` n'appelle jamais cette mutation** — initiative introuvable au push → tout se pousse
+**sans** initiative et le fait remonte au rapport : le miroir exact du pattern label, le setup
+crée, le push résout et rattache.
 
-## Écrire — sept mutations, et pas une de plus
+</mutations_setup>
 
-Toute mutation rend `success` : on le **lit**, on ne le suppose pas.
+<mutations_push>
+
+## Écrire — les six mutations du push
+
+`/scd-sdd:linear` **seule**. Le setup ne les charge pas : il ne pousse ni projet, ni issue, ni
+relation, ni rattachement.
 
 ### Projet d'une feature
 
@@ -194,10 +269,8 @@ mutation($id: String!, $input: IssueUpdateInput!) {
 
 Champs posés par le miroir, **et eux seuls** : `teamId`, `title`, `description`, `stateId`,
 `projectId`, `labelIds` (chantiers). **Jamais** `priority`, `estimate`, `assigneeId`, `cycleId` — ils
-appartiennent à l'humain.
-
-⚠ `description` est **reconstruite en entier** à chaque push : checklist `Tn` + marqueur. Du texte
-humain écrit là est **perdu**. Les **commentaires** ne sont jamais touchés — c'est là que ça se dit.
+appartiennent à l'humain. Ce que `description` contient et ce qu'il advient de ce qu'on y écrit à la
+main : § « La propriété des champs » du `SKILL.md`.
 
 ### Relation « dépend de »
 
@@ -211,32 +284,6 @@ mutation($input: IssueRelationCreateInput!) {
 `relatedIssueId` = celle de **R2**, `type: "blocks"`. Linear rend la relation inverse tout seul ; la
 créer dans les deux sens ferait un doublon. Une relation déjà présente ne se recrée pas — c'est
 l'objet de la sélection `relations` de la requête n° 4.
-
-### Label de chantier — `linear-setup` seule
-
-```graphql
-mutation($input: IssueLabelCreateInput!) {
-  issueLabelCreate(input: $input) { success issueLabel { id name } }
-}
-```
-
-Créée **une fois**, au setup, si la requête n° 2 ne trouve pas le label, puis son nom est figé dans
-`docs/linear.md`. **`linear` n'appelle jamais cette mutation** : elle lit, elle pose, elle ne crée
-pas de label.
-
-### Initiative — `linear-setup` seule
-
-```graphql
-mutation($input: InitiativeCreateInput!) {
-  initiativeCreate(input: $input) { success initiative { id name } }
-}
-```
-
-`name` est le seul champ requis. Créée **une fois**, au setup, si la requête n° 5 ne trouve pas
-l'initiative retenue par l'humain, puis son **nom** est figé dans `docs/linear.md` (rubrique 7).
-**`linear` n'appelle jamais cette mutation** — initiative introuvable au push → tout se pousse
-**sans** initiative et le fait remonte au rapport : le miroir exact du pattern label, le setup
-crée, le push résout et rattache.
 
 ### Rattachement projet ↔ initiative — `linear` seule
 
@@ -264,7 +311,7 @@ lie), et toute mutation de commentaire, de cycle ou de membre. Le miroir ne supp
 n'archive rien, et ne possède de l'initiative **que le rattachement** : sa description, ses
 updates, son sort appartiennent à l'humain — comme l'issue d'un lot disparu d'un `tasks.md`.
 
-</mutations>
+</mutations_push>
 
 <pilotage>
 
@@ -273,7 +320,8 @@ updates, son sort appartiennent à l'humain — comme l'issue d'un lot disparu d
 ### Le comptage du garde 250
 
 Aucun champ agrégé `count`/`totalCount` n'est exposé sur les connexions : on **pagine et on compte
-les nœuds**. Requête reprise **verbatim** du rapport committé (`docs/scd-sdd/linear-tools.md` §3) :
+les nœuds**. Requête reprise **verbatim** d'une recherche sourcée sur la doc Linear à la date en
+tête, jamais composée ici :
 
 ```graphql
 query CountActiveIssues($after: String) {
@@ -289,15 +337,29 @@ On boucle tant que `pageInfo.hasNextPage`, en repassant `endCursor` en `after` ;
 `includeArchived` laissé au défaut, exactement la sémantique du plafond. Le comptage est
 **workspace** — pas de filtre d'équipe : le plafond est workspace, pas équipe.
 
-### Les champs d'hygiène
+### La lecture d'hygiène — une seule requête, en lot
 
-La requête n° 4, étendue de trois champs — tout ce que l'hygiène demande :
+Portée **workspace** comme le comptage, et **tout** en une lecture : les quatre contrôles et le
+rendu Now/Next/Later n'en demandent pas deux. La revue ne charge pas `<queries_miroir>` — elle ne
+pousse rien —, donc la requête est ici, entière :
 
 ```graphql
-priority        # 0 = No priority · 1 = Urgent · 2 = High · 3 = Medium · 4 = Low (verbatim schéma)
-updatedAt       # ISO 8601 — la dormance se mesure dessus
-state { type }  # completed/canceled non archivées → candidates à l'archivage
+query HygieneIssues($after: String) {
+  issues(first: 50, after: $after) {
+    nodes {
+      identifier title description
+      priority        # 0 = No priority · 1 = Urgent · 2 = High · 3 = Medium · 4 = Low (verbatim schéma)
+      updatedAt       # ISO 8601 — la dormance se mesure dessus
+      state { type }  # completed/canceled non archivées → candidates à l'archivage
+      project { name }
+    }
+    pageInfo { hasNextPage endCursor }
+  }
+}
 ```
+
+`description` sert au seul **marqueur** : c'est lui qui distingue une issue du miroir d'une issue de
+l'humain, laquelle n'entre dans aucun contrôle.
 
 Les seuils, les quatre contrôles et le rendu Now/Next/Later vivent dans `references/pilotage.md` ;
 ici, seulement ce qui dépend du schéma.
@@ -336,8 +398,8 @@ ne casse jamais.
 | la branche par défaut | `Fixes <identifier>` | mot **fermant** — l'issue passera Done au merge |
 | une branche de lot (PR **empilée**) | `Part of <identifier>` | mot **non-fermant** — un mot fermant fermerait l'issue au merge dans un cul-de-sac |
 
-`Fixes` et `Part of` sont repris **verbatim** de la liste des magic words de la doc Linear (rapport
-`linear-tools.md` : fermants `fix, fixes, fixed…` ; non-fermants `part of, related to…`). La ligne
+`Fixes` et `Part of` sont repris **verbatim** de la liste des magic words de la doc Linear —
+fermants `fix, fixes, fixed…`, non-fermants `part of, related to…`, relevés à la date en tête. La ligne
 se pose dans la section **Traçabilité** du corps — **jamais le titre** (le squash-merge en ferait
 un message de commit, donc un identifiant Linear dans le dépôt), **jamais le nom de branche** (les
 refs sont le dépôt). L'`identifier` est résolu à la création de la PR et n'est **stocké nulle
@@ -345,9 +407,9 @@ part** — comme le push re-résout tout.
 
 </accroche_pr>
 
-<pagination_erreurs>
+<pagination>
 
-## Pagination, limites, erreurs
+## Pagination — la règle qui vaut pour **toutes** les requêtes
 
 **Pagination Relay.** Arguments `first` / `after` (et `last` / `before` en sens inverse). **50
 résultats par défaut** sans argument. On boucle tant que `pageInfo.hasNextPage`, en repassant
@@ -355,6 +417,16 @@ résultats par défaut** sans argument. On boucle tant que `pageInfo.hasNextPage
 
 > Un miroir qui ne pagine pas rate silencieusement le 51ᵉ lot. C'est le défaut le plus coûteux du
 > dispositif, parce qu'il **ressemble à un succès**.
+
+Elle ne vaut pas seulement pour les gros volumes du push : les lectures du **setup** — les équipes,
+les labels — la réclament autant, et une troncature y fait choisir la mauvaise équipe ou recréer un
+label existant. C'est pour ça que ce bloc est chargé par les **deux** commandes.
+
+</pagination>
+
+<quotas_erreurs>
+
+## Quotas et erreurs
 
 **Limites de service**, par heure et au **2026-08-10** :
 
@@ -382,7 +454,7 @@ lit `errors` à chaque appel, toujours.**
 Une erreur ne se contourne pas en devinant un autre nom de champ : elle se **rapporte**, et elle est
 d'abord un signal que cette référence a vieilli.
 
-</pagination_erreurs>
+</quotas_erreurs>
 
 <completion>
 

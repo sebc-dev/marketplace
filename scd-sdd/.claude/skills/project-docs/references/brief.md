@@ -43,7 +43,7 @@ Produit par interview « une question à la fois » — c'est le document le plu
 <guidance>
 - Interviewer AVANT d'écrire. Ne pas remplir le template de suppositions : chaque champ vide est une question.
 - Le **problème** d'abord : sans problème net, tout le reste flotte. Creuser « pour qui » et « pourquoi maintenant ».
-- Le **scope EXCLU** est le champ le plus précieux — il empêche l'agent (et l'humain) de sur-engineerer la v1. Forcer au moins 2-3 exclusions explicites.
+- Le **scope EXCLU** est le champ le plus précieux du Brief ; le pourquoi est au `SKILL.md`, § *Règles d'écriture pour un agent*. Ce qui est propre à ce document : forcer au moins **2-3 exclusions explicites**, validées par l'utilisateur.
 - Les **SC-xxx** sont des métriques, pas des intentions : « rapide » → « chargement < 2 s ». Les numéroter, ils seront réutilisés dans le PRD.
 - Rester au niveau produit/macro : aucune user story détaillée ici (ça, c'est le PRD), aucun choix technique (ça, c'est Stack).
 </guidance>

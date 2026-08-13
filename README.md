@@ -45,13 +45,13 @@ state and survives a `/clear`. Two skills: `research-prompter` composes Research
 subject, specialised by domain packs; `campaign` orchestrates and composes nothing itself.
 Human-in-the-loop by construction: no session can launch Research. 7 slash commands.
 
-### [scd-sdd](./scd-sdd/) `v1.15.0`
+### [scd-sdd](./scd-sdd/) `v1.17.0`
 
 Complete spec-driven development cycle, from empty repo to reviewable PR — one plugin, three
 chained levels. **Foundation** (once per project): brief → PRD → stack → architecture invariants →
 foundational ADRs → CI → CLAUDE.md, by one-question-at-a-time interview, where the `ci` phase makes
 deterministic and verifiable *outside the agent* what CLAUDE.md can only advise. **Specs** (once per
-feature): specify → clarify → plan → tasks → analyze conformance gate (15 checks), with EARS acceptance
+feature): specify → clarify → plan → tasks → analyze conformance gate (16 checks), with EARS acceptance
 criteria, Kiro backrefs, and review lots (`Rn`) sized so a human can actually review each one.
 **Implementation** (one lot at a time): a dynamic workflow orchestrating 21 dedicated subagents —
 dedicated branch, verification per the lot's declared mode (TDD by default, else test-after /

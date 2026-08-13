@@ -4,32 +4,33 @@ description: |
   La CAPACITÉ DE RECHERCHE transverse : comment on cherche un fait qu'on ne tient
   pas de mémoire, et ce qu'on a le droit d'en reprendre. Ancrage par citations
   verbatim, permission d'exprimer l'incertitude, hypothèses concurrentes, niveaux
-  de preuve et étiquetage des sources (officiel · préprint · benchmark d'éditeur ·
-  marketing), qualité de source, contrat de docs/research/. Se charge pendant
-  /scd-sdd:lookup et /scd-sdd:research, et depuis toute phase qui doit sourcer un
-  arbitrage — stack, adr, ci, plan. Porte UNIQUEMENT la méthode : ne joue aucune
-  phase, n'écrit aucune ligne de journal (skill journal), et ne modifie jamais un
-  document du socle — un rapport ne descend pas seul dans stack.md ni dans un ADR
-  immuable, sous peine de citation laundering.
+  de preuve et étiquetage des sources (officiel · préprint indépendant · benchmark
+  d'éditeur · commercial), qualité de source, contrat de docs/research/. Se charge
+  pendant /scd-sdd:lookup et /scd-sdd:research, et pendant elles seules : une phase
+  qui doit sourcer un arbitrage — stack, adr, ci, plan — ROUTE vers ces deux
+  commandes, elle ne charge pas ce skill. Porte UNIQUEMENT la méthode : ne joue
+  aucune phase, n'écrit aucune ligne de journal (skill journal), et ne modifie
+  jamais un document du socle — un rapport ne descend pas seul dans stack.md ni
+  dans un ADR immuable, sous peine de citation laundering.
 ---
 
 # Recherche — `docs/research/`
 
 ## Pourquoi une capacité, et pas une phase
 
-Une phase se joue **une fois, dans un ordre imposé**, et laisse un artefact dont l'état se dérive.
-Une recherche se joue **quand la question se pose** : `stack` en a besoin pour ne pas trancher de
-mémoire, `adr` pour sourcer un rationale qu'il va figer, `ci` pour ne pas inventer une version
-d'outil, `plan` au niveau specs — et le cas le plus fréquent est hors de toute phase.
+Une recherche se joue **quand la question se pose**, jamais à un rang imposé : depuis `stack`,
+`adr`, `ci` ou `plan` qui doivent sourcer un arbitrage, et le plus souvent **hors de toute phase**.
 
-Trois conséquences, toutes **de nature** et jamais discrétionnaires :
+Quatre conséquences, toutes **de nature** et jamais discrétionnaires. Le rationale du choix vit en
+`DECISIONS.md` §D23, et nulle part ici :
 
-- **Aucune ligne de journal.** Ces commandes ne jouent aucune phase, et ce qu'elles produisent
-  **est** le fait : le rapport lui-même. Même raisonnement que « la fiche est le fait » pour les
-  chantiers. `lookup` ne produit même aucun fichier.
-- **Aucun état dérivé.** `docs/research/` n'apparaît dans aucune table d'état de `status` : l'y
-  faire figurer ferait croire à une phase, et un socle sans recherche n'est pas un socle incomplet.
-- **Deux verbes, pas une commande à modes**. `lookup` répond en session et n'écrit rien ;
+- **Une phase ne cherche pas elle-même, elle route.** Aucune commande de phase ne charge ce skill,
+  et aucune n'a `WebSearch` ni `WebFetch` : elle renvoie vers `/scd-sdd:lookup` ou
+  `/scd-sdd:research`, qui sont les **deux seuls** chargeurs.
+- **Aucune ligne de journal.** Ce que ces deux commandes produisent **est** le fait : le rapport
+  lui-même. `lookup` ne produit même aucun fichier.
+- **Aucun état dérivé.** `docs/research/` n'apparaît dans aucune table d'état de `status`.
+- **Deux verbes, pas une commande à modes.** `lookup` répond en session et n'écrit rien ;
   `research` produit un artefact, quitte la session, et revient plus tard.
 
 ## Le risque qui gouverne tout le reste
@@ -41,9 +42,14 @@ vérifie :
 > Brief → PRD → Stack → **ADR accepté, immuable** → spec → tests → code
 
 Un chiffre non vérifié entré au début ressort en décision que `CLAUDE.md` interdit de contredire, et
-que la gate `analyze` protège au lieu de la questionner. Le mécanisme est mesuré ailleurs : une
-étude Columbia relayée par *STAT* compte **1 article sur 458** portant une référence fabriquée en
-2025, contre 1 sur 2 828 en 2023 *(source tierce, presse scientifique)*.
+que la gate `analyze` protège au lieu de la questionner. Le mécanisme n'est pas une hypothèse : la
+prévalence des références fabriquées dans la littérature publiée est mesurée **en hausse d'une année
+sur l'autre**, par plusieurs protocoles indépendants *(niveau : rapporté)*.
+
+⚠️ **Aucun chiffre n'est cité ici, et c'est délibéré** : un taux daté placé dans un fichier qui porte
+« ce qui ne bouge pas » périmerait en silence — le mode de défaillance exact que la séparation
+`SKILL.md` / référence existe pour empêcher. Ce que ces mesures valent, et ce qu'on n'a pas le droit
+d'en transposer, vit dans le bloc `<caveats>` **daté** de `references/prompt-research.md`.
 
 D'où la règle centrale, qui ne se négocie pas :
 
@@ -98,7 +104,11 @@ Deux axes, tous deux obligatoires — ils ne se remplacent pas l'un l'autre.
 | **officiel** | doc ou publication de l'éditeur — fait autorité sur son produit, pas sur ses concurrents |
 | **préprint indépendant** | non revu par les pairs ; le protocole est lisible, la conclusion n'est pas validée |
 | **benchmark d'éditeur** | auto-favorisant par construction, parfois entraîné sur ses propres tâches |
-| **commercial / marketing** | comparatif de vendeur, benchmark maison — jamais une source primaire |
+| **commercial** | comparatif de vendeur, page produit, benchmark maison — jamais une source primaire |
+
+Les quatre étiquettes s'écrivent **avec ces mots exacts** — `officiel`, `préprint indépendant`,
+`benchmark d'éditeur`, `commercial`. Elles sont apposées sur des sources, donc greppables : un
+synonyme — « marketing », « vendeur » — rouvre un vocabulaire qui n'a de valeur que fermé.
 
 Un chiffre officiel reste souvent une **éval interne non reproductible par un tiers** : « établi »
 qualifie alors le fait qu'il a été *publié*, pas qu'il a été *répliqué*. Écris la différence.
@@ -148,19 +158,23 @@ docs/research/
   sens — un ADR cite `docs/research/…` dans son rationale — et un rapport qui listerait ses usages
   serait un fichier qui croît.
 - Le **format attendu** d'un rapport — TL;DR / Key Findings / Details / Recommendations / Caveats,
-  confiance par affirmation, marqueurs `[À VÉRIFIER]` et `[INCERTAIN]` — vit dans
-  `references/prompt-research.md`, chargée à la composition.
+  confiance par affirmation, marqueurs `[À VÉRIFIER]` et `[INCERTAIN]` — vit dans le bloc
+  `<gabarit>` de `references/prompt-research.md`, chargé à l'**aller**.
 
 ## Reprendre un résultat — la relecture critique
 
 C'est la moitié qui compte. **Un rapport qui revient n'est pas un acquis : c'est une source de
 plus**, et le fait qu'il ait été produit pour nous ne le rend pas plus vrai.
 
-1. **Extraire ce qui est actionnable pour la phase en cours** — le reste attend son tour.
+1. **Extraire ce qui est actionnable pour la décision que la question devait servir** — le reste
+   attend son tour. Le référent est **la décision, jamais la phase** : quand une phase est en cours,
+   c'est la sienne ; quand la recherche est jouée hors de toute phase — le cas le plus fréquent —,
+   c'est celle que le bloc `## Question` du prompt nomme, puisque le gabarit l'exige. Une recherche
+   sans décision nommée n'a pas de critère d'extraction : dis-le au lieu de tout reprendre.
 2. **Isoler et nommer ce qui ne se reprend pas comme acquis** : tout ce qui porte `[À VÉRIFIER]`,
-   `[INCERTAIN]`, « source unique non recoupée », « éval interne », « préprint », « contenu
-   commercial ». Isoler ne veut pas dire jeter — ça veut dire que ça ne descend pas dans un document
-   que la suite du cycle traitera comme vrai.
+   `[INCERTAIN]`, « source unique non recoupée », « éval interne », « préprint », « commercial ».
+   Isoler ne veut pas dire jeter — ça veut dire que ça ne descend pas dans un document que la suite
+   du cycle traitera comme vrai.
 3. **Rappeler que la confiance verbalisée n'est pas une probabilité**, y compris celle du rapport.
 4. **Ne modifier aucun document du socle.** Rendre la liste ; l'humain décide ce qui descend dans
    `docs/stack.md` ou dans un ADR.
@@ -170,6 +184,13 @@ Le contrôle négatif qui prouve que la règle a tenu : après l'import d'un rap
 
 ## Références
 
-| Fichier | Quand la charger |
+Une seule, et elle se charge **bloc par bloc** (`DECISIONS.md` §D20) : `/scd-sdd:research` la lit
+aux **deux** temps de son aller-retour, et les deux temps n'ont pas besoin des mêmes blocs. Composer
+en rechargeant les caveats de relecture, ou relire en rechargeant le gabarit, serait payer deux fois.
+`/scd-sdd:lookup` ne la charge **jamais** — il ne compose rien et ne classe rien.
+
+| Fichier · bloc | Quand le charger |
 |---|---|
-| `references/prompt-research.md` | `/scd-sdd:research` — le gabarit de prompt, ce qui est devenu obsolète dans la doctrine de prompting, et les caveats de fiabilité utiles à la relecture. **Datée en tête** : à revérifier avant de s'y fier. |
+| `references/prompt-research.md` · `<peremption>` | **Aux deux temps, et en premier.** Le fichier est **daté en tête** : ce bloc dit ce que la date impose avant de s'y fier. |
+| … · `<obsolete>` `<stable>` `<gabarit>` `<completion>` | **À l'aller** seulement — composer le prompt, puis le relire contre sa checklist. |
+| … · `<caveats>` | **Au retour** seulement — les caveats de fiabilité qui servent la relecture critique du rapport revenu. |

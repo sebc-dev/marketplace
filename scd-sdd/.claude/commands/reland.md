@@ -54,16 +54,15 @@ Ratio : 15% humain / 85% AI (mécanique ; l'humain n'intervient que sur conflit)
 
 ## Définitions
 
-Partagées avec `/scd-sdd:status-impl` et `/scd-sdd:sync` ; portées par le skill `implement`.
+Le **sens** de `défaut` et de *lot arrivé dans `main`* — dont la priorité du signal de contenu sur
+l'ancêtre git — est porté par le skill `implement`, § Anti-orphelinage, que tu charges. Ici, les
+seules **invocations**, partagées avec `/scd-sdd:status-impl` et `/scd-sdd:sync` :
 
-- **`défaut`** = `git symbolic-ref refs/remotes/origin/HEAD` → suffixe après `origin/` (repli
-  `main`/`master`).
-- **Lot `Rn`** → branche `impl/<slug>-Rn`. `slug` = suffixe de `featureDir` après `NNN-`.
-- **Lot arrivé dans `main`** — signal de **contenu**, robuste au squash/rebase/merge-commit : ses
-  tâches `Tn` sont **cochées** dans `origin/<défaut>:specs/<NNN-slug>/tasks.md`. Corroboration git :
-  `git merge-base --is-ancestor <headRefOid> origin/<défaut>` (code 0 = arrivé). **Le signal de
-  contenu est prioritaire** sur l'ancêtre git — un squash change les SHA et fait échouer l'ancêtre à
-  tort.
+- `défaut` : `git symbolic-ref refs/remotes/origin/HEAD` → suffixe après `origin/`
+  (repli `main`/`master`).
+- Branche du lot `Rn` : `impl/<slug>-Rn`, où `slug` = suffixe de `featureDir` après `NNN-`.
+- Tâches cochées à l'amont : `origin/<défaut>:specs/<NNN-slug>/tasks.md`. Corroboration git :
+  `git merge-base --is-ancestor <headRefOid> origin/<défaut>` (code 0 = arrivé).
 
 ## Processus
 

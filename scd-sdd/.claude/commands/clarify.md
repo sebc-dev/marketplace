@@ -111,5 +111,4 @@ restants` est un fait, et la ligne suivante montrera la reprise.
 ## À la fin
 
 Confirme « **0 `[NEEDS CLARIFICATION]` restant** » — ou nomme ceux qui restent et dis pourquoi.
-Puis, en passant le `NNN` : « `/clear`, puis `/scd-sdd:plan NNN` (en plan mode, idéalement
-`opusplan`). »
+Puis, en passant le `NNN` : « `/clear`, puis `/scd-sdd:plan NNN` — **en plan mode**. »

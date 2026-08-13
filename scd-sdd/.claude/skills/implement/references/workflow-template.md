@@ -1,5 +1,10 @@
 # Référence — Le dynamic workflow `implement-lot.js`
 
+**Aucun point de chargement déclaré, et c'est délibéré** : elle se lit **sur renvoi** — depuis le
+`SKILL.md`, ou quand on adapte, débogue ou étend `implement-lot.js` / `implement-parallel.js`. Ni
+`/scd-sdd:run` ni `/scd-sdd:run-parallel` n'en ont besoin pour lancer : la recette de lancement vit
+dans leur `## Processus`, et ce fichier n'y renvoie que dans un sens.
+
 <role>
 Expliquer le script `.claude/workflows/implement-lot.js` : sa structure, ses schémas, ses boucles gardées, comment il cible les agents dédiés, comment l'adapter par run, et le fallback si `agentType` ne résout pas les agents du plugin. C'est un **template**, pas un script à rejouer verbatim.
 </role>
@@ -31,10 +36,9 @@ Préambule et final sont **invariants** ; le segment du milieu dépend de `brief
 | Describe | `scd-sdd:pr-describer` | opus | `PR_BODY` | tous (sautable) |
 | PR | `scd-sdd:pr-author` | sonnet | `PR_RESULT` | tous |
 
-**Ordre du segment par mode** (voir `references/verification-modes.md`) :
-- `TDD` → Red → Validate → Green.
-- `test-after` → Green(impl-first) → Red(vert attendu) → Validate → Green(porte).
-- `check`/`inhérent` → Green → Verify.
+**Ordre du segment par mode** : la colonne « Joué en mode » ci-dessus dit *si* une phase tourne ; la
+table `<modes>` de `references/verification-modes.md` dit dans quel **ordre**, et elle est la seule à
+le dire — ne la recopie pas ici.
 
 Le schéma **`VERIFY`** : `{ verified, mode, method, observableProof, humanCheckRequired[], note }`. Il porte la preuve observable des modes non-test (l'équivalent du `0 failed`) et la checklist `humanCheckRequired` remontée dans la PR.
 
@@ -97,6 +101,7 @@ args = {
 - **Au sein d'une chaîne** : boucle **séquentielle** — chaque lot via `workflow({ scriptPath: implPath }, { featureDir, lot, base, oldBase, worktree: true, prefetched: true })` (imbrication **d'un seul niveau** ; `implement-lot` n'appelle jamais `workflow()`). Les lots empilés (`base = impl/<slug>-<lot-précédent>`) se chaînent proprement. La chaîne **casse** au premier lot non `done` (les lots empilés en aval → `blocked-upstream`).
 - **`prefetched: true`** : le remote est fetché **une seule fois** par la commande avant le fan-out ; `branch-setup` réutilise `origin/<base>` sans re-fetch (évite les fetch concurrents).
 - **Retour** : `{ status: all-done|partial|all-blocked, lots: [ { lot, chain, status, branch, base, pr, worktreeDir } ] }`.
+- **Deux statuts que seul cet orchestrateur émet**, absents de la liste de `implement-lot` : `blocked-upstream` (un lot d'aval de la chaîne, non lançable parce que l'amont n'a pas abouti — il n'a **rien** produit) et `blocked-unknown` (l'appel `workflow()` du lot n'a **rien retourné** — skip ou échec du sous-workflow ; le lot a pu écrire, son worktree est le seul endroit où regarder). Les deux se consignent au journal comme les autres.
 
 **Pourquoi la commande, pas le workflow, calcule le plan** : `parallel()` n'existe que dans un script de workflow, mais la lecture de `tasks.md` + l'état git (deps mergées ?) est de l'I/O — interdite dans l'orchestrateur. La commande fait l'analyse (co-parallélisabilité, bases), le workflow fait le fan-out déterministe.
 </parallel>
@@ -115,13 +120,15 @@ Ne jamais : mettre du non-déterminisme, faire de l'I/O dans l'orchestrateur, pa
 <run>
 ## Lancer
 
-Depuis `/scd-sdd:run`, après résolution de la cible, on lance **par `scriptPath`** (jamais par `name`) :
-```
-Workflow(scriptPath: "<racine-plugin>/.claude/workflows/implement-lot.js", args: { featureDir: "specs/NNN-slug", lot: "Rn", base: "<branche ou omis>", oldBase: "<impl/<slug>-Rk ou omis>" })
-```
-**Pourquoi pas `name`** : un workflow bundlé dans un plugin n'est pas dans le registre des noms (seuls les workflows projet `.claude/workflows/` et built-in le sont) ; `Workflow(name: "implement-lot")` échoue avec « not found ». Et `${CLAUDE_PLUGIN_ROOT}` ne s'expande pas de façon fiable dans une commande markdown → `run` résout le chemin absolu par Bash (`find "$HOME/.claude/plugins" -path '*scd-sdd*/implement-lot.js' | sort -V | tail -1`) avant de lancer.
+**La recette de lancement n'est pas ici, et c'est délibéré** : la résolution du chemin absolu par
+`find`, l'appel `Workflow(scriptPath: …)` avec ses arguments, et le motif du refus de `name:` vivent
+dans le `## Processus` de `/scd-sdd:run` (un script) et de `/scd-sdd:run-parallel` (deux). Ce sont les
+**seules** à lancer, elles seules ont `Bash(find *)` et `Workflow` dans leur `allowed-tools`, et elles
+ne chargent pas ce fichier — l'y dupliquer garantirait la divergence sans faire gagner un token.
 
-**Parallèle** : `/scd-sdd:run-parallel` résout **deux** chemins (`implement-parallel.js` **et** `implement-lot.js`), calcule le plan de chaînes, puis lance `Workflow(scriptPath: "<implement-parallel.js>", args: { featureDir, implPath: "<implement-lot.js>", chains: […] })`. L'orchestrateur relance `implement-lot` par `workflow({ scriptPath: implPath })` en interne (même raison : bundlé, donc par chemin).
+Ce qui est propre au script, en revanche : un lancement `implement-lot` est **imbriqué d'un seul
+niveau** — `implement-parallel` le relance par `workflow({ scriptPath: implPath })`, et
+`implement-lot` n'appelle jamais `workflow()` lui-même.
 
 Suivre dans `/workflows` (P pause, X stop). Le run est reprenable **dans la même session** (les agents terminés renvoient leurs résultats cachés). Quitter Claude Code repart de zéro.
 

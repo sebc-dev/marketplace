@@ -1,11 +1,20 @@
 # Référence — Contrat de `docs/linear.md`
 
-Chargée par `/scd-sdd:linear-setup` — **intégralement** — et par `/scd-sdd:linear` et
-`/scd-sdd:linear-review` — le seul bloc `<contrat>`.
+**Deux points de chargement** : `/scd-sdd:linear-setup` — **intégralement**, c'est elle qui écrit le
+fichier — et `/scd-sdd:linear-review` — le seul bloc `<contrat>`.
+
+⚠ **`/scd-sdd:linear` ne charge pas cette référence, et c'est délibéré** — ne pas « rétablir » ce
+point de chargement. Le push **lit `docs/linear.md` lui-même**, en entier, à son étape 1, qui nomme
+les rubriques qu'il en extrait : un fichier présent sur le disque fait foi sur son propre contenu, et
+en charger la description par-dessus mettrait deux sources dans la même fenêtre (§D35). La seconde
+serait même la moins fiable des deux le jour où un projet porte un fichier écrit avant la dernière
+rubrique — cas prévu, et traité par le push comme *rubrique absente ou `aucune`*, sans rien avoir à
+lire ici. Ce que le bloc `<contrat>` ajoute au fichier — le refus d'écraser, l'édition manuelle, la
+rétro-compatibilité, ce qui n'y entre jamais — lie l'**écrivain** ; le push n'écrit rien.
 
 Le `SKILL.md` porte le **pourquoi** du fichier — l'opt-in est un fichier, l'état dérivé du chemin
-(charte §5) ; cette référence porte son **contenu exact** : ce que le setup écrit, ce que les deux
-autres commandes relisent.
+(charte §5) ; cette référence porte son **contenu exact** : ce que le setup écrit, ce que la revue
+relit.
 
 <contrat>
 

@@ -51,12 +51,13 @@ Ratio : 15% humain / 85% AI (mécanique ; l'humain n'intervient que sur conflit)
 
 ## Définitions
 
-Partagées avec `/scd-sdd:status-impl` et `/scd-sdd:reland` ; portées par le skill `implement`.
+Le **sens** de `défaut` et de *PR empilée* est porté par le skill `implement`, § Anti-orphelinage,
+que tu charges. Ici, les seules **invocations**, partagées avec `/scd-sdd:status-impl` et
+`/scd-sdd:reland` :
 
-- **`défaut`** = branche par défaut du repo : `git symbolic-ref refs/remotes/origin/HEAD` → suffixe
-  après `origin/` (repli `main`/`master`).
-- **Lot `Rk`** → branche `impl/<slug>-Rk`. `slug` = suffixe de `featureDir` après `NNN-`.
-- **PR empilée** : `baseRefName` == une branche de lot `impl/<slug>-R*` (donc **≠ `défaut`**).
+- `défaut` : `git symbolic-ref refs/remotes/origin/HEAD` → suffixe après `origin/`
+  (repli `main`/`master`).
+- Branche du lot `Rk` : `impl/<slug>-Rk`, où `slug` = suffixe de `featureDir` après `NNN-`.
 
 ## Processus
 

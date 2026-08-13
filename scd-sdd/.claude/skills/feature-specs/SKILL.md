@@ -27,8 +27,11 @@ skill `implement` — ne prescris jamais *comment* implémenter, n'exécute aucu
 nuance : le **dimensionnement** des lots `Rn` se joue ici, car après l'implémentation
 redécouper coûte le prix du code écrit. On rend la review possible ; on ne la conduit pas.
 
-**Deux natures de phase.** `specify`, `clarify`, `plan` et `tasks` **écrivent** ; `analyze` et
-`status-specs` sont en **lecture seule**. **`premortem` n'est pas une phase de ce niveau** : c'est
+**Trois natures de phase.** `specify`, `clarify`, `plan` et `tasks` **écrivent le contrat** ;
+`status-specs` est en **lecture seule** ; `analyze` n'en modifie **aucun document** — `spec.md`,
+`plan.md` et `tasks.md` en sortent bit pour bit identiques — mais écrit **deux artefacts
+ailleurs** : sa ligne de journal et sa **fiche de gate**, qui porte la liste de corrections. Il ne
+persiste **aucun verdict**. **`premortem` n'est pas une phase de ce niveau** : c'est
 une **capacité transverse** (socle, feature, chantier), qui se joue ici *après* une gate au vert,
 durcit le *contrat* et impose une **re-passe `analyze`** puisqu'elle modifie ce que la gate venait
 d'attester. Seule écriture **déléguée** du plugin, d'où son gate humain. Skill **`premortem`**.
@@ -81,27 +84,26 @@ en même temps — `status-specs` croise ces sections pour le dire.
 | `tasks.md` présent | à valider (gate de conformité) | `analyze` |
 | `DELTA.md` présent | mode **delta** (brownfield) | idem, scopé au delta |
 
-`premortem` **n'apparaît pas dans la table**, et n'y apparaîtra jamais : il édite sans produire
-de marqueur, et n'est pas une phase — passe **explicitement invoquée** après une gate au vert,
-re-gatée ensuite ; une feature sans premortem n'est pas incomplète. Pas d'état « livrée » non
-plus : `analyze`, lecture seule et bon marché, se **relance** plutôt que
-d'en persister le verdict (un PASS écrit deviendrait faux à la première édition).
-`/scd-sdd:status-specs` applique cette table à toutes les features. Les `NNN` sont **stables
-et jamais réattribués** (`max(NNN) + 1`).
+`premortem` **n'apparaît pas dans la table**, et n'y apparaîtra jamais : il édite sans laisser de
+marqueur, et n'est pas une phase — une feature sans premortem n'est pas incomplète. Pas d'état
+« livrée » non plus : `analyze` est bon marché et se **relance** plutôt que d'en persister le
+verdict (un PASS écrit deviendrait faux à la première édition). `/scd-sdd:status-specs` applique
+cette table à toutes les features. Les `NNN` sont **stables et jamais réattribués**
+(`max(NNN) + 1`).
 
 **Cette table est la source de vérité unique du plugin.** Les commandes, les trois `status` et
 `run` la **référencent** ; elles ne la recopient jamais.
 
 ## État dérivé, événement journalisé
 
-La dérivation dit *où on en est*, jamais *quand on y est arrivé*. Chaque
-commande de ce niveau consigne donc sa ligne dans `docs/journal/NNN-slug.md` —
-`kickoff-feature` crée le fichier, les suivantes ajoutent une ligne datée ; `status-specs` lit
-sans écrire. Deux lignes portent un fait que **rien ne permet de dériver** : le **verdict
-d'`analyze`** (gate en lecture seule, aucun rapport écrit) et un **`premortem` appliqué**
-(aucun marqueur laissé). Une ligne est un **événement daté**, jamais un état : un lecteur ne
-la convertit en état qu'après un **contrôle de fraîcheur** contre la dernière modification des
-fichiers. Format, règle d'ajout et vocabulaire : skill **`journal`**.
+La dérivation dit *où on en est*, jamais *quand on y est arrivé*. Chaque commande de ce niveau
+consigne donc sa ligne dans `docs/journal/NNN-slug.md` — `kickoff-feature` crée le fichier, les
+suivantes ajoutent une ligne datée ; `status-specs` lit sans écrire.
+Deux lignes portent un fait que **rien ne permet de dériver** : le **verdict
+d'`analyze`** (le rapport reste en conversation, et sa fiche de gate ne le porte jamais) et un
+**`premortem` appliqué** (aucun marqueur laissé). Une ligne est un **événement daté**, jamais un
+état — la conversion exige un **contrôle de fraîcheur** contre la dernière modification des
+fichiers. Format, règle d'ajout, vocabulaire et contrôle : skill **`journal`**.
 
 ## EARS — la notation des critères d'acceptation
 
@@ -120,25 +122,17 @@ complément, jamais en remplacement.
 **tâche `Tn`**, unité de **progression** (un critère observable = un commit). La traçabilité
 garantit que tout est couvert ; le dimensionnement garantit que quelqu'un le lira.
 **Bloquants (qualitatifs)** : un seul sujet · vertical slice (jamais une couche horizontale) ·
-compréhensible seul. **Signaux de scission (advisory)** : ≈ 400 lignes · ≈ 7 concepts ·
-≈ 5-7 critères par exigence — des estimations, jamais des mesures ni des verdicts. Seuils,
-patterns et checklist : `references/reviewability.md`. Audit en contexte frais : `slice-auditor`.
+compréhensible seul. **Signaux de scission (advisory)** : trois seuils chiffrés — des estimations,
+jamais des mesures ni des verdicts. Leurs valeurs, les patterns de scission et la checklist vivent
+dans `references/reviewability.md` (chargée par la phase `tasks` et par l'agent `slice-auditor`).
 
 ## Le mode de vérification — le test automatisé est le défaut, pas la loi
 
-L'invariant du contrat : **chaque `FR`/`SHALL` est rattaché à ≥ 1 tâche dont l'achèvement est
-observable**, plus ≥ 1 tâche d'impl. Chaque lot déclare son **mode** (`_vérif : <mode>_`) ;
-dès qu'il quitte `TDD`, une justification d'une ligne l'accompagne :
-
-| Mode | Preuve | Pour |
-|---|---|---|
-| `TDD` (défaut) | test écrit **avant** l'impl, passé au vert | tout ce qui est testable |
-| `test-after` | test automatisé écrit après l'impl | refactor à comportement constant |
-| `check` | vérification observable dédiée, pas de test auto | visuel, one-shot |
-| `inhérent` | **aucune tâche de vérif séparée** : le critère d'acceptation de l'impl *est* la preuve | CI, infra, config, scaffolding |
-
-La preuve reste **observable** et **traçable** dans les quatre modes ; un `check`/`inhérent`
-sur de la logique métier est un finding d'`analyze`. Taxonomie : `references/tasks.md`.
+Chaque lot déclare son **mode** (`_vérif : <mode>_`) : **`TDD`** (défaut) · `test-after` ·
+`check` · `inhérent`. La preuve reste **observable** et **traçable** dans les quatre, et un
+`check`/`inhérent` posé sur de la logique métier est un finding d'`analyze`, pas un raccourci.
+Ce que chaque mode prouve, quand il est légitime, la justification exigée dès qu'un lot quitte
+`TDD`, et l'**invariant de couverture** qui gouverne le tout : `references/tasks.md`.
 
 ## Greenfield-feature vs brownfield-delta
 
@@ -153,13 +147,13 @@ sur de la logique métier est un finding d'`analyze`. Taxonomie : `references/ta
 DOIT arriver à 100 % est un **hook** (`hooks/` du plugin) : immutabilité des ADR → PreToolUse
 `exit 2` ; format/lint → PostToolUse. Piège : **`exit 2` = bloquer ; `exit 1` = erreur
 ignorée**. Les gates liées aux tests appartiennent au niveau implémentation. Notre seule gate
-est `analyze` — advisory, sur les **documents**, épaulée par des seconds regards en contexte
-frais aux mandats disjoints : `ears-verifier` (contrat : traçabilité, EARS, frontières —
-contrôles 1-11) et `slice-auditor` (découpage : verticalité, sujet unique, dimensionnement —
-12-14). Le **15ᵉ** — les invariants d'architecture — n'est délégué à personne : la commande le
-joue elle-même, faute d'un mandat qui lui corresponde. Hors gate, le trio `premortem-facilitator` / `premortem-validator` / `premortem-applier`
-pilote la seule écriture **déléguée** du plugin : le gate humain garde la décision du *quoi*,
-l'`exit 2` de `block-adr-edits` protège les ADR acceptés, et la re-passe `analyze` reconfirme.
+est `analyze` — advisory, sur les **documents**, épaulée par **deux** seconds regards en contexte
+frais aux mandats **disjoints et bornés** (`ears-verifier` le contrat, `slice-auditor` le
+découpage) ; les contrôles qu'aucun des deux ne couvre restent au **contexte principal**. Le
+partage exact — quel contrôle à qui — vit dans `references/analyze.md`. Hors gate, le trio
+`premortem-facilitator` / `premortem-validator` / `premortem-applier` porte cette écriture
+déléguée : l'`exit 2` de `block-adr-edits` protège les ADR acceptés, et la re-passe `analyze`
+reconfirme.
 
 ## Seuils de déclenchement (repris de la constitution `CLAUDE.md`)
 
@@ -169,6 +163,12 @@ multi-fichiers / nouveau comportement / code non familier → **cycle complet** 
 transverse ou architecturale → **nouvel ADR d'abord** (`/scd-sdd:adr`, ou candidat dans
 `docs/adr/_candidates/`).
 
+⚠️ **Le `CLAUDE.md` du projet gagne** dès qu'il porte d'autres seuils : il *est* la constitution, et
+les quatre valeurs ci-dessus n'en sont que le **défaut** que `contract` y a fondu. Lis-le avant de
+calibrer et **dis laquelle des deux sources tu appliques** quand elles diffèrent — sinon l'écart
+reste invisible et se rejoue à chaque feature. Il se signale, il ne se corrige ni ici ni dans
+`CLAUDE.md` au passage : l'entretien du contrat est `/scd-sdd:revise-contract`.
+
 ## Règles d'écriture pour un agent
 
 - **Verbe vérifiable, jamais adjectif** : « P99 < 50 ms », pas « rapide ».
@@ -176,25 +176,25 @@ transverse ou architecturale → **nouvel ADR d'abord** (`/scd-sdd:adr`, ou cand
   dans `plan.md`, qui s'appuie sur `stack.md`/`adr/`).
 - **Scope EXCLU explicite.** Nommer ce que la feature ne fait PAS borne l'agent.
 - **Un seul endroit par info.** Lier vers le socle, ne pas recopier.
-- **Plan mode pour `plan.md`** (recommander `opusplan` : Opus planifie, Sonnet exécute).
+- **Plan mode pour `plan.md`** — le réglage de modèle qui va avec est dans `references/plan.md`.
 - **Chercher l'erreur, pas la confirmation.** Les documents audités sont générés par IA —
   « ils ont l'air complets » est le cas où lire ligne à ligne. Un audit rapporte des gaps,
   jamais des préférences de style.
 
 ## Les artefacts et outils (progressive disclosure)
 
-Charge **uniquement** la référence de la phase courante (la commande le fait) :
+Charge **uniquement** ce que ta commande déclare charger ; trois références se chargent **en plus,
+sous condition** (`ears.md`, `delta.md`, `gherkin.md`) :
 
-| Référence | Contenu | Sections |
-|---|---|---|
-| `spec.md` | Spec de feature (EARS, FR, scope EXCLU) | `role` `template` `guidance` `completion` |
-| `clarify.md` | Gate de clarification (`[NEEDS CLARIFICATION]`) | `role` `process` `completion` |
-| `plan.md` | Plan technique (réutilise stack/ADR, plan mode) | `role` `template` `guidance` `completion` |
-| `tasks.md` | Lots `Rn` + tâches `Tn` (backref, mode de vérif, `[P]`) | `role` `template` `guidance` `completion` |
-| `reviewability.md` | Dimensionner les lots — chargée **avec** `tasks.md` | `role` `criteria` `splitting` `pitfalls` |
-| `analyze.md` | Gate de conformité : 15 contrôles, rapport + verdict | `role` `checks` `report` `gate` `guidance` |
-| `status.md` | Tableau de bord : phase dérivée, gate journalisée, fraîcheur | `role` `report` `guidance` |
-| `ears.md` | Les 5 patterns EARS + SHALL → vérification | `patterns` `examples` `pitfalls` |
-| `delta.md` | Modèle delta brownfield (OpenSpec) | `role` `template` `guidance` |
-| `gherkin.md` | Complément Gherkin dérivé d'EARS | `role` `template` `guidance` |
-| `autonomous-loops.md` | Drift spec↔code — **ne pilote aucune implémentation** | `scope` `loop-md` `pitfalls` |
+| Référence | Contenu | Chargée par | Sections |
+|---|---|---|---|
+| `spec.md` | Spec de feature (EARS, FR, scope EXCLU) | `specify` | `role` `template` `guidance` `completion` |
+| `clarify.md` | Gate de clarification (`[NEEDS CLARIFICATION]`) | `clarify` | `role` `process` `completion` |
+| `plan.md` | Plan technique (réutilise stack/ADR, plan mode) | `plan` | `role` `template` `guidance` `completion` |
+| `tasks.md` | Lots `Rn` + tâches `Tn` (backref, mode de vérif, `[P]`) | `tasks` | `role` `template` `guidance` `completion` |
+| `reviewability.md` | Dimensionner les lots — **domicile** des trois seuils chiffrés | `tasks` · agent `slice-auditor` | `role` `criteria` `splitting` `pitfalls` |
+| `analyze.md` | Gate de conformité : 16 contrôles, rapport + verdict | `analyze` | `role` `checks` `report` `gate` `guidance` |
+| `status.md` | Tableau de bord : phase dérivée, gate journalisée, fraîcheur | `status-specs` | `role` `report` `guidance` |
+| `ears.md` | Les 5 patterns EARS + SHALL → vérification | `specify` · agent `premortem-applier` | `patterns` `examples` `pitfalls` |
+| `delta.md` | Modèle delta brownfield (OpenSpec) | `kickoff-feature` · `specify` (si `DELTA.md`) | `role` `template` `guidance` |
+| `gherkin.md` | Complément Gherkin dérivé d'EARS | `specify` (si un critère le justifie) · `analyze` — `guidance` seul, si un `.feature` existe | `role` `template` `guidance` |

@@ -1,8 +1,10 @@
 # Référence — ADR fondateurs (`docs/adr/NNNN-titre.md`)
 
 <role>
-Fige les **décisions structurantes du départ**, une par fichier, au format Nygard. Dérivés
-directement de la phase Stack (chaque « décision structurante → candidat ADR »). **Immuables** :
+Fige les **décisions structurantes du départ**, une par fichier, au format Nygard. Trois sources de
+candidats, et la phase les épuise toutes les trois : la liste « décisions structurantes » de
+`docs/stack.md`, la table des invariants de `docs/archi.md` (§D27), et les brouillons laissés dans
+`docs/adr/_candidates/` par le niveau specs — dont c'est la voie de promotion. **Immuables** :
 un ADR n'est jamais réédité ; s'il devient faux, on en écrit un nouveau qui le remplace
 (statut « Remplacé par ADR-XXXX »). C'est le journal fiable des choix — il évite les décisions
 « dans la tête » et donne à l'agent un socle stable dès le jour 1.
@@ -39,7 +41,7 @@ Statut : Accepté | Date : [date] | Trace vers : docs/stack.md
 </template>
 
 <guidance>
-- **Un ADR = une décision structurante.** Prendre la liste « candidats ADR » de `docs/stack.md` et en faire un fichier chacun. Ne pas produire d'ADR pour une non-décision (utilitaire mineur, convention évidente).
+- **Un ADR = une décision structurante.** Prendre les candidats des **trois** sources — liste de `docs/stack.md`, table d'invariants de `docs/archi.md`, brouillons de `docs/adr/_candidates/` — et en faire un fichier chacun. Ne pas produire d'ADR pour une non-décision (utilitaire mineur, convention évidente).
 - **Numérotation** : `NNNN` sur 4 chiffres, séquentiel (`0001`, `0002`…), à partir du plus petit libre dans `docs/adr/`.
 - **Voix active** dans la Décision : « Nous utiliserons Postgres », pas « Postgres pourrait être utilisé ».
 - **Conséquences négatives obligatoires.** Un ADR sans contrepartie est suspect : nommer ce que le choix coûte ou ferme.
@@ -49,9 +51,10 @@ Statut : Accepté | Date : [date] | Trace vers : docs/stack.md
 
 <completion>
 Les ADR fondateurs sont terminés quand :
-- [ ] Chaque « décision structurante » listée dans `docs/stack.md` a **exactement un** ADR correspondant.
+- [ ] Chaque candidat des **trois** sources — `docs/stack.md`, table d'invariants de `docs/archi.md`, `docs/adr/_candidates/` — a **exactement un** ADR correspondant.
 - [ ] Chaque ADR a un `NNNN` séquentiel unique et un statut « Accepté ».
 - [ ] Chaque ADR nomme au moins une **alternative écartée** avec sa raison.
 - [ ] Chaque section **Conséquences** contient au moins une conséquence négative/coût.
-- [ ] La colonne « ADR » de `docs/stack.md` référence bien chaque fichier créé (traçabilité bidirectionnelle).
+- [ ] Les colonnes « ADR » de `docs/stack.md` **et** de `docs/archi.md` référencent chacune les fichiers créés depuis elles (traçabilité bidirectionnelle, les **deux** colonnes bouclées). Un ADR promu depuis un brouillon n'y figure pas : il trace vers son origine, le plan de sa feature.
+- [ ] Le sort de chaque brouillon promu a été **signalé à l'utilisateur** pour qu'il le supprime — la phase n'a aucun outil pour le faire, et un brouillon qui reste se représentera en candidat à la passe suivante.
 </completion>

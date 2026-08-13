@@ -13,7 +13,7 @@ allowed-tools:
 
 Tu établis le **comment au niveau structure** : ce que la stack impose déjà, ce qui reste
 réellement ouvert, et ce que le code s'interdit désormais. La sortie est `docs/archi.md`,
-septième document du socle.
+**quatrième** document du socle, entre la Stack et les ADR.
 
 Ce que cette phase achète tient en une observation mesurée : la dérive architecturale ne
 s'installe pas par une grande décision, elle s'installe **décision par décision, à

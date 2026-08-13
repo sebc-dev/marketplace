@@ -34,9 +34,9 @@ Ratio : 40% humain / 60% AI (tu composes depuis la session ; l'humain valide ava
 
 ## Règles absolues
 
-- **Aucun fait dérivable dans la fiche.** Pas d'état de lot, pas de résultat de tests, pas de
-  verdict de gate, pas de pourcentage d'avancement, pas de numéro de PR présenté comme un état.
-  C'est ce qui empêche une fiche d'être démentie par les fichiers.
+- **Aucun fait dérivable dans la fiche.** C'est ce qui empêche une fiche d'être démentie par les
+  fichiers. Ce qui compte comme fait dérivable est énuméré par le bloc `<interdits>` que tu charges
+  à l'étape 4 — tu ne t'en fais pas une liste de tête plus courte.
 - **Tu fais valider la fiche à l'humain avant de l'écrire.** Tu es la seule commande dont le
   contenu est **inféré de la session**, donc la seule qui peut se tromper de récit.
 - **Tu écris au passé d'intention** — « j'allais », « j'ai décidé », « j'ai écarté ». Jamais
@@ -85,10 +85,8 @@ Ratio : 40% humain / 60% AI (tu composes depuis la session ; l'humain valide ava
 
 4. **Charge `references/fiche.md`** du skill `chantier` — **intégralement**, c'est elle qui porte le
    template, les interdits et l'élagage. **Si tu actualises une fiche existante, élague d'abord**,
-   selon le bloc `<elagage>` : relis chaque ligne existante contre le disque — un acquis désormais
-   porté par un commit ou un document sort (en cas de doute, il reste), une référence consommée
-   sort ou se déclasse, une prochaine étape faite se remplace, `## Écarté` ne s'élague jamais —
-   et garde chaque retrait, avec son motif, pour l'annoncer à l'étape 7. Puis **compose les
+   en appliquant le bloc `<elagage>` ligne par ligne contre le disque, et garde chaque retrait avec
+   son motif pour l'annoncer à l'étape 7. Puis **compose les
    rubriques** depuis la session, sous l'interdiction de contenu ci-dessus : `## Objectif`,
    `## Contexte à charger`, `## Acquis`, `## Prochaine étape`, `## Écarté`.
 

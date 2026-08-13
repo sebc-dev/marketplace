@@ -88,10 +88,10 @@ rends).
    défaut : exactement la sémantique du mur. Applique les deux seuils de `<seuils>` : sous ~200
    rien à signaler, ~200-249 avertir, 250 mur atteint.
 
-5. **Passe l'hygiène** — les quatre contrôles de `<hygiene>`, tous en lecture. Relis les issues non
-   archivées du workspace, paginées, avec les champs que le bloc `<pilotage>` ajoute (`priority`,
-   `updatedAt`, `state { type }`) plus `identifier`, `title`, `description` (le marqueur) et le nom
-   du projet — tout ce que l'hygiène et le rendu demandent, en **une** lecture en lot :
+5. **Passe l'hygiène** — les quatre contrôles de `<hygiene>`, tous en lecture. Joue la **lecture
+   d'hygiène** du bloc `<pilotage>` : **une seule** requête paginée, de portée workspace, qui rend
+   d'un coup tout ce que les quatre contrôles et le rendu demandent. Sa sélection de champs est
+   écrite là — tu ne la recomposes pas :
    - **terminées non archivées** — du plafond qui se libère ;
    - **sans priorité** sur les non terminées ;
    - **`started` dormantes** — `updatedAt` au-delà d'un cycle de revue, mesuré contre `date +%F` ;

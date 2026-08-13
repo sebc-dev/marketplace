@@ -1,7 +1,13 @@
 # Référence — Parser `tasks.md` et résoudre la cible
 
+**Sept points de chargement, tous des commandes** : `/scd-sdd:run` et `/scd-sdd:run-parallel`
+(intégralement — `run-parallel` est la seule à avoir besoin de `<co-parallelism>`), `/scd-sdd:sync`,
+`/scd-sdd:reland`, `/scd-sdd:status-impl`, `/scd-sdd:status` et `/scd-sdd:migrate`. **Aucun agent** :
+`lot-briefer` a son propre protocole d'extraction dans son corps, calibré sur le schéma `BRIEF` qu'il
+doit rendre, et ne charge pas ce fichier.
+
 <role>
-Comment lire le `tasks.md` produit par `scd-sdd`, en extraire les lots `Rn` et leurs tâches `Tn`, résoudre quelle feature / quel lot implémenter, et décider quels lots sont **co-lançables en parallèle**. Utilisé par `/scd-sdd:run`, `/scd-sdd:run-parallel`, `/scd-sdd:status-impl` et l'agent `lot-briefer`.
+Comment lire le `tasks.md` produit par `scd-sdd`, en extraire les lots `Rn` et leurs tâches `Tn`, résoudre quelle feature / quel lot implémenter, et décider quels lots sont **co-lançables en parallèle**.
 </role>
 
 <parsing>
@@ -49,17 +55,15 @@ Le texte après `:` est la **SHALL** à traduire en test. Type : `When…shall�
 <resolution>
 ## Résoudre la feature et le lot
 
-**Feature** (identique à `scd-sdd`) :
-1. Argument `NNN`/slug/chemin → match sur préfixe `NNN` **ou** slug dans `specs/`.
-2. Sinon, une seule feature a un `tasks.md` avec des lots non finis → la prendre, l'annoncer.
-3. Sinon (0 ou ≥ 2) → `AskUserQuestion` ou renvoi vers `status`.
+**Feature** : la section **« Cibler une feature » du skill `feature-specs`** est la source de vérité unique du plugin — référencée, jamais recopiée. Ce niveau n'y ajoute qu'un **filtre de candidature** : parmi les features, celles dont le `tasks.md` porte des lots **non entièrement cochés**.
 
-**Lot** :
+**Lot** — la partie propre à ce niveau, et la seule source de ces règles (le `SKILL.md` et les commandes y renvoient) :
 - Argument `Rn` fourni → cible.
 - Sinon → premier `Rn` non entièrement coché, dans l'ordre des dépendances, **dont toutes les dépendances (`dépend de :`) sont cochées**.
 - Lot dont une dépendance n'est pas faite → **bloqué** : signale-le, propose le lot débloquable.
+- Aucun lot lançable, ou choix ambigu → **ne devine pas** : `AskUserQuestion`, ou renvoi vers `/scd-sdd:status-impl`.
 
-**État d'un lot** (pour `status`) :
+**État d'un lot** (pour `/scd-sdd:status-impl` et `/scd-sdd:status`) :
 - **fait** : toutes ses tâches `Tn` sont `[x]` ;
 - **en cours** : certaines `[x]`, d'autres `[ ]` ;
 - **à faire** : aucune `[x]`.

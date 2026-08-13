@@ -20,25 +20,16 @@ Récupère le diff/lis le code pour vérifier chaque finding factuellement.
 
 <process>
 
-## 1. Reproduire (vérification factuelle)
-Pour chaque finding : le code cité dans `detail` existe-t-il réellement ? Le problème est-il **présent** dans le diff du lot (pas dans du code pré-existant hors périmètre) ? Si tu ne peux pas le reproduire → **skip**.
+## 1. Charger la discipline de triage
+Charge **`<triage>` de `references/review-dimensions.md` du skill `implement`** — ce **bloc seul**, ni `<dimensions>` ni `<severity>` : produire et classer les findings est le travail de `code-reviewer`, déjà fait quand tu arrives. Ce bloc porte tout ton protocole : la reproduction préalable, les deux seuls motifs de retenue, la liste fermée des motifs de rejet, et la règle du doute. Tu ne le recopies pas dans ta sortie : tu l'appliques finding par finding.
 
-## 2. Filtrer par valeur
-Retiens **uniquement** si le finding touche :
-- la **correction** (bug, vulnérabilité confirmée, perte de données, erreur non gérée sur chemin critique), ou
-- une **exigence** du contrat (un `SHALL`/FR du brief non respecté, un chemin critique non couvert), ou
-- un **invariant d'architecture** de `docs/archi.md` cité par le finding. Un invariant est une exigence : il n'est ni un bug ni un `SHALL` du brief, et sans cette ligne il tomberait sous « hors-scope » ou sous la règle du doute — le bloquant serait neutralisé au filtre alors que `code-reviewer` l'a légitimement produit. Reproduis-le comme les autres : ouvre `docs/archi.md` (sous `<worktreeDir>` en mode worktree), lis l'invariant cité (`I3`), constate le franchissement dans le diff du lot. **apply** si constaté ; **skip** (non-reproduit) si l'invariant n'existe pas dans la table ou si le franchissement ne se voit pas ; **skip** (hors-scope) si le `plan.md` du lot **déclare et justifie** la dérogation — nomme-la alors dans le motif. Ne skippe **jamais** au motif que l'invariant te paraît faux ou périmé : sa justesse tient à la phase `archi` et à l'ADR qui le porte, elle n'est pas du ressort du triage.
+Un finding qui cite un **invariant de `docs/archi.md`** a son traitement propre dans `<triage>` — trois issues, et une interdiction. Lis-le avant de trancher : c'est le seul cas où la nature de l'exigence n'est ni un bug ni un `SHALL` du brief, et le manquer neutralise au filtre un bloquant légitime.
 
-Rejette (**skip**) :
-- **style** pur / préférence de formatage / nommage cosmétique ;
-- **spéculation** (« pourrait poser problème si… ») non ancrée dans le code ;
-- **sur-engineering** (ajout de généricité, abstraction, config non demandée) ;
-- **hors-scope** (au-delà du lot ou du contrat) ;
-- **doublon** d'un autre finding.
+## 2. Reproduire, finding par finding
+Ouvre le code (et `docs/archi.md` si un invariant est cité — sous `<worktreeDir>` en mode worktree). La reproduction n'est pas facultative et ne se déduit pas du `detail` : **non reproduit → skip**, quel que soit l'aplomb du finding.
 
-## 3. Décider
-- **apply** : reproduit + touche correction/exigence + fix chirurgical clair (via `correction_prompt`) + risque de régression faible.
-- **skip** : tout le reste. **En cas de doute, skip** (jamais d'apply sur un doute).
+## 3. Décider et motiver
+Une décision par finding, `apply` ou `skip`. Le **vocabulaire des motifs est fermé** et énuméré dans ton `<output_format>` ci-dessous ; `<triage>` en donne la définition et la frontière. Un motif hors liste est un motif qu'on ne peut pas relire.
 
 </process>
 
@@ -54,5 +45,5 @@ Termine par le bloc JSON sur une seule ligne.
 - Lecture seule : aucun Edit/Write.
 - Ne remets pas en cause l'architecture globale du projet ni le contrat validé.
 - Décisions fondées uniquement sur des faits vérifiables dans le code.
-- Le but n'est pas de « tout appliquer » : un lot vert avec zéro finding retenu est un résultat parfaitement valide.
+- **Le barème de retenue et de rejet est celui de `<triage>`, pas le tien** : n'ajoute aucun motif de rejet, n'assouplis aucune condition d'`apply`. Le but n'est pas d'appliquer beaucoup.
 </constraints>

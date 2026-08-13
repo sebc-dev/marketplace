@@ -1,7 +1,7 @@
 # Référence — Reconstitution et conversion du journal
 
-Chargée par `/scd-sdd:migrate` **seule**. Les 20 autres commandes qui chargent le skill `journal`
-n'en ont aucun usage : c'est pourquoi elle ne vit pas dans le `SKILL.md`.
+Chargée par `/scd-sdd:migrate` **seule**. Aucune autre commande chargeant le skill `journal` n'en a
+le moindre usage : c'est pourquoi elle ne vit pas dans le `SKILL.md`.
 
 Deux opérations distinctes, toutes deux réservées à `migrate` :
 
@@ -60,6 +60,7 @@ exécution, et sous quatre conditions strictes.
    | `docs/brief.md` | `socle.md` | `brief` | personas · SC · exclusions |
    | `docs/prd.md` | `socle.md` | `prd` | nb FR · nb SC |
    | `docs/stack.md` | `socle.md` | `stack` | choix structurants |
+   | `docs/archi.md` | `socle.md` | `archi` | nb d'invariants · nb de caractéristiques |
    | `docs/adr/NNNN-*.md` | `socle.md` | `adr` | **une seule ligne** — plage de numéros, datée du **dernier** ADR ajouté |
    | `docs/ci.md` | `socle.md` | `ci` | nb de contrôles bloquants · nb d'informatifs |
    | `CLAUDE.md` | `socle.md` | `contract` | nb de principes · taille de la DoD |
@@ -85,6 +86,8 @@ Quelle que soit la commande :
 |---|---|
 | `clarify` | il édite `spec.md`, il n'a aucun artefact propre à dater |
 | `analyze` · `premortem` | les faits non dérivables — aucune trace, ni disque ni git |
+| `revise-contract` | elle édite `CLAUDE.md` sans y laisser de marqueur, et git n'en date que l'**ajout**, donc `contract` ; une passe sans édition ne laisse même pas de commit |
+| `audit` | le document jugé sort **bit pour bit identique** — aucun diff à dater ; la fiche qu'il ouvre est un chantier (ci-dessous) et ne porte jamais le verdict |
 | `run` · `sync` · `reland` | les cases `[x]` de `tasks.md` disent **quels** lots sont faits, jamais **quand**, ni par quelle PR, ni combien de fois le lot a été bloqué avant |
 | les **chantiers** | un chantier n'a laissé aucun artefact daté avant d'exister ; et il ne s'écrit pas au journal |
 

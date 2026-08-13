@@ -68,17 +68,19 @@ _Livre : SC-001_ · _vérif : check (parcours observé de bout en bout)_ · dép
 - **Un seul sujet par lot**, nommable en une phrase sans « et ».
 - **Compréhensible seul** : `dépend de :` exprime un ordre, pas un besoin de charger le lot voisin
   en mémoire pour comprendre celui-ci.
-- **Signaux de scission** (≈ 400 lignes estimées, ≈ 7 concepts, ≈ 5-7 critères par exigence) : un
-  dépassement déclenche une scission verticale, il ne rend pas un verdict. Le budget en lignes est
-  une **estimation** dérivée des « Fichiers touchés » du plan — un ordre de grandeur, pas une mesure.
+- **Signaux de scission** : leurs trois valeurs vivent dans `references/reviewability.md`
+  (`<criteria>`), chargée avec ce fichier. Un dépassement déclenche une scission verticale, il ne
+  rend pas un verdict. Le budget en lignes est une **estimation** dérivée des « Fichiers touchés »
+  du plan — un ordre de grandeur, pas une mesure.
 - **Trop petit aussi est un défaut** : un lot qui ne livre aucun incrément vérifiable est une couche
   déguisée, à refusionner.
 
-**Mode de vérification du lot** — l'invariant : **chaque `FR`/`SHALL` est rattaché, dans un seul lot,
-à ≥ 1 tâche d'impl et à ≥ 1 tâche dont l'achèvement est observable**. Le *test automatisé écrit
-d'abord* (TDD) en est la **forme par défaut**, pas la seule — certaines features ne s'y prêtent pas.
-Chaque lot déclare son mode (`_vérif : <mode>_`) ; dès qu'il quitte `TDD`, une **justification d'une
-ligne** l'accompagne (comme un dépassement de seuil : une déviation *documentée*, jamais silencieuse).
+**Mode de vérification du lot** — le mode est la **forme** que prend la vérification observable
+exigée par la couverture (§ *Écrire les tâches* ci-dessous, où l'invariant est énoncé). Le *test
+automatisé écrit d'abord* (TDD) en est la forme **par défaut**, pas la seule — certaines features ne
+s'y prêtent pas. Chaque lot déclare son mode (`_vérif : <mode>_`) ; dès qu'il quitte `TDD`, une
+**justification d'une ligne** l'accompagne (comme un dépassement de seuil : une déviation
+*documentée*, jamais silencieuse).
 
 - `TDD` (défaut) — tâche « écrire le test » **avant** tâche « implémenter ». Le code est « fait »
   quand le test passe.

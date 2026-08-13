@@ -39,7 +39,8 @@ Ratio : 30% humain / 70% AI (l'humain dit ce qui mérite une fiche ; tu la compo
   des phases du cycle. Ces lignes appartiennent à leur commande : un `analyze` non joué ne se
   note pas, il se joue. Sans cette règle, tu serais une porte dérobée pour fabriquer un verdict de
   gate — le fait même pour lequel le journal existe.
-- **Aucun fait dérivable dans la fiche** : pas d'état de lot, pas de verdict, pas de pourcentage.
+- **Aucun fait dérivable dans la fiche.** Ce qui compte comme tel est énuméré par le bloc
+  `<interdits>` que tu charges — tu ne t'en fais pas une liste de tête plus courte.
 - **Plafond ~50 lignes.** Un dépassement ne peut pas signaler une feature — le travail est
   terminé. Il signale que la fiche **héberge** la connaissance au lieu de l'**indexer** : route le
   surplus (candidat ADR, `spec.md`, message de commit) et garde l'index.

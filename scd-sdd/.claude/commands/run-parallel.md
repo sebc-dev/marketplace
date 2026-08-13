@@ -58,7 +58,7 @@ Ratio : 30% humain / 70% AI (l'humain valide le plan de chaînes avant le fan-ou
 
 1. **Résous la feature cible** selon la section « Cibler une feature » du skill `feature-specs` —
    référencée, jamais recopiée. Charge le skill `implement` (`references/tasks-parsing.md` pour le
-   parsing, le `_vérif :_`, la ligne `Fichiers :` et la règle de co-parallélisabilité ;
+   parsing, le `_vérif :_`, la ligne `Fichiers :` et le bloc `<co-parallelism>` ;
    `references/verification-modes.md` pour la discipline par mode). `slug` = suffixe de `featureDir`
    après `NNN-`. Communique en français.
 
@@ -194,8 +194,8 @@ Ce n'est pas une classe de problème nouvelle : `tasks.md` est déjà édité pa
 ## Skill active
 
 - `feature-specs` — section « Cibler une feature » pour la résolution de la cible.
-- `implement` — charge `references/tasks-parsing.md` (§co-parallélisabilité) et
-  `references/verification-modes.md`.
+- `implement` — charge `references/tasks-parsing.md` (**seule commande à avoir besoin de son bloc
+  `<co-parallelism>`**) et `references/verification-modes.md`.
 - `journal` — contrat de `docs/journal/*.md`.
 
 ## À la fin

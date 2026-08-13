@@ -23,7 +23,9 @@ même patron), aucun ne collisionne avec un token de document.
 
 **La cible ne se devine jamais.** Sans argument de cible : énumère les documents de la dimension
 **présents sur disque**, avec leur date de dernière modification, et demande via `AskUserQuestion`.
-N'infère rien — ni « le plus récent », ni « celui de la dernière ligne de journal ».
+N'infère rien — ni « le plus récent », ni « celui de la dernière ligne de journal ». Se tromper de
+cible produit une fiche qui nomme le mauvais document, et c'est le genre d'erreur qu'on ne voit
+qu'après avoir corrigé le mauvais fichier.
 
 **Les tokens de la dimension `validation-socle` :**
 
@@ -74,8 +76,23 @@ du bloc `<hors-forme>` de `premortem` : rien ne s'abandonne en silence. Le corri
 
 1. **Complétude face au `<template>`** — chaque section attendue existe et est non vide. Une
    section prévue et vide est un finding ; une section **absente** l'est aussi.
-2. **Marqueurs restants** — zéro `[à compléter]`, `[NEEDS CLARIFICATION]`, `TODO`, `TBD`, `…`
-   laissé en place.
+2. **Marqueurs restants** — zéro `[à compléter]`, `[NEEDS CLARIFICATION]`, `TODO`, `TBD`, `XXX`
+   laissé en place. Ces cinq-là sont **binaires** : leur présence *est* le finding, et rien à
+   trancher.
+   Les points de suspension ne le sont **pas**. `…` est un caractère de prose parfaitement
+   légitime — le plugin s'en sert lui-même —, donc sa seule présence ne prouve rien, et un
+   contrôle qui l'attraperait au motif qu'il est là fabriquerait des faux positifs à la chaîne.
+   Trois signes le qualifient comme marqueur, et il en faut **au moins un** :
+   - il est **seul dans son unité** — une ligne, une cellule de table, une puce, un champ après
+     son libellé —, ou il suit immédiatement un titre de section sinon vide ;
+   - il est **enfermé dans un gabarit** — `[…]`, `< … >`, `(…)` tenant la place d'un contenu ;
+   - il occupe **la même position qu'un `…` du `<template>`** : le gabarit laissé tel quel. C'est
+     le signe le plus fort, et le seul qui se vérifie sans jugement, le `<template>` étant chargé.
+
+   Un `…` au milieu d'une phrase, ou fermant une énumération, n'est **jamais** un marqueur.
+   ⚠️ **Ce qui ne porte aucun des trois signes se rapporte en `À VÉRIFIER`, jamais en finding.**
+   Ce contrôle est délibérément non binaire sur ce seul caractère, et l'explorateur a **trois**
+   issues pour ça : trancher au hasard fabriquerait des Critical que rien n'aurait mesurés.
 3. **Traçabilité amont** — chaque ID cité et chaque renvoi **résout** : le fichier existe, l'ancre
    existe, l'ID existe dans le document amont. Un renvoi mort est un Critical ; un renvoi
    ambigu, un Major.
@@ -123,8 +140,7 @@ finding, une par entrée d'`## Écarté`, cible ~50 lignes **annoncée jamais bl
 aucun verdict. **`/scd-sdd:resume` n'a besoin d'aucun outillage neuf pour la traiter.**
 
 Elle porte les **Critical** et les **Major non arbitrés**, plus **tout arbitrage** dans
-`## Écarté`. Les **Minor** restent en conversation : les porter recréerait le bruit qu'on
-supprime.
+`## Écarté`, et rien d'autre.
 
 Le `## À corriger` est organisé **en lots par voie de correction**. Chaque finding garde sa
 **sévérité** — elle sert l'appariement et la règle « jamais d'arbitrage sur un Critical ». **Un lot
@@ -178,9 +194,6 @@ la dimension étant celle du socle. Le verdict **en gras**, la cible, puis le d�
 
 - `**CONFORME** — prd · 0 Critical · 1 Major arbitré`
 - `**À CORRIGER** — prd · 2 Critical (FR-012 sans amont · NON inclus vide) · 3 Major`
-
-Une passe `CONFORME` **sans fiche se consigne aussi** : l'absence de ligne se lirait comme un
-audit jamais joué.
 
 **Ce qui suit.** Aucune gate n'existe à ce niveau : rien à re-jouer mécaniquement, et l'audit ne
 bloque aucune phase.

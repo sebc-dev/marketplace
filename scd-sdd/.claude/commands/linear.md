@@ -44,6 +44,10 @@ compares et tu pousses).
   appelée — `Bash(curl *)` est un motif large, c'est cette règle qui le borne.
 - **Tu lis `errors` à chaque appel**, toujours. Une requête GraphQL peut réussir **partiellement**
   avec un HTTP 200 : lire le seul code de retour te ferait croire vert un push à moitié raté.
+  *(Cette règle-ci et l'endpoint unique sont écrits ici **en plus** de `references/api.md`, et c'est
+  délibéré : ton premier appel API est à l'**étape 2**, la référence n'est chargée qu'à l'**étape
+  4**. Un garde-fou qui arrive après l'appel qu'il protège ne protège rien. Ce n'est donc pas la
+  recopie que la charte §1 interdit — ne pas la « corriger ».)*
 - **Tu ne crées jamais un label.** Tu le **résous** par son nom et tu le **poses**. Introuvable →
   l'issue est créée **sans** label et le fait remonte au rapport, jamais en silence. Le créer
   appartient à `/scd-sdd:linear-setup`, qui l'a déjà fait ou non.
@@ -109,9 +113,10 @@ compares et tu pousses).
 5. **Lis en lot, avant d'écrire quoi que ce soit** : les workflow states et les labels de l'équipe,
    les projets, les issues du périmètre — et, **seulement si `docs/linear.md` porte une rubrique
    `initiative` ≠ `aucune`**, les initiatives du workspace avec leurs projets liés (requête n° 5) —
-   **paginés** tant que `pageInfo.hasNextPage`. Un miroir qui ne pagine pas rate le 51ᵉ lot en
-   **ressemblant à un succès**. Résous ici les identifiants dont tu auras besoin, **par leur nom**
-   tel qu'il est écrit dans `docs/linear.md` : les trois états, le label de chantier, et
+   **paginés** tant que `pageInfo.hasNextPage`, selon le bloc `<pagination>` que tu viens de charger.
+   Résous ici les identifiants dont tu auras besoin — **l'équipe d'abord**, par la **clé**
+   qu'écrit `docs/linear.md` (`ENG`), puisque toutes les lectures suivantes la prennent en argument,
+   puis, **par leur nom** tel qu'il y est écrit : les trois états, le label de chantier, et
    l'initiative si la rubrique la nomme. **Label ou initiative introuvable → tu ne les crées pas** ;
    tu les notes pour le rapport.
 

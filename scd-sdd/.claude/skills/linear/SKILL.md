@@ -138,14 +138,13 @@ Plusieurs états d'une équipe peuvent partager un type. L'ambiguïté se tranch
 avec l'humain** — jamais en cours de push. Un **projet** Linear ne reçoit **aucun état** : son
 avancement est calculé gratuitement depuis ses issues.
 
-## Le contrat de `docs/linear.md` — sept rubriques
+## Le contrat de `docs/linear.md` — un écrivain, trois lecteurs
 
-Écrit **une fois** par `/scd-sdd:linear-setup`, qui **refuse d'écraser** (garde anti-écrasement,
-modèle de `contract`, §D29). La mise à jour — y compris l'ajout de la rubrique 7, `initiative`, à
-un fichier à six rubriques resté intégralement valide — est une **édition manuelle**. Les sept
-rubriques, le template et la rétro-compatibilité vivent dans `references/linear-md.md`. Il ne porte
-**jamais** d'identifiant ni d'URL Linear, de valeur de clé, de liste d'issues, de mapping ; il
-n'entre dans **aucune** table de dérivation, et **aucun** `status` ne le réclame.
+`/scd-sdd:linear-setup` l'écrit, **une fois**. Le push, la revue et l'agent `pr-describer` le
+**lisent tel qu'il est sur le disque** : c'est le fichier qui fait foi sur son propre contenu, pas sa
+description. Son contenu exact — les rubriques, le template, la rétro-compatibilité d'un fichier
+écrit avant la dernière rubrique — vit dans `references/linear-md.md`, chargée par l'écrivain et par
+la revue, jamais par le push.
 
 ## Le pilotage en lecture
 
@@ -194,6 +193,6 @@ API **est** la commande. Seule exception, écrite en §D31 : l'accroche PR dégr
 
 | Fichier | Quand la charger |
 |---|---|
-| `references/api.md` | **Quatre points de chargement.** `/scd-sdd:linear` : **intégralement**. `/scd-sdd:linear-setup` : `<auth>`, `<queries>` et les deux mutations du setup (label, `initiativeCreate`). `/scd-sdd:linear-review` : `<auth>` et `<pilotage>`. L'agent **`pr-describer`** : `<auth>` et `<accroche_pr>` seuls (§D31). **Datée en tête** : un schéma tiers se périme, à revérifier avant de s'y fier. |
-| `references/linear-md.md` | Le contrat de `docs/linear.md` — les sept rubriques, le template, la rétro-compatibilité. `/scd-sdd:linear-setup` : **intégralement**. `/scd-sdd:linear` et `/scd-sdd:linear-review` : le seul bloc `<contrat>`. |
+| `references/api.md` | **Quatre points de chargement.** `/scd-sdd:linear` : **intégralement**. `/scd-sdd:linear-setup` : `<auth>`, `<queries_config>`, `<mutations_setup>`, `<pagination>`. `/scd-sdd:linear-review` : `<auth>` et `<pilotage>`. L'agent **`pr-describer`** : `<auth>` et `<accroche_pr>` seuls (§D31). **Datée en tête** — elle se lit quel que soit le bloc chargé : un schéma tiers se périme. |
+| `references/linear-md.md` | Le contrat de `docs/linear.md` — les rubriques, le template, la rétro-compatibilité. `/scd-sdd:linear-setup` : **intégralement**, c'est elle qui écrit le fichier. `/scd-sdd:linear-review` : le seul bloc `<contrat>`. **`/scd-sdd:linear` ne la charge pas** — elle lit le fichier lui-même, et le fichier fait foi sur son propre contenu. |
 | `references/pilotage.md` | Les seuils du garde 250, les quatre contrôles d'hygiène, le rendu Now/Next/Later. `/scd-sdd:linear-review` **seule**. |

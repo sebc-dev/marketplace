@@ -1,7 +1,16 @@
 # Référence — Modes de vérification et enforcement déterministe
 
+**Deux points de chargement, tous deux des commandes** : `/scd-sdd:run` et
+`/scd-sdd:run-parallel`, intégralement, avant de lancer le workflow — ce sont elles qui doivent
+savoir quel segment le mode déclenche.
+
+**Aucun agent ne la charge**, et c'est délibéré : chaque agent du segment reçoit le mode dans son
+prompt et porte la discipline de **son** rôle dans son corps (`test-writer` l'état d'exécution
+attendu, `implementer` le check « tests intacts », `verifier` la preuve observable). Ce fichier est
+la vue d'ensemble que seul l'appelant a besoin d'avoir.
+
 <role>
-La mécanique de vérification du workflow, **par mode de lot**. Le contrat amont (`scd-sdd`) déclare pour chaque lot `Rn` un `_vérif : <mode>_` ∈ `TDD` (défaut) · `test-after` · `check` · `inhérent`. Ce fichier explique comment le workflow honore chacun : l'ordre des phases, la traduction EARS→test (modes-test), la vérif observable (check/inhérent), l'invariant « ne jamais toucher aux tests » et pourquoi c'est un check déterministe plutôt qu'un hook, la preuve par sortie réelle. Utilisé par `test-writer`, `test-validator`, `implementer`, `verifier`, `fix-applier` et la commande `run`.
+La mécanique de vérification du workflow, **par mode de lot**. Le contrat amont (`scd-sdd`) déclare pour chaque lot `Rn` un `_vérif : <mode>_` ∈ `TDD` (défaut) · `test-after` · `check` · `inhérent`. Ce fichier explique comment le workflow honore chacun : l'ordre des phases, la traduction EARS→test (modes-test), la vérif observable (check/inhérent), l'invariant « ne jamais toucher aux tests » et pourquoi c'est un check déterministe plutôt qu'un hook, la preuve par sortie réelle. **Il porte la table mode→segment** : le `SKILL.md` et `workflow-template.md` y renvoient et ne la recopient pas.
 </role>
 
 <modes>
@@ -56,7 +65,7 @@ Certaines features ne se prêtent pas à un test automatisé : CI, infra, config
 - **`check`** — vérification observable **dédiée**, distincte de l'impl : lancer le service et constater, requêter l'état après une opération, valider un artefact produit. Le `verifier` exécute, capture la sortie dans `observableProof`.
 - **`inhérent`** — le **critère d'acceptation de la tâche d'impl EST** la preuve (« le pipeline CI passe au vert », « `terraform apply` converge »). Le `verifier` ré-exécute ce critère (build/lint CI en local, `terraform plan`/`apply`, script one-shot) et capture la sortie.
 
-**`humanCheckRequired`** — ce qu'un agent ne peut pas constater par exécution (rendu visuel d'une mise en page, effet sur un système externe, résultat visible seulement en CI post-merge) n'est **jamais faussement attesté** : le `verifier` l'émet en item actionnable, que `pr-author` remonte en **checklist** dans la PR pour le reviewer humain. `verified: true` est licite s'il ne reste que des `humanCheckRequired` documentés ; `verified: false` est réservé à une vérif qui **échoue** (critère non satisfait).
+**`humanCheckRequired`** — ce qu'un agent ne peut pas constater par exécution (rendu visuel d'une mise en page, effet sur un système externe, résultat visible seulement en CI post-merge) n'est **jamais faussement attesté** : le `verifier` l'émet en item actionnable, qui remonte en **checklist** dans la PR pour le reviewer humain. **Qui l'écrit dépend du chemin** : `pr-describer` en régime nominal — c'est lui qui compose le corps, et `pr-author` le publie tel quel sans y toucher ; `pr-author` **seulement sur son chemin de repli**, quand aucun corps ne lui est fourni (describer indisponible ou sauté par le budget) et qu'il compose un corps minimal. Dans les deux cas, **aucun agent ne coche jamais une case** : elles appartiennent au reviewer. `verified: true` est licite s'il ne reste que des `humanCheckRequired` documentés ; `verified: false` est réservé à une vérif qui **échoue** (critère non satisfait).
 </observable>
 
 <enforcement>

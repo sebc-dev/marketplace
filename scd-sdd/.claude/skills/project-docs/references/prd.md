@@ -59,9 +59,9 @@ Statut : Brouillon | Créé : [date] | Trace vers : docs/brief.md
 </template>
 
 <guidance>
-- **Technology-agnostic, sans exception.** Un framework, une lib ou une DB dans le PRD = fuite à corriger : ça descend dans Stack/ADR. Le PRD survit à un changement de stack.
+- **Technology-agnostic** — l'énoncé et son motif sont au `SKILL.md`, § *Règles d'écriture pour un agent*, et ne se recopient pas ici. Ce document est celui où la règle mord : la fuite est l'erreur la plus fréquente de la phase, et le `<completion>` la contrôle.
 - **Niveau produit, pas feature.** Décrire les capacités d'ensemble, pas l'implémentation détaillée d'une feature — ce détail-là appartient au workflow specs en aval. Éviter le doublon.
-- **FR atomiques et testables.** Une exigence = un comportement vérifiable = un futur test. Si un FR contient « et », le scinder. Verbe vérifiable, jamais adjectif.
+- **FR atomiques et testables.** Une exigence = un comportement vérifiable = un futur test. Si un FR contient « et », le scinder.
 - **Given/When/Then** pour les scénarios : entrées/sorties concrètes, pas de généralité.
 - **`[NEEDS CLARIFICATION]`** pour toute zone floue : ne jamais trancher silencieusement une ambiguïté. Résoudre par interview avant de clore.
 - Prioriser (P1/P2/P3) : l'agent et l'humain doivent savoir quoi construire d'abord.

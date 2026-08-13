@@ -79,7 +79,12 @@ Ratio : 10% humain / 90% AI (lecture mécanique ; l'humain choisit la suite).
    contrainte sur ce niveau-ci.
 
 6. **Produis le tableau de bord** selon le bloc `<report>` de `references/status.md`, avec la
-   **prochaine commande** de chaque feature, argument `NNN` inclus, prête à copier.
+   **prochaine commande** de chaque feature, argument `NNN` inclus, prête à copier. Émets aussi le
+   signal **`Mode delta`** du même bloc pour chaque feature dont le dossier porte encore
+   `DELTA.md` : c'est le **seul endroit du cycle** qui rappelle la fusion terminale, et sans lui un
+   `DELTA.md` oublié laisse la feature en mode delta à vie. La condition est la **seule présence du
+   fichier** — tu ne juges pas si les lots sont livrés, les cases de `tasks.md` étant le périmètre
+   de `/scd-sdd:status-impl`, et le dire est plus honnête que de le deviner.
 
 7. **Termine par une recommandation de cadence** : par défaut, finir la feature la plus avancée
    avant d'en ouvrir une nouvelle — en rappelant que documenter plusieurs features en parallèle
@@ -111,6 +116,8 @@ Ratio : 10% humain / 90% AI (lecture mécanique ; l'humain choisit la suite).
 - Tu ne lis pas `docs/chantiers/` — les chantiers sont rendus par `/scd-sdd:status`.
 - Tu ne rejoues pas `analyze` pour « vérifier » un verdict périmé — tu le signales et tu
   renvoies.
+- **Tu ne fusionnes aucun `DELTA.md` et tu n'en supprimes aucun** : tu signales. La fusion décide
+  quelles lignes de la spec de vérité sont remplacées — c'est un geste humain.
 
 ## Consigne au journal
 
@@ -122,7 +129,10 @@ pas un oubli.
 
 - `feature-specs` — charge `references/status.md` ; table de dérivation dans la section
   « Cibler une feature ».
-- `journal` — contrat de `docs/journal/*.md` (**lecture seule ici**).
+- **Pas** le skill `journal`. Tu **lis** le journal, tu ne l'écris jamais, et ce dont tu as besoin
+  est déjà chez toi : les règles de lecture dans tes `## Règles absolues`, les deux motifs
+  d'extraction à l'étape 3. Charger le contrat par-dessus serait le doublon que
+  `DECISIONS.md` §D35 interdit.
 
 ## À la fin
 

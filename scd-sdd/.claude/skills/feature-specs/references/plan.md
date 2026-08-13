@@ -3,8 +3,10 @@
 <role>
 Répond au **comment**. Traduit `spec.md` en stratégie d'implémentation en **réutilisant** le socle
 (`docs/stack.md`, `docs/adr/`) — il ne re-décide pas ce qui est déjà tranché. Produit **en plan
-mode** (recommander `opusplan` : Opus planifie, Sonnet exécute). Trace vers spec + stack + ADR.
-Concis : un plan court a un meilleur taux d'acceptation qu'un plan fleuve.
+mode**, et le réglage de modèle qui va avec est le plus **capable** pour planifier, un plus **rapide**
+pour exécuter — le CLI en fait un préréglage de `/model`. *(On nomme le rôle, jamais un modèle : une
+gamme se renouvelle, et un nom de modèle écrit ici périmerait en silence.)* Trace vers spec + stack
++ ADR. Concis : un plan court a un meilleur taux d'acceptation qu'un plan fleuve.
 </role>
 
 <template>

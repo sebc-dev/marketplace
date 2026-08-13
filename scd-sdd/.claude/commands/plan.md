@@ -15,8 +15,9 @@ allowed-tools:
 Tu produis le **plan technique** de la feature : le *comment*.
 
 Il **applique** le socle (`docs/stack.md`, `docs/archi.md` s'il existe, `docs/adr/`) — il ne
-re-décide jamais ce qui est déjà tranché. À exécuter **en plan mode** (recommande `opusplan` : Opus planifie, Sonnet
-exécute). Un plan court a un meilleur taux d'acceptation qu'un plan fleuve : il est relu.
+re-décide jamais ce qui est déjà tranché. À exécuter **en plan mode** — le réglage de modèle
+recommandé est dans `references/plan.md`, chargée à l'étape 2. Un plan court a un meilleur taux
+d'acceptation qu'un plan fleuve : il est relu.
 
 Ratio : 50% humain / 50% AI (arbitrages techniques partagés).
 

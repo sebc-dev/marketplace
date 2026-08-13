@@ -175,9 +175,24 @@ Deux mécanismes en découlent :
 - **`specify` / `clarify` / `plan` / `tasks` lisent la fiche** avant de travailler, et
   corrigent depuis sa liste plutôt qu'en re-dérivant tout.
 - **Un Major s'arbitre une fois**, avec motif et date, dans le `## Écarté` de la fiche. Aux
-  passes suivantes il est **détecté quand même** — les 15 contrôles se déroulent toujours
+  passes suivantes il est **détecté quand même** — les 16 contrôles se déroulent toujours
   intégralement — mais présenté à part, hors du décompte du verdict. Un finding neuf ressort
   alors du bruit. **Un Critical, lui, ne s'arbitre jamais.**
+
+### Le 16ᵉ contrôle — le Gherkin est du contrat, donc il se juge
+
+Un fichier `specs/NNN-slug/acceptance/*.feature` est le seul membre **exécutable** du contrat :
+l'implémentation le prendra tel quel et le fera passer au vert. Le plugin promettait depuis
+longtemps qu'`analyze` en contrôlait la dérivation ; aucun de ses contrôles ne le faisait. Il le
+fait désormais, en **16ᵉ** position, et il **ne se déclenche pas** quand la feature ne porte aucun
+`.feature` — ce n'est pas un finding, c'est une non-applicabilité.
+
+Trois natures, et une seule bloque. Un `.feature` qui **contredit** le `SHALL` qu'il cite est
+**Critical** : deux vérités concurrentes sur la même exigence, et **rien en aval ne les
+recompare** — c'est ce qui le distingue du 15ᵉ contrôle, dont la mesure réelle arrive plus tard
+en CI. Un `.feature` **sans `SHALL` d'origine** est **Major** — du scope creep exécutable, comme
+la tâche orpheline du contrôle 3. Un défaut de **forme** est **Major**. Le contrôle ne porte
+**jamais sur le vert** : ce plugin n'exécute aucun test.
 
 Le rapport gagne aussi un bloc **« Corrigés depuis »** : le signal qui manquait pour
 distinguer *corrigé* de *pas re-mentionné cette fois*.
@@ -374,7 +389,7 @@ source inexistante gagne en légitimité en traversant des documents réels que 
 vérifie, et ressort en décision que `CLAUDE.md` interdit de contredire. D'où la règle
 centrale : **`research` ne modifie aucun document du socle.** Il isole ce qui porte
 `[À VÉRIFIER]`, `[INCERTAIN]`, « source unique non recoupée », « éval interne », « préprint »
-ou « contenu commercial », le nomme comme **non repris comme acquis**, et rend une liste.
+ou « commercial », le nomme comme **non repris comme acquis**, et rend une liste.
 L'humain décide ce qui descend dans `stack.md` ou dans un ADR.
 
 Le lien va donc de la décision vers sa source, **jamais l'inverse** : un rapport qui
@@ -394,7 +409,7 @@ d'écrire, jamais la méthode :
 | Cible | Ce qui est jugé | Ce qui suit |
 |---|---|---|
 | `/scd-sdd:premortem socle` | `prd.md` `stack.md` `archi.md` `adr/` `ci.md` `CLAUDE.md` | les features en vol dont les backrefs ont bougé sont **nommées** |
-| `/scd-sdd:premortem 003` | `spec.md` `plan.md` `tasks.md`, après une gate au vert | **re-passe `analyze` imposée** |
+| `/scd-sdd:premortem 003` | `spec.md` `plan.md` `tasks.md`, après une gate au vert **et sans modification depuis** | **re-passe `analyze` imposée** |
 | `/scd-sdd:premortem chantier <slug>` | une fiche de `docs/chantiers/` | rien — `resume` lira la fiche durcie |
 
 Trois barrières, dans cet ordre : un valideur en contexte frais rejette le spéculatif, le
@@ -464,7 +479,7 @@ consigne aussi : c'est un résultat, pas une absence de fait.
 
 ## L'audit — juger un document produit, sans jamais le réécrire
 
-Le socle s'écrit par interview, puis se consomme tel quel. Le niveau specs a `analyze` — 15
+Le socle s'écrit par interview, puis se consomme tel quel. Le niveau specs a `analyze` — 16
 contrôles, un verdict, une fiche de gate ; le socle n'avait **rien** d'équivalent, et les trois
 `status` ne testent que l'**existence** des documents. La chaîne
 `Brief → PRD → Stack → Archi → ADR → CI → CLAUDE.md` propageait donc un défaut d'amont sans que

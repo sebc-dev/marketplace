@@ -94,12 +94,14 @@ ambigus ; tu interroges l'API, tu proposes la correspondance et tu écris le fic
    la rubrique 7 par édition — `## Initiative` en dernière position, `<nom>` ou `aucune` ; le
    `<template>` de `references/linear-md.md` en donne la forme.
 
-2. **Charge les références** : `references/api.md` du skill `linear` — les blocs `<auth>`,
-   `<queries>` et les **deux mutations du setup** de `<mutations>` : `issueLabelCreate` et
-   `initiativeCreate`. Rien d'autre : tu ne pousses ni projet ni issue, donc leurs mutations ne te
-   concernent pas. Et `references/linear-md.md` — **intégralement** : le contrat des sept rubriques
-   et le `<template>` que tu rempliras. Lis la **date en tête** d'`api.md` avant de t'y fier : si
-   elle remonte à plus de six mois, dis-le à l'humain **avant** d'appeler.
+2. **Charge les références** : d'`references/api.md` du skill `linear`, les **quatre** blocs
+   `<auth>`, `<queries_config>`, `<mutations_setup>` et `<pagination>`, et eux seuls — tu ne pousses
+   ni projet ni issue, donc ni leurs lectures de matching ni leurs mutations ne te concernent.
+   `<pagination>` en fait partie parce que **deux de tes trois lectures se paginent** : sans la
+   boucle, un workspace de plus de 50 équipes ou de 50 labels te ferait travailler sur une liste
+   tronquée, sans le dire. Et `references/linear-md.md` — **intégralement** : le contrat des
+   rubriques et le `<template>` que tu rempliras. Lis la **date en tête** d'`api.md` avant de t'y
+   fier : si elle remonte à plus de six mois, dis-le à l'humain **avant** d'appeler.
 
 3. **Vérifie la clé par `viewer`**, avant tout le reste. Le nom par défaut de la variable est
    `LINEAR_API_KEY` ; demande-le (`AskUserQuestion`) si le projet en utilise un autre. Passe-le en
@@ -114,13 +116,15 @@ ambigus ; tu interroges l'API, tu proposes la correspondance et tu écris le fic
    Dans les deux cas, **arrêt pédagogique et jamais de best-effort** : l'appel API **est** la
    commande, et il ne resterait rien derrière un demi-succès.
 
-4. **Fais choisir l'équipe.** Une seule équipe dans le workspace → annonce-la et demande
+4. **Fais choisir l'équipe.** Lis la liste **en entier**, paginée : tu fais choisir dans cette
+   liste, donc une liste tronquée ferait retenir une équipe par défaut d'en connaître une meilleure,
+   et rien ne le signalerait. Une seule équipe dans le workspace → annonce-la et demande
    confirmation. Plusieurs → `AskUserQuestion`, en affichant clé et nom (`ENG — Engineering`). Tu ne
    choisis jamais à la place de l'humain : c'est le conteneur permanent de tout le miroir.
 
-   Au passage, un **constat** : le nombre d'équipes du workspace, rapporté tel quel. Une seule
-   suffit au miroir, et le plan Free en autorise **deux** — garder le quota en réserve est un
-   conseil, pas une règle.
+   Au passage, un **constat** : le nombre d'équipes du workspace — le total accumulé sur toutes les
+   pages —, rapporté tel quel. Une seule suffit au miroir, et le plan Free en autorise **deux** —
+   garder le quota en réserve est un conseil, pas une règle.
 
 5. **L'initiative — optionnelle.** Interroge les initiatives du workspace (requête n° 5) :
    - **l'API refuse, ou rend une liste vide** — les deux se traitent pareil, le comportement quand
@@ -143,7 +147,9 @@ ambigus ; tu interroges l'API, tu proposes la correspondance et tu écris le fic
    d'un type requis** → dis-le et arrête-toi : c'est une équipe à compléter côté Linear, pas une
    correspondance à inventer.
 
-7. **Le label de chantier.** Cherche-le dans les labels de l'équipe (nom par défaut : `chantier`).
+7. **Le label de chantier.** Cherche-le dans les labels de l'équipe (nom par défaut : `chantier`),
+   **liste paginée en entier** : conclure « absent » sur une page manquante créerait un **doublon**
+   d'un label déjà là, et le miroir ne saurait plus lequel il pose.
    - **il existe** → tu le réutilises, tu ne crées rien ;
    - **il manque** → propose de le créer (`AskUserQuestion` : ce nom, un autre, ou aucun), puis
      crée-le par `issueLabelCreate` et **lis `success`**. Avec l'initiative, c'est l'une des **deux
@@ -235,9 +241,9 @@ Le miroir n'entre dans **aucune** table de dérivation, ne bloque **aucune** pha
 ## Skill active
 
 - `linear` — contrat du miroir : granularité, clé dérivée, propriété des champs, sens unique.
-  Charge `references/api.md` — **`<auth>`, `<queries>` et les deux mutations du setup**
-  (`issueLabelCreate`, `initiativeCreate`), plus la date en tête, qui se lit avant tout appel — et
-  `references/linear-md.md`, **intégralement** : le contrat des sept rubriques et son `<template>`.
+  Charge `references/api.md` — **`<auth>`, `<queries_config>`, `<mutations_setup>` et
+  `<pagination>`**, plus la date en tête, qui se lit avant tout appel — et
+  `references/linear-md.md`, **intégralement** : le contrat des rubriques et son `<template>`.
 
 **Un seul skill, et c'est volontaire.** Tu ne lis ni `tasks.md`, ni une fiche de chantier : charger
 `feature-specs` ou `chantier` ici n'aurait servi qu'à rendre tentant un push que cette commande n'a

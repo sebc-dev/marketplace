@@ -84,19 +84,20 @@ Bypass : **interdit** ("Do not allow bypassing") · Force-push et suppression : 
 [bloc PreToolUse + script, ou « non installé »]
 
 ## Ce que ces contrôles ne couvrent pas
-- **Mode 1 — l'oracle faux sémantique.** Du code qui compile, passe le lint et des tests dont
-  l'assertion vérifie la mauvaise chose est indétectable : aucun outil ne connaît l'intention. Le
-  test écrit pour valider un bug en est le cas typique. Le test de mutation le signale
-  *statistiquement* et ne le prouve pas — il reste nocturne et informatif.
-- **Mode 5 — l'invariant non encore formalisé.** Un contrôle maison ne vaut que sa liste : une
-  décision d'architecture non traduite en règle est invisible.
-- **Mode 4 — le *building to the test* « propre ».** Si l'artefact demandé satisfait le contrôle sans
-  remplir l'exigence et qu'il n'est pas mort, ni l'ablation no-op ni la détection de code mort ne le
-  voient.
-- La logique métier et l'autorisation (IDOR) : le SAST ne modélise pas l'intention.
-- Et la réserve qui vaut pour tous les gardes greppables : **réprimer un comportement peut le rendre
-  plus subtil plutôt que l'éliminer.** Aucune mesure publiée ne tranche. Ces contrôles réduisent une
-  surface, ils ne ferment pas le sujet.
+[Une puce par mode non fermé, **nommée sur ce projet**. Les crochets sont des amorces : le trou
+générique est déjà connu, ce qui manque est son instance ici.]
+- **Mode 1 — l'oracle faux sémantique.** Aucun outil ne connaît l'intention.
+  [Où, dans ce projet, un test vert ne prouverait rien : quel comportement, quel oracle.]
+- **Mode 5 — l'invariant non encore formalisé.** Un contrôle maison ne vaut que sa liste.
+  [Quels invariants de `docs/archi.md` l'outillage ne rend pas — et quelles décisions du projet
+  ne sont encore traduites en aucune règle.]
+- **Mode 4 — le *building to the test* « propre ».**
+  [Quel artefact de ce projet pourrait satisfaire un contrôle sans remplir l'exigence.]
+- **Ce que le SAST ne modélise pas** : la logique métier et l'autorisation.
+  [Les endroits de ce projet où une décision d'autorisation se prend — IDOR.]
+- Et la réserve qui vaut pour tous les gardes greppables, à écrire telle quelle : **réprimer un
+  comportement peut le rendre plus subtil plutôt que l'éliminer.** Aucune mesure publiée ne
+  tranche. Ces contrôles réduisent une surface, ils ne ferment pas le sujet.
 
 ## Palier suivant
 → docs/chantiers/en-attente/AAAA-MM-JJ-durcissement-ci.md
@@ -337,18 +338,16 @@ maintient ; un analyseur de graphe de dépendances fait la même chose sur les i
 uniquement — les imports dynamiques lui échappent, et un agent en génère.
 
 **Ils restent informatifs jusqu'à mesure, et le tableau porte le lien vers l'ADR.** Un contrôle maison
-neuf n'a aucun taux de faux positifs connu, et un contrôle bruyant finit désactivé — son efficacité
-théorique tombe alors à zéro. La mesure se fait par **rejeu sur l'historique du dépôt**, pas sur une
-fenêtre de temps : le volume de PR d'un développeur seul ne suffit pas à estimer un taux en temps réel.
-Sous ~10-15 % de faux positifs sur le rejeu, l'invariant passe bloquant. **Le seuil vaut dans les deux
-sens** : un taux mesuré au-delà de 15 % rebascule un bloquant en informatif.
+neuf n'a aucun taux de faux positifs connu : il ne peut donc pas bloquer. Comment se mesure ce taux, et
+à quel seuil un informatif passe bloquant — dans les deux sens — : § *Le palier suivant*, plus bas.
 
 ## La maturité de l'outillage — un outil mort est un contrôle mort
 
-Le précédent est interne à cette référence : elle a recommandé une action de CI **archivée par son
-propriétaire depuis le 9 avril 2024**, en lecture seule et explicitement dépréciée par son mainteneur
-au profit du binaire natif. C'est exactement le coût que le critère à quatre facteurs cherche à éviter,
-et il est invisible au moment du choix : il apparaît des mois plus tard, quand plus personne ne relit.
+Le cas d'école est daté : une action de CI largement recommandée a été **archivée par son propriétaire
+le 9 avril 2024**, passée en lecture seule et explicitement dépréciée au profit du binaire natif — sans
+qu'aucun pipeline ne change de couleur. C'est exactement le coût que le critère à quatre facteurs
+cherche à éviter, et il est invisible au moment du choix : il apparaît des mois plus tard, quand plus
+personne ne relit.
 
 Avant de retenir un outil, vérifier **quatre** points, et les écrire dans `docs/ci.md` avec leur date
 de constat : dépôt actif et non archivé · licence du moteur **et** des règles · le palier gratuit
@@ -471,8 +470,8 @@ Ce travail n'est pas une phase du cycle et un `/clear` l'effacerait : il devient
 `docs/chantiers/en-attente/AAAA-MM-JJ-durcissement-ci.md`, portée **`socle`** — le vocabulaire de
 `Portée` est fermé, il n'y a pas de portée `socle · ci`.
 
-Et une réserve à consigner dans la fiche : réprimer un comportement peut le rendre plus subtil
-plutôt que l'éliminer. Ces contrôles réduisent une surface, ils ne ferment pas le sujet.
+La fiche porte aussi la **réserve des gardes greppables** que le `<template>` fait écrire dans « Ce
+que ces contrôles ne couvrent pas », dernière puce : le durcissement ne la ferme pas davantage.
 
 </guidance>
 
@@ -505,7 +504,10 @@ La phase CI est terminée quand :
 - [ ] Chaque outil retenu porte sa **date de constat de maturité** — non archivé, licence du moteur et
       des règles, palier gratuit sans carte.
 - [ ] Le lockfile est committé et l'installation verrouillée (`npm ci` ou équivalent).
-- [ ] La section **« Ce que ces contrôles ne couvrent pas »** est remplie, pas vide ni générique.
+- [ ] La section **« Ce que ces contrôles ne couvrent pas »** est remplie **mode par mode**, et chaque
+      trou est nommé **sur ce projet** — un fichier, un comportement, une décision. Le texte du
+      `<template>` est une **amorce** : recopié tel quel, il ne satisfait pas ce critère. Seule la
+      réserve des gardes greppables s'écrit à l'identique.
 - [ ] Le **blindage local** est rendu avec sa réserve — défense en profondeur, pas backstop.
 - [ ] L'état de la protection de branche est écrit : **posée** avec sa date, ou **À POSER** avec la
       conséquence (sans elle, tout est informatif).

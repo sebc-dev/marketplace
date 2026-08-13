@@ -1,12 +1,21 @@
 # Référence — La fiche de chantier
 
-Chargée par les commandes qui **écrivent** une fiche : `/scd-sdd:pause` (intégralement — seul
+Chargée par ce qui **écrit** une fiche, et par rien d'autre : `/scd-sdd:pause` (intégralement — seul
 applicateur de `<elagage>`), `/scd-sdd:note` (intégralement **sauf `<elagage>`** — une fiche
-d'archive naît fermée), `/scd-sdd:analyze`, `/scd-sdd:ci`, `/scd-sdd:audit` et `/scd-sdd:premortem`
-de cible `chantier` (`<interdits>` et `<template>`, plus `<frontiere>` pour ceux qui journalisent par
-ailleurs). Les commandes qui **lisent** une fiche — les trois `status`, les phases specs devant une
-fiche de gate, `linear`, le hook `SessionStart` — n'en ont **pas** besoin : l'anatomie de la fiche et
-la ligne `Portée` sont dans le `SKILL.md`.
+d'archive naît fermée), `/scd-sdd:analyze`, `/scd-sdd:audit` et `/scd-sdd:ci` (`<interdits>`,
+`<template>` et `<frontiere>`), `/scd-sdd:premortem` de cible `chantier` (`<interdits>` et
+`<template>`), et l'agent `premortem-applier` (`<template>` seul — il inscrit une fiche
+`en-attente/` déjà approuvée, il n'en arbitre pas le contenu).
+
+`<frontiere>` ne se charge que là où le choix se pose : celle qui écrit une fiche **et** journalise
+par ailleurs doit trancher — ce contenu va-t-il dans la fiche, ou dans la ligne de journal ?
+`analyze`, `audit` et `ci` la chargent à ce titre. `premortem` de cible `chantier` n'a pas ce
+choix : elle ne journalise pas, la fiche **est** le fait.
+
+Les commandes qui **lisent** une fiche — `status`, `status-impl`, les phases specs devant une fiche
+de gate, `linear` pour cibler un chantier, le hook `SessionStart` — n'en ont **pas** besoin :
+l'anatomie de la fiche et la ligne `Portée` sont dans le `SKILL.md`. `migrate` non plus : il ne
+scaffolde que les trois répertoires.
 
 <pourquoi>
 
@@ -73,8 +82,6 @@ Faire passer FR-004 au vert sans toucher au middleware de session.
 
 ## Contexte à charger
 à lire      `specs/001-auth/spec.md` § FR-004 — le critère à satisfaire (18 l.)
-à extraire  `src/legacy/router.ts` › `class RateLimiter` — 2400 l., seule cette classe compte
-à situer    PR #12 — le lot R1 mergé, ne pas relire
 
 ## Acquis
 - Le rate-limit passe en local.
@@ -90,9 +97,12 @@ Faire passer FR-004 au vert sans toucher au middleware de session.
 
 - **`## Écarté` est la rubrique de plus forte valeur** : rien d'autre dans le projet ne porte les
   pistes mortes, et ce sont elles qui coûtent le plus cher à ré-explorer.
-- Les règles du `## Contexte à charger` — les quatre classes, leurs seuils, le budget — vivent dans
-  `references/manifeste.md`, qui se charge **bloc par bloc** : `<regle_maitresse>`, `<classes>` et
-  `<controles>` pour écrire.
+- Les règles du `## Contexte à charger` — les quatre classes, leurs seuils, le budget — et les
+  exemples des quatre classes vivent dans `references/manifeste.md`, qui se charge **bloc par
+  bloc** : `<regle_maitresse>`, `<classes>` et `<controles>` pour écrire. Le template n'en garde
+  qu'**une** ligne, et c'est une exception assumée à « charge ou recopie » (§D35) : `analyze`, `ci`,
+  `audit` et `premortem` écrivent un manifeste — deux ou trois documents, tous `à lire` — sans
+  jamais charger `<classes>`, il leur faut la forme d'une ligne sous les yeux.
 
 **Le commit.** Une fiche est **versionnée, et commitée par la commande qui l'écrit**, dans un commit
 isolé dont le `git add` est **scopé à la fiche**. `git status --porcelain` non vide fait tomber

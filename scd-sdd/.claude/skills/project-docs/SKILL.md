@@ -81,7 +81,7 @@ dérivation, et un socle sans premortem n'est pas un socle incomplet. Méthode e
 
 Les six premiers documents du socle s'écrivent une fois. `CLAUDE.md` est le seul qui **dérive** :
 il recopie les commandes de `docs/ci.md`, et rien ne rejoue cette recopie quand `ci` est rejoué.
-D'où une **29ᵉ** commande, qui n'est pas une phase — rejouable à volonté, réclamée par aucun
+D'où une commande **à part**, qui n'est pas une phase — rejouable à volonté, réclamée par aucun
 `status`, et « aucune édition » y est un résultat valide (`DECISIONS.md` §D29).
 
 **Trois écrivains, trois rôles disjoints**, et c'est la ligne à ne pas perdre :
@@ -93,15 +93,15 @@ D'où une **29ᵉ** commande, qui n'est pas une phase — rejouable à volonté,
 | `premortem socle` | **durcit** | ajoute un principe ou un item de DoD, borné (§D28) |
 
 Une commande qui ferait les trois recréerait le trou qu'elle ferme : **entretenir n'est pas
-ré-assembler**. Corollaire non négociable — une ligne que le template ne prévoit pas est
-**présumée légitime** et subit le test de suppression comme les autres, jamais « hors template,
-donc à retirer ».
+ré-assembler**. La règle qui commande l'entretien — *une ligne inconnue du template est présumée
+légitime* — vit dans le bloc `<revision>` de `references/claude-md.md`, que `revise-contract` seule charge.
 
 ## Méthode d'interview
 
-En **greenfield**, rien n'existe à dériver du code. La qualité vient de l'élicitation,
-pas de la génération. Règle : **une question à la fois**, chaque question construite sur
-la réponse précédente, jusqu'à couverture complète — puis compilation dans le template.
+En **greenfield**, rien n'existe à dériver du code. La qualité vient de l'élicitation, pas de la
+génération. La règle qui la porte — *une question à la fois* — est une **règle de dialogue** : elle
+vit recopiée dans le `## Règles absolues` de chaque commande qui interviewe (`DECISIONS.md` §D32),
+pas ici. Ce qui suit est ce qu'aucune commande ne porte : l'amorce, l'outil, la condition d'arrêt.
 
 Amorce (Harper Reed, à adapter à la langue de l'utilisateur) :
 > « Pose-moi une question à la fois pour élaborer une spec pas à pas de cette idée. Chaque question s'appuie sur mes réponses précédentes. But : une spécification détaillée. Une seule question à la fois. Voici l'idée : \<IDÉE\> »
@@ -161,8 +161,7 @@ Charge **uniquement** le template de la phase courante (la commande le fait pour
 
 **Un lecteur de plus, commun aux sept.** L'agent `audit-explorer` charge le **seul bloc
 `<template>`** de la référence du document jugé quand `/scd-sdd:audit` juge celui-ci (§D20) : il en
-tire la liste des sections attendues, et n'écrit jamais. **Troisième** cas d'une référence chargée
-par un **agent** — après `slice-auditor` → `reviewability.md` et `pr-describer` → `api.md`.
+tire la liste des sections attendues, et n'écrit jamais.
 
 - `references/brief.md` — Brief / Vision.
   - Sections : `role`, `template`, `guidance`, `completion`
@@ -185,9 +184,10 @@ par un **agent** — après `slice-auditor` → `reviewability.md` et `pr-descri
   - Sections : `role`, `template`, `guidance`, `completion`
 - `references/ci-signature.md` — la **soupape** du garde `verifier-guard` : signature du
   commit vérifiée hors ligne contre un registre de clés versionné.
-  - **Chargée conditionnellement** : par `/scd-sdd:ci` seulement, et seulement quand le
-    garde `verifier-guard` est retenu. Un projet qui ne pose pas le garde ne la lit
-    jamais — c'est la raison pour laquelle elle est séparée de `references/ci.md`.
+  - **Un seul point de chargement, conditionnel** : par `/scd-sdd:ci`, à son **étape 6**, et
+    seulement quand le garde `verifier-guard` est retenu. Un projet sans ce garde ne la lit jamais —
+    d'où la séparation de `references/ci.md`, qui reste chargée et vers laquelle elle renvoie. Pas
+    de lecteur `audit-explorer` : ce n'est pas un document du socle.
   - Sections : `role`, `template`, `guidance`, `completion`
 - `references/claude-md.md` — le contrat `CLAUDE.md` : assemblage (pointeurs + Definition
   of Done + principes fondus) **et entretien**.

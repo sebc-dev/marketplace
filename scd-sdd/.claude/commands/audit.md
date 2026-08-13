@@ -38,9 +38,6 @@ décide de corriger).
 
 ## Règles absolues
 
-- **La cible ne se devine jamais.** Sans argument, tu énumères ce qui est sur disque et tu
-  demandes. Se tromper de cible, c'est produire une fiche qui nomme le mauvais document — le genre
-  d'erreur qu'on ne voit qu'après avoir corrigé le mauvais fichier.
 - **Le document jugé sort bit pour bit identique.** Tu écris exactement deux choses, ailleurs : la
   **ligne de journal** et la **fiche de chantier**. C'est ce qui te rend rejouable sans risque.
 - **Tu n'écris jamais le verdict dans la fiche.** Il vit au journal, daté. Un `CONFORME` écrit sur
@@ -48,11 +45,6 @@ décide de corriger).
   devient pas fausse — elle devient *faite*, et c'est vérifiable.
 - **L'explorateur collecte, tu juges.** Tu n'acceptes de lui aucune sévérité ni aucun verdict : tu
   appliques la grille **toi-même**, au dossier de preuves.
-- **Tu déroules la grille intégralement, à chaque passe.** Jamais de contrôle sauté parce que la
-  fiche dit « arbitré » : tu détectes tout, tu ne changes que la **présentation**. C'est ce qui
-  empêche l'audit de devenir un tampon.
-- **On n'arbitre jamais un Critical.** Seuls les Major et les Minor s'écartent, avec motif et date.
-  Une demande d'arbitrage sur un Critical se refuse en le disant.
 - **Un défaut de l'amont n'est pas un finding du document jugé.** C'est un **signalement**, nommé,
   avec la commande qui le traiterait. Rien ne s'abandonne en silence.
 - **Tu ne corriges pas toi-même** : tu nommes le fichier, l'ID et l'action.
@@ -87,11 +79,10 @@ signalements. Un lot vide ne s'écrit pas.
 
 ## Processus
 
-1. **Résous la dimension, puis la cible** — bloc `<resolution>` de `references/dimensions.md`. Le
-   premier token nomme une dimension, ou il **est** la cible (dimension unique implicite). Sans
-   argument de cible : énumère les documents de la dimension **présents sur disque**, avec leur date
-   de dernière modification, et demande via `AskUserQuestion`. N'infère **rien**. **Annonce la
-   dimension et la cible retenues, et ce que tu vas lire.**
+1. **Résous la dimension, puis la cible** — bloc `<resolution>` de `references/dimensions.md`, qui
+   porte l'algorithme du premier token, la table des tokens de la dimension, la règle de
+   non-inférence et l'annonce à faire avant de déléguer quoi que ce soit. Applique-le tel quel ;
+   l'outil de la question, quand il en faut une, est `AskUserQuestion`.
 
 2. **Charge le seul bloc de la dimension résolue** dans `references/dimensions.md`. Pas les autres :
    ils ne s'appliquent pas, et les lire n'apporterait que du bruit.
@@ -109,9 +100,8 @@ signalements. Un lot vide ne s'écrit pas.
    - `ls docs/chantiers/en-cours/*-audit-<document>.md` → une fiche ouverte ? Lis-la : son
      `## À corriger` est la liste de la passe précédente, son `## Écarté` les arbitrages en vigueur.
    - Aucune fiche ouverte → `ls docs/chantiers/archive/*-audit-<document>.md` et prends la **plus
-     récente** : tu en reprends le `## Écarté`, et lui seul — en **élaguant** : une entrée dont
-     l'objet n'existe plus ne se reprend pas, et tu le dis. Un arbitrage est une décision, pas une
-     note de passage.
+     récente** : tu en reprends le `## Écarté`, et lui seul, selon la règle de ré-import et
+     d'élagage du § *L'appariement entre passes* du skill. Ce que tu n'as pas repris, dis-le.
    - Rien nulle part → première passe, tu pars de zéro. Ce n'est pas une anomalie.
 
 5. **Délègue l'exploration** à `audit-explorer` (outil `Task`), en lui passant : la dimension, le
@@ -128,32 +118,26 @@ signalements. Un lot vide ne s'écrit pas.
    commun de contrôles **et** les contrôles propres au document —, **intégralement**, puis classe
    chaque finding en **Critical / Major / Minor** selon l'échelle du skill.
 
-   Puis **apparie** avec la passe précédente — triplet `[ID]` · fichier · nature :
-   - apparié à une entrée d'`## Écarté` → bloc **« Déjà arbitrés »**, **hors du décompte qui décide
-     du verdict** ;
-   - présent dans la fiche mais introuvable maintenant → bloc **« Corrigés depuis »**, et il **sort**
-     de la fiche ;
-   - le reste → rapport normal.
+   Puis **apparie** avec la passe précédente selon le § *L'appariement entre passes* du skill : il
+   donne la clé qui identifie un finding, ce que chaque issue d'appariement produit, et ce qui
+   compte — ou non — dans le décompte qui décide du verdict.
 
    Rends **un seul rapport** en conversation : les findings par sévérité, chacun avec sa **voie de
    correction** (lot A, B ou C), les deux blocs d'appariement, et le **Verdict**.
 
 7. **Gate d'arbitrage humain** (`AskUserQuestion`) — **charge le skill `exposition`**, **régime
    *gate*** : le décor de l'audit se pose **une fois en tête**, et chaque finding ne porte ensuite
-   que ce qui lui est propre. S'il reste des Major non arbitrés, demande
-   lesquels sont assumés et **exige un motif** pour chacun. Chaque finding s'ouvre sur **ce que le
-   défaut coûterait en aval**, en langage courant, avant le triplet fichier / ID / correction
-   proposée. Un refus de trancher est une réponse valide : le Major reste dans la liste.
-   **Ne propose jamais d'arbitrer un Critical.** Rien n'est écrit avant cette étape.
+   que ce qui lui est propre. S'il reste des Major non arbitrés, demande lesquels sont assumés et
+   **exige un motif** pour chacun. Chaque finding s'ouvre sur **ce que le défaut coûterait en
+   aval**, en langage courant, avant le triplet fichier / ID / correction proposée. Un refus de
+   trancher est une réponse valide : le Major reste dans la liste. Rien n'est écrit avant cette
+   étape.
 
-8. **Écris les deux artefacts, et rien d'autre.**
-   - **`À CORRIGER`** → ouvre `docs/chantiers/en-cours/AAAA-MM-JJ-audit-<document>.md` (ou actualise
-     celle qui existe, en rafraîchissant son `Actualisé le`) : les Critical, les Major non arbitrés,
-     organisés **en lots par voie de correction** ; les arbitrages dans `## Écarté`. Les **Minor
-     restent en conversation** — les porter recréerait le bruit qu'on supprime.
-   - **`CONFORME`** → une fiche ouverte existe ? Ajoute `## Issue` (ce qui a été corrigé, en combien
-     de passes) et `git mv` vers `archive/`. Aucune fiche → n'en crée pas : il n'y a pas de travail
-     à porter.
+8. **Écris les deux artefacts, et rien d'autre.** Le § *La fiche et ses lots* du bloc de dimension
+   dit tout : où va la fiche, ce qu'elle porte, comment son `## À corriger` s'organise en lots, et —
+   à son alinéa *Cycle de vie* — ce que chaque verdict lui fait, l'ouvrir, l'actualiser ou
+   l'archiver avec son `## Issue`. Applique-le tel quel. Une fiche actualisée voit son
+   `Actualisé le` rafraîchi.
 
    Puis `git add` **scopé à la fiche** et `git commit -m "chore(chantier): audit <document>"` —
    sans quoi l'arbre reste sale et `/scd-sdd:run` tomberait en `blocked-dirty-tree`. Enfin,
@@ -166,16 +150,16 @@ signalements. Un lot vide ne s'écrit pas.
   deviens pas un quatrième écrivain de `CLAUDE.md`, que `DECISIONS.md` §D29 limite à trois.
 - **Tu n'écris pas le verdict dans la fiche.** Elle porte la liste de travail et les arbitrages,
   jamais le verdict, jamais la couverture chiffrée, jamais les Minor.
-- **Tu n'arbitres jamais un Critical**, et tu n'arbitres rien **à la place de l'humain** : un
-  arbitrage sans motif explicite n'est pas un arbitrage.
+- **Tu n'arbitres rien à la place de l'humain** : un arbitrage sans motif explicite n'est pas un
+  arbitrage. Ce qui peut s'écarter et ce qui ne s'écarte jamais est fixé par le skill, et tu ne
+  l'élargis pas.
 - **Tu ne juges jamais `specs/`.** La dimension `validation-socle` ne touche que le socle ;
-  `/scd-sdd:analyze` couvre les specs avec ses 15 contrôles, et doubler la gate n'apporterait qu'un
+  `/scd-sdd:analyze` couvre les specs avec ses 16 contrôles, et doubler la gate n'apporterait qu'un
   second avis sur le même texte.
 - Tu ne rejoues **jamais** la phase qui a produit le document : ré-assembler est une voie de
   destruction qui a l'air d'une voie de mise à jour. La voie normale est l'édition chirurgicale,
   portée par les lots de la fiche.
 - Tu ne juges pas l'amont comme s'il était la cible, tu n'exécutes aucun test, tu ne lis aucun code.
-- Tu ne sautes aucun contrôle, même sur un finding déjà arbitré.
 
 ## Consigne au journal
 
@@ -232,7 +216,5 @@ renvoie lot par lot (n'annonce que les lots réellement écrits) :
 - **Lot C** — `/scd-sdd:revise-contract` pour les findings de `claude-md` ; pour un signalement
   amont, la commande nommée dans la ligne. **Ne les traite pas toi-même.**
 
-**Si deux passes consécutives ne produisent ni correction constatée ni arbitrage neuf**, dis-le
-franchement au lieu d'en proposer une troisième : l'audit ne converge pas, et le blocage est
-ailleurs — le document manque d'un amont qui n'existe pas, ou la phase qui l'a produit a été jouée
-trop tôt. Propose une décision humaine, pas une relance.
+Enfin, **le § *La garde anti-boucle* du skill s'applique ici** : il dit à quel signe l'audit ne
+converge pas, et ce qu'il faut proposer alors au lieu d'une passe de plus.

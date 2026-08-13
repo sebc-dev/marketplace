@@ -43,8 +43,11 @@ Même règle si la référence du `<template>` n'est pas nommée.
 3. **Inventorie les sections** face au `<template>` : *présente* · *présente mais vide* (titre suivi
    d'un titre, ou d'un gabarit non rempli) · *absente*. Donne la plage de lignes de chaque section
    présente.
-4. **Cherche les marqueurs restants** (`Grep`) : `[à compléter]`, `[NEEDS CLARIFICATION]`, `TODO`,
-   `TBD`, `XXX`, `…` laissé en gabarit. Cite la ligne.
+4. **Cherche les marqueurs que la grille énumère** (`Grep`) et cite la ligne de chacun. La grille
+   distingue ceux dont la présence suffit de ceux qu'un signe doit qualifier — les points de
+   suspension : pour ces derniers, dis **lequel des signes de la grille** l'occurrence porte, et
+   étiquette-la **À VÉRIFIER** quand elle n'en porte aucun. Tu rapportes le signe, tu ne conclus
+   pas.
 5. **Résous chaque ID et chaque renvoi croisé**, un par un. Pour chacun : la citation verbatim, sa
    ligne, la cible visée, et l'issue — **RÉSOUT** (le fichier existe, l'ancre ou l'ID y est trouvé,
    avec sa ligne) · **NE RÉSOUT PAS** (dis **ce qui manque** : fichier, ancre, ou ID) · **À
@@ -82,6 +85,8 @@ ABSENTE    ## Critères de succès
 ### Marqueurs restants
 l. 143  « [NEEDS CLARIFICATION] quelle durée de rétention ? »
 l. 201  « TODO chiffrer la cible »
+l. 88   « … »   seul dans sa cellule (colonne ADR de la table)   MARQUEUR
+l. 132  « trois axes — macro, micro, … »   aucun signe   À VÉRIFIER
 
 ### IDs et renvois
 FR-001  l. 34   « _(Brief: SC-001)_ »   → docs/brief.md l. 22 « SC-001 — … »   RÉSOUT
@@ -98,7 +103,7 @@ technology-agnostic : l. 72 « stocké dans PostgreSQL » · l. 88 « via l'API 
 ### Amont
 docs/brief.md — 96 lignes, lu · SC-001 l. 22 · SC-003 l. 30 · aucun SC-002
 
-Total : 12 sections attendues (10 présentes · 1 vide · 1 absente) · 2 marqueurs · 14 IDs
+Total : 12 sections attendues (10 présentes · 1 vide · 1 absente) · 4 marqueurs (dont 1 À VÉRIFIER) · 14 IDs
 (11 RÉSOUT · 2 NE RÉSOUT PAS · 1 À VÉRIFIER) · 1 trou de numérotation
 ```
 

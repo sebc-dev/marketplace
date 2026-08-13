@@ -33,12 +33,14 @@ La forme de la solution — style macro et micro, invariants — est dans `docs/
 ## Choix retenus
 | Domaine | Choix | Sert (FR/SC) | ADR |
 |---|---|---|---|
-| Langage | [ex] | FR-001, FR-003 | ADR-0001 |
-| Framework | [ex] | ... | ADR-0002 |
-| Base de données | [ex] | ... | ADR-0003 |
-| Auth | [ex] | ... | ADR-0004 |
-| Cible de déploiement | [ex] | SC-002 | ADR-0005 |
-| Tests | [ex] | (tous) | ADR-0006 |
+| Langage | [ex] | FR-001, FR-003 | *(vide)* |
+| Framework | [ex] | ... | *(vide)* |
+| Base de données | [ex] | ... | *(vide)* |
+| Auth | [ex] | ... | *(vide)* |
+| Cible de déploiement | [ex] | SC-002 | *(vide)* |
+| Tests | [ex] | (tous) | *(vide)* |
+[La colonne ADR se laisse **vide** au premier passage — n'y écris jamais un numéro : les ADR
+n'existent pas encore. Elle est bouclée par la phase `adr`, qui la renseigne ligne à ligne.]
 
 ## Contraintes techniques transverses
 - [ex : offline-first, RGPD, budget, latence cible]
@@ -64,6 +66,7 @@ La Stack est terminée quand :
 - [ ] Chaque choix est relié à au moins un `FR-xxx`/`SC-xxx` (colonne « Sert »).
 - [ ] Chaque décision structurante a une **alternative écartée** nommée avec sa raison.
 - [ ] La liste « Décisions structurantes → candidats ADR » est prête à alimenter la phase `adr` (chaque ligne = un futur ADR-000N).
+- [ ] La colonne « ADR » du tableau « Choix retenus » est **vide** sur toutes les lignes : au premier passage les ADR n'existent pas encore, et un numéro y figurant désignerait un fichier absent. Elle ne se renseigne qu'à la phase `adr`.
 - [ ] La § Vue d'ensemble tient en **une phrase** et **renvoie** vers `docs/archi.md` : aucun style de décomposition, aucune organisation interne de module, aucun invariant n'est décrit ici.
 - [ ] Aucune fuite : le PRD n'a pas été rétro-modifié pour coller à un choix technique.
 </completion>

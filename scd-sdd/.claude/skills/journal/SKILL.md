@@ -92,7 +92,8 @@ Un fichier porte un titre, un bloc de citation, et **une seule table**. Il n'a *
 
 > Trace chronologique des phases jouées sur cette feature. Les fichiers restent la source de
 > vérité de l'état courant ; ce journal enregistre les événements et les faits non dérivables
-> (verdict analyze, premortem appliqué, issue d'un lot). Une ligne = un événement.
+> (verdicts analyze et audit, premortem appliqué, issue d'un lot même bloqué, contrat révisé).
+> Une ligne = un événement.
 
 | Date | Phase | Résultat |
 |---|---|---|
@@ -109,10 +110,29 @@ Un fichier porte un titre, un bloc de citation, et **une seule table**. Il n'a *
 
 `docs/journal/socle.md` suit le même gabarit, titre `# Journal — socle`.
 
+⚠️ **L'énumération des cinq faits ne varie pas d'un fichier à l'autre** : c'est le contrat du
+journal, pas l'inventaire de ce fichier-là. Deux ne peuvent atterrir que dans `socle.md` (verdict
+d'`audit`, contrat révisé), deux que dans un `NNN-slug.md` (verdict d'`analyze`, issue d'un lot), le
+cinquième dans l'un ou l'autre selon sa cible (`premortem`) — l'amputer par cible ferait deux
+gabarits qui divergeraient.
+
 ## Règle d'ajout
 
-1. **Créer le fichier s'il est absent**, avec le titre et le bloc de citation ci-dessus. Créer
-   `docs/journal/` si le répertoire manque.
+1. **Le fichier doit exister avant la ligne — et le créer n'est pas donné à tout le monde.** Le
+   test est ton `allowed-tools`, jamais ton intuition.
+   - **Tu as `Write`** → crée-le s'il est absent : le titre, le bloc de citation et l'en-tête de
+     table ci-dessus, **aucune ligne**, et `docs/journal/` avec lui si le répertoire manque.
+   - **Tu n'as pas `Write`** → tu ne le crées pas, et **tu ne bloques pas pour autant**. Sur un
+     projet qui porte déjà des documents, un fichier de journal absent ne dit pas « oubli » : il dit
+     que le niveau n'a jamais été ouvert, ou que le journal n'a jamais été éclaté. **Signale-le** et
+     renvoie vers la commande qui scaffolde — `/scd-sdd:migrate` sur un projet déjà en cours, seule
+     autorisée à reconstituer ; `/scd-sdd:init-project` ou `/scd-sdd:kickoff-feature` si le niveau
+     vient d'être ouvert. La ligne se consignera après, et **le reste de ton travail reste valide** :
+     une ligne non consignable n'annule rien.
+
+   ⚠️ Ce second cas n'est pas marginal — `clarify`, `run`, `run-parallel`, `sync`, `reland`,
+   `premortem` et `revise-contract` journalisent **sans** `Write` : une règle inexécutable par une
+   part de ses destinataires est **pire qu'absente**, elle se lit comme faite.
 2. **Ne lire que le fichier de ta cible.** C'est tout l'intérêt de l'éclatement : une commande de
    phase n'a jamais besoin des autres. Ne charge pas `docs/journal/*.md` pour écrire une ligne.
 3. **Ajouter la ligne en fin de table**, jamais ailleurs.
@@ -121,9 +141,13 @@ Un fichier porte un titre, un bloc de citation, et **une seule table**. Il n'a *
    falsification de l'histoire, pas contre son classement : la conversion d'un ancien
    `docs/JOURNAL.md` déplace les lignes sans les toucher — voir `references/reconstitution.md`.)*
 5. **Une seule ligne par événement**, en `Edit` ciblé — jamais de réécriture du fichier.
-6. **Date au format `YYYY-MM-DD`**, celle du jour. Ne jamais l'inventer ni la déduire : la prendre
-   du contexte de session, sinon `date -I` / `Get-Date -Format yyyy-MM-dd`. Seule
-   `/scd-sdd:migrate` écrit des dates passées, et uniquement depuis git.
+6. **Date au format `YYYY-MM-DD`**, celle du jour, **jamais inventée ni déduite**. La source
+   normale est le **contexte de session**, qui la porte : c'est le chemin par défaut, pas un repli.
+   `date -I` / `Get-Date -Format yyyy-MM-dd` n'est ouvert qu'aux écrivains dont l'`allowed-tools`
+   porte `Bash(date *)` — la plupart ne l'ont pas, et un repli qu'on n'a pas le droit d'exécuter se
+   lit comme un repli qui existe. Sans date au contexte **et** sans `Bash(date *)` : demande-la ; en
+   arrière-plan, où aucune question n'est possible, remonte-le dans ton retour plutôt que d'écrire
+   une date fausse. Seule `/scd-sdd:migrate` écrit des dates passées, et uniquement depuis git.
 
 ## Reconstitution et conversion — `migrate` seule
 
@@ -163,9 +187,19 @@ Court, chiffré, factuel. Ce qu'on veut relire dans six mois — pas une phrase.
 | `run Rn` | `✅ done` ou `⛔ <statut>` · mode de vérif · nb tests · n° de PR |
 | `sync` / `reland` | l'action effectuée · n° de PR concernée |
 
-Statuts d'échec possibles pour `run` : `blocked-dirty-tree`, `blocked-branch`, `blocked-rebase`,
-`blocked-impl`, `blocked-red`, `blocked-tests-modified`, `blocked-verify`, `blocked-after-fix`,
-`blocked-branch-drift`, `blocked-upstream`.
+Statuts d'échec journalisables par `run` : `blocked-dirty-tree`, `blocked-branch`,
+`blocked-rebase`, `blocked-impl`, `blocked-red`, `blocked-tests-modified`, `blocked-verify`,
+`blocked-after-fix`, `blocked-branch-drift` — plus `blocked-upstream` et `blocked-unknown`, que
+seul `run-parallel` peut retourner.
+
+⚠️ **C'est un vocabulaire, pas une mécanique.** La liste dit quels mots une ligne a le droit de
+porter ; sa **source** est le contrat de retour du dynamic workflow (`implement-lot`,
+`implement-parallel`), et la **définition** de chaque statut vit dans le skill `implement`
+(`references/workflow-template.md`). Un statut neuf se propage donc dans cet ordre : le workflow qui
+le retourne, sa définition chez `implement`, puis le mot ici. On consigne le statut **tel qu'il est
+retourné**, jamais abrégé ni reformulé — et un statut absent d'ici signale que la propagation s'est
+arrêtée en route. `sync` et `reland` ont le leur (`blocked-conflict`), qui vient de leurs agents et
+non du workflow de lot.
 
 ## Qui écrit
 

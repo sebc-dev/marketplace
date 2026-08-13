@@ -23,6 +23,10 @@ Recommandation : 002 a été édité après sa gate — revalider avant le passa
 
 Note pour l'aval : 001 et 002 se recoupent sur `src/api/routes.ts` (« Fichiers touchés »)
   → à ne pas implémenter en parallèle sans branches séparées.
+
+Mode delta : 002 porte encore `DELTA.md` — la fusion terminale dans `spec.md` reste à faire.
+  Une fois les lots livrés : fusionner les `[ADDED]`/`[MODIFIED]`/`[REMOVED]` dans
+  `specs/002-billing/spec.md`, puis supprimer `DELTA.md`. Geste humain.
 ```
 
 Lire l'exemple : 001 et 002 sont tous deux « à valider » — c'est ce que **la dérivation** peut dire
@@ -42,11 +46,12 @@ Colonne **Gate** — le seul fait de ce tableau qui ne vient pas des fichiers :
 <guidance>
 - **Dérivation de la phase** : applique la table du SKILL (section « Cibler une feature »). Elle y est la source de vérité unique — ne la recopie pas ici.
 - **Pas d'état « livrée ».** La dernière phase dérivable est `analyze` : une fois le verdict `PRÊT`, le contrat part au niveau implémentation. **Ne dérive aucun statut depuis les cases de `tasks.md`** — l'avancement des lots `Rn` et la sûreté de merge des PR sont le périmètre de `/scd-sdd:status-impl`, vers lequel renvoyer. Ici, la prochaine commande d'une feature gatée `PRÊT` est simplement `/scd-sdd:run NNN R1`.
-- **Le verdict `analyze` se lit au journal, jamais comme un état.** `analyze` ne persiste aucun état sur disque : il laisse une ligne datée dans `docs/journal/NNN-slug.md`. Un événement (« le 28/07, la gate a rendu PRÊT ») reste vrai pour toujours ; « la feature est validée » ne l'est plus dès qu'on touche un document.
+- **Le verdict `analyze` se lit au journal, jamais comme un état.** `analyze` ne persiste aucun verdict sur disque : il laisse une ligne datée dans `docs/journal/NNN-slug.md` — et, si des corrections restent, une fiche de gate qui porte la **liste de travail** et jamais le verdict. Un événement (« le 28/07, la gate a rendu PRÊT ») reste vrai pour toujours ; « la feature est validée » ne l'est plus dès qu'on touche un document.
 - **Contrôle de fraîcheur, obligatoire.** Avant d'afficher une gate, comparer la date de la ligne à la dernière modification de `spec.md`, `plan.md` et `tasks.md` — `git log -1 --format=%cI -- <fichier>`, repli sur la mtime hors dépôt git. Le document a bougé après → afficher le verdict **périmé** (`⚠`) et remettre `analyze` en prochaine commande. Sans ce contrôle, le journal ment silencieusement.
 - **Pas de journal, pas d'invention.** `docs/journal/` absent (projet démarré avant lui, ou jamais gaté) → colonne `Gate` à `—` et **signaler l'absence** en pied de rapport. Une commande de `status` ne crée ni ne complète le journal : elle est en lecture seule, et un verdict `analyze` ne se déduit d'aucun fichier. Projet venu des trois anciens plugins → renvoyer vers `/scd-sdd:migrate`, seule commande autorisée à créer le journal et à en reconstituer les lignes **datables depuis git** (skill `journal`, `references/reconstitution.md`) — jamais un verdict. Un `docs/JOURNAL.md` monolithique (projet suivi avant l'éclatement du journal) relève du même renvoi : `migrate` le convertit, `status-specs` ne le lit pas. Le reste du tableau, purement dérivé, reste exact.
 - **Tout le cycle est parallélisable** : chaque phase n'écrit que dans `specs/NNN-*/`, disjoints par construction. Documenter plusieurs features en parallèle est un usage prévu, sans risque.
 - **Note d'aval sur les conflits** : croiser les sections « Fichiers touchés » des `plan.md` et signaler les recoupements. C'est une **information transmise au workflow d'implémentation**, pas une contrainte sur ce cycle-ci.
+- **Signal de fusion delta — le seul endroit du cycle qui le porte.** `DELTA.md` présent → afficher le signal `Mode delta` ci-dessus, en nommant les deux gestes : fusionner les deltas dans `spec.md`, puis supprimer `DELTA.md`. La condition est **purement dérivée** (le fichier existe), et c'est délibérément tout : tu ne juges **pas** si les lots sont livrés — les cases de `tasks.md` sont le périmètre de `/scd-sdd:status-impl`, et le rappeler ici est plus honnête que de deviner. Le signal se répète à chaque passe tant que le fichier est là ; il **cesse** quand il disparaît. **Tu ne fusionnes rien et tu ne supprimes rien** : la fusion décide quelles lignes de la spec de vérité sont remplacées, c'est un geste humain (`references/delta.md`, `<guidance>` *Archive*). Sans ce signal, un `DELTA.md` oublié laisse la feature en mode delta à vie, et personne ne le voit.
 - **Ne rien modifier** : ce n'est pas une commande d'action. Elle oriente, elle ne corrige pas.
 - Si `specs/` est vide ou absent → renvoyer vers `/scd-sdd:kickoff-feature`.
 </guidance>

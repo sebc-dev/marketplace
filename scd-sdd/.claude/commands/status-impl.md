@@ -69,21 +69,18 @@ Ratio : 10% humain / 90% AI (lecture mécanique ; l'humain choisit la suite).
 
 ## Définitions
 
-Partagées avec `/scd-sdd:sync` et `/scd-sdd:reland` ; portées par le skill `implement`.
+Le **sens** de `défaut`, de *PR empilée* et de *lot arrivé dans `main`* — dont la priorité du
+signal de contenu sur l'ancêtre git — est porté par le skill `implement`, § Anti-orphelinage, que
+tu charges. Ici, les seules **invocations**, partagées avec `/scd-sdd:sync` et `/scd-sdd:reland` :
 
-- **`défaut`** = branche par défaut du repo : `git symbolic-ref refs/remotes/origin/HEAD` → suffixe
-  après `origin/` (repli `main`/`master`).
-- **Lot `Rk`** → branche `impl/<slug>-Rk` ; sa PR `Pk` se trouve par
-  `gh pr list --head impl/<slug>-Rk --state all --json
+- `défaut` : `git symbolic-ref refs/remotes/origin/HEAD` → suffixe après `origin/`
+  (repli `main`/`master`).
+- PR du lot `Rk` : `gh pr list --head impl/<slug>-Rk --state all --json
   number,state,baseRefName,headRefName,headRefOid` (ou `--search "head:impl/<slug>-Rk"`).
   `slug` = suffixe de `featureDir` après `NNN-`.
-- **PR empilée** : `P.baseRefName` == une branche de lot `impl/<slug>-R*` (donc **≠ `défaut`**).
-- **Lot arrivé dans `main`** — signal de **contenu**, robuste au squash/rebase/merge-commit : ses
-  tâches `Tn` sont **cochées** dans `origin/<défaut>:specs/<NNN-slug>/tasks.md`, lu par
-  `git show origin/<défaut>:specs/<NNN-slug>/tasks.md`. Corroboration git (fiable pour un
-  merge-commit) : `git merge-base --is-ancestor <headRefOid> origin/<défaut>` (code 0 = arrivé).
-  **Le signal de contenu est prioritaire** sur l'ancêtre git — un squash change les SHA et fait
-  échouer l'ancêtre à tort.
+- Tâches cochées à l'amont : `git show origin/<défaut>:specs/<NNN-slug>/tasks.md`. Corroboration
+  git, fiable pour un merge-commit : `git merge-base --is-ancestor <headRefOid> origin/<défaut>`
+  (code 0 = arrivé).
 
 ## Processus
 
@@ -191,10 +188,10 @@ Colonne **Dernier run** — le seul fait de ce tableau qui ne vient ni des fichi
 - `⛔ <statut> (JJ/MM)` : dernier run **bloqué**. Le statut est repris tel quel du journal
   (`blocked-red`, `blocked-dirty-tree`, `blocked-verify`, …), suivi de sa **traduction en trois
   mots** — `blocked-red` : des tests échouent · `blocked-dirty-tree` : l'arbre git n'était pas
-  propre · `blocked-verify` : la preuve attendue n'a pas été obtenue. Les **dix** statuts d'échec
-  sont énumérés par le skill `journal` : pour les autres, la traduction se dérive du nom du statut,
-  en trois mots et **sans rien ajouter que le journal ne dise** (`blocked-rebase` : le rebase a
-  échoué). Un statut **hors de cette liste** s'affiche seul, sans invention. Ajouter
+  propre · `blocked-verify` : la preuve attendue n'a pas été obtenue. Pour tout autre statut, la
+  traduction se **dérive du nom**, en trois mots et **sans rien ajouter que le journal ne dise**
+  (`blocked-rebase` : le rebase a échoué). Un nom dont tu ne tires aucune lecture sûre s'affiche
+  **seul** — tu ne devines pas la cause d'un échec que tu n'as pas vu. Ajouter
   `· worktree conservé` si la ligne le mentionne — c'est là que vit le travail du lot.
 </report>
 > Sans `gh`/`glab` : remplace la colonne État par « PR indisponible (pas de forge) » et ne classe que
@@ -243,9 +240,12 @@ nature, pas un oubli.
 
 - `implement` — charge `references/tasks-parsing.md` ; définitions de l'anti-orphelinage.
 - `feature-specs` — section « Cibler une feature » si un argument doit être résolu.
-- `journal` — contrat de `docs/journal/*.md` (**lecture seule ici**).
 - `chantier` — format de l'en-tête, pour lire la ligne `Portée` (**cette ligne seule, lecture seule
   ici** ; tu ne charges pas `references/manifeste.md`).
+- **Pas** le skill `journal`. Tu **lis** le journal, tu ne l'écris jamais, et ce dont tu as besoin
+  est déjà chez toi : les règles de lecture dans tes `## Règles absolues`, la forme des lignes
+  `run Rn` et le traitement des statuts d'échec dans ton `<report>`. Charger le contrat par-dessus
+  serait le doublon que `DECISIONS.md` §D35 interdit.
 
 ## À la fin
 

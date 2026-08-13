@@ -25,7 +25,7 @@ le voie — un `FR` sans lien vers le Brief, un candidat ADR listé dans `stack.
 `adr` n'a jamais instruit, un invariant sans trace observable, un pointeur mort dans `CLAUDE.md`.
 L'audit comble ce trou, **document par document**, quand on veut le combler.
 
-Trois conséquences, toutes **de nature** et jamais discrétionnaires :
+Deux conséquences, toutes deux **de nature** et jamais discrétionnaires :
 
 - **Aucun état dérivé.** L'audit n'apparaît dans aucune table de dérivation. Un socle non audité
   n'est **pas** un socle incomplet, et `status` ne le réclame jamais. L'y faire figurer ferait
@@ -34,9 +34,6 @@ Trois conséquences, toutes **de nature** et jamais discrétionnaires :
   fiche ne le porte **jamais**. La règle n'est donc pas « une phase journalise », c'est **« ce qui
   n'est dérivable de nulle part se consigne »**. Sans la ligne, savoir si un document a été jugé,
   quand, et avec quelle issue, meurt à la fin de la session.
-- **La cible ne se devine jamais.** Se tromper de cible produit une fiche qui nomme le mauvais
-  document — le genre d'erreur qu'on ne voit qu'après avoir corrigé le mauvais fichier. À défaut
-  d'argument, on énumère ce qui est sur disque et on demande.
 
 ## Ce qui ne change jamais — la méthode
 
@@ -147,7 +144,7 @@ commande ne charge **que le bloc de la dimension résolue**.
   **projection d'échec** — *conforme, et pourtant condamné ?*. L'audit juge la **conformité**
   d'**UN** document frais. Tu ne projettes aucun échec, et tu ne doubles aucune lentille du
   premortem.
-- **Pas `analyze`.** La gate des specs couvre `specs/NNN-slug/` avec ses 15 contrôles. La
+- **Pas `analyze`.** La gate des specs couvre `specs/NNN-slug/` avec ses 16 contrôles. La
   dimension `validation-socle` ne touche **jamais** `specs/`.
 - **Pas un entretien.** `/scd-sdd:revise-contract` entretient `CLAUDE.md` **dans la durée** — il
   retire, resynchronise, déplace. L'audit le juge **à sa sortie de phase**, et **détecte sans

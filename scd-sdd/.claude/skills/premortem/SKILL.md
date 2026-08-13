@@ -22,7 +22,7 @@ dérive. Un premortem se joue **quand l'enjeu le justifie** : sur un socle avant
 dix features, sur un contrat de feature après sa gate, sur un chantier qu'on s'apprête à
 reprendre après trois semaines. Le moment n'est pas imposé par une chaîne, il est choisi.
 
-Trois conséquences, toutes **de nature** et jamais discrétionnaires :
+Deux conséquences, toutes **de nature** et jamais discrétionnaires :
 
 - **Aucun état dérivé.** Le premortem n'apparaît dans aucune table de dérivation. Un socle sans
   premortem n'est **pas** un socle incomplet, et `status` ne le réclame jamais. L'y faire figurer
@@ -32,9 +32,6 @@ Trois conséquences, toutes **de nature** et jamais discrétionnaires :
   aucun artefact propre — il modifie des documents existants **sans y laisser le moindre
   marqueur**. Sans la ligne, son passage n'est dérivable de rien. La règle n'est donc pas « une
   phase journalise », c'est **« ce qui n'est dérivable de nulle part se consigne »**.
-- **La cible ne se devine jamais entre niveaux.** C'est la seule capacité du plugin qui écrit
-  dans trois familles de documents. Un premortem lancé sur la mauvaise cible aurait édité le
-  mauvais contrat avant qu'on s'en aperçoive : à défaut d'argument, on énumère et on demande.
 
 ## Ce qui ne change jamais — la méthode
 
@@ -88,16 +85,16 @@ des échecs en produira toujours, dont beaucoup de faux. **Le scope creep est le
 cette capacité** — c'est la seule passe d'écriture *déléguée* du plugin, et les trois barrières
 existent pour ça.
 
-### 5. La sortie de secours : un risque dont la remédiation est un travail
+### 5. La sortie de secours
 
-Certains risques sont réels et ne se referment par **aucun** texte : « on bloque sur un contrôle
-dont on n'a jamais mesuré le taux de faux positifs », « il faudrait éprouver la restauration de
-sauvegarde ». Les inscrire de force produirait une ligne creuse ; les jeter perdrait le meilleur
-constat de la séance.
+Certains risques sont réels et ne se referment par **aucune** des formes légales de leur cible :
+« on bloque sur un contrôle dont on n'a jamais mesuré le taux de faux positifs », « il faudrait
+éprouver la restauration de sauvegarde ». Les inscrire de force produirait une ligne creuse ; les
+jeter perdrait le meilleur constat de la séance.
 
-Ils deviennent une **fiche de chantier `en-attente`**, de la portée de la cible. C'est
-exactement l'usage prévu par le skill `chantier`, et le précédent existe : le chantier de
-durcissement de la phase `ci`. Cette forme est légale **à toutes les cibles**.
+Ce qu'ils deviennent — **deux** issues, et la condition de chacune — est le bloc `<hors-forme>` de
+`references/cibles.md`, chargé **quelle que soit la cible**. Les deux ne s'équivalent pas : l'une
+ouvre un fichier, l'autre n'écrit rien. **Ne tranche pas de mémoire.**
 
 ### 6. Le calibrage
 
@@ -108,18 +105,15 @@ garde-fou.
 
 ## Ce qui change — les trois cibles
 
-Une seule commande, `/scd-sdd:premortem`, et trois cibles qui changent **ce qu'on lit**, **ce
-qu'on a le droit d'écrire** et **ce qui suit**. La méthode ci-dessus, elle, est identique.
+Une seule commande, `/scd-sdd:premortem`, et trois cibles — le **socle**, une **feature**, un
+**chantier** — qui changent **ce qu'on lit**, **ce qu'on a le droit d'écrire** et **ce qui suit**.
+La méthode ci-dessus, elle, est identique.
 
-| Cible | Ce qui est jugé | Précondition | Journal | Ce qui suit |
-|---|---|---|---|---|
-| **socle** | `docs/prd.md` `stack.md` `archi.md` `adr/` `ci.md` `CLAUDE.md` — ceux qui existent. **Jamais `docs/brief.md`** : il est l'intention d'origine, donc du contexte | au moins le PRD | `docs/journal/socle.md` | re-lire les features en vol : leurs backrefs ont pu bouger |
-| **feature** | `specs/NNN-slug/` `spec.md` `plan.md` `tasks.md` | gate `analyze` au vert | `docs/journal/NNN-slug.md` | **re-passe `analyze` imposée** |
-| **chantier** | une fiche `docs/chantiers/<état>/AAAA-MM-JJ-slug.md` | fiche présente, contrôle de fraîcheur rendu | **aucun** — la fiche est le fait | `resume` lira la fiche durcie |
-
-Le détail de chaque cible — documents, contexte à charger, scénario-cadre, formes de remédiation
-légales — vit dans `references/cibles.md`, dont la commande ne charge **que le bloc de la cible
-résolue**.
+Le contrat de chaque cible — précondition, documents jugés, contexte jamais jugé, scénario-cadre,
+formes de remédiation légales, journal et suite — est un **bloc** de `references/cibles.md`, dont
+la commande ne charge **que celui de la cible résolue**. Ce bloc fait foi, et il est le seul à
+faire foi : ne complète jamais de mémoire ce qu'il dit — en particulier une **précondition**, les
+trois ne se ressemblant pas.
 
 **Pourquoi la cible `chantier` ne journalise pas.** C'est la règle des chantiers, appliquée telle
 quelle : un chantier ne produit jamais de ligne de journal, son lien avec le cycle passe par sa
@@ -149,4 +143,4 @@ que l'implémentation suivra pendant des mois. Son `Actualisé le` suffit à dat
 
 | Fichier | Quand la charger | Sections |
 |---|---|---|
-| `references/cibles.md` | `/scd-sdd:premortem` — `resolution` à l'étape 1, **le bloc de la cible résolue seulement** ensuite, et `hors-forme` **toujours** (il porte le contrat du signalement) | `resolution` `socle` `feature` `chantier` `hors-forme` |
+| `references/cibles.md` | `/scd-sdd:premortem` — `resolution` à l'étape 1, **le bloc de la cible résolue seulement** ensuite, et `hors-forme` **toujours** (il porte les deux issues du risque qui n'entre dans aucune forme) | `resolution` `socle` `feature` `chantier` `hors-forme` |

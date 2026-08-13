@@ -1,17 +1,23 @@
 # Référence — La soupape de `verifier-guard` (signature du commit)
 
 <role>
-**Chargée seulement quand le garde `verifier-guard` est retenu.** Elle n'est ni un prérequis de la
-phase `ci`, ni une lecture par défaut : un projet qui ne pose pas le garde ne la charge jamais, et
-c'est le motif pour lequel elle vit dans un fichier séparé de `references/ci.md`.
-
 Elle répond à **une seule question** : comment un garde qui vise l'agent laisse passer le cas
-légitime sans que l'agent puisse ouvrir la porte lui-même.
+légitime sans que l'agent puisse ouvrir la porte lui-même. Pourquoi la soupape de
+`quality-config-guard` ne convient pas ici : `references/ci.md`, § `verifier-guard`. C'est cette
+différence, et elle seule, qui justifie d'introduire de la cryptographie pour **ce** garde et
+**nulle part ailleurs** dans le cycle.
 
-`quality-config-guard` a une soupape — un scope de commit explicite — et elle suffit, parce que là
-il s'agit de rendre le geste **visible**. Ici il faut le rendre **impossible à l'agent** : il écrit
-`chore(types):` aussi facilement qu'il écrit `as any`. C'est cette différence, et elle seule, qui
-justifie d'introduire de la cryptographie pour ce garde et **nulle part ailleurs** dans le cycle.
+**Où cette référence se charge — un seul point, et il est conditionnel :**
+
+par `/scd-sdd:ci`, à son **étape 6** et alors seulement, quand le garde `verifier-guard` est retenu.
+Un projet qui ne pose pas le garde ne la lit jamais — c'est le motif pour lequel elle vit dans un
+fichier séparé (`DECISIONS.md` §D20, §D26). L'agent `audit-explorer` ne la charge **pas** : ce n'est
+pas un document du socle, mais un dispositif, et l'audit juge `docs/ci.md` contre le `<template>` de
+`references/ci.md`.
+
+⚠️ `references/ci.md` est **toujours déjà chargée** quand celle-ci l'est — l'étape 2 de la commande
+précède l'étape 6. C'est ce qui autorise les renvois vers elle ci-dessous : ils résolvent dans la
+fenêtre, ils ne renvoient pas vers un fichier absent.
 
 **Cette phase n'exécute aucune cryptographie.** Elle écrit le workflow qui vérifie une signature,
 comme elle rend la commande de protection de branche sans la jouer. Elle ne génère aucune clé,
@@ -193,17 +199,13 @@ ensuite bloque le chantier sans issue.
 
 ## En local, et sans forge
 
-**Le garde tourne en local ; la signature ne s'y vérifie pas.** Ce n'est pas un arbitrage de
-confort : une signature ne peut pas être vérifiée avant que le commit existe. Le garde local
-constate la **couverture** — « ce diff ajoute un neutralisant, il exigera un commit signé » — et
-jamais l'attribution. Rejouer la recette entière en local la ferait vivre à deux endroits qui
-divergeraient, et le script local vit dans un espace que l'agent écrit.
+Les deux constats sont dans `references/ci.md` — § `verifier-guard` pour le vert local qui signifie
+*couvert* et non *approuvé*, § *Les modes dégradés* pour la soupape qui disparaît avec la forge. Ce
+qu'ils n'y disent pas, et qui décide de l'implémentation :
 
-**Sans forge, la soupape disparaît et le garde reste une intention.** Sa valeur vient entièrement
-d'un check hors de portée de l'agent. Sans check, poser une clé et un registre coûte un vrai geste
-humain pour **zéro garantie**, et un registre inerte *ressemble* à une garantie — c'est le vert
-trompeur, reconstitué par excès de zèle. `docs/ci.md` **dit pourquoi elle est absente** : jamais
-par omission.
+**Ne rejoue pas la recette entière en local.** Elle vivrait à deux endroits qui divergeraient, et le
+script local vit dans un espace que l'agent écrit. Le garde local constate la **couverture** — « ce
+diff ajoute un neutralisant, il exigera un commit signé » — et rien de plus.
 
 ## Ce que le dispositif ne prouve pas — à écrire à côté de ce qu'il garantit
 
@@ -251,12 +253,10 @@ Deux résiduels s'ajoutent, et ils vont dans `docs/ci.md`, dans le corps et jama
 
 ## Cette référence cite les motifs que le garde traque
 
-`@ts-ignore`, `as any`, `nosemgrep` : ils apparaissent dans `references/ci.md`, dans le `docs/ci.md`
-produit, et ici. **Un garde qui balaierait la documentation se bloquerait sur sa propre notice.**
-C'est pourquoi sa portée est limitée aux **extensions de source**, tests et documentation exclus —
-la première ligne de pathspecs de l'esquisse, pas un réglage cosmétique. Le même piège a déjà été
-payé une fois sur un contrôle de ce dépôt, qui échouait sur le plan qui **citait** les motifs qu'il
-traquait.
+`@ts-ignore`, `as any`, `nosemgrep` apparaissent **ici aussi**, en plus de `references/ci.md` et du
+`docs/ci.md` produit. C'est un fichier de plus sur lequel un garde trop large se bloquerait : le
+motif est en § `verifier-guard` de `references/ci.md`. Ce qui en découle pour l'esquisse ci-dessus :
+l'exclusion de la documentation est sa **première ligne de pathspecs**, pas un réglage cosmétique.
 
 </guidance>
 

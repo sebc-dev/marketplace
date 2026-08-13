@@ -1,7 +1,9 @@
 # Référence — Les trois cibles du premortem
 
-Un seul bloc se charge : celui de la cible résolue. La **méthode** — projection d'échec,
-lentilles, trois barrières, calibrage — est dans le `SKILL.md` et ne se répète pas ici.
+Chargée par `/scd-sdd:premortem`, **bloc par bloc** : `<resolution>` à l'étape 1, puis le bloc de
+la **cible résolue seulement**, et `<hors-forme>` **quelle que soit la cible**. La **méthode** —
+projection d'échec, lentilles, trois barrières, calibrage — est dans le `SKILL.md` et ne se répète
+pas ici.
 
 <resolution>
 La cible **ne se devine jamais entre niveaux**. C'est la seule règle de résolution du plugin qui
@@ -151,10 +153,12 @@ le dire change ce que le facilitateur cherche.
 `## Écarté`.
 
 **Le contexte, jamais jugé** : ce que son `## Contexte à charger` désigne, **et seulement selon
-la classe déclarée** — `à lire` intégralement, `à extraire` par son ancre, `à situer` jamais
-chargé. Les quatre classes et leurs seuils vivent dans `chantier/references/manifeste.md` :
-charge-la. Charger tout le manifeste d'un chantier pour le durcir reproduirait exactement le
-problème que le manifeste résout.
+la classe déclarée**. Les quatre classes, leurs seuils et la règle qui prime vivent dans
+`chantier/references/manifeste.md`, qui se charge **bloc par bloc** : `<classes>` et `<lecture>`
+pour **honorer** le manifeste, `<delegation>` s'il porte une ligne `à déléguer`, plus
+`<regle_maitresse>` et `<controles>` **seulement** si une remédiation approuvée en écrit une ligne.
+Charger tout le manifeste d'un chantier pour le durcir reproduirait exactement le problème que le
+manifeste résout.
 
 Les lignes **`à déléguer`** sont résolues **par la commande** avant l'appel, via `chantier-reader`
 — le facilitateur n'a pas `Task`. Il reçoit les réponses ancrées, pas les chemins.
@@ -175,7 +179,8 @@ quelqu'un qui a tout le contexte en tête, pour quelqu'un qui n'en aura plus rie
 - **Item dans `## Écarté`**, avec motif. La rubrique de plus forte valeur de la fiche : rien
   d'autre dans le projet ne porte les pistes mortes.
 - **Référence ajoutée à `## Contexte à charger`**, avec sa **classe** — et jamais un chemin nu
-  au-delà de ~300 lignes.
+  au-delà de ~300 lignes. Tu n'as pas `Bash` : la taille se lit sur les **numéros de ligne** que
+  `Read` rend, comme `revise-contract` mesure la sienne.
 - **Conclusion distillée dans `## Acquis`** — quand ce qu'on veut est une conclusion, elle va là
   et le fichier n'est jamais rechargé.
 - **Champ `Bloqué par :`** sous l'en-tête, quand le risque est l'attente d'un tiers. C'est un

@@ -11,9 +11,9 @@ pas de style. Plafond **200 lignes** (« Keep CLAUDE.md under 200 lines, give it
 changes to it like code ») ; **cible 60-90**, ordre de grandeur mesuré sur des dépôts publics. Ce
 qui dépasse ne se coupe pas au hasard : il se **déplace**, et la section Renvois en garde la trace.
 
-**Le contrat a un entretien, et les deux gestes s'excluent.** `contract` **assemble**, une fois, et
-ne se rejoue **pas** sur un fichier existant : il écraserait les remédiations de `premortem socle`
-et tout ajout humain. `/scd-sdd:revise-contract` **entretient** — retirer, resynchroniser, déplacer ; jamais enrichir.
+**Le contrat a un entretien, et les deux gestes s'excluent.** Trois écrivains, trois rôles — la
+table est au `SKILL.md`, § *Entretenir le contrat*. Ici, ce qui en découle : le `<template>`
+**assemble** une fois, le bloc `<revision>` **entretient**, et les deux ne se chargent jamais ensemble.
 
 **Trois points de chargement, et aucun n'est intégral :** `/scd-sdd:contract` lit **tout sauf
 `<revision>`** ; `/scd-sdd:revise-contract` ne lit que **`<guidance>` et `<revision>`** — lui cacher
@@ -86,7 +86,7 @@ quatre (§D29).
 - **Pointer, pas recopier.** Le contenu du Brief/PRD/Stack reste dans `docs/` ; CLAUDE.md ne fait que `@import` la constitution stable et *mentionner* les chemins des specs. Recopier = dérive garantie.
 - **`@import` avec parcimonie.** Les fichiers `@importés` sont chargés au lancement, donc **ne réduisent pas** le coût en tokens : n'importer que le stable et universel. Backticker le chemin pour le mentionner sans l'importer.
 - **Constitution fondue ici** : la section « Principes & seuils » remplace un `constitution.md` séparé (choix assumé pour un solo).
-- **Advisory ≠ garanti.** Écrire la Definition of Done dans CLAUDE.md ne la fait pas respecter. Ce qui DOIT arriver à 100 % est exécuté par les contrôles bloquants de `docs/ci.md`, sous protection de branche : relier chaque item de DoD au job qui le vérifie, et laisser advisory — explicitement — ce qu'aucun job ne couvre.
+- **Advisory ≠ garanti** — la frontière et la commande qui la franchit sont au `SKILL.md`, § *Règles d'écriture pour un agent*. Ce qui en découle pour ce document : relier chaque item de Definition of Done au **job** de `docs/ci.md` qui le vérifie, et laisser advisory — **explicitement** — ce qu'aucun job ne couvre. Un item advisory mêlé aux autres se lit comme garanti.
 - **Test de suppression.** Pour chaque ligne : « sa suppression ferait-elle échouer Claude ? » Sinon, couper. Un CLAUDE.md gonflé dilue les règles qui comptent.
 - **Commandes** : elles ne se devinent plus et ne s'inventent jamais — elles se **lisent** dans la table « Commandes du projet » de `docs/ci.md` et se recopient à l'identique. Un `[à compléter]` qui subsiste là-bas se reporte tel quel et se signale : c'est un trou de la phase `ci`, et le corriger ici créerait une commande que la CI n'exécute pas.
 - **Le pourquoi est exigé** sur toute convention non-standard : une règle sans son motif est ignorée dès que le contexte change *(constat de terrain rapporté par des praticiens, pas une mesure)*.

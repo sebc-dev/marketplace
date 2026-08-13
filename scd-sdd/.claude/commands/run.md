@@ -64,12 +64,10 @@ Ratio : 20% humain / 80% AI (l'humain valide la cible et la base ; le workflow f
      de commiter ou remiser (`git stash`) avant de relancer. (Si tu lances quand même, le workflow
      s'arrête de lui-même en `blocked-dirty-tree` sans rien écrire.)
 
-3. **Résous le lot cible.**
-   - Argument `Rn` fourni → c'est la cible.
-   - Sinon → le **premier lot `Rn` non entièrement coché** dans l'ordre des dépendances
-     (`dépend de : Rn`), **dont les dépendances sont cochées**. Annonce-le.
-   - Un lot dépendant d'un lot non implémenté → signale-le et propose le lot débloquable, ou
-     demande via `AskUserQuestion`.
+3. **Résous le lot cible** selon le bloc `<resolution>` de `references/tasks-parsing.md`, chargé à
+   l'étape 1 — la seule source de cette règle. Deux points qui t'appartiennent : **annonce** le lot
+   que tu as pris quand il n'a pas été fourni en argument, et sur un choix ambigu ou aucun lot
+   lançable, **demande via `AskUserQuestion`** plutôt que de renvoyer.
 
 4. **Résous la base — déterministe, jamais devinée.** Décide **ici** la base à passer au workflow,
    pour qu'un lot qui `dépend de :` un autre non encore mergé s'**empile** au lieu de rejouer son

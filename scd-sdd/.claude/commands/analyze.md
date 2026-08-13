@@ -1,5 +1,5 @@
 ---
-description: "Phase 5 des specs : gate de conformité du contrat (un contrôle bloquant, joué avant d'implémenter). Ne modifie aucun document du contrat. Atteste que spec/plan/tasks sont prêts pour l'implémentation ET que le découpage produira des unités reviewables par un humain. 15 contrôles, rapport à trois niveaux — Critical (bloque l'implémentation), Major (à corriger, ne bloque pas le démarrage), Minor (amélioration) —, verdict PRÊT uniquement si zéro Critical. Consigne son verdict au journal, et porte la liste des corrections dans un chantier de gate pour qu'elle survive au /clear — avec les Major arbitrés une fois pour toutes."
+description: "Phase 5 des specs : gate de conformité du contrat (un contrôle bloquant, joué avant d'implémenter). Ne modifie aucun document du contrat. Atteste que spec/plan/tasks sont prêts pour l'implémentation ET que le découpage produira des unités reviewables par un humain. 16 contrôles, rapport à trois niveaux — Critical (bloque l'implémentation), Major (à corriger, ne bloque pas le démarrage), Minor (amélioration) —, verdict PRÊT uniquement si zéro Critical. Consigne son verdict au journal, et porte la liste des corrections dans un chantier de gate pour qu'elle survive au /clear — avec les Major arbitrés une fois pour toutes."
 argument-hint: "[NNN ou slug — optionnel, résolu sinon]"
 allowed-tools:
   - Read
@@ -51,7 +51,7 @@ passer la main).
   la première édition d'un document. La gate est bon marché : on la relance. Le chantier de gate
   ne porte **pas** le verdict — il porte la **liste de travail**, qui ne devient pas fausse quand
   un document bouge : elle devient *faite*, et c'est vérifiable.
-- **Tu déroules les 15 contrôles intégralement, à chaque passe.** Tu ne sautes **jamais** un
+- **Tu déroules les 16 contrôles intégralement, à chaque passe.** Tu ne sautes **jamais** un
   contrôle parce que la fiche dit « arbitré » : tu détectes tout, tu ne changes que la
   présentation. C'est ce qui empêche la gate de devenir un tampon.
 - **On n'arbitre jamais un Critical.** Seuls les Major et les Minor s'écartent, avec motif et
@@ -70,6 +70,9 @@ passer la main).
   mesure une violation sur le code réel, pas une gate documentaire sur un plan. Et **sans
   `docs/archi.md`, le contrôle 15 ne se déclenche pas** — ce n'est pas un finding, c'est une
   phase du socle qui n'a pas été jouée.
+- **Sans aucun `.feature`, le contrôle 16 ne se déclenche pas** — même règle : ce n'est pas un
+  finding, c'est une non-applicabilité. Et quand il se déclenche, il ne porte **jamais** sur le
+  vert : tu n'exécutes aucun test, tu juges la **dérivation** et la **forme**.
 - **Verdict `PRÊT` uniquement si zéro Critical.**
 - **Glose au premier emploi.** Le premier terme de méthode que tu adresses à l'humain — EARS,
   gate, lot, ADR, invariant, advisory… — reçoit une glose d'**une ligne**, entre parenthèses ou
@@ -102,7 +105,7 @@ passer la main).
      note de passage.
    - Rien nulle part → première passe, tu pars de zéro. Ce n'est pas une anomalie.
 
-4. **Déroule les 15 contrôles** de `references/analyze.md` :
+4. **Déroule les 16 contrôles** de `references/analyze.md` :
 
    | Groupe | Contrôles | Objet |
    |---|---|---|
@@ -112,14 +115,21 @@ passer la main).
    | Cohérence | 10-11 | socle, contradictions internes |
    | Reviewability | 12-14 | verticalité, sujet unique, dimensionnement |
    | Architecture | 15 | invariants de `docs/archi.md` — **Major**, et sans objet s'il n'existe pas |
+   | Gherkin | 16 | `.feature` dérivé de son `SHALL` et bien formé — sans objet s'il n'y en a aucun |
+
+   **Le contrôle 16 charge sa propre référence, et seulement s'il se déclenche** : `Glob` sur
+   `specs/<cible>/acceptance/*.feature` ; au moins un → charge le bloc `<guidance>` de
+   `references/gherkin.md` avant de juger. Aucun → dis-le en une ligne et passe.
 
 5. **Délègue un second regard en contexte frais** (outil `Task`, les deux **en parallèle** —
    leurs mandats sont disjoints) : **`ears-verifier`** pour les contrôles 1-11,
    **`slice-auditor`** pour 12-14. Recommandé si la feature est grosse, et **fortement** si
    c'est cette session qui a rédigé les documents : elle est alors mal placée pour les juger.
 
-   **Le contrôle 15 reste au contexte principal** : les deux mandats délégués sont inchangés, et
-   c'est toi qui as lu `docs/archi.md` à l'étape 3.
+   **Les contrôles 15 et 16 restent au contexte principal** : les deux mandats délégués sont
+   **bornés à 1-11 et 12-14** et ne bougent pas. C'est toi qui as lu `docs/archi.md` à l'étape 3,
+   et c'est toi qui charges `references/gherkin.md` à l'étape 4 — aucun des deux agents ne reçoit
+   les `.feature` dans son protocole d'entrée.
 
 6. **Apparie avec la passe précédente**, si elle existe — triplet `[ID]` · fichier · nature :
    - apparié à une entrée d'`## Écarté` → bloc **« Déjà arbitrés »**, hors du décompte qui décide
@@ -195,7 +205,9 @@ Une gate au rouge se consigne **aussi** : c'est la moitié de l'histoire qui a d
 
 ## Skill active
 
-- `feature-specs` — charge `references/analyze.md`, dont sa section `<gate>`.
+- `feature-specs` — charge `references/analyze.md`, dont sa section `<gate>`. Plus, **sous
+  condition et seul bloc `<guidance>`**, `references/gherkin.md` : uniquement si la feature porte
+  au moins un `acceptance/*.feature` (contrôle 16).
 - `chantier` — anatomie, nommage, `Portée`, cycle de vie. Tu **écris** une fiche, donc tu charges
   `references/fiche.md`, blocs **`<interdits>`**, **`<template>`** et **`<frontiere>`** — pas
   `<pourquoi>`, qui explique le dispositif à qui l'ouvre. Tu n'as **pas** besoin de
@@ -203,7 +215,8 @@ Une gate au rouge se consigne **aussi** : c'est la moitié de l'histoire qui a d
   trois documents du contrat, tous petits et tous `à lire`.
 - `journal` — contrat de `docs/journal/*.md`.
 - Subagents (recommandés, en parallèle, contexte frais) : `ears-verifier` — contrat (1-11) ·
-  `slice-auditor` — découpage (12-14). Le contrôle **15** n'est délégué à aucun des deux.
+  `slice-auditor` — découpage (12-14). Les contrôles **15** et **16** ne sont délégués à aucun des
+  deux.
 
 ## À la fin
 

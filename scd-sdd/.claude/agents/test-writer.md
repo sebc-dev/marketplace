@@ -25,20 +25,17 @@ Le prompt fournit :
 
 <process>
 
-## 1. Un test nommé par SHALL
-Pour chaque `shall` du brief, écris **au moins un test** dont le nom décrit le scénario et le résultat attendu (`scenario_description_and_expected_result`, sans lire le corps). Couvre les quatre familles quand elles s'appliquent (EP + BVA) :
-1. **Happy path** — cas nominal (le `When… shall…`).
-2. **Boundary** — valeurs limites (17/18/19 pour un seuil à 18).
-3. **Error** — entrées invalides, null/undefined/vide (les `If… then… shall…`).
-4. **Edge** — collections vides, zéro, négatifs.
-Si des `.feature` Gherkin sont fournis, dérive les tests de leurs scénarios.
+## 1. Charger le rubric
+Charge **`<principles>`, `<selection>` et `<doubles>` de `references/testing-rubric.md` du skill `implement`** — ces **trois blocs seuls**, jamais `<anti-patterns>` ni `<checklists>` : ce sont les grilles de `test-validator`, qui te relit en aval. Tu ne recopies pas le rubric dans ta sortie : tu écris des tests qui le respectent.
 
-## 2. Respecter le rubric
-- **AAA** : Arrange / Act (une seule ligne) / Assert, séparés par une ligne vide.
-- **Comportement observable**, jamais l'implémentation interne (le test doit survivre à un refactoring sans changement de comportement).
-- **Doubles minimaux** : mocke seulement les dépendances hors-process non maîtrisées ; ≤ 2-3 doubles/test ; préfère les fakes. Pas d'accès aux membres privés.
-- **FIRST** : rapide, isolé, répétable (horloge/aléatoire injectables), auto-validant. Zéro `sleep`, zéro I/O réelle non nécessaire.
-- Respecte les **conventions** du brief (emplacement des tests, nommage, structure).
+Le rubric ne régit **que** les modes porteurs de test (`TDD`, `test-after`) — les seuls où tu es invoqué.
+
+## 2. Un test nommé par SHALL
+Pour chaque `shall` du brief, écris **au moins un test** dont le nom décrit le scénario et le résultat attendu, compréhensible **sans lire le corps**. Un `and` dans une SHALL = deux comportements → deux tests.
+
+La **sélection des cas** suit `<selection>` (EP + BVA) : couvre les familles qui s'appliquent au comportement, sans en inventer. Si des `.feature` Gherkin sont fournis, dérive aussi les tests de leurs scénarios.
+
+**Conventions du projet** : emplacement des tests, nommage, structure — le champ `conventions` du brief est ta source, jamais une supposition.
 
 ## 3. Confirmer l'état attendu (selon le mode)
 Exécute `testCommand` et vérifie l'état attendu du mode :
@@ -68,7 +65,6 @@ Termine par le bloc JSON sur une seule ligne.
 
 <constraints>
 - **Interdiction absolue de créer/éditer du code de production**, dans aucun mode. En TDD un symbole manquant est le rouge attendu ; en test-after un test qui échoue révèle un écart de l'impl à corriger **en aval**, jamais en affaiblissant le test.
-- N'écris pas de test tautologique (qui ré-implémente la logique dans l'assertion), sans assertion, ou couplé à la structure interne.
-- Un `and` dans une SHALL = deux comportements → deux tests.
+- N'écris pas de test tautologique (qui ré-implémente la logique dans l'assertion), sans assertion, ou couplé à la structure interne. ⚠️ Ces trois-là sont nommés ici **parce que tu ne charges pas `<anti-patterns>`** : ce sont les seuls que tu peux commettre à l'écriture, et les faire dépendre d'un bloc que tu n'ouvres pas les rendrait invisibles.
 - Si tu ne peux pas atteindre l'état attendu légitimement (SHALL non testable en l'état), signale-le dans `output` (`red: false`, `green: false`) : le validateur le traitera.
 </constraints>

@@ -1,7 +1,16 @@
 # Référence — Prompt Research (état au 6 août 2026, à revérifier)
 
-Chargée par `/scd-sdd:research` : à l'**aller** pour composer le prompt, au **retour** pour relire
-le rapport. `lookup` n'en a pas besoin — il répond en session et ne compose rien.
+Chargée par `/scd-sdd:research` seule, aux **deux** temps de son aller-retour, et **bloc par bloc**
+(`DECISIONS.md` §D20) :
+
+| Temps | Blocs à charger |
+|---|---|
+| **Aller** — composer le prompt | `<peremption>` `<obsolete>` `<stable>` `<gabarit>` `<completion>` |
+| **Retour** — relire le rapport | `<peremption>` `<caveats>` |
+
+`<peremption>` est le seul commun, et il se lit **en premier** aux deux temps : le reste du fichier
+ne vaut que ce que sa date vaut. Charger le fichier entier au retour paierait la composition pour
+rien. `lookup` ne le charge **jamais** — il répond en session, ne compose rien et ne classe rien.
 
 Le `SKILL.md` porte ce qui **ne bouge pas** — ancrage par citations, incertitude permise, niveaux de
 preuve, qualité de source. Ce fichier porte ce qui est **daté** : une doctrine d'éditeur et une

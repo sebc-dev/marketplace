@@ -3,15 +3,24 @@
 <role>
 **Gate de conformité du cycle.** Atteste que `spec.md` / `plan.md` / `tasks.md` sont **prêts pour une
 implémentation optimale** par un workflow aval. Peut être suivie de la passe optionnelle `premortem`
-(skill `premortem`), qui durcit un contrat déjà conforme par projection d'échec. **Lecture
-seule + rapport** : ne modifie aucun document du contrat, et ne persiste **aucun verdict comme
-état** (un PASS écrit sur disque deviendrait faux dès la prochaine édition — la gate est bon
-marché, on la relance).
+(skill `premortem`), qui durcit un contrat déjà conforme par projection d'échec.
 
-Seule écriture autorisée : **une ligne datée dans `docs/journal/NNN-slug.md`**. C'est un *événement* — « le
-28/07, la gate a rendu PRÊT » reste vrai pour toujours — et non un état qu'on relirait comme
-« la feature est validée ». Un lecteur ne le convertit jamais en état sans contrôler sa fraîcheur
-contre la date de modification de `spec.md`/`plan.md`/`tasks.md` (skill `journal`).
+**Ce que la gate ne touche pas, et ce qu'elle écrit** — la frontière est là, et elle n'est pas
+« lecture seule » :
+
+- elle ne modifie **aucun document du contrat** : `spec.md`, `plan.md`, `tasks.md` et le socle en
+  sortent **bit pour bit identiques** ;
+- elle ne persiste **aucun verdict comme état** (un PASS écrit deviendrait faux dès la prochaine
+  édition — la gate est bon marché, on la relance) ;
+- elle écrit exactement **deux artefacts, ailleurs** : **une ligne datée dans
+  `docs/journal/NNN-slug.md`** et une **fiche de chantier de gate** (`<gate>` ci-dessous), qui porte
+  la liste de corrections et **jamais** le verdict.
+
+La ligne de journal est un *événement* — « le 28/07, la gate a rendu PRÊT » reste vrai pour
+toujours — et non un état qu'on relirait comme « la feature est validée ». Un lecteur ne le
+convertit jamais en état sans contrôler sa fraîcheur contre la date de modification de
+`spec.md`/`plan.md`/`tasks.md` (skill `journal`). Pourquoi la fiche, elle, a le droit d'exister :
+`<gate>`.
 
 Ce n'est pas une revue de code : le code n'existe pas encore et n'est pas notre affaire. C'est un
 **contrôle qualité du contrat** — des « unit tests for English ». Attraper un trou ici coûte
@@ -19,7 +28,7 @@ infiniment moins cher qu'après l'implémentation.
 </role>
 
 <checks>
-Quinze contrôles, groupés. Chacun est **vérifiable** : ne rapporte que ce qui est constatable dans
+Seize contrôles, groupés. Chacun est **vérifiable** : ne rapporte que ce qui est constatable dans
 les fichiers, jamais une impression.
 
 **Traçabilité (la chaîne doit être complète et sans orphelin)**
@@ -48,6 +57,9 @@ les fichiers, jamais une impression.
 
 **Architecture (le socle structurel, quand il existe)**
 15. **Invariants d'architecture** : les fichiers touchés de `plan.md` respectent les invariants de `docs/archi.md` — aucune frontière franchie, aucun sens de dépendance inversé, aucun artefact placé hors du dossier prescrit —, ou la dérogation est **nommée et justifiée** dans « Réutilisation du socle » (l'étape de confrontation de `/scd-sdd:plan`). Une dérogation muette est un **Major**. Ce contrôle est **Major, jamais Critical** : bloquer la gate dessus ferait d'`analyze` un `arch-invariants` avant l'heure, alors que c'est la CI qui mesure une violation sur le code réel. **Pas de `docs/archi.md` → le contrôle est sans objet**, et son absence n'est pas un finding : la phase `archi` n'a simplement pas été jouée.
+
+**Gherkin dérivé (quand la feature en porte)**
+16. **`.feature` dérivé et bien formé** : la feature porte-t-elle des `specs/NNN-slug/acceptance/*.feature` ? **Aucun → le contrôle ne se déclenche pas**, et ce n'est pas un finding : c'est une non-applicabilité (le Gherkin est un complément réservé aux critères à combinatoire réelle). Au moins un → **charge le bloc `<guidance>` de `references/gherkin.md`** — il porte les règles de dérivation et de forme, qui **ne sont pas recopiées ici** — et confronte chaque fichier à ses deux questions : est-il **dérivé** d'un `FR-0xx`/`SHALL` de `spec.md` qu'il cite et dont il ne s'écarte pas, et est-il **bien formé** ? Trois natures de finding, trois sévérités. Un `.feature` qui **contredit** le `SHALL` qu'il cite est un **Critical** : deux vérités concurrentes dans le même contrat, et c'est l'exécutable que l'aval suivra — rien en aval ne rattrape l'écart, puisque l'implémentation le fera passer au vert tel quel. Un `.feature` **sans `SHALL` d'origine** (aucune référence, ou une référence vers un `FR` inexistant) est un **Major** : du scope creep exécutable, précédent exact de la tâche orpheline du contrôle 3. Un défaut de **forme** est un **Major**. Ce contrôle **ne porte jamais sur le vert** : ce plugin n'exécute aucun test, et le faire passer appartient au workflow d'implémentation.
 </checks>
 
 <report>
@@ -55,8 +67,8 @@ Le rapport reste en conversation. **Sa liste de travail, elle, est écrite dans 
 gate** (`<gate>` ci-dessous) — sans quoi elle meurt au `/clear` suivant, et la passe d'après
 repart à froid. Findings classés par ce qu'ils coûtent en aval :
 
-- **Critical** — rend l'implémentation non fiable, ou la review aval fictive : `FR` sans impl ou sans vérification observable, `[NEEDS CLARIFICATION]` restant, plan contredisant un ADR, scope EXCLU violé, critère non testable (adjectif nu), **lot horizontal**, **lot à sujets multiples**, mode `check`/`inhérent` masquant l'absence de preuve sur de la **logique métier**.
-- **Major** — fera perdre du temps : backref manquant, tâche orpheline, critère hors EARS, fuite de stack dans la spec, `FR` non atomique, **lot hors seuils de scission**, **mode de vérification ≠ `TDD` non justifié**, **invariant de `docs/archi.md` franchi sans dérogation justifiée**.
+- **Critical** — rend l'implémentation non fiable, ou la review aval fictive : `FR` sans impl ou sans vérification observable, `[NEEDS CLARIFICATION]` restant, plan contredisant un ADR, scope EXCLU violé, critère non testable (adjectif nu), **lot horizontal**, **lot à sujets multiples**, mode `check`/`inhérent` masquant l'absence de preuve sur de la **logique métier**, **`.feature` contredisant le `SHALL` qu'il cite**.
+- **Major** — fera perdre du temps : backref manquant, tâche orpheline, critère hors EARS, fuite de stack dans la spec, `FR` non atomique, **lot hors seuils de scission**, **mode de vérification ≠ `TDD` non justifié**, **invariant de `docs/archi.md` franchi sans dérogation justifiée**, **`.feature` sans `SHALL` d'origine ou mal formé**.
 - **Minor** — améliore : `[P]` douteux, patron de référence absent, formulation perfectible.
 
 Format :
@@ -100,8 +112,11 @@ feature est grosse) :
 - `slice-auditor` — reviewability du découpage (contrôles 12-14).
 
 Ils sont indépendants : les lancer en parallèle, puis fusionner leurs findings dans un rapport
-unique sans les rejuger. **Le contrôle 15 n'est délégué ni à l'un ni à l'autre** : il se juge
-contre `docs/archi.md`, que le contexte principal a lu, et les deux mandats restent ceux-ci.
+unique sans les rejuger. **Les contrôles 15 et 16 ne sont délégués ni à l'un ni à l'autre**, et les
+deux mandats **1-11 / 12-14 restent bornés tels quels** : le 15 se juge contre `docs/archi.md`, que
+le contexte principal a lu ; le 16 porte sur `acceptance/*.feature`, que ni l'un ni l'autre ne
+reçoit dans son protocole d'entrée, et demande un chargement conditionnel qu'aucun des deux ne
+déclare. Ajouter « et 16 » à un mandat contigu coûterait plus qu'il ne rapporte.
 </report>
 
 <gate>
@@ -169,7 +184,7 @@ C'est la frontière qui empêche la gate de devenir un tampon.
 **Appariement entre passes.** Un finding est identifié par le triplet **`[ID]` · fichier ·
 nature** (`[FR-003] spec.md adjectif-sans-cible`). À chaque passe :
 
-1. **Dérouler les 15 contrôles intégralement.** On ne saute **jamais** un contrôle parce que la
+1. **Dérouler les 16 contrôles intégralement.** On ne saute **jamais** un contrôle parce que la
    fiche dit « arbitré » — on détecte tout, on ne change que la *présentation*.
 2. Un finding apparié à une entrée d'`## Écarté` → bloc **« Déjà arbitrés »**, hors du décompte
    qui décide du verdict.

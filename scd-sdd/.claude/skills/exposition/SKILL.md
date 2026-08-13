@@ -143,8 +143,17 @@ La sortie tient en trois gestes :
 - **regroupe ce qui se décide ensemble.** Dix items qui tiennent au même motif se présentent comme
   un motif et dix conséquences, pas comme dix arbitrages.
 
-Les points 2, 3 et 5 restent entiers : un item dont le mécanisme n'est pas compris ne se juge pas
-plus qu'une option.
+**Deux points changent d'usage, cinq restent entiers, et il n'y a pas de reste.** Le **1** et le
+**6** sont ceux que la table ci-dessus re-cadre — l'ordre se joue en tête et une seule fois, la
+longueur se règle sur le nombre d'items. Les **2**, **3**, **4**, **5** et **7** s'appliquent tels
+quels : un item dont le mécanisme n'est pas compris ne se juge pas plus qu'une option, un chiffre
+s'y donne dans l'unité de la décision, et un ID y porte ce que sa décision a fait.
+
+⚠️ Le point **7** est le plus sollicité des cinq, parce qu'un gate produit des comptes. Le décor
+annonce « 2 Critical, 3 Major » ou « quatre problèmes » : un compte ne vaut que **énuméré**, et
+l'énumération se fait là où le compte est donné. Et l'interprétation se déclare **sur l'item qui
+s'en sert** — jamais dans le décor, qui est commun quand une lecture discutable, elle, ne l'est
+pas.
 
 ## Un exemple travaillé
 
@@ -171,8 +180,7 @@ Ce n'est pas un gabarit. C'est ce qui a marché **une fois**, sur un sujet dense
 
 ## Ce que l'exposition n'est pas
 
-- **Ce n'est pas un plan-type.** Huit sections numérotées sur une question qui en demande deux est
-  le même défaut par l'autre bout. L'ordre du point 1 est une **contrainte de dépendance** — ne rien
+- **Ce n'est pas un plan-type.** L'ordre du point 1 est une **contrainte de dépendance** — ne rien
   supposer d'acquis qui n'ait été donné —, pas un sommaire à remplir.
 - **Ce n'est pas de la vulgarisation systématique.** On explique ce dont le **choix** dépend. Le
   reste se nomme et se laisse.

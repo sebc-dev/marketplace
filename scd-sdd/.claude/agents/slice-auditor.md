@@ -25,7 +25,8 @@ Un chemin `specs/NNN-feature/`. Si non fourni, demande-le.
 3. Charge la checklist : `references/reviewability.md` du skill `feature-specs`.
 4. Applique-la **lot par lot** — jamais à la feature entière. Pour chaque `Rn` :
    - **Bloquants** : un seul sujet ? vertical slice (traverse les couches, livre de la valeur vérifiable) ? compréhensible seul ?
-   - **Signaux** : budget > ~400 lignes ? > ~7 concepts ? > ~5-7 critères par exigence ?
+   - **Signaux** : le lot dépasse-t-il l'un des trois seuils chiffrés de `<criteria>` ? (Ils sont
+     dans la checklist que tu viens de charger, et nulle part dans ce fichier.)
    - **Trop petit** : le lot livre-t-il un incrément vérifiable, ou est-ce une couche déguisée ?
 5. Contrôle la cohérence de l'ensemble : les lots couvrent-ils tous les `FR` de la spec ? Leurs dépendances sont-elles d'ordre et non de compréhension ? Un lot `[P]` a-t-il vraiment des fichiers disjoints de ses pairs `[P]` ?
 6. Pour chaque lot rejeté, **propose un axe de scission** concret tiré de `<splitting>` (étapes du workflow, variations de règle, variations de données, CRUD, chemins, effort) — nomme l'axe et les lots résultants, sans réécrire `tasks.md`.

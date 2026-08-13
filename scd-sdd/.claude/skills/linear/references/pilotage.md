@@ -4,9 +4,9 @@ Chargée par `/scd-sdd:linear-review` — **seule** —, avec les blocs `<auth>`
 `references/api.md` et le `<contrat>` de `references/linear-md.md`.
 
 Tout ce que cette référence décrit se **rend en session et meurt avec elle** : rien n'est persisté,
-ni dans les fichiers, ni chez Linear. Les chiffres et les verbatims viennent des deux rapports
-committés du 2026-08-10 (`docs/scd-sdd/linear-workflow.md`, `linear-tools.md`), sources primaires
-Linear citées ; les requêtes qui les mesurent vivent dans le bloc `<pilotage>` d'`api.md`.
+ni dans les fichiers, ni chez Linear. Les chiffres et les verbatims sont **arrêtés au 2026-08-10** et
+viennent de la documentation officielle Linear, citée à l'endroit où chacun sert ; les requêtes qui
+les mesurent vivent dans le bloc `<pilotage>` d'`api.md`.
 
 <seuils>
 
@@ -59,24 +59,12 @@ chez Linear :
 | **Next** | Medium | la suite proche |
 | **Later** | Low + No priority | le reste — dont ce qui n'a jamais été priorisé |
 
-Squelette du rendu — le `<report>` littéral appartient à la commande, ceci en fixe l'ossature :
-
-```
-📊 Pilotage Linear — lecture seule
-   Décompte workspace : N / 250 issues non archivées   [+ avertissement si ≥ ~200]
-
-Now    [Urgent + High]      <identifier>  <titre>   (<projet>)
-Next   [Medium]             …
-Later  [Low + No priority]  …
-
-Hygiène
-   N terminées non archivées → candidates à l'archivage
-   N sans priorité → `P` dans Linear
-   N started dormantes (> cycle de revue) → à trancher dans Linear
-   N issues du miroir sans contrepartie fichier → candidates à l'archivage, non touchées
-
-→ Rien n'a été écrit, ni dans les fichiers, ni chez Linear.
-```
+**L'ossature du rendu n'est pas ici** : elle est le `<report>` **littéral** de
+`/scd-sdd:linear-review`, que la charte §1 exige et que la commande émet tel quel. Ce bloc dit ce
+qui se classe et selon quel champ ; la commande dit dans quel ordre et sous quels libellés ça
+s'affiche — chaque fait à un seul endroit, alors que les deux sont chargés dans la même fenêtre
+(§D35). Trois lignes du rapport n'ont pas d'autre source que la table ci-dessus : les libellés
+`[Urgent + High]`, `[Medium]`, `[Low + No priority]`.
 
 Les `identifier` Linear s'affichent **en session** — c'est légal, la vue meurt avec elle. Ils ne
 s'écrivent dans **aucun** fichier du dépôt.

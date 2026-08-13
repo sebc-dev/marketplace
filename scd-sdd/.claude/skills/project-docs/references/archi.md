@@ -4,8 +4,8 @@
 Répond au **comment au niveau structure** : ce que la stack impose déjà, ce qui reste réellement
 ouvert, et ce que le code s'interdit désormais. Trace vers le PRD (les caractéristiques servent des
 `FR`/`SC`) et vers la Stack (le constat porte sur le langage et le framework déjà tranchés).
-Produit **`docs/archi.md`**, septième document du socle, en **trois temps** — constat, options
-justifiées, compilation en invariants.
+Produit **`docs/archi.md`**, **quatrième** document du socle — après le Brief, le PRD et la Stack,
+avant les ADR —, en **trois temps** : constat, options justifiées, compilation en invariants.
 
 Ce fichier est la **synthèse** ; les ADR portent le rationale, un par décision — exactement la
 relation `docs/stack.md` ↔ `docs/adr/`. Chaque invariant est un **candidat ADR** que la phase `adr`

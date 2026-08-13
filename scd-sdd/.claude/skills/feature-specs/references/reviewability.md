@@ -9,6 +9,11 @@ Chargée par la phase `tasks` (pour **dimensionner**) et par le subagent `slice-
 **auditer**). Le lot de review (`Rn`) est un **groupe de tâches**, pas un fichier : il vit dans les
 en-têtes de `tasks.md`.
 
+⚠️ **Ce fichier est le domicile des seuils de scission chiffrés.** Ni le `SKILL.md`, ni
+`references/tasks.md`, ni la commande `tasks`, ni l'agent `slice-auditor` ne les recopient : ils y
+renvoient. Seul le **contrôle 14** de `references/analyze.md` les porte en clair, parce que la gate
+le joue sans charger ce fichier — c'est l'exception, et elle est nommée ici.
+
 **Ce que la reviewability n'est pas :** un budget de lignes. La taille est une condition
 **nécessaire mais non suffisante** — un lot petit mais incohérent, ou plausible-mais-faux, échappe
 quand même à la détection. Ce sont la **cohésion**, l'**indépendance** et la **structuration** qui
@@ -66,8 +71,8 @@ sections « Fichiers touchés » sont disjointes — même règle que pour les t
 </splitting>
 
 <pitfalls>
-- **Ne transforme pas une estimation en gate.** Les seuils chiffrés (400 lignes, 60 min, 7 concepts)
-  viennent d'études sur le **code** et l'**inspection formelle**, transposés aux documents par
+- **Ne transforme pas une estimation en gate.** Les seuils chiffrés de `<criteria>` viennent
+  d'études sur le **code** et l'**inspection formelle**, transposés aux documents par
   analogie raisonnée. Aucun seuil de taille n'est empiriquement validé pour des specs. Ils
   déclenchent une question (« ce lot ne serait-il pas trop gros ? »), ils ne rendent pas un verdict.
 - **Le budget en lignes est une estimation documentaire**, dérivée des « Fichiers touchés » du

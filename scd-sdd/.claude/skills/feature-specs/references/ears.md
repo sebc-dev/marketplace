@@ -1,5 +1,10 @@
 # Référence — EARS (Easy Approach to Requirements Syntax)
 
+Chargée par `/scd-sdd:specify` (intégralement, avec `references/spec.md`) et par l'agent
+**`premortem-applier`**, qui écrit un critère neuf sur un `FR` existant et doit le poser dans un des
+cinq patterns. Ailleurs, elle est **citée sans être chargée** : le contrôle 4 d'`analyze` et la table
+des cibles du skill `premortem` y renvoient pour le compte des patterns, pas pour la matière.
+
 <patterns>
 Forme générale : `While <précondition(s)>, when <déclencheur>, the <système> shall <réponse(s)>.`
 Zéro-ou-plusieurs préconditions, zéro-ou-un déclencheur, un nom de système, une-ou-plusieurs réponses.

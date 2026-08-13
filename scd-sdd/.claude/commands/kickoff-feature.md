@@ -65,7 +65,9 @@ Ratio : 30% humain / 70% AI (setup mécanique + cadrage ; l'humain tranche l'éc
      (fichiers touchés disjoints, branche ou worktree par lot) ;
    - laisse **l'humain trancher** (`AskUserQuestion`) — tu ne bloques pas.
 
-4. **Calibre l'échelle** (seuils du skill / de la constitution `CLAUDE.md`) :
+4. **Calibre l'échelle.** La table ci-dessous porte les seuils **par défaut** ; si le `CLAUDE.md`
+   du projet en porte d'autres, ce sont les siens qui s'appliquent, et **tu dis lequel des deux tu
+   suis** (règle de priorité : skill `feature-specs`, § *Seuils de déclenchement*).
 
    | Ampleur | Décision |
    |---|---|
@@ -95,7 +97,7 @@ Ratio : 30% humain / 70% AI (setup mécanique + cadrage ; l'humain tranche l'éc
    | 2 | `/scd-sdd:clarify NNN` | `spec.md` sans marqueur |
    | 3 | `/scd-sdd:plan NNN` | `plan.md` (en plan mode) |
    | 4 | `/scd-sdd:tasks NNN` | `tasks.md` — lots `Rn`, tâches `Tn` |
-   | 5 | `/scd-sdd:analyze NNN` | **gate de conformité** — rapport + verdict, lecture seule |
+   | 5 | `/scd-sdd:analyze NNN` | **gate de conformité** — rapport + verdict ; ne touche à aucun document du contrat |
    | *(hors phase)* | `/scd-sdd:premortem NNN` | **durcissement adverse**, optionnel, à fort enjeu → re-`analyze` |
    | → | `/scd-sdd:run NNN R1` | niveau **implémentation** : un lot → une PR |
 
@@ -144,7 +146,10 @@ feature n'a été ouverte.
 
 ## Skill active
 
-- `feature-specs` — vue d'ensemble du cycle, table « Cibler une feature », seuils.
+- `feature-specs` — vue d'ensemble du cycle, table « Cibler une feature », seuils. Plus, **en mode
+  delta seulement**, l'en-tête du `<template>` de `references/delta.md` — c'est le marqueur
+  `DELTA.md` de l'étape 6, et rien de plus : les sections `[ADDED]`/`[MODIFIED]`/`[REMOVED]`
+  appartiennent à `specify`.
 - `journal` — contrat de `docs/journal/*.md` (gabarit, règle d'ajout).
 
 ## À la fin

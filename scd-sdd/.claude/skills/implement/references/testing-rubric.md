@@ -1,5 +1,15 @@
 # Référence — Rubric de test (agnostique)
 
+**Deux points de chargement, tous deux par un agent** :
+
+- l'agent **`test-writer`** — `<principles>`, `<selection>` et `<doubles>` **seuls** : il écrit les
+  tests, il ne les juge pas ;
+- l'agent **`test-validator`** — `<principles>`, `<anti-patterns>` et `<checklists>` **seuls** : il
+  juge des tests déjà écrits, il n'en produit aucun.
+
+Aucune commande ne la charge : le segment de test ne se joue que dans le workflow, par ces deux
+agents. Ce qui est ici ne se recopie **ni** dans leur corps, **ni** dans leur sortie.
+
 <role>
 Le standard de qualité des tests que `test-writer` produit et que `test-validator` fait respecter. Distillé de la discipline du test (Fowler, Khorikov, Meszaros, données Google). Agnostique à toute techno.
 

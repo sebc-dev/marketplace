@@ -23,27 +23,23 @@ et tu qualifies).
 
 ## Règles absolues
 
-- **Une affirmation sans citation est une affirmation du modèle.** Elle s'écrit comme telle —
-  « de mémoire, non vérifié » — ou elle ne s'écrit pas. C'est la règle du skill `research`, et
-  elle ne s'assouplit pas parce que la question est courte.
-- **Tu remontes à la source primaire.** Un chiffre trouvé sur trois pages qui se citent l'une
-  l'autre n'est pas recoupé : c'est **une seule** source, et tu le dis.
-- **L'absence de donnée est un résultat.** « Aucune source primaire trouvée » est une réponse
-  valable, et souvent la plus utile. Tu ne combles jamais par une approximation plausible.
+- **Tu appliques le skill `research`, tu ne le résumes pas.** Sa méthode est **chargée** — voir
+  `## Skill active`, qui dit ce qu'elle contient —, donc absente d'ici. Elle ne s'assouplit **pas**
+  parce que la question est courte : c'est justement là qu'on est tenté de la sauter.
 - **Tu n'écris aucun fichier.** Ni rapport, ni note, ni ligne de journal, ni document du socle.
-  Ta sortie est la session, point. C'est ce qui te distingue de `/scd-sdd:research`.
-- **Tu ne modifies aucun document du projet** — pas `docs/stack.md`, pas un ADR, pas `CLAUDE.md`.
-  Ce que tu trouves alimente une décision humaine ; il ne descend pas tout seul.
-- **Tu annonces les murs avant de chercher, jamais après** : paywall, connexion, CAPTCHA,
-  `robots.txt`, données privées. Une question dont la réponse est derrière l'un d'eux se
-  reformule ; elle ne se contourne pas.
+  Ta sortie est la session, point. C'est ce qui te distingue de `/scd-sdd:research`, et ton
+  `allowed-tools` en est la preuve : tu n'as aucun outil d'écriture.
+- **Tu annonces les murs avant de chercher, jamais après.** Une question dont la réponse est
+  derrière un mur se reformule ; elle ne se contourne pas. Lesquels : au skill, § *Ce que la
+  recherche ne peut pas atteindre*.
 - **Une question trop large ne se rétrécit pas en silence.** Tu réponds sur ce que tu peux, tu
   dis ce que tu as laissé de côté, et tu renvoies vers `/scd-sdd:research`.
 
 ## Définitions
 
-- **Établi** : porté par une source primaire identifiée et lisible. Un chiffre d'éval interne
-  publié par un éditeur est établi comme *publié*, pas comme *répliqué* — écris la différence.
+- **Établi** : porté par une source primaire identifiée et lisible. C'est le mot que la ligne
+  `Non établi` du bloc de sortie nie ; ce qu'« établi » ne garantit **pas** — publié n'est pas
+  répliqué — est au skill.
 - **Question courte** : une question dont la réponse tient en quelques affirmations sourcées,
   sans arbitrage entre hypothèses concurrentes ni comparaison multi-critères. Au-delà, c'est un
   rapport.
@@ -54,28 +50,25 @@ et tu qualifies).
    travers : dis ce que tu as compris, et à quelle date la réponse doit être vraie. Aucun
    argument fourni → demande la question plutôt que d'en inventer une.
 
-2. **Charge le skill `research`** — méthode, niveaux de preuve, étiquetage des sources, murs. Tu
-   ne recopies rien de son contenu dans ta réponse : tu l'appliques.
+2. **Charge le skill `research`.** Tu ne recopies rien de son contenu dans ta réponse : tu
+   l'appliques. Tout ce qui suit nomme **quand** tu fais quoi ; le **comment** est là-dedans.
 
-3. **Annonce les murs** si la question les touche (source derrière une connexion, dépôt privé,
+3. **Annonce les murs** si la question en touche un (source derrière une connexion, dépôt privé,
    outil interne). Avant la recherche, pas après.
 
-4. **Cherche large, puis resserre.** Cartographie d'abord ce qui existe sur le sujet, puis vas
-   au document d'origine — documentation officielle, dépôt, changelog, PDF académique, texte de
-   loi — plutôt qu'aux pages qui les recopient.
+4. **Cherche**, selon le § *Chercher — ce qui ne bouge pas* du skill, dans l'ordre de ses points.
+   La seule chose que cette commande ajoute : **tu t'arrêtes dès que la réponse tient**. Une
+   question courte ne mérite pas vingt sources — et si elle les mérite, l'étape 7 le dira.
 
-5. **Extrais les passages verbatim** qui portent la réponse, puis fonde la réponse dessus.
-   L'ordre compte : citer après avoir conclu revient à chercher une justification.
+5. **Qualifie** ce que tu as trouvé sur les **deux axes** du § *Niveaux de preuve séparés, sources
+   étiquetées* — niveau de preuve **et** étiquette de source, avec les mots exacts que le skill
+   fige. Jamais l'un pour l'autre : le bloc de sortie porte les deux.
 
-6. **Étiquette chaque source et sépare les niveaux de preuve** — officiel · préprint indépendant ·
-   benchmark d'éditeur · commercial, et mesuré / rapporté / anecdotique / non étayé. Les deux
-   axes, pas l'un pour l'autre.
+6. **Si les sources divergent**, applique le § *Hypothèses concurrentes, et auto-critique*. Pour une
+   question courte, une divergence réelle est en soi le signal que la question relève de
+   `/scd-sdd:research`.
 
-7. **Si les sources divergent, ne tranche pas artificiellement** : pose H1, H2 et ce qui les
-   départagerait. Une divergence entre deux sources officielles est une information sur le
-   sujet.
-
-8. **Rends la réponse**, courte, une source par affirmation (voir le bloc ci-dessous). Puis
+7. **Rends la réponse**, courte, une source par affirmation (voir le bloc ci-dessous). Puis
    **contrôle la largeur** : s'il a fallu plus de quelques affirmations, ou si un arbitrage
    pointe, dis-le et renvoie vers `/scd-sdd:research`.
 
@@ -109,8 +102,6 @@ Une question trop large ajoute en pied :
   `/scd-sdd:research`, dans ses deux temps.
 - Tu ne contournes aucun mur — pas de cache, pas de miroir, pas de reformulation d'URL pour
   passer sous un `robots.txt`.
-- Tu ne présentes pas un consensus de pages secondaires comme un recoupement.
-- Tu ne rends pas un niveau de confiance comme une probabilité : c'est un classement.
 - Tu ne lances aucune commande, tu n'installes rien, tu n'exécutes aucun outil « pour voir ».
 
 ## Consigne au journal
@@ -124,10 +115,12 @@ faut : c'est un rapport, donc `/scd-sdd:research`.
 
 ## Skill active
 
-- `research` — méthode de recherche : ancrage par citations verbatim, incertitude permise,
-  hypothèses concurrentes, niveaux de preuve et étiquetage des sources, qualité de source, murs
-  de la recherche web. Tu n'as **pas** besoin de `references/prompt-research.md` : elle sert à
-  composer un prompt et à relire un rapport, deux choses que tu ne fais pas.
+- `research` — toute la méthode, et c'est l'inventaire de ce qui n'est **pas** écrit dans ce
+  fichier : ancrage par citations verbatim, incertitude permise et absence de donnée comme
+  résultat, hypothèses concurrentes, les deux vocabulaires fermés (niveaux de preuve · étiquettes
+  de source), qualité de source et remontée au document d'origine, murs de la recherche web.
+  Aucune `references/` : `prompt-research.md` sert à composer un prompt et à relire un rapport,
+  deux choses que tu ne fais pas — tu ne la charges **jamais**, pas même un de ses blocs.
 
 ## À la fin
 

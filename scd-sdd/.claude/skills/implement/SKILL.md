@@ -39,13 +39,12 @@ et le final (4-9) sont **invariants** ; le **segment de vérification** dépend 
 3. **Prepare** (`lot-briefer`) — parse le lot **et son mode de vérif**, pull les SHALL depuis
    `spec.md`, détecte la commande de test.
 
-   **Segment de vérification** — l'ordre des phases dépend du mode :
-
-   | Mode | Segment |
-   |---|---|
-   | `TDD` (défaut) | **Red** (`test-writer`, rouge confirmé) → **Validate** (`test-validator`, 1 SHALL = 1 test, boucle ≤ 2) → **Green** (`implementer`, jusqu'au vert **sans toucher aux tests**, retry ≤ 3) |
-   | `test-after` | **Green** (`implementer` d'abord, prouve build/run) → **Red** (tests écrits après, **vert** attendu) → **Validate** → **Green** (porte : `0 failed`, tests intacts) |
-   | `check` / `inhérent` | **Green** (selon le critère d'acceptation) → **Verify** (`verifier`, **contexte frais**) : vérif observable dédiée, ou ré-exécution du critère d'acceptation → preuve capturée, ou `humanCheckRequired` remonté à la PR |
+   **Segment de vérification** — quatre phases possibles, dont le **sous-ensemble et l'ordre**
+   dépendent du mode : **Red** (`test-writer`), **Validate** (`test-validator`), **Green**
+   (`implementer`) et **Verify** (`verifier`, **contexte frais**, modes sans test). Une phase non
+   jouée n'apparaît simplement pas dans le run. ⚠️ **La table mode→segment vit dans
+   `references/verification-modes.md` (`<modes>`) et nulle part ailleurs** — c'est le fait qui
+   divergerait le premier s'il était recopié ici.
 
 4. **Review** (`code-reviewer`) — six dimensions, en contexte frais (**tous les modes**).
 5. **Triage** (`review-validator`) — sceptique adversarial, apply/skip.
@@ -79,17 +78,18 @@ qu'un humain la review, ce niveau-ci la livre effectivement en PR. Détails d'or
 - **Producteur ≠ vérificateur.** Ni `code-reviewer` (tous modes) ni `verifier` (check/inhérent)
   n'ont écrit le code : le second regard en contexte frais tue le self-preferential bias.
 - **Sceptique mais sobre.** Le triage reproduit chaque finding avant de le retenir et ne
-  corrige que **correction et exigences** (`references/review-dimensions.md`).
+  corrige que **correction et exigences**. La grille est dans `references/review-dimensions.md`,
+  qu'aucune commande ne charge : les agents `code-reviewer` et `review-validator` s'en chargent
+  eux-mêmes, chacun ses blocs.
 
 ## Cibler feature et lot (résolution)
 
-`/clear` efface le contexte : une commande ne suppose pas sa cible. **La feature** se résout par la section **« Cibler une feature » du skill `feature-specs`** —
-source de vérité unique du plugin, référencée et jamais recopiée. Ce niveau n'y ajoute qu'un
-filtre : les features dont le `tasks.md` porte des lots non entièrement cochés. **Le lot**, en
-propre : l'argument `Rn` s'il est fourni ; sinon le premier `Rn` non entièrement coché **dont
-toutes les dépendances sont faites** (`dépend de : Rn`), pris et annoncé ; sinon **ne devine
-pas** — signale le blocage, propose le lot débloquable, ou `AskUserQuestion` / renvoi vers
-`/scd-sdd:status-impl`.
+`/clear` efface le contexte : une commande ne suppose **jamais** sa cible. **La feature** se résout
+par la section **« Cibler une feature » du skill `feature-specs`** — source de vérité unique du
+plugin, référencée et jamais recopiée. **Le lot** se résout en propre à ce niveau, et la règle — le
+filtre de candidature des features compris — vit dans le bloc `<resolution>` de
+`references/tasks-parsing.md`, que les sept commandes concernées chargent. Le principe qui la
+gouverne, lui, ne se délègue pas : **on ne devine pas un lot**, on signale le blocage.
 
 **L'état vit dans les cases de `tasks.md`** — c'est `progress-recorder` qui les coche, et
 `status-impl` qui les relit. Parsing : `references/tasks-parsing.md`.
@@ -115,10 +115,11 @@ amont ; la discipline est portée par la **structure** du workflow.
 
 ## Routage de modèles
 
-Pour maîtriser le coût : **opus** — raisonnement dur (`test-validator`, `code-reviewer`,
-`review-validator`, `verifier`, `pr-describer`) ; **sonnet** — génération de code
-(`test-writer`, `implementer`, `fix-applier`, `lot-briefer`) et `pr-author` (garde-fous à
-conditions) ; **haiku** — mécanique (`branch-setup`, `rebaser`, `progress-recorder`).
+Le modèle est **imposé à l'appel**, par phase — jamais déclaré dans le `.md` de l'agent — et c'est le
+levier de coût du workflow : raisonnement dur en **opus**, génération de code en **sonnet**, mécanique
+en **haiku**. ⚠️ **L'affectation phase→modèle vit dans la table des phases de
+`references/workflow-template.md`, et nulle part ailleurs** : c'est une propriété du script, qui
+change avec lui.
 
 ## Base et rebase
 
@@ -176,8 +177,8 @@ Lancer plusieurs lots en même temps lève deux obstacles **distincts** — ne j
 **`/scd-sdd:run-parallel`** calcule la **co-parallélisabilité** (co-lançables **ssi**
 `Fichiers :` disjoints **ET** aucune dépendance mutuelle non mergée), **sérialise** en chaîne
 `--base` ce qui se recoupe, fetch **une seule fois**, puis lance `implement-parallel.js`.
-Mécanique : `references/workflow-template.md` (§`worktree`, §`parallel`) et
-`references/tasks-parsing.md` (§co-parallélisabilité).
+Mécanique : `references/workflow-template.md` (`<worktree>`, `<parallel>`) et
+`references/tasks-parsing.md` (`<co-parallelism>`).
 
 ## Le contrat de fichier d'un dynamic workflow (rappel)
 
@@ -188,12 +189,14 @@ boucles gardées par compteur **et** `budget.remaining()` · **aucun**
 
 ## Les artefacts et outils (progressive disclosure)
 
-Charge **uniquement** la référence utile à la phase courante :
+Charge **uniquement** la référence utile à la phase courante, et **seulement les blocs** dont tu as
+besoin. Deux des cinq ne sont chargées **par aucune commande** : ce sont des **agents** qui les
+chargent, chacun ses blocs.
 
-| Référence | Contenu | Sections |
-|---|---|---|
-| `tasks-parsing.md` | Lots `Rn`, tâches `Tn`, `_vérif :_`, `_Requirements:_`, `[P]`, `Fichiers :`, `dépend de :` ; pull des SHALL ; **co-parallélisabilité**. Chargée par `run`, `run-parallel`, `status-impl` | `role` `parsing` `resolution` `co-parallelism` |
-| `verification-modes.md` | Les 4 modes et leur segment de phases, EARS→test, vérif observable, check « tests intacts », porte de vérif par preuve | `role` `modes` `tdd` `observable` `enforcement` `pitfalls` |
-| `testing-rubric.md` | Rubric de test (FIRST, AAA, EP+BVA, doubles, anti-patterns). Base de `test-writer`/`test-validator` | `principles` `selection` `doubles` `anti-patterns` `checklists` |
-| `review-dimensions.md` | Les six dimensions, le modèle de sévérité, le triage sceptique. Base de `code-reviewer`/`review-validator` | `dimensions` `severity` `triage` |
-| `workflow-template.md` | `implement-lot.js` expliqué : phases et routage de modèles, schémas, boucles gardées, statuts, branche/rebase/PR, adaptation, fallback inline ; **mode worktree** et orchestrateur parallèle | `role` `structure` `worktree` `parallel` `adaptation` `run` |
+| Référence | Contenu | Chargée par | Sections |
+|---|---|---|---|
+| `tasks-parsing.md` | Lots `Rn`, tâches `Tn`, `_vérif :_`, `_Requirements:_`, `[P]`, `Fichiers :`, `dépend de :` ; pull des SHALL ; résolution du lot ; **co-parallélisabilité** | 7 commandes : `run`, `run-parallel` (seule à charger `<co-parallelism>`), `sync`, `reland`, `status-impl`, `status`, `migrate`. **Aucun agent** | `role` `parsing` `resolution` `co-parallelism` |
+| `verification-modes.md` | Les 4 modes et **la table mode→segment**, EARS→test, vérif observable, check « tests intacts », porte de vérif par preuve | `run`, `run-parallel`. **Aucun agent** : chaque agent du segment porte la discipline de **son** mode dans son corps | `role` `modes` `tdd` `observable` `enforcement` `pitfalls` |
+| `testing-rubric.md` | Rubric de test (FIRST, AAA, EP+BVA, doubles, anti-patterns) | **Deux agents** : `test-writer` (`principles` `selection` `doubles`) et `test-validator` (`principles` `anti-patterns` `checklists`). Aucune commande | `principles` `selection` `doubles` `anti-patterns` `checklists` |
+| `review-dimensions.md` | Les six dimensions et leur référent, le modèle de sévérité, le triage sceptique | **Deux agents** : `code-reviewer` (`dimensions` `severity`) et `review-validator` (`triage`). Aucune commande | `dimensions` `severity` `triage` |
+| `workflow-template.md` | `implement-lot.js` expliqué : phases et **affectation phase→modèle**, schémas, boucles gardées, statuts, branche/rebase/PR, adaptation, fallback inline ; **mode worktree** et orchestrateur parallèle | **Sur renvoi, sans point de chargement déclaré** — `run`/`run-parallel` n'en ont pas besoin pour lancer (la recette de lancement vit dans leur `## Processus`) ; elle se lit quand on adapte ou qu'on débogue le script | `role` `structure` `worktree` `parallel` `adaptation` `run` |
