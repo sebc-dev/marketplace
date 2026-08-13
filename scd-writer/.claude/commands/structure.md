@@ -14,12 +14,12 @@ Ratio: 80% human / 20% AI.
 1. **The outline is the author's.** If they don't have one, redirect to `/braindump` rather than writing one.
 2. **Subheadings name the specific thing the section says.** "Understanding X", "The Importance of Y", "The Future of Z" are `structure-symetrique` #16 and never proposed here.
 3. **Reorganize only where a logical problem justifies it.** Name the problem before proposing the change.
-4. **Flag sections at risk of genericity** — those where the author would end up writing something true of any topic.
+4. **Flag sections at risk of genericity**, meaning those where the author would end up writing something true of any topic.
 
 ## Process
 
 1. Read the outline provided via $ARGUMENTS
-2. Ask the article type (technical, REX, tutorial, opinion) and audience if not specified — the type sets the tolerances (**article-types**), and the channel sets what the detectors can measure at all (**canaux**)
+2. Ask the article type (technical, REX, tutorial, opinion) and audience if not specified. The type sets the tolerances (**article-types**), and the channel sets what the detectors can measure at all (**canaux**)
 3. Analyze on 4 axes:
    - **Logical progression**: Can the reader follow naturally?
    - **Blind spots**: Is an important aspect missing?

@@ -1,7 +1,7 @@
 ---
 name: delegation-totale
 description: |
-  Any request to write, generate, expand, or turn notes into a whole finished piece — the
+  Any request to write, generate, expand, or turn notes into a whole finished piece: the
   guardrail against a whole article from one prompt. Reach it before producing the text, for the
   redirect and for the exceptions where direct generation is legitimate. Position: optimization,
   not restriction.
@@ -9,7 +9,7 @@ description: |
 
 ## Why single-prompt generation fails
 
-**Length.** Quality degrades predictably past ~2 000 words in one pass: the model's softmax attention disperses across the growing context, repetition self-reinforcement kicks in (generating "X is important" makes "X is important" more likely again), and mode collapse pulls the output toward the most statistically probable — and therefore most generic — angle.
+**Length.** Quality degrades predictably past ~2 000 words in one pass: the model's softmax attention disperses across the growing context, repetition self-reinforcement kicks in (generating "X is important" makes "X is important" more likely again), and mode collapse pulls the output toward the most statistically probable angle, which is therefore the most generic.
 
 **The angle.** A single prompt under-constrains the completion space. With no iterative feedback narrowing it, the model selects the most probable interpretation of the topic, which is by definition the most generic one. "Write me an article about Vite" produces the article everyone else would get.
 
@@ -63,7 +63,7 @@ Request for content generation
 4. **Ask the key question:** "What are your raw notes or ideas on this topic?"
 
 Example:
-> I can help you write this article, but the result will be significantly better if we use the phased workflow — research shows 15-57% quality improvement from iterative approaches vs single-prompt generation. Do you have raw notes or ideas? Paste them here or start with `/braindump`.
+> I can help you write this article, but the result will be significantly better if we use the phased workflow. Research shows 15-57% quality improvement from iterative approaches vs single-prompt generation. Do you have raw notes or ideas? Paste them here or start with `/braindump`.
 
 ## Exceptions
 
@@ -73,12 +73,12 @@ Direct generation is acceptable when:
 - **The author has already completed braindump/structure:** They're in the workflow and just need a paragraph unblocked (this is /draft territory, not delegation)
 - **Non-article content:** Code comments, documentation snippets, metadata
 
-**Short does not mean standardized.** A LinkedIn post is 80–300 words and is *not* covered by the first exception: it is authored content published under the author's name and one of their hats, it carries a position, and at that length the detection layer is nearly blind (see `canaux` — three of six detectors lose their instrument below ~400 words). Single-prompt generation of a short post produces the most statistically probable take on the topic, which is exactly the feed's failure mode.
+**Short does not mean standardized.** A LinkedIn post is 80–300 words and is *not* covered by the first exception: it is authored content published under the author's name and one of their hats, it carries a position, and at that length the detection layer is nearly blind (see `canaux`: three of six detectors lose their instrument below ~400 words). Single-prompt generation of a short post produces the most statistically probable take on the topic, which is exactly the feed's failure mode.
 
-The test is not length, it is **whether a reader would attribute the thinking to the author**. A changelog nobody signs: exception applies. A 120-word post arguing something: full workflow, compressed — `/braindump` can be three sentences, `/structure` can be one line, but the author supplies the angle.
+The test is not length, it is **whether a reader would attribute the thinking to the author**. A changelog nobody signs: exception applies. A 120-word post arguing something: full workflow, compressed. `/braindump` can be three sentences, `/structure` can be one line, but the author supplies the angle.
 
 ## The scope of the guardrail
 
 One anti-pattern: *a whole article from one prompt*. The phased workflow it redirects to
-(`/braindump` → `/structure` → `/draft` → `/review` → `/polish`) uses AI at every single step — the
+(`/braindump` → `/structure` → `/draft` → `/review` → `/polish`) uses AI at every single step, and the
 guardrail moves the assistance, it does not withdraw it.

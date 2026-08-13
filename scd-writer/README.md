@@ -6,12 +6,20 @@ Articles are written in French first, then translated to English via `/translate
 
 ## Philosophy
 
-Writing is thinking. When you write to learn, the cognitive effort of formulating ideas is the point — not the output. This plugin ensures AI assists the writing process without replacing it.
+Writing is thinking. When you write to learn, the cognitive effort of formulating ideas is the point, not the output. This plugin ensures AI assists the writing process without replacing it.
 
-- **The human owns the content.** Thesis, opinions, anecdotes, angle — always human.
+- **The human owns the content.** Thesis, opinions, anecdotes, angle: always human.
 - **AI owns the process.** Questioning, structural review, detection, surface corrections.
 - **Never 0%/100%.** Even at maximum AI involvement (review), the human still decides what to fix and how.
 - **Iterative beats single-shot.** Research shows 15-57% quality improvement from phased approaches vs single-prompt generation.
+
+## One absolute rule: no dash
+
+`—` and `–` never appear between clauses, in French or in English, at any phase. The rule is the author's and it is about how the character is read in 2026, not about whether it is correct: French typography is on the other side, and the OQLF records the cadratin as legitimate punctuation. It loses anyway.
+
+It is the only rule in the plugin that outranks the arbitration layer. No sample, no channel, no genre and no source reinstates it, and `/polish` is the one place where a marker gets replaced rather than reported. Two narrow exceptions: inside a quotation, and inside a numeric range (`800–2 000 mots`).
+
+The rule lives in `writing-voice`; `structure-symetrique` #13 finds the character by search, `faux-positifs` records that it may not kill it, and `/polish` replaces it. The plugin's own files obey it too, apart from the specimen examples in `fausse-profondeur` #2, which have to show the pattern in order to teach it.
 
 ## Workflow
 
@@ -29,29 +37,29 @@ Writing is thinking. When you write to learn, the cognitive effort of formulatin
 
 ## Skills
 
-15 skills, grouped by the job they do. Each one's own description says when it fires — this table is the human index, not a second copy of them.
+15 skills, grouped by the job they do. Each one's own description says when it fires. This table is the human index, not a second copy of them.
 
 ### The voice, and the three axes that vary under it
 | Skill | Owns |
 |-------|------|
-| `writing-voice` | Editorial identity: six voice rules, anti-fabrication, the draft-time filter — and the definition of the three axes below |
-| `casquettes` | Who is speaking — personal dev, AI Manager at CEGAPE, founder of Isometria |
-| `canaux` | Where and how long — form drives the detectors, platform drives the surface |
-| `article-types` | What kind of piece — the one detector-tolerance table |
+| `writing-voice` | Editorial identity: six voice rules, the banned dash, anti-fabrication, the draft-time filter, and the definition of the three axes below |
+| `casquettes` | Who is speaking: personal dev, AI Manager at CEGAPE, founder of Isometria |
+| `canaux` | Where and how long: form drives the detectors, platform drives the surface |
+| `article-types` | What kind of piece: the one detector-tolerance table |
 
 ### The guardrails
 | Skill | Owns |
 |-------|------|
 | `delegation-totale` | A whole article from one prompt: the redirect, and the exceptions |
-| `cognitive-outsourcing` | Offloading a task vs handing over the understanding — the Socratic redirect |
+| `cognitive-outsourcing` | Offloading a task vs handing over the understanding: the Socratic redirect |
 
 ### The detectors
 | Skill | Owns |
 |-------|------|
 | `slop-poli` | Whether the piece says anything. Outranks every surface finding |
-| `marqueurs-lexicaux` | The statistical distribution — burstiness, register leveling, recycling |
-| `structure-symetrique` | The document's shape — 16 patterns, Bouchard test, genre matrix |
-| `fausse-profondeur` | Mechanical rhetorical figures — 12 categories, paragraph by paragraph |
+| `marqueurs-lexicaux` | The statistical distribution: burstiness, register leveling, recycling |
+| `structure-symetrique` | The document's shape: 16 patterns, Bouchard test, genre matrix, and the dash found by search |
+| `fausse-profondeur` | Mechanical rhetorical figures: 12 categories, paragraph by paragraph |
 | `slop-vocabulary` | Words and expressions overrepresented in LLM output, EN and FR |
 
 ### The arbiter
@@ -62,11 +70,11 @@ Writing is thinking. When you write to learn, the cognitive effort of formulatin
 ### On demand
 | Skill | Owns |
 |-------|------|
-| `lisibilite-fr` | French readability by pure counting — LIX, ARI, and what corrupts them |
-| `seo-editorial` | On-page editorial SEO — Google publishes no character limit, only a pixel budget |
+| `lisibilite-fr` | French readability by pure counting: LIX, ARI, and what corrupts them |
+| `seo-editorial` | On-page editorial SEO: Google publishes no character limit, only a pixel budget |
 | `skills-tiers` | Whether a third-party writing skill can be installed, forked or trusted |
 
-Some skills carry a `references/` folder — dated sources, tooling notes, the evidence behind a guardrail. Those load only when asked for; nothing in a `SKILL.md` depends on having read them.
+Some skills carry a `references/` folder: dated sources, tooling notes, the evidence behind a guardrail. Those load only when asked for; nothing in a `SKILL.md` depends on having read them.
 
 ## Quick start
 

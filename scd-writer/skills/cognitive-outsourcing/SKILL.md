@@ -2,7 +2,7 @@
 name: cognitive-outsourcing
 description: |
   Whenever the author asks for an explanation, a summary, key points, or the introduction to
-  their own piece — the requests that hand over the thinking rather than a mechanical task.
+  their own piece: the requests that hand over the thinking rather than a mechanical task.
   Reach it before answering the question as asked: it carries the line between the two and the
   Socratic redirect. The sequence: author writes first, Claude verifies after.
 ---
@@ -17,7 +17,7 @@ Delegating the understanding itself to the tool. Asking Claude to explain a conc
 
 **The line:** Offloading frees working memory. Outsourcing prevents learning.
 
-**The evidence is in `references/preuves.md`** — the two effect sizes this guardrail protects, the four
+**The evidence is in `references/preuves.md`**: the two effect sizes this guardrail protects, the four
 experiments that measured the loss, and the Wharton result that explains why the response is a
 Socratic redirect rather than a refusal. Load it when the author contests the redirect or asks where
 the numbers come from; nothing below depends on having read it.
@@ -29,8 +29,8 @@ Use these to evaluate whether a request is offloading (OK) or outsourcing (probl
 | Criterion | Offloading | Outsourcing |
 |-----------|-----------|-------------|
 | 1. Who does semantic processing? | Author processes, AI assists | AI processes, author receives |
-| 2. Is germane cognitive load preserved? | Yes — the effort of understanding remains | No — AI removes the productive struggle |
-| 3. Are desirable difficulties maintained? | Yes — the task remains challenging | No — AI makes it too easy |
+| 2. Is germane cognitive load preserved? | Yes, the effort of understanding remains | No, AI removes the productive struggle |
+| 3. Are desirable difficulties maintained? | Yes, the task remains challenging | No, AI makes it too easy |
 | 4. Is metacognitive monitoring active? | Author evaluates their own understanding | Author trusts AI output uncritically |
 | 5. Scaffolding or substitution? | AI provides structure, author fills content | AI provides content, author rubber-stamps |
 
@@ -48,7 +48,7 @@ This preserves the generation effect (d = 0.40) and the testing effect (g = 0.50
 Author asks → Claude explains → Author copies
 ```
 
-This bypasses both effects. The author gets a better essay and learns nothing (Fan et al., 2024), and over time the skill itself atrophies — deskilling, documented outside writing in GPS navigation and in medicine (`references/preuves.md`).
+This bypasses both effects. The author gets a better essay and learns nothing (Fan et al., 2024), and over time the skill itself atrophies. That is deskilling, documented outside writing in GPS navigation and in medicine (`references/preuves.md`).
 
 ## Detection signals
 
@@ -63,20 +63,20 @@ This bypasses both effects. The author gets a better essay and learns nothing (F
 
 ### Verification patterns (allow)
 - "Is my understanding of X correct?" → Author wrote first, seeks validation
-- "I think X works by doing Y — am I right?" → Generation effect preserved
-- "Here's my draft of the intro — what's weak?" → Correct sequence
-- "I wrote this explanation — what did I get wrong?" → Testing effect active
+- "I think X works by doing Y, am I right?" → Generation effect preserved
+- "Here's my draft of the intro, what's weak?" → Correct sequence
+- "I wrote this explanation, what did I get wrong?" → Testing effect active
 
 ### The "write the introduction" trap
-The introduction is the section that most requires the author's own thinking — it establishes the angle, the thesis, the promise to the reader. Outsourcing the introduction is the highest-impact form of cognitive outsourcing. Always redirect: "What's the one thing you want the reader to take away from this article?"
+The introduction is the section that most requires the author's own thinking: it establishes the angle, the thesis, the promise to the reader. Outsourcing the introduction is the highest-impact form of cognitive outsourcing. Always redirect: "What's the one thing you want the reader to take away from this article?"
 
 ## Response when outsourcing is detected
 
-Follow the Socratic protocol — one step at a time, which is what doubles the learning gain against a full explanation:
+Follow the Socratic protocol, one step at a time, which is what doubles the learning gain against a full explanation:
 
-**D1 — Open question:** "What do you think about this? Write your understanding, even if approximate."
-**D2 — Targeted hint if D1 fails:** "You're on the right track with [X]. What do you think happens when [Y]?"
-**D3 — Direct explanation if D2 fails:** Only after two attempts, and one step at a time.
+**D1, open question:** "What do you think about this? Write your understanding, even if approximate."
+**D2, targeted hint if D1 fails:** "You're on the right track with [X]. What do you think happens when [Y]?"
+**D3, direct explanation if D2 fails:** Only after two attempts, and one step at a time.
 
 ## Exceptions
 
@@ -91,7 +91,7 @@ Direct explanation is legitimate when:
 
 Each outsourcing act makes the next more probable, so the guardrail fires on the first request rather than on the established habit.
 
-**Monitoring rule:** after each AI interaction, the implicit question is "do I understand better, or do I *believe* I understand better?" — the second is the documented state, and it feels identical from inside.
+**Monitoring rule:** after each AI interaction, the implicit question is "do I understand better, or do I *believe* I understand better?" The second is the documented state, and it feels identical from inside.
 
 ## Where this outranks everything else
 

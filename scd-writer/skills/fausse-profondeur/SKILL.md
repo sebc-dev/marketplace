@@ -1,19 +1,19 @@
 ---
 name: fausse-profondeur
 description: |
-  Twelve named rhetorical figures that simulate eloquence sentence by sentence — the "it's not X,
+  Twelve named rhetorical figures that simulate eloquence sentence by sentence: the "it's not X,
   it's Y" reframe, the mechanical triad, the empty rhetorical question, the trailing participial
   clause. Reach it to scan a draft paragraph by paragraph, each figure with its suppression test
   and its legitimate-use exception. Whether the piece says anything at all is slop-poli.
 ---
 
-Rhetorical structures that create the illusion of depth, engagement or eloquence while adding zero information — the output of reward models that optimize for "sounds good" over "says something".
+Rhetorical structures that create the illusion of depth, engagement or eloquence while adding zero information, the output of reward models that optimize for "sounds good" over "says something".
 
 Source: R7, *Inventaire des figures rhetoriques mecaniques des LLM*, with data from Reinhart et al. (PNAS 2025), Jiang & Hyland (2025), Guo (2025), Lehmann (2025), Stockton (2025).
 
 ## The 12 categories
 
-### 1. Negation-affirmation reframe — "It's not X, it's Y"
+### 1. Negation-affirmation reframe: "It's not X, it's Y"
 Most distinctive LLM pattern of 2025 (Guo, Stockton, Lehmann). Washington Post analysis: ~6% of 328,744 ChatGPT messages contained this pattern.
 
 **EN examples:** "It's not a tool, it's a mindset." / "No complexity. No overhead. Just results." / "It's less about speed and more about clarity."
@@ -22,14 +22,19 @@ Most distinctive LLM pattern of 2025 (Guo, Stockton, Lehmann). Washington Post a
 **Detection test:** Does the negation introduce a genuine conceptual distinction the reader wouldn't have made? If the "not X" part is a straw man, flag it.
 **Legitimate use:** When the distinction is real, surprising, and backed by argument. "It's not a bug, it's a race condition" is legitimate because it changes the debugging approach.
 
-### 2. Em-dash overuse and formatting artifacts
-Em dash usage tripled on tech subreddits in one year (GitHub "Em Dash Conspiracy" data). Also: random bolding, Unicode formatting, emoji-led bullets in professional context, bullet + bold title restating content.
+### 2. The decorative parenthetical, and formatting artifacts
+
+**The dash itself is not judged here, and there is nothing left to weigh about it.** `—` and `–` are banned outright by **writing-voice**, and **structure-symetrique** #13 owns the character: it finds every occurrence by search, whatever the sentence is doing. What this category owns is what the dash was usually *doing*, and that failure outlives it. A decorative parenthetical does not disappear when its dashes become commas or brackets; it just stops looking like a tell.
+
+Em dash usage tripled on tech subreddits in one year (GitHub "Em Dash Conspiracy" data), which is how the character became a marker at all. Also in this category: random bolding, Unicode formatting, emoji-led bullets in professional context, bullet + bold title restating content.
+
+The examples below keep their dashes on purpose. They are specimens of the banned thing, like the banned words listed in `slop-vocabulary`, and a file that cannot show the pattern cannot teach it. They are the one place in this plugin's own prose where the character is allowed to stand.
 
 **EN examples:** "The real issue — and this is what most people miss — is..." / "Performance — the true bottleneck — demands attention."
 **FR examples:** "Le vrai probleme — et c'est ce que la plupart oublient — c'est..." / "La performance — veritable goulot d'etranglement — merite attention."
 
-**Detection test:** Remove the em-dash clause. Does the sentence lose information? If not, the clause is decorative.
-**Legitimate use:** Parenthetical clauses that add genuinely necessary context, especially when actual parentheses would be confusing.
+**Detection test:** Remove the parenthetical clause, however it is punctuated. Does the sentence lose information? If not, the clause is decorative, and it goes with the dash instead of surviving it as a pair of commas.
+**Legitimate use:** A parenthetical that carries genuinely necessary context. It is legitimate as *content* and still loses its dashes: whether the clause earns its place and how it is punctuated are two separate questions, and #13 answers the second one on its own.
 
 ### 3. Artificial transitions and false engagement
 Simulate conversational engagement without creating authentic connection. Jiang & Hyland (2025): ChatGPT uses fewer real engagement markers while multiplying simulacra.
@@ -55,7 +60,7 @@ Intensifiers that add no precision, and metaphors so overused they carry no imag
 **EN examples:** "Game-changer." / "Supercharge your workflow." / "Tapestry of technologies." / "Navigate the landscape." / "Embark on a journey." / "A testament to innovation." / "Left an indelible mark." / "At the forefront of." / "Beacon of progress."
 **FR examples:** "Veritable revolution." / "Au coeur de l'innovation." / "Fer de lance du progres." / "Paysage technologique." / "Pilier fondamental."
 
-**Detection test:** Replace the amplifier with nothing or with a plain word. Does meaning change? "Game-changing framework" → "useful framework" — if the author can't explain why it's more than useful, the amplifier is empty.
+**Detection test:** Replace the amplifier with nothing or with a plain word. Does meaning change? "Game-changing framework" → "useful framework". If the author can't explain why it's more than useful, the amplifier is empty.
 **Legitimate use:** Almost never in technical writing. Save superlatives for things that actually deserve them.
 
 ### 6. Generic openings and closings
@@ -67,24 +72,24 @@ Templates that could open or close any article on any topic.
 **Detection test:** Could this opening/closing be copy-pasted onto an article about a completely different topic? If yes, flag it.
 **Legitimate use:** None in blog articles. Start with the specific thing that makes this article worth reading.
 
-### 7. Flat rhythm — mechanical parallelism
+### 7. Flat rhythm, or mechanical parallelism
 All sentences approximately the same length. Never switches grammatical person. Noun-heavy style: 1.5-2x more nominalizations, 2-5x more present participial clauses than human writing (Reinhart et al., PNAS 2025).
 
 **Detection test:** Count sentence lengths in a paragraph. If the coefficient of variation is below 0.15 (all sentences within 20% of average length), flag it. Human writing typically has CV > 0.40.
 **Legitimate use:** Step-by-step instructions (tutorials) naturally have more uniform sentence length.
 
-### 8. Mechanical triads — Rule of Three abuse
+### 8. Mechanical triads, or Rule of Three abuse
 GPT-4o uses phrasal coordination ~1.9x more than humans (Cohen's d = 0.81, Reinhart et al., PNAS 2025). Lehmann: "Triple Threat Syndrome."
 
 **Types:** Adjective triads ("fast, scalable, reliable"), noun triads ("clarity, precision, elegance"), verb triads ("analyze, optimize, deploy"), propositional triads, cascade triads ("No X. No Y. Just Z."), connector triads ("En effet... Par ailleurs... En somme...").
 
 **Two operational tests:**
 1. **Suppression test:** Remove one element. Does meaning change? If no, it's filler.
-2. **Specificity test:** Are terms near-synonyms? "Crucial, essentiel et fondamental" fails — all three mean approximately the same thing.
+2. **Specificity test:** Are terms near-synonyms? "Crucial, essentiel et fondamental" fails, because all three mean approximately the same thing.
 
 **Density matters:** "A single triad is fine. A triad every other sentence definitely smells fishy" (Lehmann). One triad per section is tolerable; three triads in two paragraphs is a pattern.
 
-**Legitimate use:** CAP theorem ("consistent, available, partition-tolerant") — each term is technically distinct and necessary. Narrative progression ("he hesitated, stepped back, then finally agreed") — each action is sequential and different.
+**Legitimate use:** CAP theorem ("consistent, available, partition-tolerant"), where each term is technically distinct and necessary. Narrative progression ("he hesitated, stepped back, then finally agreed"), where each action is sequential and different.
 
 ### 9. Pseudo-analytical depth
 Vague analysis masquerading as insight. Dramatic promises followed by banalities.
@@ -111,7 +116,7 @@ Paraphrasing what was just said without adding information. Padding.
 **FR examples:** "En d'autres termes, [meme chose]." / "Autrement dit, [reformulation sans ajout]." / "Dit simplement, [idem]."
 
 **Detection test:** Cover the reformulation. Does the reader miss any information? If the preceding text already conveyed the idea clearly, the reformulation is padding.
-**Legitimate use:** When genuinely simplifying a technical explanation for a broader audience — the reformulation must target a different knowledge level than the original.
+**Legitimate use:** When genuinely simplifying a technical explanation for a broader audience. The reformulation must target a different knowledge level than the original.
 
 ### 12. Terminal participial commentary
 Sentences ending with -ing (EN) or -ant (FR) clauses that add empty analytical commentary. Most specifically French LLM pattern per R7 analysis.
@@ -124,13 +129,13 @@ Sentences ending with -ing (EN) or -ant (FR) clauses that add empty analytical c
 
 ## Scan procedure for /review
 
-Every paragraph goes through all twelve. The bar is *every paragraph, all twelve* — not *until something turns up*. Each category's detection test is in its own section above; the list here is an index, not a second definition of them.
+Every paragraph goes through all twelve. The bar is *every paragraph, all twelve*, not *until something turns up*. Each category's detection test is in its own section above; the list here is an index, not a second definition of them.
 
-1 reframe · 2 em dash · 3 transition · 4 hedge · 5 amplifier · 6 generic opening or closing · 7 flat rhythm · 8 triad · 9 dramatic promise · 10 rhetorical question · 11 reformulation · 12 participial ending
+1 reframe · 2 decorative parenthetical · 3 transition · 4 hedge · 5 amplifier · 6 generic opening or closing · 7 flat rhythm · 8 triad · 9 dramatic promise · 10 rhetorical question · 11 reformulation · 12 participial ending
 
 **Severity:**
 - 1-2 instances in the whole article: Minor (mention in review summary)
 - Pattern in multiple paragraphs: Major (flag each instance)
 - Systematic across the article: Critical (structural problem, likely AI-influenced passage)
 
-Tolerance by type is the `fausse-profondeur` row of the one table in **article-types**. These figures are visible in a single sentence, so nothing here is suppressed by form — a 150-word post is scanned in full.
+Tolerance by type is the `fausse-profondeur` row of the one table in **article-types**. These figures are visible in a single sentence, so nothing here is suppressed by form: a 150-word post is scanned in full.

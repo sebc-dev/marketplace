@@ -2,13 +2,13 @@
 name: slop-vocabulary
 description: |
   Words and expressions overrepresented in LLM output, English and French. Reach it to scan a
-  draft's vocabulary — the catalogs, and the density thresholds that decide when a marker is a
+  draft's vocabulary: the catalogs, and the density thresholds that decide when a marker is a
   finding rather than noise.
 ---
 
-Every excess ratio below comes from Kobak et al. (2025), *Delving into ChatGPT usage in academic writing through excess vocabulary*, Science Advances — 15.1 million PubMed abstracts, pre/post-ChatGPT frequency comparison. Secondary: Gray (2024) for co-occurrence, Reinhart et al. (PNAS 2025) for syntax, Rigouts Terryn (LREC-COLING 2024) for French calques.
+Every excess ratio below comes from Kobak et al. (2025), *Delving into ChatGPT usage in academic writing through excess vocabulary*, Science Advances, over 15.1 million PubMed abstracts with a pre/post-ChatGPT frequency comparison. Secondary: Gray (2024) for co-occurrence, Reinhart et al. (PNAS 2025) for syntax, Rigouts Terryn (LREC-COLING 2024) for French calques.
 
-## English catalog — organized by linguistic function
+## English catalog, organized by linguistic function
 
 ### Verbs (66% of excess markers per Kobak taxonomy)
 | Verb | Excess ratio | Notes |
@@ -85,7 +85,7 @@ Expressions are stronger markers than individual words because they're less like
 ## French catalog
 
 **The French catalog is not of the same evidential class as the English one above.** The English
-ratios come from Kobak's 15.1 million abstracts. **No measured list of French "AI words" exists** —
+ratios come from Kobak's 15.1 million abstracts. **No measured list of French "AI words" exists.**
 no French corpus study has computed excess-usage ratios the way Kobak did for English. The entries
 below are converging observations from several sources, not measurements, and **no ratio should ever
 be attached to them**. Treat them as a watch list whose weight comes from density and co-occurrence,
@@ -105,15 +105,15 @@ Antoun et al. (2023, CORIA-TALN), the French reference work on ChatGPT detection
 impersonal and didactic style… It often reformulates the question in its answer."* Concretely:
 
 - an opening that reformulates or redefines the question it is answering;
-- recommendation formulas — "il est important de…", "je vous recommande de…", "il convient de…";
-- conditional propositions where a claim belongs — "cela pourrait entraîner…";
-- a closing offer of help — "J'espère que cela vous aidera", "N'hésitez pas à…";
+- recommendation formulas: "il est important de…", "je vous recommande de…", "il convient de…";
+- conditional propositions where a claim belongs: "cela pourrait entraîner…";
+- a closing offer of help: "J'espère que cela vous aidera", "N'hésitez pas à…";
 - the **absence** of any opinion marker: no "je pense que", no "à mon avis", no position taken.
 
 **Status: expert observation, illustrated but not quantified.** It is the strongest thing anyone has
 published on French AI style, and it is still not a measurement. So the action is different from the
 rest of this skill: **flag these as passages to rewrite, never as evidence of AI origin.** The last
-item is the one that matters most for this author — an article with no position is a `writing-voice`
+item is the one that matters most for this author, since an article with no position is a `writing-voice`
 rule 6 failure whatever produced it.
 
 ### Connector cascades (most frequent French LLM signal)
@@ -131,29 +131,31 @@ indeniablement, mettre en place, mettre en oeuvre, permettre de, se positionne c
 "Dans un monde ou...", "A l'ere de...", "Au coeur de...", "Plongez dans l'univers des...", "Que vous soyez... ou que vous soyez...", "Dans un contexte ou..."
 
 ### English calques (16% of all French LLM linguistic errors)
-"faire du sens" (make sense → avoir du sens), "adresser un probleme" (address → traiter), "naviguer le paysage" (navigate the landscape), "basiquement" (basically), Oxford comma before "et", American em dashes in French text, Title Case where French uses lowercase
+"faire du sens" (make sense → avoir du sens), "adresser un probleme" (address → traiter), "naviguer le paysage" (navigate the landscape), "basiquement" (basically), Oxford comma before "et", Title Case where French uses lowercase
+
+The unspaced American dash used to sit in this list, and it has been taken out on purpose. It is no longer a calque question: **writing-voice** bans `—` and `–` outright, spaced or not, in French and in English, so there is no correct French form left to contrast the calque against. The character is found by search in **structure-symetrique** #13, not weighed here.
 
 ### Participial abuse (-ant endings)
-End-of-sentence participial clauses: "...ouvrant de nouvelles possibilites", "...suscitant des defis", "...permettant ainsi de..." — GPT-4o uses present participial clauses at 5.3x the human rate.
+End-of-sentence participial clauses: "...ouvrant de nouvelles possibilites", "...suscitant des defis", "...permettant ainsi de...". GPT-4o uses present participial clauses at 5.3x the human rate.
 
 ## Co-occurrence amplification rule
 
-From Gray (2024): 2+ markers in the same article produce +468% signal amplification. The signal is not additive — it's multiplicative.
+From Gray (2024): 2+ markers in the same article produce +468% signal amplification. The signal is not additive, it's multiplicative.
 
 **Practical implication:** A single "comprehensive" in isolation is noise (the word exists in normal English). But "comprehensive" + "multifaceted" + "pivotal" in the same paragraph is a strong AI signal.
 
 ## Density-based detection rules
 
-### For /review — flagging thresholds
+### For /review: flagging thresholds
 | Density | Action |
 |---------|--------|
-| 1 isolated marker in the article | Ignore — normal vocabulary overlap |
-| 2-3 markers in the same paragraph | Warning — flag to author, could be coincidence |
-| 4+ markers in the same paragraph | Problem — almost certainly AI-influenced passage |
-| Any expression-level marker (>10x ratio) | Always flag — these are near-certain signals |
+| 1 isolated marker in the article | Ignore, normal vocabulary overlap |
+| 2-3 markers in the same paragraph | Warning: flag to author, could be coincidence |
+| 4+ markers in the same paragraph | Problem: almost certainly AI-influenced passage |
+| Any expression-level marker (>10x ratio) | Always flag: these are near-certain signals |
 | Connector cascade (3+ formal connectors in sequence) | Always flag in blog context |
 
-### For /polish — correction approach
+### For /polish: correction approach
 - Flag markers but do NOT auto-replace (the author decides)
 - Suggest simpler alternatives only when the marker adds no precision
 - Never replace a marker with another marker from the banned list
@@ -161,7 +163,7 @@ From Gray (2024): 2+ markers in the same article produce +468% signal amplificat
 
 ## Calibration
 
-Type tolerance is the `slop-vocabulary` row of the one table in **article-types**. Form tolerance is in **canaux**: this catalog keeps its full weight in short form, but the density thresholds above have to be recomputed there — one marker in 150 words is a high ratio and a low count.
+Type tolerance is the `slop-vocabulary` row of the one table in **article-types**. Form tolerance is in **canaux**: this catalog keeps its full weight in short form, but the density thresholds above have to be recomputed there: one marker in 150 words is a high ratio and a low count.
 
 ## Temporal note
 

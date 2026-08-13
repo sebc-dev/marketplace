@@ -5,7 +5,7 @@ Source: R6, `docs/rapports/6 - Délégation cognitive aux LLM.md`.
 
 ## The two effects the sequence protects
 
-**Generation effect: d = 0.40.** Meta-analysis across 86 studies — generating information yourself
+**Generation effect: d = 0.40.** Meta-analysis across 86 studies. Generating information yourself
 produces significantly better retention than reading it. Writing activates the IFG, PHG, ACC and LOC
 neural network; copying an AI explanation does not.
 
@@ -20,12 +20,12 @@ traditional learning. Gap 11 points, d = 0.68 (medium-large), p = 0.002.
 
 **Wharton (Bastani et al., 2024, ~1 000 Turkish students).** GPT Base group: +48 % on practice
 exercises, **−17 % on unassisted exams**. GPT Tutor group, behind a Socratic interface: no
-degradation. The critical finding of the whole file — it is not the AI that degrades learning, it is
+degradation. The critical finding of the whole file: it is not the AI that degrades learning, it is
 the interaction design. This is why the Socratic protocol in `SKILL.md` is the response and not a
 refusal.
 
 **Fan et al. (2024, BJET, N = 117).** ChatGPT significantly improved essay quality and produced zero
-gain in knowledge acquisition or transfer. Output up, learning flat — the definition of outsourcing.
+gain in knowledge acquisition or transfer. Output up, learning flat, which is the definition of outsourcing.
 
 **MIT "Your Brain on ChatGPT" (Kosmyna et al., 2025, N = 54, 4 months, 32-channel EEG).** ChatGPT
 users showed the lowest brain connectivity of all groups, −55 % against autonomous writers; 83 % could
@@ -36,8 +36,8 @@ performance. Dunning-Kruger flattens: everyone believes they are competent.
 
 ## Deskilling, outside writing
 
-Documented in GPS navigation (Dahmani & Bohbot, 2020 — greater GPS use predicts more pronounced
-spatial memory decline over three years) and in medicine (Budzyn et al., 2025, *Lancet* — adenoma
+Documented in GPS navigation (Dahmani & Bohbot, 2020: greater GPS use predicts more pronounced
+spatial memory decline over three years) and in medicine (Budzyn et al., 2025, *Lancet*: adenoma
 detection dropped from 28.4 % to 22.4 % once routine AI-assisted detection was withdrawn).
 
 **Self-reinforcement.** Each outsourcing act makes the next more probable (Storm et al., 2017), which

@@ -17,8 +17,8 @@ Ratio: 40% human / 60% AI.
 
 Calibration first, or every finding after it is worthless.
 
-1. **Resolve the channel** (**canaux**) — form decides which detectors still have a sample. Below ~400 words, three of them lose their instrument and reporting their signal is reporting a measurement error.
-2. **Resolve the type** (**article-types**) — it sets each detector's tolerance row.
+1. **Resolve the channel** (**canaux**). Form decides which detectors still have a sample. Below ~400 words, three of them lose their instrument and reporting their signal is reporting a measurement error.
+2. **Resolve the type** (**article-types**). It sets each detector's tolerance row.
 3. **Resolve the hat** (**casquettes**) if the piece draws on employed work.
 
 ## 5 analysis axes
@@ -44,9 +44,11 @@ Calibration first, or every finding after it is worthless.
 
 Five detectors, each run in full, each applying **its own** thresholds, grids and legitimate-use exceptions. This command names them and their order; it does not restate their numbers.
 
+Before them, one sweep that has no threshold and no exception: **search the text for `—`, for `–`, and for the spaced hyphen between clauses.** Every hit outside a quotation or a numeric range is a finding, reported by line with a count (**structure-symetrique** #13, rule in **writing-voice**). It runs first because it is mechanical, it takes seconds, and its result is not affected by anything the five detectors decide. `/review` reports them; `/polish` is where they are replaced.
+
 | Run | What it decides |
 |---|---|
-| **slop-poli** | Whether the piece says anything. Run first — a substance failure outranks every surface finding |
+| **slop-poli** | Whether the piece says anything. Run first, since a substance failure outranks every surface finding |
 | **marqueurs-lexicaux** | The statistical distribution: variance, monotony, register-genre match, recycling |
 | **structure-symetrique** | The document's shape, against the genre matrix |
 | **fausse-profondeur** | Every paragraph, all twelve categories |
@@ -61,6 +63,8 @@ Five detectors, each run in full, each applying **its own** thresholds, grids an
 
 **Every finding passes through `faux-positifs`.** It applies the precedence rules in order, kills the ones that are English heuristics fired on French, and decides which single detector reports a span when several fired on it. A span reported three times is a review the author stops reading.
 
+Dashes do not pass through it, and that skill says so on its own first page. They are not weighed, not softened by the author's sample, and not settled by an earlier defence. If a dash shares a span with another finding, report the dash and report the other one separately.
+
 ## Output format
 
 For each identified problem:
@@ -73,7 +77,7 @@ Problem: [description]
 Why it's a problem: [explanation]
 ```
 
-A finding that survived `faux-positifs` with doubt attached is reported in that skill's three-line doubt format instead — the line, the signal and its detector, the reason for doubt.
+A finding that survived `faux-positifs` with doubt attached is reported in that skill's three-line doubt format instead: the line, the signal and its detector, the reason for doubt.
 
 ### Severity classification
 - **Critical**: Fundamentally undermines the article's credibility or argument. Must fix before publishing.
@@ -82,11 +86,11 @@ A finding that survived `faux-positifs` with doubt attached is reported in that 
 
 ## When the review is done
 
-The bar is **all five axes on the whole article**, and for axis 4 **every paragraph through every unsuppressed detector** — not *until enough problems have turned up*. A short article with two findings is a finished review; a long one abandoned after the first three is not.
+The bar is **all five axes on the whole article**, and for axis 4 **every paragraph through every unsuppressed detector**, not *until enough problems have turned up*. A short article with two findings is a finished review; a long one abandoned after the first three is not.
 
 Then:
 
-1. **Summary**: total issues by severity (X Critical, Y Major, Z Minor)
+1. **Summary**: total issues by severity (X Critical, Y Major, Z Minor), plus the dash count on its own line, outside the severity scale
 2. **Top 3**: the three that need attention first
 3. **Suggest** `/polish` once the author has corrected
 

@@ -1,7 +1,7 @@
 ---
 name: slop-poli
 description: |
-  Slop — a text that reads well and says nothing. Reach it whenever the question is whether any
+  Slop, a text that reads well and says nothing. Reach it whenever the question is whether any
   substance sits under the surface, from one paragraph to a whole article: the five diagnostic
   tests, the scoring grid, and the prevention rules that apply while a draft is being written.
 ---
@@ -9,11 +9,11 @@ description: |
 ## Definition
 
 Slop (Kommers et al., arXiv 2601.06060, Alan Turing Institute, January 2026) has three prototypical properties:
-1. **Superficial competence** — a veneer of quality masking a deeper lack of substance
-2. **Asymmetric effort** — near-instantaneous production, costly verification
-3. **Mass producibility** — could be generated for any topic with a trivial prompt change
+1. **Superficial competence.** A veneer of quality masking a deeper lack of substance
+2. **Asymmetric effort.** Near-instantaneous production, costly verification
+3. **Mass producibility.** Could be generated for any topic with a trivial prompt change
 
-Slop is not hallucination. Hallucination is factually wrong. Slop is formally correct but intellectually empty — grammatically perfect, well-structured, fluent, and vacuous.
+Slop is not hallucination. Hallucination is factually wrong. Slop is formally correct but intellectually empty: grammatically perfect, well-structured, fluent, and vacuous.
 
 **Diagnostic question:** Would this text change if the author had different experience, expertise, or values? If no, it's slop.
 
@@ -22,13 +22,13 @@ Slop is not hallucination. Hallucination is factually wrong. Slop is formally co
 AI performance degrades across these levels. The first two mask the failure of the last two.
 
 ### Level 1: Formal quality (AI excels)
-Grammar, spelling, fluency, punctuation, transitions. AI produces near-perfect formal quality, which creates a processing fluency bias — fluent text is judged as more true and higher quality (documented cognitive bias).
+Grammar, spelling, fluency, punctuation, transitions. AI produces near-perfect formal quality, which creates a processing fluency bias: fluent text is judged as more true and higher quality (documented cognitive bias).
 
 ### Level 2: Structural quality (AI partially manages)
 Logical organization, apparent claim-evidence-conclusion chains, section flow. AI can produce structurally competent text, but the structure often follows templates (see structure-symetrique) rather than the argument's natural shape.
 
 ### Level 3: Epistemic quality (AI systematically fails)
-Confidence modulation (knowing when to hedge vs assert), specific verifiable examples, authentic engagement with counter-arguments, genuine acknowledgment of limitations. This is where slop reveals itself — perfect form with no epistemic substance.
+Confidence modulation (knowing when to hedge vs assert), specific verifiable examples, authentic engagement with counter-arguments, genuine acknowledgment of limitations. This is where slop reveals itself: perfect form with no epistemic substance.
 
 ### Level 4: Vocal quality (AI fundamentally incapable)
 Situated perspective, learning arc, stakes-based position-taking, lived experience, vulnerability, humor, idiosyncrasy. The author's fingerprint. If a text has Levels 1-2 but lacks Levels 3-4, it's polished slop.
@@ -105,9 +105,9 @@ Biggest risk: paraphrased documentation. The tutorial adds nothing that the offi
 | **Total** | **/10** | | |
 
 **Interpretation:**
-- 0-3: Slop — surface polish, no substance. Flag entire passage.
-- 4-6: At risk — has some substance but needs reinforcement. Flag weak areas.
-- 7-10: Substantive — genuine voice and content.
+- 0-3: Slop. Surface polish, no substance. Flag entire passage.
+- 4-6: At risk. Has some substance but needs reinforcement. Flag weak areas.
+- 7-10: Substantive. Genuine voice and content.
 
 ## Prevention rules for /draft
 
@@ -121,4 +121,4 @@ When assisting with writing (Mode B of /draft), actively prevent slop:
 
 ## Calibration
 
-Tolerance is the `slop-poli` row of the one table in **article-types**. Form changes nothing: substance is testable at any length, and below ~400 words three of the six detectors lose their instrument, which leaves this one carrying the verdict nearly alone (**canaux**). A substance failure outranks every surface failure — when several detectors fire on the same span, it is reported here (**faux-positifs**).
+Tolerance is the `slop-poli` row of the one table in **article-types**. Form changes nothing: substance is testable at any length, and below ~400 words three of the six detectors lose their instrument, which leaves this one carrying the verdict nearly alone (**canaux**). A substance failure outranks every surface failure, so when several detectors fire on the same span, it is reported here (**faux-positifs**). The banned dash is the one exception, and it is reported on its own line whatever else the span is doing.

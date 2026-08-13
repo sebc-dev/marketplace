@@ -38,7 +38,7 @@ If the author requests it, adopt a role of benevolent contrarian: challenge prem
 Three things have to exist **in the author's own words**. Until all three do, keep asking.
 
 - **A thesis in one sentence** that a reader could disagree with.
-- **At least one lived detail** only this author could supply — an error message, a date, a project name, a decision they regret.
+- **At least one lived detail** only this author could supply: an error message, a date, a project name, a decision they regret.
 - **The takeaway**: what the reader should be able to do or see afterwards.
 
 Then play those three back in two or three sentences and suggest `/structure`.

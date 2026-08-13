@@ -1,7 +1,7 @@
 ---
 name: lisibilite-fr
 description: |
-  French readability by pure counting — words per sentence, LIX, ARI. Reach it when a score or
+  French readability by pure counting: words per sentence, LIX, ARI. Reach it when a score or
   an offline grammar pass is wanted, for what the formulas do not measure and the silent
   English fallbacks that corrupt a French score computed with textstat.
 ---
@@ -10,14 +10,14 @@ description: |
 
 **These formulas measure surface, not comprehension.** Every readability index that works in French
 counts the same two things: how long the sentences are and how long the words are. That is all. The
-academic critique is old and settled — Benoît (1986, *Pratiques* n°52), Bailin & Grafstein (2001),
+academic critique is old and settled: Benoît (1986, *Pratiques* n°52), Bailin & Grafstein (2001),
 François (2013, revue TAL): the correlation between length and difficulty is weak, non-linear, and
-worst on exactly the profile this plugin serves — short, technical, French.
+worst on exactly the profile this plugin serves: short, technical, French.
 
 Two consequences that decide everything below:
 
 - **Never report a readability score as an absolute verdict on difficulty.** Report it as a relative
-  indicator — against the author's own previous pieces, or against a measured corpus.
+  indicator, against the author's own previous pieces, or against a measured corpus.
 - **A score is never a finding on its own.** It is a reason to go look at the sentences it flagged.
 
 ## Default: count, don't syllabify
@@ -43,7 +43,7 @@ anchor:
 | Débats parlementaires | 47,04 |
 
 **Do not invent a target.** Ask the question instead: *where should this piece sit?* A blog article
-aimed at a broad audience that measures above the parliamentary-debate mean is not "wrong" — it is a
+aimed at a broad audience that measures above the parliamentary-debate mean is not "wrong". It is a
 piece whose sentences deserve a second look. The numeric targets that circulate for blog writing are
 recommendations, not measurements, and they do not descend here.
 
@@ -55,7 +55,7 @@ Kandel & Moles (1958, *Cahiers d'Études de Radio-Télévision* n°19) recalibra
 Score = 207 − 1,015 × (mots/phrase) − 73,6 × (syllabes/mot)
 ```
 
-The base constant is **207**. The value **209** circulates on SEO pages with no academic source —
+The base constant is **207**. The value **209** circulates on SEO pages with no academic source,
 discard it. This is not second-hand: the coefficients were read in `textstat` itself at tag `0.7.13`
 (`textstat/backend/utils/constants.py`), so `textstat.flesch_reading_ease(texte, lang="fr")` really
 does compute the formula above.
@@ -63,7 +63,7 @@ does compute the formula above.
 Kandel & Moles lowered the syllabic coefficient from Flesch's 84,6 to 73,6 because French words run
 about 1,15× longer than English ones. Landsheere (1963) contested the approach itself: the syllable
 weight penalises French structurally, because the instrument is mistuned for it, not because French
-is harder. Both statements are worth keeping — the second is why the score is indicative only.
+is harder. Both statements are worth keeping, and the second is why the score is indicative only.
 
 ## The traps
 
@@ -72,7 +72,7 @@ down.
 
 **`textstat` falls back to English in silence.** A configuration key absent from the `fr` block
 returns the `en` value, with no warning (`textstat/backend/utils/_get_lang_cfg.py`). The `fr` block
-does **not** define `syllable_threshold` — so any metric that depends on it applies the English
+does **not** define `syllable_threshold`, so any metric that depends on it applies the English
 threshold of 3 to French text. *Symptom:* no error, no warning, a number that looks fine.
 
 **There is no French word list in `textstat`.** Only `resources/en/easy_words.txt` and
@@ -83,7 +83,7 @@ and Flesch-FR are usable.
 
 **Pyphen hyphenates, it does not syllabify.** It applies Hunspell typographic break points, not
 phonetic syllable boundaries. Every Flesch-type score computed in French inherits that gap, and
-**its size has never been measured** — no controlled study of French syllabification by Pyphen
+**its size has never been measured**. No controlled study of French syllabification by Pyphen
 exists. Say the gap exists; never put a percentage on it. The figure that circulates comes from one
 practitioner's testimony covering three languages at once, and it does not descend here.
 
@@ -97,7 +97,7 @@ run at all. On a LinkedIn post, report words per sentence and nothing else.
 
 **Sentence segmentation is itself a source of error.** The spaCy French models split badly on `-`,
 `«`, `[` and `'` (issues #4637 and #6769 in `explosion/spaCy`). Every formula above divides by the
-sentence count — one bad split corrupts them all at once. *Symptom:* a LIX that moves sharply when a
+sentence count, so one bad split corrupts them all at once. *Symptom:* a LIX that moves sharply when a
 dialogue dash or a quotation is added.
 
 ## What to report
@@ -106,7 +106,7 @@ Three lines, in this order, and nothing more unless asked:
 
 1. **Words per sentence, and the longest sentence with its line number.** This is the only number
    that survives every caveat above, and it is the one the author can act on.
-2. **LIX, with the corpus it sits nearest.** Not a verdict — a placement.
+2. **LIX, with the corpus it sits nearest.** Not a verdict, a placement.
 3. **What the outliers actually are.** A sentence of 45 words that is a list of four API parameters
    is not a readability problem; the same sentence carrying three subordinate clauses is.
 
@@ -116,7 +116,7 @@ A Flesch/Kandel-Moles score is reported only when the author asks for it, and al
 ## Tooling
 
 The versions, the licences, the offline correction tools and their reserves are in
-**`references/outillage.md`**. Load it when an actual computed score or a grammar pass is wanted —
+**`references/outillage.md`**. Load it when an actual computed score or a grammar pass is wanted,
 that is, before installing or running anything. It carries dated facts and says so at the top.
 
 ## Where this skill loses
@@ -124,7 +124,7 @@ that is, before installing or running anything. It carries dated facts and says 
 Two precedences, both of which go against the score.
 
 **`marqueurs-lexicaux` owns sentence-length *variance*; this skill owns sentence-length *level*.** They
-pull in opposite directions on purpose — flattening a text to raise its LIX is exactly the failure
+pull in opposite directions on purpose: flattening a text to raise its LIX is exactly the failure
 burstiness detects. When they disagree, variance wins.
 
 **`writing-voice` rules 1 and 3 (direct, conversational) already do most of what a readability score

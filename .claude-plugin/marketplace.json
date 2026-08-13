@@ -17,9 +17,9 @@
     },
     {
       "name": "scd-writer",
-      "version": "0.3.0",
+      "version": "0.4.0",
       "source": "./scd-writer",
-      "description": "Workflow d'ecriture en 7 phases pour developpeur-auteur. L'humain ecrit et pense, Claude questionne, structure et polit. Ne genere jamais de contenu a la place de l'auteur.",
+      "description": "Workflow d'ecriture en 8 phases pour developpeur-auteur. L'humain ecrit et pense, Claude questionne, structure et polit. Ne genere jamais de contenu a la place de l'auteur. Une regle absolue prime sur tous les seuils : aucun tiret cadratin ni demi-cadratin entre propositions, en francais comme en anglais.",
       "author": {
         "name": "sebc.dev"
       },

@@ -1,7 +1,7 @@
 {
   "name": "scd-writer",
-  "version": "0.3.0",
-  "description": "Human-first writing workflow in 8 phases for developer-authors. The human writes and thinks, Claude questions, structures, reviews, and polishes. Never generates content on the author's behalf. Human/AI ratio ranges from 100%/0% (capture) to 40%/60% (review) but never 0%/100%. Articles are written in French first, then translated to English via /translate.",
+  "version": "0.4.0",
+  "description": "Human-first writing workflow in 8 phases for developer-authors. The human writes and thinks, Claude questions, structures, reviews, and polishes. Never generates content on the author's behalf. Human/AI ratio ranges from 100%/0% (capture) to 40%/60% (review) but never 0%/100%. Articles are written in French first, then translated to English via /translate. One absolute rule outranks every detector threshold: no em dash and no en dash between clauses, in either language.",
   "author": {
     "name": "sebc.dev"
   },

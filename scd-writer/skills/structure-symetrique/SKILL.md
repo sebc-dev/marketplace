@@ -2,7 +2,7 @@
 name: structure-symetrique
 description: |
   Artificial structural regularity, at document level. Reach it to judge an outline or a whole
-  draft's shape — the 16 patterns, the Bouchard test, and the genre calibration that says which
+  draft's shape: the 16 patterns, the Bouchard test, and the genre calibration that says which
   of them apply.
 ---
 
@@ -31,7 +31,7 @@ GPT-3 syntactic depth: 6.18; GPT-4: 5.94; humans: 5.72. Subordinate clauses: GPT
 **Detection:** Sentences that are consistently complex without variation. Human writing alternates between simple declarative sentences and complex ones.
 
 ### 6. Symmetric surprisal distribution
-AI text has low skewness in surprisal distribution. Human text has positive skewness and high kurtosis — rare but dramatic surprisal spikes (unexpected word choices, register breaks).
+AI text has low skewness in surprisal distribution. Human text has positive skewness and high kurtosis, with rare but dramatic surprisal spikes (unexpected word choices, register breaks).
 **Detection:** Does anything in the text genuinely surprise you as a reader? If every sentence is predictable, flag it.
 
 ### 7. Tripartite paragraph template
@@ -51,16 +51,19 @@ LLM conclusions are abnormally long, repetitive, and start with formulaic marker
 **Detection:** Is the conclusion longer than 20% of the article? Does it start with "Overall", "In conclusion", "En somme", "En definitive"? Does it repeat points already made?
 
 ### 11. Direct entry into subject (no warm-up)
-AI jumps straight to the topic without context-setting. Human writers use gradual entry — an anecdote, a question, a scene, a personal observation that leads into the topic.
+AI jumps straight to the topic without context-setting. Human writers use gradual entry: an anecdote, a question, a scene, a personal observation that leads into the topic.
 **Detection:** Does the first paragraph immediately define the topic ("X is a framework for...")? Lack of warm-up is a signal, especially in opinion and REX articles.
 
 ### 12. Third-person persistence
 Even on personal or reader-response questions, LLMs default to third person. Human blog writers naturally use first person ("I found", "in my experience") and second person ("you'll notice", "try this").
 **Detection:** Is the article entirely in third person? In a blog post, this is a strong signal unless the author deliberately chose an impersonal tone.
 
-### 13. Excessive em-dash usage
-Em dashes as a structural element for explanatory clauses, used multiple times per paragraph.
-**Detection:** More than 3 em dashes per 500 words is suspicious. See also fausse-profondeur #2.
+### 13. Any dash between clauses
+Not a density signal, and the only pattern here that is not one. `—` and `–` are banned outright by **writing-voice**, so the count that matters is zero and there is no threshold left to calibrate. R4 measured overuse; the author ruled out the character. The rule is the author's, not the corpus's.
+
+**Detection:** search the draft for `—`, for `–`, and for the spaced hyphen ` - ` that replaces them when someone "fixes" a dash without reading the rule. Every hit is a finding, whatever the length or genre of the piece. Two exceptions, both narrow: inside a quotation (the author did not write it) and inside a numeric or reference range (`800–2 000 mots`, `R1–R7`), where the mark separates nothing.
+
+Report by line, with a count. Do not weigh, do not sample, do not report "several". See also fausse-profondeur #2, which owns the *rhetorical* failure the dash used to carry; this entry owns the character.
 
 ### 14. Reduced epistemic markers
 Fewer hedging words, self-mentions, and uncertainty markers (Herbold 2023). LLMs state everything with the same level of confidence.
@@ -111,13 +114,15 @@ Not all genres tolerate the same level of structural regularity.
 | #9 List-like structure | Active | Active | Raise threshold | Suppress | Suppress |
 | #11 Direct entry | Active | Active | Suppress | Suppress | Suppress |
 | #12 Third person | Active | Active | Raise threshold | Raise threshold | Suppress |
-| #13 Em dashes | Active | Active | Active | Active | Active |
+| #13 Dashes | Absolute | Absolute | Absolute | Absolute | Absolute |
 | #16 Generic subheadings | Active | Active | Active | Active | Raise threshold |
 
-**Universal signals** (reliable in all genres): #3 (coherence), #5 (syntactic complexity), #13 (em dashes).
+**Universal signals** (reliable in all genres): #3 (coherence), #5 (syntactic complexity).
 **Most genre-dependent signals:** #1, #8, #11, #12.
 
-This matrix is finer than the `structure-symetrique` row of the table in **article-types**, and it wins: that row summarises in one word what resolves here pattern by pattern. Below ~400 words the whole skill is suppressed — a post has no document level (**canaux**).
+**#13 is not calibrated, and "Absolute" is not a synonym for "Active".** An active signal can still be suppressed by form, killed by the author's sample, or outranked in `faux-positifs`. #13 can be none of those. It is the only row in this matrix that survives the suppression below.
+
+This matrix is finer than the `structure-symetrique` row of the table in **article-types**, and it wins: that row summarises in one word what resolves here pattern by pattern. Below ~400 words the whole skill is suppressed, because a post has no document level (**canaux**), with #13 as the single exception: a 150-word post has no shape to judge, but it can still contain a dash.
 
 ## Strategies to break symmetry
 
@@ -125,7 +130,7 @@ When excessive symmetry is detected during /review, suggest:
 
 - **Vary paragraph lengths.** Alternate between dense 8-sentence paragraphs and single-sentence punches. Some sections can be 3 paragraphs, others 1.
 - **Remove section summaries.** Let the reader synthesize. Not every section needs a mini-conclusion.
-- **Vary endings.** Each section can end differently — a question, a declaration, an anecdote, mid-thought leading to the next section.
+- **Vary endings.** Each section can end differently: a question, a declaration, an anecdote, mid-thought leading to the next section.
 - **Insert ruptures.** A personal aside, a one-line paragraph, a question that genuinely doesn't have an obvious answer.
 - **Enter through experience.** Start with a specific moment, not a definition. "Last Tuesday my build failed with a cryptic error" beats "Vite is a build tool for..."
 - **Vary subheadings.** Mix questions, fragments, statements, provocations. Not always "The [Noun] of [Noun]."
