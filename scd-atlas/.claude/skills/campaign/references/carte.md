@@ -4,6 +4,7 @@ Chargée par `campaign` à **chaque étape** du pipeline. Elle dit où vivent le
 forme a la carte, ce que chaque case veut dire, et comment on reprend une campagne après un
 `/clear`. La méthode d'orchestration est dans le `SKILL.md` et ne se recopie pas ici.
 
+- [Les deux natures d'une campagne](#les-deux-natures-dune-campagne)
 - [Un répertoire est une campagne](#un-répertoire-est-une-campagne)
 - [Le format](#le-format)
 - [Le vocabulaire des cases](#le-vocabulaire-des-cases)
@@ -11,11 +12,39 @@ forme a la carte, ce que chaque case veut dire, et comment on reprend une campag
 - [Créer, mettre à jour, reprendre](#créer-mettre-à-jour-reprendre)
 - [Ce que la carte n'est pas](#ce-que-la-carte-nest-pas)
 
+## Les deux natures d'une campagne
+
+Une campagne vise **un plugin** ou **un thème**. La nature est un fait de l'en-tête, et c'est tout ce
+dont les commandes aval ont besoin : elles résolvent la campagne par la carte trouvée sur le disque.
+
+| Nature | Ce qu'on vise | Ouverte par | Livrable |
+|---|---|---|---|
+| **plugin** | une techno, pour créer ou mettre à jour un plugin | `/scd-atlas:map` | le skill distillé et ses références |
+| **thème** | une question large qui vaut plusieurs sessions Research | `/scd-atlas:map-theme` | le **corpus** : rapports, fiches de collecte, liste de comblement refermée |
+
+**Un thème se cartographie en sujets**, exactement comme une techno — un *sujet* reste une **ligne de
+carte**, quelle que soit la nature. Ce qui change tient en trois points, et trois seulement :
+
+- **la cible** — un plugin porte un `plugin.json` et impose l'emplacement de ses artefacts ; un thème
+  vise un **répertoire nommé**, dans n'importe quel dépôt ;
+- **le périmètre** — un plugin se différencie de ses campagnes antérieures en quatre catégories
+  (mode `mise à jour`) ; un thème se borne par son **acquis** (voir l'en-tête) ;
+- **l'aval** — le pipeline d'un thème **s'arrête à l'intake**. `distill` et `evals` sont sans objet :
+  il n'y a ni skill à écrire ni déclenchement à mesurer, et la colonne `Distillé` vaut `s.o.` sur
+  toute la carte.
+
+Tout le reste est identique et ne se ré-invente pas : le routage en trois routes, le format
+ci-dessous, le vocabulaire des cases, la règle *le disque gagne*, l'idempotence de chaque étape.
+
 ## Un répertoire est une campagne
 
-Tous les artefacts vivent **dans le plugin cible**, sous `docs/researchs/` — précédent
-`scd-astro/docs/researchs/`, dont le sous-dossier `v6/` est le précédent exact d'une campagne de
-mise à jour.
+Pour une campagne **de plugin**, tous les artefacts vivent **dans le plugin cible**, sous
+`docs/researchs/` — précédent `scd-astro/docs/researchs/`, dont le sous-dossier `v6/` est le
+précédent exact d'une campagne de mise à jour.
+
+Pour une campagne **de thème**, ils vivent dans le **répertoire nommé à l'ouverture** — celui-là et
+aucun autre. Il ne se devine pas : sans répertoire nommé, la campagne ne démarre pas, exactement
+comme une campagne de plugin sans plugin nommé.
 
 ```
 <plugin-cible>/docs/researchs/[<campagne>/]
@@ -42,12 +71,15 @@ Deux conséquences qui ne se négocient pas :
 
 ## Le format
 
-Un en-tête écrit une fois, une table, et — seulement si un sujet l'appelle — des notes.
+Un en-tête écrit une fois, une table, et — seulement si un sujet l'appelle — des notes. **La table
+est la même dans les deux natures** ; seul l'en-tête diffère.
+
+Campagne **de plugin** :
 
 ```markdown
 # Carte de campagne — <plugin cible>
 
-**Mode** : création | mise à jour · **Cible** : <techno et version visée> ·
+**Nature** : plugin · **Mode** : création | mise à jour · **Cible** : <techno et version visée> ·
 **Ouverte le** : AAAA-MM-JJ · **Campagnes antérieures** : <répertoires, ou « aucune »>
 
 | # | Sujet | Route | Collecte | Prompt | Rapport | Comblé | Distillé |
@@ -56,6 +88,38 @@ Un en-tête écrit une fois, une table, et — seulement si un sujet l'appelle �
 | 02 | Bindings Cloudflare | mixte | ✓ | ✓ | ✓ | — | — |
 | 03 | Changelog v7 | code | ✓ | s.o. | s.o. | ✓ | — |
 ```
+
+Campagne **de thème** :
+
+```markdown
+# Carte de campagne — <thème>
+
+**Nature** : thème · **Question** : <le thème en une phrase> ·
+**Ancrage** : <le dépôt ou le projet que la campagne interroge, ou « aucun »> ·
+**Ouverte le** : AAAA-MM-JJ · **Acquis** : <documents qui répondent déjà, ou « aucun »>
+
+| # | Sujet | Route | Collecte | Prompt | Rapport | Comblé | Distillé |
+|---|---|---|---|---|---|---|---|
+| 01 | Modes de defaillance du code genere | research | ✓ | ✓ | ✓ | ✓ | s.o. |
+| 02 | Outillage reel du depot | code | ✓ | s.o. | s.o. | — | s.o. |
+```
+
+Les trois faits propres à un thème ne se dérivent d'aucun fichier, d'où leur place dans l'en-tête :
+
+- **`Question`** — le thème en une phrase. C'est elle qui dit si un sujet proposé est dedans ou
+  dehors, et elle ne se re-négocie pas à chaque reprise ;
+- **`Ancrage`** — le dépôt que la campagne interroge, quand elle en a un. Il rend les sujets
+  **concrets** (l'outillage réel, la stack réelle) au lieu de génériques, et c'est un **canal de
+  collecte de premier rang** (`collecte.md`). Une campagne de thème peut n'avoir aucun ancrage : la
+  question est alors purement doctrinale ;
+- **`Acquis`** — les documents qui répondent **déjà** à une part de la question. Ce qu'ils couvrent
+  ne reçoit pas de ligne : rejouer une session Research pour reconfirmer ce qui est su est une
+  session perdue, et c'est la même règle que la catégorie `inchangé` d'une mise à jour. L'acquis est
+  **déclaratif** — la campagne le lit pour se borner, elle ne l'audite pas et ne le tient pas pour
+  vrai.
+
+Le **mode** `création | mise à jour` est **propre à la nature `plugin`** : un thème n'a pas de skill
+existant à différencier, il a un acquis.
 
 La colonne `Route` n'accepte que le vocabulaire de `routage-limites.md` : **`research`**, **`code`**,
 **`mixte`**. Rien d'autre — pas de « à décider », qui est l'absence de routage et se traite en ne
@@ -83,9 +147,16 @@ pas de date dans une case — la carte croît avec les sujets, jamais avec le te
 | Comblé | `intake` | la liste de comblement du sujet est vide, ou refermée |
 | Distillé | `distill` | le sujet est écrit dans le skill cible ou dans une de ses références |
 
-`s.o.` n'est légal **que** dans les colonnes `Prompt` et `Rapport`, et **que** pour une route `code`
-— un sujet routé `code` ne reçoit aucun prompt Research et n'attend aucun rapport. Pour lui,
-`Collecte` et `Comblé` portent tout le poids : c'est la collecte qui tient lieu de source.
+`s.o.` a **deux cas légaux, et deux seulement** :
+
+- **`Prompt` et `Rapport`, pour une route `code`** — un sujet routé `code` ne reçoit aucun prompt
+  Research et n'attend aucun rapport. Pour lui, `Collecte` et `Comblé` portent tout le poids : c'est
+  la collecte qui tient lieu de source ;
+- **`Distillé`, sur toute la carte d'une campagne de thème** — le pipeline s'y arrête à l'intake. La
+  colonne **ne disparaît pas** : les commandes lisent la table par nom de colonne, et une table à
+  géométrie variable les ferait deviner.
+
+Partout ailleurs, `s.o.` est une case mal remplie.
 
 ## Les notes par sujet
 
@@ -112,7 +183,8 @@ cible, et se justifie dans un rapport.
 
 ## Créer, mettre à jour, reprendre
 
-**Créer.** Seule `map` écrit l'en-tête et crée des lignes. Rejouée sur une carte existante, elle
+**Créer.** Seules les deux commandes d'ouverture écrivent l'en-tête et créent des lignes — `map`
+pour un plugin, `map-theme` pour un thème. Rejouée sur une carte existante, l'une comme l'autre
 **ajoute** les sujets manquants : elle ne retire aucune ligne, ne remet aucune case à `—`, et ne
 réécrit pas l'en-tête.
 
@@ -134,4 +206,5 @@ Un rapport déposé par l'humain est exactement ce cas : rien ne l'annonce, seul
 - **Pas un plan** — ni date prévisionnelle, ni assignation, ni ordre imposé entre sujets.
 - **Pas une source** — aucun fait du domaine étudié ne s'y écrit. Les faits sont dans les rapports,
   les fiches de collecte et le skill produit.
-- **Pas un artefact de `scd-atlas`** — elle vit dans le plugin cible et n'en sort jamais.
+- **Pas un artefact de `scd-atlas`** — elle vit dans la cible nommée, plugin ou répertoire de thème,
+  et n'en sort jamais.

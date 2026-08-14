@@ -33,6 +33,10 @@ tranche le périmètre et le nom de la campagne).
 - **Pas de plugin cible nommé, pas de campagne.** Le premier argument est le répertoire du
   plugin. Absent, ou introuvable sur le disque : **arrête-toi**. Ne devine pas, ne prends pas
   « le dernier plugin touché », ne propose pas une valeur par défaut.
+- **Une cible qui n'est pas un plugin n'est pas ton affaire.** Un répertoire sans
+  `.claude-plugin/plugin.json`, une question large sans plugin à produire : **arrête-toi** et
+  renvoie vers `/scd-atlas:map-theme`, qui ouvre une campagne de thème. Tu ne l'accueilles pas en
+  élargissant ta précondition.
 - **Tu n'écris que dans le plugin cible**, sous `docs/researchs/`. Jamais dans `scd-atlas`,
   jamais ailleurs.
 - **Une campagne ne modifie jamais les artefacts d'une campagne antérieure.** Tu les lis pour te
@@ -50,8 +54,10 @@ tranche le périmètre et le nom de la campagne).
 ## Processus
 
 1. **Résous le plugin cible.** `$1` est son répertoire. Absent ou inexistant : **arrête-toi** et
-   demande-le, sans rien écrire. Vérifie qu'il porte bien un `.claude-plugin/plugin.json` — une
-   campagne vise un plugin, pas un répertoire quelconque.
+   demande-le, sans rien écrire. Vérifie qu'il porte bien un `.claude-plugin/plugin.json` — **toi**,
+   tu vises un plugin, pas un répertoire quelconque. S'il n'en porte pas, ou si ce qu'on cherche est
+   une question large et non un plugin à produire : renvoie vers `/scd-atlas:map-theme` et
+   arrête-toi.
 
 2. **Charge le skill `campaign` et sa `references/carte.md`**, intégralement : l'emplacement des
    artefacts, le format, le vocabulaire des cases et la règle de reprise ne se devinent pas.

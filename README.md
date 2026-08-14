@@ -34,15 +34,18 @@ holds interaction and final presentation. `flutter-build-release` goes from sour
 Android or iOS artifact. Every claim carries its evidence level and confidence; areas without an
 authoritative source are marked as such rather than filled in by inference.
 
-### [scd-atlas](./scd-atlas/) `v0.1.0`
+### [scd-atlas](./scd-atlas/) `v0.2.0`
 
-Authoring and updating techno plugins through deep-research campaigns. The pipeline: map the
-subjects → route each one to research / code / mixed → pre-collect canonical URLs and exact
-versions → one Claude Research prompt per subject → **the human plays them in Desktop** and drops
-the reports back → critical intake and filling of the blind spots Research cannot reach →
-distillation into a skill and its references → trigger evals. The subject map carries the campaign's
-state and survives a `/clear`. Two skills: `research-prompter` composes Research prompts for any
-subject, specialised by domain packs; `campaign` orchestrates and composes nothing itself.
+Deep-research campaigns on a named target: a techno plugin to author or update, or a **theme** — a
+broad question worth several Claude Research sessions, optionally anchored in a repository whose
+real state makes the subjects concrete. The pipeline: map the subjects → route each one to research
+/ code / mixed → pre-collect canonical URLs, exact versions and whatever the anchor repository
+holds → one Claude Research prompt per subject → **the human plays them in Desktop** and drops the
+reports back → critical intake and filling of the blind spots Research cannot reach → for a plugin
+only, distillation into a skill and its references, then trigger evals. A theme campaign stops
+there: its deliverable is the corpus. The subject map carries the campaign's state and survives a
+`/clear`. Two skills: `research-prompter` composes Research prompts for any subject, specialised by
+domain packs; `campaign` orchestrates and composes nothing itself.
 Human-in-the-loop by construction: no session can launch Research. 7 slash commands.
 
 ### [scd-sdd](./scd-sdd/) `v1.18.1`

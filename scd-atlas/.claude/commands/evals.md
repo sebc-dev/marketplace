@@ -33,6 +33,8 @@ lit le verdict).
 
 - **On ne coche que ce qu'on a exécuté.** Un harnais écrit n'est pas un harnais joué ; un run lancé
   n'est pas un run noté. Aucun état ne s'affirme avant d'avoir été constaté sur le disque.
+- **Une campagne de thème ne se mesure pas.** Elle ne produit aucun skill, donc aucun déclenchement :
+  nature `thème`, **arrête-toi**. Le harnais mesure un plugin, et un thème n'en est pas un.
 - **Aucun modèle juge, aucun auto-rapport.** La session se coupe **au premier appel `Skill`** — le
   corps n'est jamais chargé, c'est la décision qu'on mesure. Tant qu'aucun skill n'est appelé, le
   tour va **jusqu'au bout** : un bloc de texte n'est pas une décision, et couper dessus compterait
@@ -55,10 +57,14 @@ lit le verdict).
 
 ## Processus
 
-1. **Résous le plugin cible.** `$1` est son répertoire ; absent ou inexistant, **arrête-toi**. Lis
-   sa carte de campagne si elle existe — elle dit quels sujets sont `Distillé`, ce qui se lit avec
-   le verdict. Pas de carte : continue quand même. **Le harnais mesure un plugin, pas une
-   campagne.**
+1. **Résous le plugin cible.** `$1` est son répertoire ; absent, inexistant, ou dépourvu de
+   `.claude-plugin/plugin.json` : **arrête-toi**. Lis sa carte de campagne si elle existe — elle dit
+   quels sujets sont `Distillé`, ce qui se lit avec le verdict. Pas de carte : continue quand même.
+   **Le harnais mesure un plugin, pas une campagne.**
+
+   Si `$1` est un **répertoire de campagne de thème** — une `carte.md` de nature `thème` —,
+   **arrête-toi** : un thème ne produit aucun skill, donc aucun déclenchement à mesurer. Son
+   livrable est le corpus, et il n'a pas de verdict mécanique.
 
 2. **Charge le skill `campaign` et sa `references/evals.md`** intégralement : les deux formes de
    requête, les cinq conditions de comparabilité, le train/test, la lecture d'un échec et la liste

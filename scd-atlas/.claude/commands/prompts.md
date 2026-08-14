@@ -1,6 +1,6 @@
 ---
-description: "Étape 3 d'une campagne : compose un prompt Claude Research par sujet routé research ou mixte, à partir de la carte et des fiches de pré-collecte. Écrit prompts/NN-slug.md dans le plugin cible, prêt à jouer dans Desktop par l'humain. Ne compose rien elle-même : elle charge le skill research-prompter et lui applique sa méthode, sujet par sujet, sans raccourci de lot."
-argument-hint: "[plugin-cible] [campagne] [-- NN du sujet]"
+description: "Étape 3 d'une campagne : compose un prompt Claude Research par sujet routé research ou mixte, à partir de la carte et des fiches de pré-collecte. Écrit prompts/NN-slug.md dans le répertoire de campagne, prêt à jouer dans Desktop par l'humain. Ne compose rien elle-même : elle charge le skill research-prompter et lui applique sa méthode, sujet par sujet, sans raccourci de lot."
+argument-hint: "[cible] [campagne] [-- NN du sujet]"
 allowed-tools:
   - Read
   - Glob
@@ -49,9 +49,15 @@ joue).
 
 ## Processus
 
-1. **Résous la campagne.** `$1` le plugin cible, `$2` le répertoire de campagne. Absents : cherche
-   les cartes existantes. Une seule : prends-la. Zéro ou plusieurs : **arrête-toi** et demande.
-   Carte absente : renvoie vers `/scd-atlas:map`.
+1. **Résous la campagne.** `$1` la cible — un **plugin**, ou directement le **répertoire de
+   campagne** d'un thème —, `$2` le sous-répertoire de campagne. Un `$1` qui porte une `carte.md`
+   *est* la campagne. Absents : cherche les cartes existantes
+   (`*/docs/researchs/**/carte.md`). Une seule : prends-la. Zéro ou plusieurs : **arrête-toi** et
+   demande. Carte absente : renvoie vers `/scd-atlas:map` ou `/scd-atlas:map-theme` selon ce que la
+   cible est.
+
+   La **nature** de la campagne ne change rien à ce que tu fais : un prompt se compose de la même
+   façon pour un thème et pour un plugin, et le composeur ne sait pas lequel il sert.
 
 2. **Charge la carte** via `campaign` / `references/carte.md`, puis **reprends-la contre le
    disque** : liste `prompts/`, une case `—` dont le fichier existe passe à `✓`, une case `✓` sans
@@ -72,9 +78,13 @@ joue).
    dans l'interface Research.
 
 6. **Temps 2 — les cinq informations, dérivées et non demandées.** Qui, pourquoi, contraintes,
-   format, ce qu'on sait déjà : elles se lisent dans la carte (mode, cible, version visée), dans
-   la fiche de collecte et dans le plugin cible lui-même — un plugin techno destine son rapport à
-   la distillation en skill, et son lecteur est un agent. **Ce qui manque se comble par une
+   format, ce qu'on sait déjà : elles se lisent dans l'en-tête de la carte, dans la fiche de
+   collecte et dans la cible elle-même. Pour un **plugin**, l'en-tête donne le mode, la techno et la
+   version visée, et le rapport est destiné à la distillation en skill — son lecteur est un agent.
+   Pour un **thème**, l'en-tête donne la question, l'ancrage et l'acquis : *pourquoi* est dans la
+   question, *ce qu'on sait déjà* est l'acquis — et un sujet qu'il couvre ne doit pas revenir dans
+   le prompt —, et les contraintes concrètes se lisent dans le dépôt d'ancrage via la fiche de
+   collecte. **Ce qui manque se comble par une
    hypothèse nommée** dans le rendu final, jamais par une question posée en lot : tu n'as pas
    `AskUserQuestion`, et c'est délibéré — pour interroger, il y a `/scd-atlas:prompt`.
 

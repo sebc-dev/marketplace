@@ -29,6 +29,9 @@ s'**embarque** — les deux gestes qu'on ne défait pas gratuitement).
 
 - **Tu n'écris que dans le plugin cible.** Jamais dans `scd-atlas`, jamais dans un autre plugin,
   jamais dans les rapports, jamais dans une campagne antérieure.
+- **Une campagne de thème ne se distille pas.** Nature `thème` dans l'en-tête de la carte :
+  **arrête-toi**. Il n'y a pas de skill cible — le pipeline s'y arrête à l'intake, et le corpus est
+  le livrable. Ne fabrique pas une cible pour avoir quelque chose à écrire.
 - **Ce que l'intake n'a pas retenu ne descend pas**, et ce qu'il a retenu **avec réserve** descend
   **avec sa réserve**. Tu ne rejuges pas ses verdicts : un doute se dit, il ne se retranche pas.
 - **Les classes de preuve survivent au passage.** Ce qui était incertain dans le rapport ne devient
@@ -53,8 +56,14 @@ s'**embarque** — les deux gestes qu'on ne défait pas gratuitement).
 
 ## Processus
 
-1. **Résous la campagne.** `$1` le plugin cible, `$2` le répertoire de campagne. Absents : cherche
-   les cartes existantes. Une seule : prends-la. Zéro ou plusieurs : **arrête-toi** et demande.
+1. **Résous la campagne, puis contrôle sa nature.** `$1` le plugin cible, `$2` le répertoire de
+   campagne. Absents : cherche les cartes existantes. Une seule : prends-la. Zéro ou plusieurs :
+   **arrête-toi** et demande.
+
+   Lis `Nature` dans l'en-tête. **`thème` : arrête-toi**, sans rien écrire — il n'y a pas de skill
+   cible, et le pipeline d'un thème s'arrête à l'intake. Dis-le, et dis que le **corpus est le
+   livrable** : les rapports, les fiches de collecte et les listes de comblement refermées. Une
+   carte sans `Nature` est une carte de plugin écrite avant l'existence des deux natures : continue.
 
 2. **Charge le skill `campaign`**, sa `references/carte.md` et sa **`references/distillation.md`**
    intégralement. `references/appairage-doc.md` se charge à l'étape 6, quand l'appairage se tranche

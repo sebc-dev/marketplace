@@ -1,6 +1,6 @@
 ---
-description: "Étape 2 d'une campagne : pré-collecte en session Claude Code ce que Claude Research n'atteindra pas — URL canoniques vérifiées, versions exactes et dates de publication, code brut, diffs, changelogs, métadonnées de registres. Écrit une fiche de collecte par sujet dans le plugin cible, qui sert de matière aux prompts et de source unique aux sujets routés code. gh authentifié d'abord, curl plutôt que WebFetch dès qu'il faut l'exact."
-argument-hint: "[plugin-cible] [campagne] [-- NN du sujet]"
+description: "Étape 2 d'une campagne : pré-collecte en session Claude Code ce que Claude Research n'atteindra pas — URL canoniques vérifiées, versions exactes et dates de publication, code brut, diffs, changelogs, métadonnées de registres, et l'état réel du dépôt d'ancrage quand la campagne en déclare un. Écrit une fiche de collecte par sujet dans le répertoire de campagne, qui sert de matière aux prompts et de source unique aux sujets routés code. gh authentifié d'abord, curl plutôt que WebFetch dès qu'il faut l'exact."
+argument-hint: "[cible] [campagne] [-- NN du sujet]"
 allowed-tools:
   - Read
   - Glob
@@ -52,10 +52,15 @@ Ratio : 10% humain / 90% AI (mécanique ; l'humain n'intervient que si un canal 
 
 ## Processus
 
-1. **Résous la campagne.** `$1` est le plugin cible, `$2` le répertoire de campagne. Absents :
-   cherche les cartes existantes (`*/docs/researchs/**/carte.md`). Une seule : prends-la. Zéro ou
-   plusieurs : **arrête-toi** et demande — tu n'en choisis pas une. Carte absente pour un plugin
-   nommé : renvoie vers `/scd-atlas:map`, sans rien écrire.
+1. **Résous la campagne.** `$1` est la cible — un **plugin**, ou directement le **répertoire de
+   campagne** d'un thème —, `$2` le sous-répertoire de campagne. Un `$1` qui porte une `carte.md`
+   *est* la campagne. Absents : cherche les cartes existantes (`*/docs/researchs/**/carte.md`).
+   Une seule : prends-la. Zéro ou plusieurs : **arrête-toi** et demande — tu n'en choisis pas une,
+   et tu n'élargis pas le glob à tout le disque. Carte absente pour une cible nommée : renvoie vers
+   `/scd-atlas:map` (plugin) ou `/scd-atlas:map-theme` (thème), sans rien écrire.
+
+   **Lis la nature dans l'en-tête** de la carte : elle décide de l'ancrage à ouvrir à l'étape 4, et
+   de rien d'autre ici — la méthode de collecte est la même dans les deux natures.
 
 2. **Charge le skill `campaign`**, sa `references/carte.md` et sa **`references/collecte.md`**
    intégralement : les canaux, leur seuil de bascule, les endpoints par objet visé, les politiques
@@ -65,15 +70,19 @@ Ratio : 10% humain / 90% AI (mécanique ; l'humain n'intervient que si un canal 
 3. **Reprends la carte contre le disque.** Liste `collecte/` : une case `Collecte` à `—` dont la
    fiche existe passe à `✓`, une case `✓` sans fichier repasse à `—`. Silencieusement.
 
-4. **Ouvre les canaux et mesure-les.** `gh auth status`, puis `gh api rate_limit` si le lot le
-   justifie. Non authentifié : dis-le à l'humain **avant** de commencer, avec ce que ça coûte —
-   une collecte un peu large meurt contre le mur des 60/h.
+4. **Ouvre les canaux et mesure-les.** Si la carte déclare un **ancrage**, c'est le canal qui
+   s'ouvre en premier : il n'a ni quota, ni troncature, ni latence, et il dit l'état réel de la
+   cible. Puis `gh auth status`, et `gh api rate_limit` si le lot le justifie. Non authentifié :
+   dis-le à l'humain **avant** de commencer, avec ce que ça coûte — une collecte un peu large meurt
+   contre le mur des 60/h.
 
 5. **Sélectionne les sujets** dont la case `Collecte` vaut `—` — toutes routes confondues, un
    sujet `code` en a autant besoin qu'un `research`. Un `NN` passé en argument restreint à ce
    seul sujet.
 
-6. **Pour chaque sujet, choisis le canal par l'objet visé**, jamais par habitude : `gh api` ou
+6. **Pour chaque sujet, choisis le canal par l'objet visé**, jamais par habitude : le **dépôt
+   d'ancrage** (`Read`, `Glob`, `git` local) pour tout ce qui décrit l'état réel de la cible —
+   workflows, manifestes et verrous, configuration, arborescence, historique —, `gh api` ou
    `raw.githubusercontent.com` pour un fichier ponctuel, `compare/{base}...{head}` en media type
    diff pour un écart de versions, `git clone --depth 1` (avec `sparse-checkout`) dès qu'il s'agit
    de volume ou d'historique, l'API du registre pour les versions et leurs dates, `curl` pour une
@@ -92,7 +101,9 @@ Ratio : 10% humain / 90% AI (mécanique ; l'humain n'intervient que si un canal 
      test ne figure pas dans cette section ;
    - **les versions exactes**, chacune avec sa date de publication et le registre d'où elle vient ;
    - **les extraits cités** de ce que Research n'atteint pas — code, diff, changelog, doc rendue
-     en JavaScript —, chacun avec sa provenance et sa date de collecte ;
+     en JavaScript, **fichier du dépôt d'ancrage** —, chacun avec sa provenance et sa date de
+     collecte. Un chemin local ne descend jamais seul : Research n'ouvre aucun système de fichiers,
+     et un chemin sans son contenu se comblera par pattern-matching ;
    - **ce qui a échoué** : canal fermé, quota atteint, page qui n'existe pas. Un trou nommé est un
      résultat de collecte ; un trou tu, lui, se comblera par une invention au premier usage.
 
@@ -111,6 +122,8 @@ Ratio : 10% humain / 90% AI (mécanique ; l'humain n'intervient que si un canal 
   collecte se signale à l'humain et se rejoue par `map`.
 - Tu **n'écris rien dans le skill cible** ni dans ses références. Une fiche de collecte n'est pas
   une distillation.
+- Tu **n'écris rien dans le dépôt d'ancrage**, et tu n'y exécutes rien. Tu le lis : il est une
+  source, pas une cible — même si le répertoire de campagne se trouve dedans.
 - Tu **ne modifies aucun artefact d'une campagne antérieure**, y compris ses fiches et ses
   rapports.
 - Tu **n'installes aucun serveur MCP** et tu ne modifies aucun `.mcp.json`. Ce qu'un plugin

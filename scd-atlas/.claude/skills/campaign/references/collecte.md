@@ -10,6 +10,7 @@ ou se contente de documenter comme serveur MCP est une autre question, tranchée
 
 - [Les deux règles qui commandent le reste](#les-deux-règles-qui-commandent-le-reste)
 - [Les canaux et leur seuil de bascule](#les-canaux-et-leur-seuil-de-bascule)
+- [Le dépôt d'ancrage — le canal le moins cher](#le-dépôt-dancrage--le-canal-le-moins-cher)
 - [GitHub — authentifier d'abord](#github--authentifier-dabord)
 - [Les registres de paquets](#les-registres-de-paquets)
 - [MCP — un canal de comblement](#mcp--un-canal-de-comblement)
@@ -40,6 +41,7 @@ avec sa provenance. Une URL ne descend que si Research peut l'ouvrir.
 
 | Canal | Ce qu'il sert | Seuil de bascule — quand en sortir |
 |---|---|---|
+| **le dépôt d'ancrage** (`Read`, `Glob`, `git` local) | l'état **réel** de la cible : workflows, manifestes, verrous de dépendances, configuration, arborescence, historique | dès que la question porte sur ce qui se fait ailleurs, ou sur une version publiée plus récente que celle du dépôt |
 | **WebFetch** | une question ponctuelle sur une page statique déjà identifiée | dès qu'il faut le contenu intégral ou une citation exacte, ou dès que la page est tronquée → `curl` |
 | **WebSearch** | découvrir des URL exactes — il rend des titres et des URL, jamais le contenu | **200 appels par session**, sous-agents compris ; `/clear` remet le compteur à zéro → planifier les recherches plutôt qu'explorer |
 | **`curl` (Bash)** | le contenu brut et complet d'une page ou d'une API | la sortie Bash est tronquée au-delà de ~30 000 caractères (`BASH_MAX_OUTPUT_LENGTH`, plafond 150 000) → écrire dans un fichier et le lire par `Read` paginé |
@@ -56,6 +58,34 @@ avec sa provenance. Une URL ne descend que si Research peut l'ouvrir.
 > officielles, et **aucune décision de collecte ne se prend dessus**. Le cache de 15 minutes, lui, a
 > une conséquence pratique : re-fetcher la même URL après une correction en amont peut rendre la
 > version périmée.
+
+## Le dépôt d'ancrage — le canal le moins cher
+
+Quand la campagne déclare un **ancrage** dans son en-tête de carte — un dépôt, un projet —, ce dépôt
+est un canal de collecte **de premier rang**, et il s'ouvre avant tous les autres. C'est le seul
+**sans quota, sans troncature, sans `robots.txt` et sans latence**, et le seul qui dise l'état réel
+de la cible au lieu de l'état général du domaine.
+
+Ce qu'il rend, et que rien d'autre ne rend :
+
+| Objet visé | Où il se lit |
+|---|---|
+| **ce qui tourne déjà** | les workflows de la forge, les configurations d'outils, les hooks |
+| **la stack réelle et ses versions** | les manifestes de paquets et surtout les **verrous** — un manifeste dit une plage, un verrou dit la version installée |
+| **la forme du projet** | l'arborescence, les langages présents, la présence de tests et leur emplacement |
+| **ce que le projet s'est déjà dit** | la documentation du dépôt, les décisions consignées, les conventions |
+| **ce qui s'y est réellement passé** | l'historique `git` local — sans quota, contrairement à l'API |
+
+Trois règles, et la troisième est celle qui se reperdrait :
+
+1. **Il s'ouvre en premier.** Une question à laquelle le dépôt répond ne se pose à aucun autre canal ;
+   un fait du dépôt lu ailleurs est au mieux redondant, au pire faux.
+2. **Il dit ce qui est, jamais ce qui devrait être.** L'outillage qu'on y lit est un **constat de
+   départ**, pas une recommandation : c'est précisément ce que la recherche doit juger.
+3. **Rien de local ne descend comme chemin dans un prompt.** Research n'ouvre aucun système de
+   fichiers : un chemin ne lui dit rien, et il le comblera par pattern-matching. Un fichier du dépôt
+   descend en **extrait cité**, avec sa provenance et sa date — exactement comme un `gh api`. C'est
+   la règle 2 ci-dessus, appliquée à un canal de plus.
 
 ## GitHub — authentifier d'abord
 
@@ -130,8 +160,9 @@ C'est le livrable de la pré-collecte, et il se contrôle ligne par ligne :
 
 - **une URL ne descend que si Research peut l'ouvrir** — canonique, statique, sans authentification,
   non bloquée par le `robots.txt` de son hôte. Sinon elle ne descend pas du tout ;
-- **ce qui vient d'un canal que Research n'a pas** (API, clone, MCP local) descend **en extrait
-  cité**, avec sa provenance et sa date ;
+- **ce qui vient d'un canal que Research n'a pas** (API, clone, MCP local, **dépôt d'ancrage**)
+  descend **en extrait cité**, avec sa provenance et sa date. Un chemin local n'est pas une
+  provenance utilisable par Research : il ne descend jamais seul ;
 - **une version exacte descend toujours**, avec sa date de publication : c'est ce qui empêche un
   rapport de mélanger deux majeures ;
 - **rien de deviné.** Une URL construite par pattern n'est pas une URL collectée — ni Research ni

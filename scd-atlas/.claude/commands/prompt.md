@@ -119,5 +119,10 @@ Rappelle le protocole : **un sujet par session Research**, le prompt se colle te
 Desktop, et le rapport revenu **n'est pas un acquis** — marqueurs `[INCERTAIN]`, sources uniques et
 angles morts déclarés se relisent avant d'être repris.
 
-Si le sujet fait partie d'un travail de plugin techno, dis-le : `/scd-atlas:map` ouvre une campagne
-qui tient l'état, pré-collecte les URL exactes et enchaîne jusqu'à la distillation.
+Enfin, si ce sujet est en réalité **un morceau d'une question plus large** — s'il en appelle
+visiblement d'autres, si l'humain en a nommé plusieurs, si tu viens de proposer un découpage —,
+dis-le : une campagne tient l'état entre les sessions, pré-collecte les URL exactes et trie les
+rapports au retour, ce qu'une composition isolée ne fait pas.
+
+- `/scd-atlas:map-theme <répertoire>` pour une **question large** — le livrable est le corpus ;
+- `/scd-atlas:map <plugin>` si le travail vise un **plugin techno**, qui va jusqu'à la distillation.

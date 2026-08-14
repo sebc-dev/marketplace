@@ -1,7 +1,7 @@
 {
   "name": "scd-atlas",
-  "version": "0.1.0",
-  "description": "Création et mise à jour de plugins techno par campagnes de recherche approfondie. Le pipeline : cartographie des sujets → routage de chaque sujet en research / code / mixte → pré-collecte des URL canoniques et des versions exactes → un prompt Claude Research par sujet → l'humain les joue dans Desktop et dépose les rapports → intake critique et comblement des angles morts que Research n'atteint pas → distillation en skill et références → evals de déclenchement. La carte des sujets porte l'état de la campagne et survit au /clear. Deux skills : research-prompter compose des prompts Research pour n'importe quel sujet, spécialisé par packs de domaines ; campaign orchestre une campagne et ne compose rien lui-même. Humain-au-milieu par construction : aucune session ne peut lancer Research.",
+  "version": "0.2.0",
+  "description": "Campagnes de recherche approfondie sur une cible nommée : un plugin techno à créer ou mettre à jour, ou un THÈME — une question large qui vaut plusieurs sessions Claude Research, éventuellement ancrée dans un dépôt dont l'état réel rend les sujets concrets. Le pipeline : cartographie des sujets → routage de chaque sujet en research / code / mixte → pré-collecte des URL canoniques, des versions exactes et de ce que porte le dépôt d'ancrage → un prompt Claude Research par sujet → l'humain les joue dans Desktop et dépose les rapports → intake critique et comblement des angles morts que Research n'atteint pas → pour un plugin seulement, distillation en skill et références puis evals de déclenchement ; une campagne de thème s'arrête là, son livrable est le corpus. La carte des sujets porte l'état de la campagne et survit au /clear. Deux skills : research-prompter compose des prompts Research pour n'importe quel sujet, spécialisé par packs de domaines ; campaign orchestre une campagne et ne compose rien lui-même. Humain-au-milieu par construction : aucune session ne peut lancer Research.",
   "author": {
     "name": "sebc.dev"
   },
@@ -11,6 +11,7 @@
     "claude-research",
     "plugin-authoring",
     "skills",
+    "theme",
     "campagne",
     "cartographie",
     "collecte",

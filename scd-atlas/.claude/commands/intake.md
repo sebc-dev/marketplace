@@ -1,6 +1,6 @@
 ---
-description: "Étape 4 d'une campagne : relit en critique les rapports Claude Research déposés par l'humain, tranche affirmation par affirmation ce qui descendra dans le skill cible, ouvre la liste de comblement du sujet dans la carte, puis comble par les canaux d'une session Claude Code. Un rapport est une source de plus, pas un acquis : la liste s'écrit avant toute collecte, et un trou qu'aucun canal ne comble se déclare irréductible plutôt que de disparaître."
-argument-hint: "[plugin-cible] [campagne] [-- NN du sujet]"
+description: "Étape 4 d'une campagne : relit en critique les rapports Claude Research déposés par l'humain, tranche affirmation par affirmation ce qui sera repris, ouvre la liste de comblement du sujet dans la carte, puis comble par les canaux d'une session Claude Code. Un rapport est une source de plus, pas un acquis : la liste s'écrit avant toute collecte, et un trou qu'aucun canal ne comble se déclare irréductible plutôt que de disparaître. Étape terminale d'une campagne de thème, dont le livrable est le corpus."
+argument-hint: "[cible] [campagne] [-- NN du sujet]"
 allowed-tools:
   - Read
   - Glob
@@ -24,8 +24,9 @@ session Claude Code va chercher là où Research n'est pas allé, écrit dans la
 sujet.
 
 Un rapport Research revient long, structuré, sourcé et sûr de lui — c'est exactement ce qui rend
-la relecture nécessaire. Ce qui n'est pas trié ici descendra tel quel dans le skill cible, avec
-son assurance et sans ses réserves.
+la relecture nécessaire. Ce qui n'est pas trié ici descendra tel quel dans l'aval — le skill cible
+pour une campagne de plugin, l'usage qu'on fera du corpus pour une campagne de thème —, avec son
+assurance et sans ses réserves.
 
 Ratio : 20% humain / 80% AI (lecture et collecte mécaniques ; l'humain relit les irréductibles,
 seuls trous qu'on renonce à combler).
@@ -52,9 +53,15 @@ seuls trous qu'on renonce à combler).
 
 ## Processus
 
-1. **Résous la campagne.** `$1` est le plugin cible, `$2` le répertoire de campagne. Absents :
-   cherche les cartes existantes (`*/docs/researchs/**/carte.md`). Une seule : prends-la. Zéro ou
-   plusieurs : **arrête-toi** et demande. Carte absente : renvoie vers `/scd-atlas:map`.
+1. **Résous la campagne.** `$1` est la cible — un **plugin**, ou directement le **répertoire de
+   campagne** d'un thème —, `$2` le sous-répertoire de campagne. Un `$1` qui porte une `carte.md`
+   *est* la campagne. Absents : cherche les cartes existantes (`*/docs/researchs/**/carte.md`).
+   Une seule : prends-la. Zéro ou plusieurs : **arrête-toi** et demande. Carte absente : renvoie
+   vers `/scd-atlas:map` ou `/scd-atlas:map-theme` selon ce que la cible est.
+
+   **Lis la nature dans l'en-tête** : elle ne change ni les sept passes, ni les trois verdicts, ni
+   la liste de comblement — elle décide seulement où descend un irréductible (étape 9) et ce qui
+   vient après toi (`## À la fin`).
 
 2. **Charge le skill `campaign`**, sa `references/carte.md` et sa **`references/intake.md`**
    intégralement — les sept passes, les trois verdicts, la forme de la liste et la clôture par
@@ -78,8 +85,8 @@ seuls trous qu'on renonce à combler).
    que le prompt demandait et que le rapport ne traite pas. Un angle silencieusement sauté ne
    laisse aucun marqueur.
 
-6. **Tranche les affirmations à enjeu** — celles qui descendront dans le skill cible ou qui
-   commandent une décision. Trois verdicts, et trois seulement : *repris*, *repris avec réserve
+6. **Tranche les affirmations à enjeu** — celles qui seront reprises en aval, ou qui commandent une
+   décision. Trois verdicts, et trois seulement : *repris*, *repris avec réserve
    nommée*, *non repris*. Un *non repris* est clos, son motif s'écrit une fois : il n'ouvre pas de
    ligne de comblement. Ce qui ouvre une ligne, c'est un fait dont on a **besoin** et que le
    rapport n'établit pas.
@@ -96,10 +103,15 @@ seuls trous qu'on renonce à combler).
 
 9. **Déclare les irréductibles.** Un trou est irréductible quand aucun canal ne le donne : la
    mesure n'existe pas publiquement, la source est privée, le fait n'est pas arrêté par l'éditeur.
-   Coche la ligne en le disant, puis fais descendre la limite **dans le skill cible** — c'est la
-   seule chose que l'intake y fait descendre, une limite et jamais un fait. Si le skill cible
-   n'existe pas encore (campagne de création), laisse la ligne cochée et **marquée
-   `irréductible`** : c'est `/scd-atlas:distill` qui la fera descendre, et il la trouvera là.
+   Coche la ligne en le disant, puis fais descendre la limite **là où quelqu'un ira la chercher** :
+
+   - campagne de **plugin** — dans le **skill cible**. C'est la seule chose que l'intake y fait
+     descendre, une limite et jamais un fait. Si le skill n'existe pas encore (campagne de
+     création), laisse la ligne cochée et **marquée `irréductible`** : c'est `/scd-atlas:distill`
+     qui la fera descendre, et il la trouvera là ;
+   - campagne de **thème** — dans la **note du sujet** et dans sa **fiche de collecte**, section
+     « ce qui a échoué ». Il n'y a pas d'aval qui la perdrait : le corpus est le livrable, et une
+     limite écrite nulle part se comble par une invention au premier usage.
 
 10. **Coche `Comblé`** quand **chaque ligne du sujet est cochée ou déclarée irréductible** — jamais
     parce qu'on a arrêté de chercher.
@@ -151,5 +163,13 @@ renonce à un trou, et où il peut dire par quel canal privé il le comblerait.
 Liste ce qui n'a pas été traité et pourquoi : rapport non revenu — ce n'est pas un échec, c'est une
 étape humaine qui n'a pas eu lieu —, rapport inexploitable à rejouer, sujet sans fiche.
 
-Puis : « `/clear`, puis `/scd-atlas:distill` — qui écrit le skill cible à partir de ce qui vient
-d'être retenu. Un sujet dont la liste de comblement est encore ouverte ne se distille pas. »
+Puis, selon la **nature** de la campagne :
+
+- **plugin** — « `/clear`, puis `/scd-atlas:distill` — qui écrit le skill cible à partir de ce qui
+  vient d'être retenu. Un sujet dont la liste de comblement est encore ouverte ne se distille
+  pas. » ;
+- **thème** — **tu es la dernière étape.** Le livrable est le **corpus** : les rapports, les fiches
+  de collecte et les listes de comblement refermées. Dis-le, et dis ce qui reste ouvert — un sujet
+  sans rapport, une liste non refermée. Ne renvoie **pas** vers `/scd-atlas:distill` : il n'y a ni
+  skill à écrire ni déclenchement à mesurer, et il s'arrêterait. Ce que le dépôt fait ensuite du
+  corpus n'appartient pas à la campagne.
