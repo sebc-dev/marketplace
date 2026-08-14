@@ -86,39 +86,72 @@ Binaire : **`CONFORME | À CORRIGER`**. `CONFORME` **uniquement si zéro Critica
 
 Le vocabulaire est **délibérément distinct** du `PRÊT | CORRIGER D'ABORD` d'`analyze` : deux gates
 différentes ne portent pas le même mot, sans quoi une ligne de journal ne dirait plus laquelle a
-parlé.
+parlé. Une passe `CONFORME` **se consigne aussi**, et sans fiche : l'absence de ligne se lirait
+comme un audit jamais joué.
 
-Une passe `CONFORME` **se consigne aussi**, et sans fiche : l'absence de ligne se lirait comme un
-audit jamais joué.
+**Le verdict est monotone.** À partir de la passe 2, un **Critical neuf** n'est admissible que s'il
+est **déterministe** ou porte sur du **texte modifié depuis l'ancre** ; tout autre plafonne en
+**Major**, et le rapport le dit. Le nombre de bloquants ne peut donc que décroître — **sauf** quand
+les corrections ont réellement cassé quelque chose, le seul cas où une passe de plus se justifie.
 
 ### 5. L'appariement entre passes
 
 Un finding est identifié par le triplet **`[ID]` · fichier · nature**. À chaque passe :
 
-1. **Dérouler la grille intégralement.** On ne saute **jamais** un contrôle parce que la fiche dit
-   « arbitré » : on détecte tout, on ne change que la **présentation**. C'est ce qui empêche
-   l'audit de devenir un tampon.
+1. **Dérouler la grille intégralement — les contrôles déterministes.** On ne saute **jamais** un
+   contrôle déterministe parce que la fiche dit « arbitré » : on détecte tout, on ne change que la
+   **présentation**. C'est gratuit, et c'est ce qui empêche l'audit de devenir un tampon. Les
+   contrôles **de jugement**, eux, sont bornés par la passe delta : **restreinte, jamais retirée**.
 2. Un finding apparié à une entrée d'`## Écarté` → bloc **« Déjà arbitrés »**, **hors du décompte
    qui décide du verdict**.
 3. Un finding de la fiche qui n'apparaît plus → bloc **« Corrigés depuis »**, et il **sort** de la
    fiche.
-4. Le reste → rapport normal, et écrit dans la fiche.
+4. Un finding **de jugement, neuf, sur du texte qui n'a pas bougé** → bloc **« Non détecté à la
+   passe N »** : un raté de la passe précédente, pas du travail neuf. Il se rapporte **nommément**,
+   **sort du décompte** et **ne peut pas être Critical**. L'effacer rendrait le dispositif
+   indétectable ; le compter rétablirait la boucle.
+5. Le reste → rapport normal, et écrit dans la fiche.
+
+#### La partition de la grille, et la passe delta
+
+Chaque contrôle porte sa **nature** — `déterministe` ou `jugement` — **dans la grille**, jamais ici
+ni dans la commande : une seconde copie dériverait au premier contrôle ajouté. Le **critère qui
+classe** et la **règle du doute** y vivent avec elle, au § *La grille de contrôles*.
+
+**La passe delta.** Dès la passe 2, les contrôles de jugement ne s'appliquent qu'à ce qui a **bougé
+depuis l'ancre `HEAD` de la fiche**, plus la **liste ouverte** ; les déterministes, à tout le
+document. L'ancre, son calcul et ses trois cas de **mode dégradé** vivent dans la grille.
 
 **Les arbitrages survivent à l'archivage.** À l'ouverture d'une nouvelle fiche pour le même
-document, reprendre le `## Écarté` de la **dernière fiche archivée** — et lui seul. Un arbitrage
-est une décision, pas une note de passage. Le ré-import s'**élague** : une entrée dont l'objet
-n'existe plus (ID retiré, section disparue) ne se ré-importe pas, et le retrait se dit en
-conversation — l'arbitrage tombe avec son **objet**, jamais avec l'avis.
+document, reprendre le `## Écarté` de la **dernière fiche archivée** — et lui seul : un arbitrage est
+une décision, pas une note de passage. Le ré-import s'**élague** — une entrée dont l'objet n'existe
+plus (ID retiré, section disparue) ne se ré-importe pas, et le retrait se dit en conversation :
+l'arbitrage tombe avec son **objet**, jamais avec l'avis.
 
 > **On n'arbitre jamais un Critical.** Seuls les Major et les Minor s'écartent, avec motif et
 > date. Une demande d'arbitrage sur un Critical se refuse en le disant.
 
 ### 6. La garde anti-boucle
 
-**Deux passes consécutives sans correction constatée ni arbitrage neuf** → le dire franchement au
-lieu d'en proposer une troisième. L'audit ne converge pas, et le blocage est ailleurs : le
-document manque d'un amont qui n'existe pas, ou la phase qui l'a produit a été jouée trop tôt.
-Proposer une décision humaine, jamais une relance.
+**La trajectoire s'affiche en tête de rapport**, avant les findings : `3 Critical → 2 → 2 → 4`. Elle
+se lit dans le **journal**, une ligne par passe — déjà versionnée, et c'est elle qui se décide.
+
+**La garde mesure la divergence, pas la stagnation** : **dès la passe 2** — avant, il n'y a pas de
+décompte précédent et la garde ne peut rien dire —, elle se déclenche quand le décompte des
+**Critical** — celui du verdict — **n'est pas strictement inférieur** à celui de la passe précédente.
+Une garde qui n'attraperait que « rien ne bouge » serait muette dans le cas du **tapis roulant** : on
+corrige à chaque tour, et le total ne baisse pas. Les **Major** ne la déclenchent pas — leur
+variation se lit dans la trajectoire, elle ne prononce rien.
+
+**Le budget : trois passes.** Dès la **3ᵉ passe avec fiche encore ouverte**, cesse de proposer une
+relance et **pose l'arbitrage** — **trois issues** : le blocage est **en amont** (un amont qui
+n'existe pas) · la **phase a été jouée trop tôt**, et c'est elle qu'il faut reprendre · **une passe
+de plus**, qui reste valide. Ce n'est **pas une interdiction** — aucun hook, aucun blocage
+mécanique —, c'est une **question posée** ; et le budget est un **repère** : aucun corpus ne l'établit.
+
+Ces trois issues sont **limitatives** : au budget, la fiche n'est *encore ouverte* que si le verdict
+est au rouge, donc s'il reste un **Critical** — et un Critical ne s'arbitre jamais. L'arbitrage des
+Major a déjà son moment : le **temps 3**, à chaque passe.
 
 ## Ce qui change — les dimensions
 

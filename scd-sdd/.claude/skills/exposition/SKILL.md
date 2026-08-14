@@ -6,8 +6,8 @@ description: |
   raconté en scène, la longueur réglée sur l'enjeu. DEUX RÉGIMES — options concurrentes
   (un sujet, plusieurs issues) et gate d'approbation (N items à trier) — qui changent
   l'usage de l'ordre, jamais la méthode. Se charge pendant /scd-sdd:stack, archi, adr,
-  ci, research, resume, premortem, audit, revise-contract et migrate, à l'étape qui
-  restitue. Porte UNIQUEMENT l'exposition : les six règles de langage restent dans le
+  ci, research, resume, premortem, analyze, audit, revise-contract et migrate, à l'étape
+  qui restitue. Porte UNIQUEMENT l'exposition : les six règles de langage restent dans le
   ## Règles absolues de chaque commande (DECISIONS.md §D32) et tiennent sans lui ; le
   contenu de l'arbitrage appartient au skill de son niveau ; la ligne de journal au
   skill journal. Ne prescrit aucun gabarit : un plan-type en huit sections sur une
@@ -128,7 +128,7 @@ l'humain un travail que tu viens de faire.
 Quand une option est écartée d'avance par un fait établi plus haut, dis-le **là où le fait est
 posé** : ça évite quatre options dont deux sont mortes.
 
-### Régime gate — `premortem` · `audit` · `revise-contract` · `migrate`
+### Régime gate — `premortem` · `analyze` · `audit` · `revise-contract` · `migrate`
 
 L'humain ne choisit pas entre des issues : il passe une liste. Le piège est symétrique, et les deux
 moitiés se ratent facilement — répéter le décor à chaque item produit trente préambules et noie le
@@ -148,6 +148,11 @@ La sortie tient en trois gestes :
 longueur se règle sur le nombre d'items. Les **2**, **3**, **4**, **5** et **7** s'appliquent tels
 quels : un item dont le mécanisme n'est pas compris ne se juge pas plus qu'une option, un chiffre
 s'y donne dans l'unité de la décision, et un ID y porte ce que sa décision a fait.
+
+⚠️ **Les deux gates empruntent aussi le régime *options*, une fois.** Quand leur **budget de passes**
+est atteint — 3ᵉ passe avec fiche encore ouverte (`DECISIONS.md` §D38) —, `analyze` et `audit` ne
+font plus trier une liste : ils posent un **choix entre issues concurrentes**. C'est le régime
+*options* qui s'applique là, pas celui-ci, et les commandes le nomment à l'appel.
 
 ⚠️ Le point **7** est le plus sollicité des cinq, parce qu'un gate produit des comptes. Le décor
 annonce « 2 Critical, 3 Major » ou « quatre problèmes » : un compte ne vaut que **énuméré**, et

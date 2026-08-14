@@ -97,6 +97,10 @@ Faire passer FR-004 au vert sans toucher au middleware de session.
 
 - **`## Écarté` est la rubrique de plus forte valeur** : rien d'autre dans le projet ne porte les
   pistes mortes, et ce sont elles qui coûtent le plus cher à ré-explorer.
+- **L'ancre `HEAD` se rafraîchit à chaque actualisation**, en même temps qu'`Actualisé le`. Le
+  contrôle de fraîcheur de `resume` la voulait déjà ; la **passe delta** des deux gates la rend
+  nécessaire — elle calcule son `git diff` contre elle, et une ancre laissée à la passe 1
+  recouvrirait à la passe 3 des corrections déjà jugées (`DECISIONS.md` §D38).
 - Les règles du `## Contexte à charger` — les quatre classes, leurs seuils, le budget — et les
   exemples des quatre classes vivent dans `references/manifeste.md`, qui se charge **bloc par
   bloc** : `<regle_maitresse>`, `<classes>` et `<controles>` pour écrire. Le template n'en garde

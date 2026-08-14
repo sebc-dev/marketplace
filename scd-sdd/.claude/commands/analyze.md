@@ -11,6 +11,7 @@ allowed-tools:
   - AskUserQuestion
   - Bash(ls *)
   - Bash(git rev-parse *)
+  - Bash(git diff *)
   - Bash(git add *)
   - Bash(git commit *)
   - Bash(git mv *)
@@ -51,9 +52,11 @@ passer la main).
   la première édition d'un document. La gate est bon marché : on la relance. Le chantier de gate
   ne porte **pas** le verdict — il porte la **liste de travail**, qui ne devient pas fausse quand
   un document bouge : elle devient *faite*, et c'est vérifiable.
-- **Tu déroules les 16 contrôles intégralement, à chaque passe.** Tu ne sautes **jamais** un
-  contrôle parce que la fiche dit « arbitré » : tu détectes tout, tu ne changes que la
-  présentation. C'est ce qui empêche la gate de devenir un tampon.
+- **Tu déroules les contrôles déterministes intégralement, à chaque passe.** Tu ne sautes
+  **jamais** un contrôle `D` parce que la fiche dit « arbitré » : tu détectes tout, tu ne changes
+  que la présentation. C'est ce qui empêche la gate de devenir un tampon, et c'est gratuit. Les
+  contrôles **de jugement** sont bornés par la **passe delta** — la règle est **restreinte, jamais
+  retirée**, et la nature de chaque contrôle est portée par la grille, pas par toi.
 - **On n'arbitre jamais un Critical.** Seuls les Major et les Minor s'écartent, avec motif et
   date. Une demande d'arbitrage sur un Critical se refuse en le disant.
 - **Tu ne corriges pas toi-même** : tu nommes le fichier, l'ID et l'action.
@@ -96,14 +99,27 @@ passer la main).
 3. **Lis** `specs/<cible>/spec.md`, `plan.md`, `tasks.md`, plus `docs/prd.md`,
    `docs/stack.md`, `docs/archi.md` **s'il existe** et `docs/adr/`.
 
-3bis. **Récupère l'historique de gate de cette feature**, sans quoi tu repartirais à froid :
+3bis. **Récupère l'historique — la fiche, puis le journal.** Sans lui tu repartirais à froid, et
+   surtout tu ne saurais ni à quelle passe tu es, ni si les précédentes ont fait baisser quoi que ce
+   soit.
+
+   **La fiche** :
    - `ls docs/chantiers/en-cours/*-gate-<cible>.md` → une fiche ouverte ? Lis-la : son
      `## À corriger` est la liste de la passe précédente, son `## Écarté` les arbitrages en
-     vigueur.
+     vigueur, et sa ligne `HEAD <sha>` est l'**ancre** dont dépend la passe delta.
    - Aucune fiche ouverte → `ls docs/chantiers/archive/*-gate-<cible>.md` et prends la **plus
      récente** : tu en reprends le `## Écarté`, et lui seul. Un arbitrage est une décision, pas une
      note de passage.
    - Rien nulle part → première passe, tu pars de zéro. Ce n'est pas une anomalie.
+
+   **Le journal** — `docs/journal/<cible>.md`, les lignes de phase `analyze`. Elles sont déjà
+   versionnées, une par passe, avec leur décompte ; personne ne les lisait :
+   - **le numéro de la passe courante** — compte les lignes **depuis la dernière ligne `PRÊT`**,
+     exclue, et ajoute 1. C'est elle qui borne le cycle, pas le `Ouvert le` de la fiche : les lignes
+     sont datées **au jour**, et un `PRÊT` du matin qui a archivé la fiche précédente porte la même
+     date que la fiche ouverte l'après-midi. Aucune fiche ouverte → passe **1** ;
+   - **la trajectoire des décomptes**, dans l'ordre, telle qu'elle s'affichera en tête de rapport :
+     `3 Critical → 2 → 2 → 4`.
 
 4. **Déroule les 16 contrôles** de `references/analyze.md` :
 
@@ -121,6 +137,16 @@ passer la main).
    `specs/<cible>/acceptance/*.feature` ; au moins un → charge le bloc `<guidance>` de
    `references/gherkin.md` avant de juger. Aucun → dis-le en une ligne et passe.
 
+   **Le régime de la passe décide de ce que tu déroules sur quoi** — la règle, le calcul et les
+   **trois cas de mode dégradé** sont au § *La partition de la grille, et la passe delta* (`<gate>`
+   de la référence), la **nature** de chaque contrôle dans la grille elle-même (`<checks>`). **Ne
+   recopie ni l'un ni l'autre.** Tu n'as qu'à trancher la branche :
+
+   - **Passe 1**, ou l'un des trois cas dégradés → passe **intégrale**, annoncée **avec son motif**
+     en tête de rapport ;
+   - **Passe 2 et au-delà**, ancre présente et rien de non commité sur `specs/<cible>/` → passe
+     **delta**, sur ce que rend `git diff <ancre> -- specs/<cible>/`.
+
 5. **Délègue un second regard en contexte frais** (outil `Task`, les deux **en parallèle** —
    leurs mandats sont disjoints) : **`ears-verifier`** pour les contrôles 1-11,
    **`slice-auditor`** pour 12-14. Recommandé si la feature est grosse, et **fortement** si
@@ -131,19 +157,29 @@ passer la main).
    et c'est toi qui charges `references/gherkin.md` à l'étape 4 — aucun des deux agents ne reçoit
    les `.feature` dans son protocole d'entrée.
 
-6. **Apparie avec la passe précédente**, si elle existe — triplet `[ID]` · fichier · nature :
-   - apparié à une entrée d'`## Écarté` → bloc **« Déjà arbitrés »**, hors du décompte qui décide
-     du verdict ;
-   - présent dans la fiche mais introuvable maintenant → bloc **« Corrigés depuis »** ;
-   - le reste → rapport normal.
+6. **Apparie avec la passe précédente**, si elle existe, selon le § *Appariement entre passes*
+   (`<gate>` de la référence) : il donne la clé — triplet `[ID]` · fichier · nature —, ses
+   **quatre** issues et ce qui compte, ou non, dans le décompte qui décide du verdict.
 
 7. **Produis un seul rapport** classé **Critical / Major / Minor** selon le bloc `<report>` de
-   la référence — fusionne les findings des subagents **sans les rejuger** — avec la couverture
-   chiffrée, le récapitulatif du découpage et le **Verdict**.
+   la référence — fusionne les findings des subagents **sans les rejuger** —, puis applique la
+   **monotonie du verdict** (`<report>`, § *Le verdict est monotone*).
 
-8. **Propose les arbitrages** (`AskUserQuestion`) : s'il reste des Major non arbitrés, demande
-   lesquels sont assumés et **exige un motif** pour chacun. Un refus de trancher est une réponse
-   valide — le Major reste dans la liste. **Ne propose jamais d'arbitrer un Critical.**
+   L'ordre du rapport n'est pas indifférent :
+
+   1. la **trajectoire** des décomptes et le **régime** de la passe — delta, ou intégrale et
+      pourquoi —, **avant tout finding** : c'est cela qui se décide ;
+   2. **dès la passe 2**, si la **garde sur la divergence** s'est déclenchée, dis-le ici, et pas
+      ailleurs ;
+   3. les findings par sévérité, puis les blocs d'appariement ;
+   4. la couverture chiffrée, le récapitulatif du découpage et le **Verdict**.
+
+8. **Propose les arbitrages** (`AskUserQuestion`) — **charge le skill `exposition`**, **régime
+   *gate*** : le décor de la gate se pose **une fois en tête** (ce qui a été examiné, contre quoi,
+   ce que le verdict veut dire), et chaque finding ne porte ensuite que ce qui lui est propre, plus
+   **ce qui se passe s'il n'est pas approuvé**. S'il reste des Major non arbitrés, demande lesquels
+   sont assumés et **exige un motif** pour chacun. Un refus de trancher est une réponse valide — le
+   Major reste dans la liste. **Ne propose jamais d'arbitrer un Critical.**
 
 9. **Écris le chantier de gate**, selon `<gate>` de la référence :
    - **`CORRIGER D'ABORD`** → ouvre `docs/chantiers/en-cours/AAAA-MM-JJ-gate-<cible>.md` (ou
@@ -152,6 +188,11 @@ passer la main).
    - **`PRÊT`** → une fiche ouverte existe ? Ajoute `## Issue` (ce qui a été corrigé, en combien de
      passes) et `git mv` vers `archive/`. Aucune fiche → n'en crée pas : il n'y a pas de travail à
      porter.
+
+   Une fiche actualisée voit son `Actualisé le` **et son ancre `HEAD` rafraîchis** — `git rev-parse
+   HEAD` —, et une fiche ouverte porte la même ancre dès sa création. Sans ce rafraîchissement, la
+   passe 3 calculerait son delta contre l'ancre de la passe 1 : les corrections déjà jugées
+   repasseraient dans le champ, et le delta ne bornerait plus rien.
 
    Puis `git add` **scopé à la fiche** et `git commit -m "chore(chantier): gate <cible>"` — sans
    quoi l'arbre reste sale et `/scd-sdd:run` tombera en `blocked-dirty-tree`.
@@ -173,7 +214,9 @@ passer la main).
   contrôle de fraîcheur.
 - Tu n'arbitres pas un Critical, et tu n'arbitres rien **à la place de l'humain** : un arbitrage
   sans motif explicite n'est pas un arbitrage.
-- Tu ne sautes aucun contrôle, même sur un finding déjà arbitré.
+- Tu ne sautes **aucun contrôle déterministe**, même sur un finding déjà arbitré. Et tu ne
+  **restreins** les contrôles de jugement que sous le régime delta, jamais parce que le document te
+  paraît connu.
 - Tu ne prescris pas **comment** implémenter.
 - Tu n'exécutes aucun test.
 
@@ -205,14 +248,21 @@ Une gate au rouge se consigne **aussi** : c'est la moitié de l'histoire qui a d
 
 ## Skill active
 
-- `feature-specs` — charge `references/analyze.md`, dont sa section `<gate>`. Plus, **sous
-  condition et seul bloc `<guidance>`**, `references/gherkin.md` : uniquement si la feature porte
-  au moins un `acceptance/*.feature` (contrôle 16).
+- `feature-specs` — charge `references/analyze.md`, dont sa section `<gate>` : le contrat de la
+  fiche, l'appariement et ses **quatre** issues, la **partition** de la grille et la **passe
+  delta** (l'ancre, le calcul, les trois cas dégradés), la garde sur la **divergence** et le
+  **budget de passes**. La **nature** `D`/`J` de chaque contrôle vit dans `<checks>`, et la
+  **monotonie** du verdict dans `<report>`. Plus, **sous condition et seul bloc `<guidance>`**,
+  `references/gherkin.md` : uniquement si la feature porte au moins un `acceptance/*.feature`
+  (contrôle 16).
 - `chantier` — anatomie, nommage, `Portée`, cycle de vie. Tu **écris** une fiche, donc tu charges
   `references/fiche.md`, blocs **`<interdits>`**, **`<template>`** et **`<frontiere>`** — pas
   `<pourquoi>`, qui explique le dispositif à qui l'ouvre. Tu n'as **pas** besoin de
   `references/manifeste.md` : le `## Contexte à charger` d'une fiche de gate se réduit aux deux ou
   trois documents du contrat, tous petits et tous `à lire`.
+- `exposition` — **deux régimes, deux moments** : **régime *gate*** à l'étape 8, toujours ; **régime
+  *options*** au `## À la fin`, **conditionnel** — seulement si le budget de passes est atteint avec
+  une fiche de gate encore ouverte. Aucune `references/`.
 - `journal` — contrat de `docs/journal/*.md`.
 - Subagents (recommandés, en parallèle, contexte frais) : `ears-verifier` — contrat (1-11) ·
   `slice-auditor` — découpage (12-14). Les contrôles **15** et **16** ne sont délégués à aucun des
@@ -233,15 +283,35 @@ reviewable par un humain. »
 - Sinon, la main passe au niveau implémentation : « `/clear`, puis `/scd-sdd:run NNN R1`. »
 - Si d'autres features sont en vol, renvoie plutôt vers `/scd-sdd:status-specs`.
 
+⚠️ **Si l'humain a refusé d'arbitrer des Major à l'étape 8, ils restent — dis-le dans la même phrase
+que le verdict** : **nomme-les**, dis qu'ils **ne bloquent pas le démarrage** — le verdict ne compte
+que les Critical — et dis **où** ils sont : dans la fiche de gate qui vient d'être archivée s'il y en
+avait une, sinon dans ce seul rapport, qui ne survivra pas au `/clear`.
+
 **Si `CORRIGER D'ABORD`** — renvoie vers la phase concernée pour les Critical (`specify NNN` /
 `clarify NNN` / `plan NNN` / `tasks NNN` — **tous** les défauts de découpage relèvent de
-`tasks NNN`), puis relance `/scd-sdd:analyze NNN`.
+`tasks NNN`).
 
 Rappelle que la liste est **dans la fiche de gate**, pas seulement à l'écran : « `/clear` puis
-`/scd-sdd:tasks NNN` — la commande chargera la fiche, tu ne repars pas de zéro. »
+`/scd-sdd:tasks NNN` — la commande chargera la fiche, tu ne repars pas de zéro. » Ce qui vient
+**après** la correction dépend du budget de passes, ci-dessous.
 
-**Si deux passes consécutives ne produisent ni correction constatée ni arbitrage neuf**, dis-le
-franchement au lieu de proposer une troisième : le contrat ne converge pas, et le blocage est
-ailleurs — périmètre trop large, `[NEEDS CLARIFICATION]` déguisé en critère, ou une feature qui
-demandait deux features. Propose alors `/scd-sdd:status-specs` et une décision humaine, pas une
-relance.
+**Puis le budget de passes décide de ce que tu proposes** — § *La garde sur la divergence, et le
+budget de passes* (`<gate>` de la référence), qui porte la condition et les issues. **Deux branches,
+une seule s'applique.**
+
+**Sous le budget** (passe 1 ou 2) — « Puis relancer `/scd-sdd:analyze NNN` : l'appariement fera le
+reste, et la passe suivante ne re-jugera que ce qui a bougé. »
+
+**Au budget** — **3ᵉ passe, et fiche de gate encore ouverte** : à la place de la relance, charge le
+skill `exposition`, **régime *options***, et **pose l'arbitrage** par `AskUserQuestion` — c'est un
+choix entre issues concurrentes, pas un tri. Les **trois issues** sont au
+§ *La garde sur la divergence, et le budget de passes* (`<gate>`) ; ce que la commande ajoute, c'est
+de les **ancrer dans cette feature-ci** :
+
+- pour *le blocage est en amont* — **nomme** ce qui manque au socle et la commande qui le traiterait
+  (`/scd-sdd:audit <document>`, `/scd-sdd:adr`) ; la fiche reste ouverte et porte le signalement ;
+- pour *la phase a été jouée trop tôt* — **nomme** la reprise de fond qu'elle appelle
+  (`/scd-sdd:specify NNN`, ou une scission dont la seconde moitié devient une feature à part par
+  `/scd-sdd:kickoff-feature`). Renvoie vers `/scd-sdd:status-specs` si plusieurs sont en vol ;
+- pour *une passe de plus* — présente-la comme la réponse **valide** qu'elle est.

@@ -45,7 +45,7 @@ state and survives a `/clear`. Two skills: `research-prompter` composes Research
 subject, specialised by domain packs; `campaign` orchestrates and composes nothing itself.
 Human-in-the-loop by construction: no session can launch Research. 7 slash commands.
 
-### [scd-sdd](./scd-sdd/) `v1.17.0`
+### [scd-sdd](./scd-sdd/) `v1.18.0`
 
 Complete spec-driven development cycle, from empty repo to reviewable PR — one plugin, three
 chained levels. **Foundation** (once per project): brief → PRD → stack → architecture invariants →
@@ -134,6 +134,24 @@ one of them: it comes out byte-for-byte identical, `CLAUDE.md` findings are rout
 a capability with **dimensions**, not a one-off audit — a future dimension is one more block in
 the dimensions reference, not a new command.
 
+Both gates are **replayed until their object passes**, and both now **converge**. Their anti-loop
+guard measured *stagnation* — two passes with no correction and no new arbitration — whereas the
+real failure is a **conveyor belt**: every pass fixes something, so the condition resets each time,
+and the gate keeps recommending one more pass while re-judging the whole document. Four mechanisms,
+identical in `analyze` and `audit`. The **trajectory** (`3 Critical → 2 → 2 → 4`) opens the report,
+read from the journal — one line per pass, already versioned, and nothing read it. The **guard**
+now fires on **divergence**: the Critical count failing to strictly decrease. The **delta pass**
+restricts *judgement* checks, from pass 2 on, to what moved since the card's `HEAD` anchor plus the
+open list — *deterministic* checks still run over the whole document, because that is what stops a
+gate from becoming a rubber stamp. And the verdict is **monotone**: a new Critical is only
+admissible if it is deterministic or lands on modified text. Beyond a **three-pass budget** with
+the card still open, the command stops offering a rerun and puts the decision to you — the blocker
+is upstream, the phase was played too early, or one more pass, which stays a valid answer. It is a
+question, not a lock: no hook, no mechanical block. Nothing is memoised (the anchor plus `git diff`
+*is* the delta's memory — no card ever gains a "section judged clean" field), a judgement finding
+that appears on unmodified text is reported **by name** as missed by the previous pass rather than
+erased, and a degraded pass — no anchor, uncommitted fixes — runs **in full** and says so.
+
 Throughout, the plugin **explains its own vocabulary once**. Its terms — review lot `Rn`, gate,
 EARS, invariant, ADR — stay precise and greppable; what changed is that they are now defined where
 you meet them: a `## Légende` in five produced-document templates (including *why* EARS criteria
@@ -148,16 +166,16 @@ shows the repo object next to the Linear candidate and states what the wrong ans
 **two issues for the same lot, which the mirror will never remove**.
 A gloss is one line, appears once, and stops entirely as soon as you use the term yourself.
 
-Those rules govern the *sentence*. When you actually have to **decide**, ten commands — `stack`,
-`archi`, `adr`, `ci`, `research`, `resume`, `premortem`, `audit`, `revise-contract`, `migrate` —
-also load a dedicated skill that governs the *exposition*: the object before the problem, the
+Those rules govern the *sentence*. When you actually have to **decide**, eleven commands — `stack`,
+`archi`, `adr`, `ci`, `research`, `resume`, `premortem`, `analyze`, `audit`, `revise-contract`,
+`migrate` — also load a dedicated skill that governs the *exposition*: the object before the problem, the
 mechanism explained whenever the choice depends on one of its properties (a one-line gloss names a
 term, it does not make you understand a property), reasoning told as a scene rather than stated as
 an abstraction, figures given in the unit the decision is made in, an identifier carrying what its
 decision actually did, and length set by what is at stake rather than by a ceiling — a text too
 short costs a full round trip. It has **two regimes**: presenting competing options uses order to
-*explain* one subject; walking you through a list — the `premortem` and `audit` gates, the
-`revise-contract` edits, the `migrate` writes — uses order to *sort*, setting the scene once up
+*explain* one subject; walking you through a list — the `premortem`, `analyze` and `audit` gates,
+the `revise-contract` edits, the `migrate` writes — uses order to *sort*, setting the scene once up
 front and giving each entry only what is specific to it, plus what happens if you do not approve
 it. It is not a template, and not blanket popularisation: what the choice depends on gets
 explained, the rest gets named.

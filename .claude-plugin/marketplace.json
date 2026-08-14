@@ -57,7 +57,7 @@
     },
     {
       "name": "scd-sdd",
-      "version": "1.17.0",
+      "version": "1.18.0",
       "source": "./scd-sdd",
       "description": "Cycle spec-driven, du projet vide a la PR. Le SOCLE, une fois : brief -> prd -> stack -> archi -> ADR -> ci -> CLAUDE.md, ou ci rend deterministe hors de l'agent ce que CLAUDE.md conseille. Les SPECS, par feature : specify -> clarify -> plan -> tasks -> analyze, criteres EARS, lots Rn reviewables. L'IMPLEMENTATION : un dynamic workflow de subagents -- verif selon le mode (TDD, test-after, check, inherent), review en contexte frais, triage adversarial, une PR par lot. L'etat se derive des fichiers : /clear efface le contexte, pas la progression. Chaque phase laisse une ligne datee dans docs/journal/, seul lieu de cinq faits non derivables : verdicts analyze et audit, premortem applique, issue d'un lot meme bloque, contrat revise. Le travail hors phase ou coupe en vol devient un CHANTIER, fiche dont l'etat est son repertoire. Quatre capacites TRANSVERSES. La RECHERCHE : /scd-sdd:lookup repond sans rien ecrire, /scd-sdd:research classe et relit le rapport, jamais repris seul. Le PREMORTEM : /scd-sdd:premortem suppose l'echec (socle, feature ou chantier) et remonte aux omissions ; l'humain approuve avant ecriture. Le MIROIR : /scd-sdd:linear pousse features, lots et chantiers vers Linear ; rien n'en redescend. L'AUDIT : /scd-sdd:audit juge un document du socle sur grille, liste les corrections et ne le reecrit jamais. /scd-sdd:status rend les trois niveaux ; /scd-sdd:migrate reprend un projet des anciens plugins ou d'avant l'eclatement du journal.",
       "author": {

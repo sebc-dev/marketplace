@@ -175,9 +175,9 @@ Deux mécanismes en découlent :
 - **`specify` / `clarify` / `plan` / `tasks` lisent la fiche** avant de travailler, et
   corrigent depuis sa liste plutôt qu'en re-dérivant tout.
 - **Un Major s'arbitre une fois**, avec motif et date, dans le `## Écarté` de la fiche. Aux
-  passes suivantes il est **détecté quand même** — les 16 contrôles se déroulent toujours
-  intégralement — mais présenté à part, hors du décompte du verdict. Un finding neuf ressort
-  alors du bruit. **Un Critical, lui, ne s'arbitre jamais.**
+  passes suivantes il est **détecté quand même** — les contrôles déterministes se déroulent
+  toujours intégralement — mais présenté à part, hors du décompte du verdict. Un finding neuf
+  ressort alors du bruit. **Un Critical, lui, ne s'arbitre jamais.**
 
 ### Le 16ᵉ contrôle — le Gherkin est du contrat, donc il se juge
 
@@ -529,6 +529,48 @@ Comme la recherche, le premortem et l'entretien, ce n'est **pas une phase** : ri
 `status` ne la signale jamais comme manquante, et un document non audité n'est pas un document
 incomplet.
 
+## Les deux gates convergent — la trajectoire, la passe delta, le budget
+
+Une gate se rejoue jusqu'à ce que son objet passe. Deux commandes sont dans ce cas — `analyze`
+sur le contrat d'une feature, `audit` sur un document du socle —, et sur un usage réel, `audit`
+**ne finissait pas** : après chaque passe il conseillait une passe de plus, re-jugeait la totalité
+du document, retrouvait toujours quelque chose, et reconseillait une passe.
+
+La garde anti-boucle existait pourtant, dans les deux. Elle mesurait la **stagnation** — *deux
+passes sans correction ni arbitrage neuf* — quand le symptôme est le **tapis roulant** : chaque
+passe corrige quelque chose, donc la condition est remise à zéro à chaque tour. Une garde qui
+n'attrape que « rien ne bouge » est muette exactement quand on tourne en rond **en avançant**.
+
+Quatre mécanismes, identiques dans les deux gates.
+
+| Mécanisme | Ce qu'il fait |
+|---|---|
+| **la trajectoire** | `3 Critical → 2 → 2 → 4`, en **tête de rapport**, avant les findings. Elle se lit dans le journal — une ligne par passe, déjà versionnée : la donnée existait, personne ne la lisait |
+| **la garde sur la divergence** | elle se déclenche quand le décompte des **Critical** n'est pas strictement inférieur à celui de la passe précédente. Les Major se lisent dans la trajectoire et ne prononcent rien |
+| **la passe delta** | dès la passe 2, les contrôles **de jugement** ne s'appliquent qu'à ce qui a bougé depuis l'**ancre `HEAD`** de la fiche, plus la liste ouverte. Les contrôles **déterministes** portent toujours sur tout le document |
+| **le verdict monotone** | après la passe 1, un Critical neuf n'est admissible que s'il est déterministe ou porte sur du texte modifié. Sinon il plafonne en Major, et le rapport dit qu'il a plafonné |
+
+**Le budget : trois passes.** Dès la 3ᵉ passe avec fiche encore ouverte, la commande cesse de
+proposer une relance et **pose l'arbitrage** — le blocage est en **amont** · la **phase a été jouée
+trop tôt** · **une passe de plus**, qui reste une réponse valide. Ce n'est pas une interdiction :
+aucun hook, aucun blocage mécanique, et le chiffre est un **repère**, pas une mesure.
+
+Ce que le dispositif **ne** fait **pas**, et qui se reperdrait :
+
+- **il ne fige aucune liste.** La règle « dérouler la grille intégralement » est **restreinte aux
+  contrôles déterministes, jamais retirée** : là elle est gratuite et sans bruit, et c'est elle qui
+  empêche la gate de devenir un tampon. La session qui reprend la liste de corrections travaille
+  **sans la grille** : ce qu'elle casse ailleurs doit encore ressortir ;
+- **il ne mémorise rien.** Aucune fiche ne gagne de champ « section jugée conforme » — ce serait un
+  fait dérivable dans une fiche. La mémoire du delta est l'ancre `HEAD` plus `git diff`, et rien
+  d'autre ;
+- **il n'efface pas ce qu'il écarte.** Un finding de jugement neuf sur du texte qui n'a pas bougé se
+  rapporte **nommément** — « non détecté à la passe N » : il sort du décompte, il ne disparaît pas.
+  L'effacer rendrait le dispositif indétectable ; le compter rétablirait la boucle ;
+- **il se dit quand il est dégradé.** Passe 1, ancre absente, ou corrections non commitées → passe
+  **intégrale**, annoncée comme telle. Côté specs c'est le cas courant : aucune des quatre phases de
+  correction ne commite ce qu'elle édite.
+
 ## Le miroir Linear — opt-in, poussé, et strictement à sens unique
 
 Le suivi du cycle est **entièrement fichier**, et ça ne bouge pas. Mais une équipe qui
@@ -729,9 +771,9 @@ choisir. L'obstacle n'était pas dans les mots — il était dans l'**ordre**. L
 restitué dans l'ordre de son travail (ce qu'elle avait mesuré d'abord, puis ses objections, puis
 les options), qui suppose acquis tout ce que l'instruction lui avait appris.
 
-Dix commandes chargent donc un skill dédié au moment où elles te font trancher — `stack`, `archi`,
-`adr`, `ci`, `research`, `resume`, `premortem`, `audit`, `revise-contract`, `migrate`. Ce qu'il
-change, concrètement :
+Onze commandes chargent donc un skill dédié au moment où elles te font trancher — `stack`, `archi`,
+`adr`, `ci`, `research`, `resume`, `premortem`, `analyze`, `audit`, `revise-contract`, `migrate`. Ce
+qu'il change, concrètement :
 
 - **l'objet vient avant le problème.** À quoi sert la chose dont on parle, et quelle exigence la
   demande — avant ce qui cloche avec elle ;
@@ -746,8 +788,8 @@ change, concrètement :
 
 Le skill a **deux régimes**, parce que faire choisir et faire approuver ne se ressemblent pas.
 Quand la commande construit des issues concurrentes, l'ordre sert à **faire comprendre** un sujet.
-Quand elle te fait passer une liste — le gate de `premortem`, celui d'`audit`, les éditions de
-`revise-contract`, les écritures de `migrate` —, l'ordre sert à **trier** : le décor se pose une
+Quand elle te fait passer une liste — le gate de `premortem`, ceux d'`analyze` et d'`audit`, les
+éditions de `revise-contract`, les écritures de `migrate` —, l'ordre sert à **trier** : le décor se pose une
 fois en tête, jamais répété à chaque entrée, et chaque entrée porte ce qui lui est propre plus **ce
 qui se passe si tu ne l'approuves pas**.
 

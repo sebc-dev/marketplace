@@ -10,6 +10,8 @@ allowed-tools:
   - Task
   - AskUserQuestion
   - Bash(ls *)
+  - Bash(git rev-parse *)
+  - Bash(git diff *)
   - Bash(git add *)
   - Bash(git commit *)
   - Bash(git mv *)
@@ -96,13 +98,27 @@ signalements. Un lot vide ne s'écrit pas.
      c'est relire ses propres intentions au lieu du texte, et c'est la moitié de
      `producteur ≠ vérificateur` qui repose sur toi (l'autre moitié est le `/clear` de l'accroche).
 
-4. **Récupère l'historique de fiche**, sans quoi tu repartirais à froid :
+4. **Récupère l'historique — la fiche, puis le journal.** Sans lui tu repartirais à froid, et
+   surtout tu ne saurais ni à quelle passe tu es, ni si les précédentes ont fait baisser quoi que ce
+   soit.
+
+   **La fiche** :
    - `ls docs/chantiers/en-cours/*-audit-<document>.md` → une fiche ouverte ? Lis-la : son
-     `## À corriger` est la liste de la passe précédente, son `## Écarté` les arbitrages en vigueur.
+     `## À corriger` est la liste de la passe précédente, son `## Écarté` les arbitrages en vigueur,
+     et sa ligne `HEAD <sha>` est l'**ancre** dont dépend la passe delta.
    - Aucune fiche ouverte → `ls docs/chantiers/archive/*-audit-<document>.md` et prends la **plus
      récente** : tu en reprends le `## Écarté`, et lui seul, selon la règle de ré-import et
      d'élagage du § *L'appariement entre passes* du skill. Ce que tu n'as pas repris, dis-le.
    - Rien nulle part → première passe, tu pars de zéro. Ce n'est pas une anomalie.
+
+   **Le journal** — `docs/journal/socle.md`, les lignes de phase `audit` qui visent **cette
+   cible**. Elles sont déjà versionnées, une par passe, avec leur décompte ; personne ne les lisait :
+   - **le numéro de la passe courante** — compte les lignes **depuis la dernière ligne `CONFORME`**,
+     exclue, et ajoute 1. C'est elle qui borne le cycle, pas le `Ouvert le` de la fiche : les lignes
+     sont datées **au jour**, et un `CONFORME` du matin qui a archivé la fiche précédente porte la
+     même date que la fiche ouverte l'après-midi. Aucune fiche ouverte → passe **1** ;
+   - **la trajectoire des décomptes**, dans l'ordre, telle qu'elle s'affichera en tête de rapport :
+     `3 Critical → 2 → 2 → 4`.
 
 5. **Délègue l'exploration** à `audit-explorer` (outil `Task`), en lui passant : la dimension, le
    **chemin du document jugé**, la **liste de ses amonts** avec leurs chemins, la **grille du bloc**
@@ -114,16 +130,30 @@ signalements. Un lot vide ne s'écrit pas.
    Il rend un dossier de preuves **sans aucune sévérité**. S'il en émet une, ignore-la : elle n'a
    pas été portée par la grille.
 
-6. **Juge, ici, au contexte principal.** Applique la grille du bloc au dossier de preuves — le socle
-   commun de contrôles **et** les contrôles propres au document —, **intégralement**, puis classe
-   chaque finding en **Critical / Major / Minor** selon l'échelle du skill.
+6. **Juge, ici, au contexte principal.** Le **régime de la passe** décide de ce que tu déroules sur
+   le dossier de preuves — la règle est au § *La partition de la grille, et la passe delta* du
+   skill, le calcul et les **trois cas de mode dégradé** au § *La passe delta* du bloc de dimension,
+   et la **nature** de chaque contrôle dans la grille elle-même. **Ne recopie aucun des trois.** Tu
+   n'as qu'à trancher la branche :
 
-   Puis **apparie** avec la passe précédente selon le § *L'appariement entre passes* du skill : il
-   donne la clé qui identifie un finding, ce que chaque issue d'appariement produit, et ce qui
-   compte — ou non — dans le décompte qui décide du verdict.
+   - **Passe 1**, ou l'un des trois cas dégradés → passe **intégrale**, annoncée **avec son motif**
+     en tête de rapport ;
+   - **Passe 2 et au-delà**, ancre présente et rien de non commité sur la cible → passe **delta**,
+     sur ce que rend `git diff <ancre> -- <chemin de la cible>`.
 
-   Rends **un seul rapport** en conversation : les findings par sévérité, chacun avec sa **voie de
-   correction** (lot A, B ou C), les deux blocs d'appariement, et le **Verdict**.
+   Classe chaque finding en **Critical / Major / Minor** selon l'échelle du skill, applique la
+   **monotonie du verdict** (§ 4), puis **apparie** avec la passe précédente selon le
+   § *L'appariement entre passes* — il donne la clé, ses **quatre** issues et ce qui compte, ou non,
+   dans le décompte qui décide du verdict.
+
+   Rends **un seul rapport** en conversation, dans cet ordre :
+
+   1. la **trajectoire** des décomptes et le **régime** de la passe — delta, ou intégrale et
+      pourquoi —, **avant tout finding** : c'est elle qui se décide ;
+   2. **dès la passe 2**, si la **garde sur la divergence** s'est déclenchée, dis-le ici, et pas
+      ailleurs ;
+   3. les findings par sévérité, chacun avec sa **voie de correction** (lot A, B ou C) ;
+   4. les blocs d'appariement, puis le **Verdict**.
 
 7. **Gate d'arbitrage humain** (`AskUserQuestion`) — **charge le skill `exposition`**, **régime
    *gate*** : le décor de l'audit se pose **une fois en tête**, et chaque finding ne porte ensuite
@@ -136,8 +166,12 @@ signalements. Un lot vide ne s'écrit pas.
 8. **Écris les deux artefacts, et rien d'autre.** Le § *La fiche et ses lots* du bloc de dimension
    dit tout : où va la fiche, ce qu'elle porte, comment son `## À corriger` s'organise en lots, et —
    à son alinéa *Cycle de vie* — ce que chaque verdict lui fait, l'ouvrir, l'actualiser ou
-   l'archiver avec son `## Issue`. Applique-le tel quel. Une fiche actualisée voit son
-   `Actualisé le` rafraîchi.
+   l'archiver avec son `## Issue`. Applique-le tel quel.
+
+   Une fiche actualisée voit son `Actualisé le` **et son ancre `HEAD` rafraîchis** — `git rev-parse
+   HEAD` —, et une fiche ouverte porte la même ancre dès sa création. Sans ce rafraîchissement, la
+   passe 3 calculerait son delta contre l'ancre de la passe 1 : les corrections déjà jugées
+   repasseraient dans le champ, et le delta ne bornerait plus rien.
 
    Puis `git add` **scopé à la fiche** et `git commit -m "chore(chantier): audit <document>"` —
    sans quoi l'arbre reste sale et `/scd-sdd:run` tomberait en `blocked-dirty-tree`. Enfin,
@@ -185,14 +219,18 @@ d'audit.
 
 ## Skill active
 
-- `audit` — la méthode : les quatre temps, l'échelle, le verdict binaire, l'appariement, la garde
-  anti-boucle. Charge `references/dimensions.md`, bloc `<resolution>` à l'étape 1, puis **le seul
-  bloc de la dimension résolue**.
+- `audit` — la méthode : les quatre temps, l'échelle, le verdict binaire **et monotone**,
+  l'appariement et ses quatre issues, la partition de la grille et la passe delta, la garde sur la
+  **divergence** et le **budget de passes**. Charge `references/dimensions.md`, bloc `<resolution>`
+  à l'étape 1, puis **le seul bloc de la dimension résolue** — dont le § *La passe delta* porte
+  l'ancre, le calcul et les trois cas dégradés.
 - `chantier` — anatomie, nommage, `Portée`, cycle de vie. Tu **écris** une fiche, donc tu charges
   `references/fiche.md`, blocs **`<interdits>`**, **`<template>`** et **`<frontiere>`**. Tu n'as
   **pas** besoin de `references/manifeste.md` : le `## Contexte à charger` d'une fiche d'audit se
   réduit au document jugé et à son amont, tous `à lire`.
-- `exposition` — **régime *gate***, chargé à l'étape 7. Aucune `references/`.
+- `exposition` — **deux régimes, deux moments** : **régime *gate*** à l'étape 7, toujours ; **régime
+  *options*** au `## À la fin`, **conditionnel** — seulement si le budget de passes est atteint avec
+  une fiche encore ouverte. Aucune `references/`.
 - `journal` — contrat de `docs/journal/socle.md`.
 - Subagent : `audit-explorer`, **modèle imposé à l'appel**. Il ne charge pas `dimensions.md` — c'est
   toi qui lui **passes** la grille.
@@ -201,20 +239,38 @@ d'audit.
 
 Donne le **Verdict**, en nommant la cible.
 
-**Si `CONFORME`** — « `<document>` est conforme : complet, tracé vers son amont, cohérent avec lui.
-Rien à corriger. » Puis la suite normale du socle, s'il en reste une (`/scd-sdd:<phase suivante>`) —
-l'audit ne bloque aucune phase et n'en réclame aucune.
+**Si `CONFORME`** — « `<document>` est conforme : complet, tracé vers son amont, cohérent avec lui. »
+Puis la suite normale du socle, s'il en reste une (`/scd-sdd:<phase suivante>`) — l'audit ne bloque
+aucune phase et n'en réclame aucune.
+
+⚠️ **Si l'humain a refusé d'arbitrer des Major à l'étape 7, ils restent — dis-le dans la même
+phrase que le verdict** : **nomme-les**, dis qu'ils **ne bloquent rien** — le verdict ne compte que
+les Critical — et dis **où** ils sont : dans la fiche qui vient d'être archivée s'il y en avait une,
+sinon dans ce seul rapport, qui ne survivra pas au `/clear`.
 
 **Si `À CORRIGER`** — rappelle que la liste est **dans la fiche**, pas seulement à l'écran, et
 renvoie lot par lot (n'annonce que les lots réellement écrits) :
 
 - **Lot A** — « `/clear`, puis `/scd-sdd:resume audit-<document>` : la commande chargera la fiche,
-  tu ne repars pas de zéro. » Puis relancer `/scd-sdd:audit <document>` — l'appariement fera le
-  reste.
+  tu ne repars pas de zéro. » Ce qui vient **après** dépend du budget de passes, ci-dessous.
 - **Lot B** — les candidats sont à écrire dans `docs/adr/_candidates/` ; c'est `/scd-sdd:adr` qui
   les instruit. Le candidat n'est pas un renvoi dans le vide : la phase `adr` le promeut.
 - **Lot C** — `/scd-sdd:revise-contract` pour les findings de `claude-md` ; pour un signalement
   amont, la commande nommée dans la ligne. **Ne les traite pas toi-même.**
 
-Enfin, **le § *La garde anti-boucle* du skill s'applique ici** : il dit à quel signe l'audit ne
-converge pas, et ce qu'il faut proposer alors au lieu d'une passe de plus.
+**Puis le budget de passes décide de ce que tu proposes** — § *La garde anti-boucle* du skill, qui
+porte la condition et les issues. **Deux branches, une seule s'applique.**
+
+**Sous le budget** (passe 1 ou 2) — « Puis relancer `/scd-sdd:audit <document>` : l'appariement fera
+le reste. »
+
+**Au budget** — **3ᵉ passe, et fiche encore ouverte** : à la place de la relance, charge le skill
+`exposition`, **régime *options***, et **pose l'arbitrage** par `AskUserQuestion` — c'est un choix
+entre issues concurrentes, pas un tri. Les **trois issues sont au § *La garde anti-boucle*** du
+skill ; ce que la commande ajoute, c'est de les **ancrer dans ce projet-ci** :
+
+- pour *le blocage est en amont* — **nomme** l'amont manquant et la commande qui le traiterait ; la
+  fiche reste ouverte et son **Lot C** porte le signalement ;
+- pour *la phase a été jouée trop tôt* — **nomme** la phase, et laisse-la à l'humain : ré-assembler
+  est une voie de destruction qui a l'air d'une voie de mise à jour ;
+- pour *une passe de plus* — présente-la comme la réponse **valide** qu'elle est.
