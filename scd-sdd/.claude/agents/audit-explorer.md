@@ -71,16 +71,16 @@ avoue son doute reste utilisable ; un dossier qui l'efface est faux sans qu'on p
 De la **prose structurée dans un bloc de code**, jamais du JSON, décomptes en **dernière ligne** :
 
 ```
-## Dossier de preuves — prd (dimension validation-socle)
-Jugé : docs/prd.md — 214 lignes, lu en entier
-Template : project-docs/references/prd.md, bloc <template>
-Amonts : docs/brief.md
+## Dossier de preuves — technique (dimension validation-socle)
+Jugé : docs/technique.md — 214 lignes, lu en entier
+Template : project-docs/references/technique.md, bloc <template>
+Amonts : docs/produit.md
 
 ### Sections face au template
-présente   ## Vision — l. 5-18
-présente   ## User stories — l. 20-96
-VIDE       ## NON inclus — l. 98-99 (titre suivi du titre suivant)
-ABSENTE    ## Critères de succès
+présente   ## Vue d'ensemble — l. 5-18
+présente   ## Choix retenus — l. 20-96
+VIDE       ## Contraintes transverses — l. 98-99 (titre suivi du titre suivant)
+ABSENTE    ## Ce que cette architecture n'admet pas comme invariant
 
 ### Marqueurs restants
 l. 143  « [NEEDS CLARIFICATION] quelle durée de rétention ? »
@@ -89,21 +89,21 @@ l. 88   « … »   seul dans sa cellule (colonne ADR de la table)   MARQUEUR
 l. 132  « trois axes — macro, micro, … »   aucun signe   À VÉRIFIER
 
 ### IDs et renvois
-FR-001  l. 34   « _(Brief: SC-001)_ »   → docs/brief.md l. 22 « SC-001 — … »   RÉSOUT
-FR-012  l. 61   « exporter les données au format CSV »   → aucun renvoi amont dans le bloc l. 61-64
-        NE RÉSOUT PAS (renvoi absent)
-SC-002  l. 108  « _(Brief: SC-002)_ »   → docs/brief.md : aucun SC-002   NE RÉSOUT PAS (ID absent en amont)
-FR-007  —       trou de numérotation : FR-006 (l. 48) puis FR-008 (l. 55)
-CI-003  l. 177  « voir docs/ci.md #controles »   → fichier absent   À VÉRIFIER (docs/ci.md non fourni en amont)
+Framework  l. 34   « sert FR-001 »   → docs/produit.md l. 22 « FR-001 — … »   RÉSOUT
+C2         l. 61   « démarrage à froid < 2 s »   → aucun FR/SC cité dans le bloc l. 61-64
+           NE RÉSOUT PAS (renvoi absent)
+Auth       l. 108  « sert SC-002 »   → docs/produit.md : aucun SC-002   NE RÉSOUT PAS (ID absent en amont)
+I4         —       trou de numérotation : I3 (l. 48) puis I5 (l. 55)
+ADR-0003   l. 177  « voir docs/adr/0003-orm.md »   → fichier absent   À VÉRIFIER (docs/adr/ non fourni en amont)
 
 ### Contrôles propres — matière brute
-technology-agnostic : l. 72 « stocké dans PostgreSQL » · l. 88 « via l'API REST de Stripe »
-(2 occurrences d'un nom de technologie ; aucune autre trouvée)
+trace observable des invariants : I1 l. 47 « ligne d'import hors server/ » · I2 l. 48 « chemin du
+fichier » · I3 l. 49 aucune trace nommée (3 invariants ; 1 sans trace)
 
 ### Amont
-docs/brief.md — 96 lignes, lu · SC-001 l. 22 · SC-003 l. 30 · aucun SC-002
+docs/produit.md — 96 lignes, lu · FR-001 l. 22 · SC-003 l. 30 · aucun SC-002
 
-Total : 12 sections attendues (10 présentes · 1 vide · 1 absente) · 4 marqueurs (dont 1 À VÉRIFIER) · 14 IDs
+Total : 9 sections attendues (7 présentes · 1 vide · 1 absente) · 4 marqueurs (dont 1 À VÉRIFIER) · 14 renvois
 (11 RÉSOUT · 2 NE RÉSOUT PAS · 1 À VÉRIFIER) · 1 trou de numérotation
 ```
 

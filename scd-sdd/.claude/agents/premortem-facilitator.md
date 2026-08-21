@@ -93,7 +93,7 @@ texte ne referme ce risque.
 
 ### Risque P3 — [impact: haut · vraisemblance: basse] · lentille: fit produit
 …
-Remédiation : [SIGNALEMENT — hors cible] vise le PRD, pas ce contrat. → /scd-sdd:premortem socle
+Remédiation : [SIGNALEMENT — hors cible] vise docs/produit.md, pas ce contrat. → /scd-sdd:premortem socle
 
 Total : N risques (H×H: n · H×M: n · reste: n) · dont C chantiers · S signalements
 ```

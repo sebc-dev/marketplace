@@ -73,7 +73,7 @@ Deux contrôles, appuyés sur `wc -l` de chaque cible existante. C'est la raison
 ~400 lignes, **dis-le** et propose — sans refuser :
 
 > Ce manifeste coûtera ~12k tokens à la reprise. Trois références peuvent être ancrées ou
-> distillées dans `Acquis` : `src/auth/service.ts` (380 l.), `docs/prd.md` (210 l.),
+> distillées dans `Acquis` : `src/auth/service.ts` (380 l.), `docs/produit.md` (210 l.),
 > `test/helpers.ts` (160 l.). On réduit, ou on garde tel quel ?
 
 Un manifeste gros est souvent le **symptôme** d'un chantier trop large : le signal reste utile même

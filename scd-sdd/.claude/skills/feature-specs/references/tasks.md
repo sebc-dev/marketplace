@@ -102,7 +102,7 @@ logique métier est un finding d'`analyze`, pas un raccourci.
 les tests » puis « toute l'impl » reste deux lots horizontaux.
 
 **Écrire les tâches** :
-- **Backref `_Requirements:_`** sur chaque tâche : le fil qui relie tâche → FR/SHALL → PRD. Une
+- **Backref `_Requirements:_`** sur chaque tâche : le fil qui relie tâche → FR/SHALL → `docs/produit.md`. Une
   tâche sans backref est suspecte (scope creep).
 - **Couverture** : chaque `FR`/`SHALL` de la spec est rattaché, dans **un seul** lot, à ≥ 1 tâche
   d'impl **et** à ≥ 1 **vérification observable** — une tâche test (`TDD`/`test-after`), une tâche

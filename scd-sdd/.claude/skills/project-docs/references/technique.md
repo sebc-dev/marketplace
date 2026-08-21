@@ -1,20 +1,26 @@
-# Référence — Architecture (`docs/archi.md`)
+# Référence — Technique (`docs/technique.md`)
 
 <role>
-Répond au **comment au niveau structure** : ce que la stack impose déjà, ce qui reste réellement
-ouvert, et ce que le code s'interdit désormais. Trace vers le PRD (les caractéristiques servent des
-`FR`/`SC`) et vers la Stack (le constat porte sur le langage et le framework déjà tranchés).
-Produit **`docs/archi.md`**, **quatrième** document du socle — après le Brief, le PRD et la Stack,
-avant les ADR —, en **trois temps** : constat, options justifiées, compilation en invariants.
+Répond au **comment**, sur ses **deux niveaux** : les **fondations** — langages, frameworks, libs,
+base de données, auth, cible de déploiement, stratégie de test — et la **structure** — ce que la
+stack impose déjà, ce qui reste réellement ouvert, et ce que le code s'interdit désormais. Trace
+vers `docs/produit.md` : la technique sert les `FR`/`SC`, jamais l'inverse.
 
-Ce fichier est la **synthèse** ; les ADR portent le rationale, un par décision — exactement la
-relation `docs/stack.md` ↔ `docs/adr/`. Chaque invariant est un **candidat ADR** que la phase `adr`
-promeut, et rien d'autre : cette phase n'écrit aucun ADR, n'écrit rien dans `docs/ci.md`, et ne
-choisit aucun outil de vérification.
+Produit **`docs/technique.md`**, **deuxième** document du socle, en **deux moitiés jouées dans la
+même session** : les fondations en mode **« options justifiées »** (l'agent propose des options
+argumentées, l'humain tranche), puis la structure en **trois temps** — constat, options justifiées
+par axe, compilation en invariants. Les deux moitiés étaient deux phases jusqu'à `1.19.0` ; les
+réunir supprime un `/clear` et le rechargement de contexte qui allait avec, la seconde n'ayant
+jamais rien fait d'autre que **partir de** la première.
 
-**Le critère qui gouverne toute la phase**, et qu'on n'assouplit pas :
+Ce fichier est la **synthèse** ; les ADR portent le rationale, un par décision. Il produit **deux**
+des trois sources de candidats de la phase `adr` — la liste « Décisions structurantes » et la table
+des **invariants** — et rien d'autre : cette phase n'écrit aucun ADR, n'écrit rien dans
+`docs/ci.md`, et **ne choisit ni n'exécute aucun outil** de vérification.
 
-> Une règle n'entre dans `docs/archi.md` que si elle laisse une **trace observable dans
+**Le critère qui gouverne la seconde moitié**, et qu'on n'assouplit pas :
+
+> Une règle n'entre dans la table des **Invariants** que si elle laisse une **trace observable dans
 > l'arborescence ou dans les imports**.
 
 C'est ce qui empêche la phase de dégénérer en *big design up front* — le risque n° 1, puisqu'une
@@ -24,20 +30,20 @@ l'admission reste du contexte, ou sort.
 
 **Où cette référence se charge — trois points, et seul le premier est intégral :**
 
-1. par `/scd-sdd:archi`, **intégralement** : c'est le template et la méthode de la phase ;
-2. par `/scd-sdd:ci`, **la seule section `## Vérification` de la `<guidance>`**, et seulement au
-   moment de dériver les contrôles `arch-invariants`. L'admission appartient à `archi`, la
-   vérification à `ci` — un seul endroit par information ;
-3. par l'agent **`audit-explorer`**, le **seul bloc `<template>`**, quand `/scd-sdd:audit archi`
+1. par `/scd-sdd:technique`, **intégralement** : c'est le template et la méthode de la phase ;
+2. par `/scd-sdd:livraison`, **la seule section `## Vérification` de la `<guidance>`**, et seulement
+   au moment de dériver les contrôles `arch-invariants`. L'admission appartient à `technique`, la
+   vérification à `livraison` — un seul endroit par information ;
+3. par l'agent **`audit-explorer`**, le **seul bloc `<template>`**, quand `/scd-sdd:audit technique`
    juge ce document. Il n'en tire que la **liste des sections attendues** et ne le recopie nulle
-   part (`DECISIONS.md` §D20) : admettre un invariant appartient à `archi`, constater ce qui manque
-   à l'audit.
+   part (`DECISIONS.md` §D20) : admettre un invariant appartient à `technique`, constater ce qui
+   manque à l'audit.
 </role>
 
 <template>
 ```markdown
-# Architecture — [Projet]
-Statut : Brouillon | Créé : [date] | Trace vers : docs/prd.md, docs/stack.md
+# Technique — [Projet]
+Statut : Brouillon | Créé : [date] | Trace vers : docs/produit.md
 
 ## Légende
 - **Invariant** — une règle de structure qui doit rester vraie tout le temps (« aucun import de
@@ -49,12 +55,39 @@ Statut : Brouillon | Créé : [date] | Trace vers : docs/prd.md, docs/stack.md
   invariants existent pour la servir ; la colonne *Sert* dit laquelle.
 - **Classe** — la famille de l'invariant (1 = sens des dépendances, 5 = placement des fichiers…),
   utile parce que chaque famille se vérifie avec le même genre d'outil.
-- **Candidat ADR** — la colonne *ADR* reste **vide** ici : elle sera remplie par la phase
-  `/scd-sdd:adr`, qui fige le pourquoi de chaque invariant dans un fichier à part.
+- **Candidat ADR** — les colonnes *ADR* restent **vides** ici : elles seront remplies par la phase
+  `/scd-sdd:adr`, qui fige le pourquoi de chaque décision et de chaque invariant dans un fichier à
+  part.
 
 ## Vue d'ensemble
-[2-4 phrases : type d'appli, style macro retenu (décomposition), style micro retenu
-(organisation interne d'un module). Pas de diagramme outillé — C4 Context + Container en mots.]
+[2-4 phrases : ce que le projet est techniquement (type d'appli), style macro retenu
+(décomposition), style micro retenu (organisation interne d'un module). Pas de diagramme outillé —
+C4 Context + Container en mots.]
+
+## Choix retenus
+| Domaine | Choix | Sert (FR/SC) | ADR |
+|---|---|---|---|
+| Langage | [ex] | FR-001, FR-003 | *(vide)* |
+| Framework | [ex] | ... | *(vide)* |
+| Base de données | [ex] | ... | *(vide)* |
+| Auth | [ex] | ... | *(vide)* |
+| Cible de déploiement | [ex] | SC-002 | *(vide)* |
+| Tests | [ex] | (tous) | *(vide)* |
+[La colonne ADR se laisse **vide** au premier passage — n'y écris jamais un numéro : les ADR
+n'existent pas encore. Elle est bouclée par la phase `adr`, qui la renseigne ligne à ligne.]
+
+## Contraintes transverses
+- [ex : offline-first, RGPD, budget, latence cible, plateformes cibles, contrainte légale]
+[Techniques, légales, budget, plateformes : tout ce qui borne les choix sans être un choix.]
+
+## Décisions structurantes → candidats ADR
+- [décision] : retenue car [raison]. Alternative écartée : [X] car [Y].  → ADR-000N
+
+## Contraintes imposées par la stack
+| Contrainte | Imposée par | Conséquence structurelle |
+|---|---|---|
+| [ex : routage par arborescence] | [framework] | l'emplacement des pages n'est pas un choix |
+[Aucun ADR pour ces lignes : un constat n'est pas une décision.]
 
 ## Caractéristiques architecturales retenues
 | # | Caractéristique | Ce qu'elle exige de la structure | Sert (FR/SC) |
@@ -62,12 +95,6 @@ Statut : Brouillon | Créé : [date] | Trace vers : docs/prd.md, docs/stack.md
 | C1 | [ex : testabilité] | [ex : le domaine s'instancie sans base ni HTTP] | FR-003, SC-002 |
 | C2 | [ex : time-to-market] | ... | SC-001 |
 [3 à 5 lignes. Jamais plus : au-delà, l'argumentaire ne discrimine plus rien.]
-
-## Contraintes imposées par la stack
-| Contrainte | Imposée par | Conséquence structurelle |
-|---|---|---|
-| [ex : routage par arborescence] | [framework] | l'emplacement des pages n'est pas un choix |
-[Aucun ADR pour ces lignes : un constat n'est pas une décision.]
 
 ## Invariants
 | # | Invariant | Classe | Trace observable | Sert | ADR |
@@ -90,7 +117,16 @@ phase `adr`, et tant qu'elle est vide l'invariant est un **candidat**.]
 
 <guidance>
 
-## La méthode en trois temps, et son critère de fin
+## Moitié 1 — les fondations, en options justifiées
+
+- **Mode options justifiées.** Pour chaque domaine à trancher, présenter 2-3 options avec pour/contre reliés aux `FR`/`SC` de `docs/produit.md`, puis laisser l'utilisateur choisir (`AskUserQuestion` convient). Ne pas imposer une stack par défaut sans arbitrage explicite.
+- **Trace vers le Produit.** Chaque choix doit servir une exigence : la colonne « Sert (FR/SC) » n'est pas décorative. Un choix qui ne sert aucun `FR`/`SC` est probablement du sur-engineering.
+- **Réutiliser l'existant** sauf justification : ne pas ajouter une dépendance sans raison reliée à une exigence.
+- **Distinguer structurant / cosmétique.** Seules les décisions **coûteuses à inverser** (langage, décomposition, DB, auth, déploiement, stratégie de test) deviennent des ADR. Le choix d'un utilitaire mineur n'en mérite pas un.
+- **Une décision de fondation peut nourrir les deux moitiés.** Un choix de stack devient un ADR ; s'il impose en plus une règle au code (« la logique métier n'importe pas le framework web »), c'est la moitié 2 qui l'admet en **invariant**. Le noter en « Contraintes transverses » suffit à ce que le temps 1 le reprenne.
+- **Ce fichier reste une synthèse** : le *pourquoi* détaillé et les alternatives vont dans les ADR (phase `adr`), pas ici. Éviter la duplication.
+
+## Moitié 2 — la méthode en trois temps, et son critère de fin
 
 Ni interview pure, ni options justifiées pures. L'interview produirait de la prose sur une matière
 que l'humain ne maîtrise pas forcément, et rien n'y serait falsifiable ; les options justifiées
@@ -106,16 +142,16 @@ seules feraient « décider » ce que le framework impose déjà. D'où trois te
 
 > **Chaque invariant a sa trace observable et son candidat ADR.**
 
-Jamais « l'architecture est décrite », qui ne se vérifie pas. Un document sans invariant n'est pas
-une phase jouée : c'est une prose de contexte.
+Jamais « l'architecture est décrite », qui ne se vérifie pas. Un document sans invariant n'a pas
+joué la seconde moitié de la phase : c'est une prose de contexte.
 
 ## Temps 1 — un constat n'est pas une décision
 
-Lister d'abord ce que le langage, le framework et les cibles de déploiement décident **déjà** :
-routage par arborescence, convention de dossiers imposée, modèle de modules, frontière client /
-serveur, mécanisme d'injection. Ces lignes vont dans « Contraintes imposées », **sans ADR** : on ne
-décide pas ce qui est déjà décidé, et un ADR pour un constat gonfle `docs/adr/` d'un bruit qui
-dilue les vraies décisions.
+Lister d'abord ce que le langage, le framework et les cibles de déploiement — **tranchés dans la
+moitié 1, quelques minutes plus tôt** — décident **déjà** : routage par arborescence, convention de
+dossiers imposée, modèle de modules, frontière client / serveur, mécanisme d'injection. Ces lignes
+vont dans « Contraintes imposées », **sans ADR** : on ne décide pas ce qui est déjà décidé, et un
+ADR pour un constat gonfle `docs/adr/` d'un bruit qui dilue les vraies décisions.
 
 Une contrainte peut néanmoins **produire un invariant** : le framework impose le dossier, la
 règle « rien d'autre que des pages dans ce dossier » est une décision du projet et passe
@@ -151,7 +187,8 @@ que le temps 1 a fermé ne se rouvre pas : on ne propose pas d'options sur ce qu
 impose.
 
 **L'alternative écartée ne se recopie pas ici.** Elle appartient à l'ADR (§ Alternatives
-considérées), écrit à la phase suivante avec l'humain présent. `docs/archi.md` reste une synthèse.
+considérées), écrit à la phase suivante avec l'humain présent. `docs/technique.md` reste une
+synthèse.
 
 ## Les caractéristiques : 3 à 5, tracées, et pas une de plus
 
@@ -163,20 +200,20 @@ plus rien ; le profil *essential* d'arc42 (**praticien reconnu**) tient la même
 goals sont le minimum toujours documenté.
 
 Chacune cite au moins un `FR-xxx`/`SC-xxx`. Une caractéristique qui ne sert aucune exigence est du
-sur-engineering, exactement comme un choix de Stack sans ligne « Sert ».
+sur-engineering, exactement comme un choix de fondation sans ligne « Sert ».
 
 ## Le rôle de l'agent — contradicteur, pas animateur
 
 L'agent **argumente pour et contre** chaque option, au sens du mode options justifiées. Il ne joue
 pas un atelier d'évaluation : **aucune méthode d'évaluation d'architecture n'est validée en usage
 solo** — ATAM et QAW sont structurellement multi-parties-prenantes et chiffrés à 32-70 staff-days
-(rapports SEI, **officiel**), et ne se présentent pas comme « allégés ». La passe adverse du socle
+(rapports SEI, **officiel**), et ne se présentent pas comme « allégées ». La passe adverse du socle
 existe déjà et vit ailleurs : `/scd-sdd:premortem socle`.
 
 ## Temps 3 — la grille d'admission : onze classes
 
 Pour chaque décision du temps 2 et chaque règle proposée, **une seule question** — celle de l'étape
-7 de `adr`, mot pour mot :
+de repérage de `adr`, mot pour mot :
 
 > *Cette décision laisse-t-elle une trace observable dans l'arborescence ou dans les imports ?*
 
@@ -204,8 +241,8 @@ prose de contexte, ou sort.
 - « le cœur métier n'importe aucun paquet du framework web » → **entre** (classe 8).
 - « le code sera modulaire » → **n'entre pas** : rien à observer.
 - « les noms de variables reflètent le vocabulaire métier » → **n'entre pas** (classe 12, jugement).
-- « le P99 reste sous 200 ms » → **n'entre pas** (classe 13, runtime) — c'est un `SC` du PRD, pas un
-  invariant.
+- « le P99 reste sous 200 ms » → **n'entre pas** (classe 13, runtime) — c'est un `SC` de
+  `docs/produit.md`, pas un invariant.
 
 Un invariant s'écrit comme une **interdiction ou une obligation vérifiable**, jamais comme une
 intention : « aucun import de X hors de Y », pas « on évitera de dépendre de X ».
@@ -214,32 +251,33 @@ intention : « aucun import de X hors de Y », pas « on évitera de dépendre d
 
 Les quatre classes non statiques — **12** conformité sémantique de nommage, **13** contrats de
 comportement runtime, **14** drift de configuration et sécurité runtime, **15** propriétés
-holistiques composites — sont **hors périmètre par construction**, et `docs/archi.md` les **nomme**
-dans sa dernière section. C'est le miroir exact du « ce que ces contrôles ne couvrent pas » de la
-phase `ci` : taire un trou ferait croire le contraire. Ce qu'un utilisateur a proposé et qui a été
-refusé faute de trace observable s'y écrit aussi — sinon la proposition revient à chaque re-passe.
+holistiques composites — sont **hors périmètre par construction**, et `docs/technique.md` les
+**nomme** dans sa dernière section. C'est le miroir exact du « ce que ces contrôles ne couvrent
+pas » de la phase `livraison` : taire un trou ferait croire le contraire. Ce qu'un utilisateur a
+proposé et qui a été refusé faute de trace observable s'y écrit aussi — sinon la proposition revient
+à chaque re-passe.
 
 ## Ce que cette phase ne fait pas
 
-- **Aucun ADR écrit.** Les invariants sont des **candidats** ; `adr` les promeut, comme il promeut
-  les décisions de `stack`.
+- **Aucun ADR écrit.** Les décisions structurantes et les invariants sont des **candidats** ; `adr`
+  les promeut — deux de ses trois sources sont désormais dans **ce seul fichier**.
 - **Rien dans `docs/ci.md`, aucun outil choisi, aucun statut informatif → bloquant.** L'admission
-  appartient à `archi`, la vérification à `ci`.
+  appartient à `technique`, la vérification à `livraison`.
 - **Aucun diagramme outillé, aucun modèle formel.** Le plafond est la prose courte : aucun format de
   documentation « optimisé pour un agent » n'a de littérature établie — les seules sources sont des
   préprints 2026 **illustratifs** et des billets d'éditeurs. On ne prescrit pas ce qui n'est pas
   fondé.
-- **Aucune écriture dans `docs/stack.md`.** Sa § Vue d'ensemble renvoie ici ; elle ne se rétro-édite
-  pas.
+- **Aucune écriture dans `docs/produit.md`.** Il ne se rétro-modifie pas pour coller à un choix
+  technique : ce serait la fuite exacte que son `<completion>` interdit dans l'autre sens.
 
 ## Vérification
 
-L'outillage qui rendra les invariants exécutables. **Cette section est celle que `/scd-sdd:ci`
-charge, seule et conditionnellement**, au moment de dériver les contrôles `arch-invariants`. Son
-titre est exactement `## Vérification`, sans complément — c'est sous ce nom que les trois points de
-déclaration la désignent, et un titre plus long les rendrait faux. Elle ne sert pas à choisir un outil pendant la phase
-`archi` : elle existe pour qu'un invariant admis ici soit **rendable** plus tard, et pour qu'on
-sache tout de suite ce qui ne l'est pas.
+L'outillage qui rendra les invariants exécutables. **Cette section est celle que
+`/scd-sdd:livraison` charge, seule et conditionnellement**, au moment de dériver les contrôles
+`arch-invariants`. Son titre est exactement `## Vérification`, sans complément — c'est sous ce nom
+que les trois points de déclaration la désignent, et un titre plus long les rendrait faux. Elle ne
+sert pas à choisir un outil pendant la phase `technique` : elle existe pour qu'un invariant admis
+ici soit **rendable** plus tard, et pour qu'on sache tout de suite ce qui ne l'est pas.
 
 Ce qui la justifie tient en deux chiffres **mesurés**, et ils ne disent pas la même chose : les
 contrôles automatiques de conformité de dépendances réduisent réellement les violations — ≈ 60 % de
@@ -249,8 +287,8 @@ imparfaitement : ≈ 77 % des dépendances détectées en moyenne sur dix outils
 
 **Instantané daté du 2026-08-09.** Les versions et les statuts se re-vérifient à l'adoption, sur le
 **dépôt et le registre de paquets**, jamais sur une page de présentation — et avec les seuils de
-re-passe de maturité de la phase `ci` : mainteneur disparu ou dépôt archivé, licence changée (y
-compris sur les seules règles), palier gratuit devenu payant.
+re-passe de maturité de la phase `livraison` : mainteneur disparu ou dépôt archivé, licence changée
+(y compris sur les seules règles), palier gratuit devenu payant.
 
 | Écosystème | Outil | Version · date (2026-08-09) | Classes couvertes | Effort CI |
 |---|---|---|---|---|
@@ -290,21 +328,25 @@ projet porte le mécanisme.
 </guidance>
 
 <completion>
-La phase Architecture est terminée quand :
-- [ ] La § Vue d'ensemble tient en **2-4 phrases** et nomme le style **macro** et le style **micro**
-      retenus. Aucun diagramme outillé.
+La phase Technique est terminée quand :
+
+**Les fondations —**
+- [ ] Chaque domaine structurant (langage, framework, DB, auth, déploiement, tests) est tranché ou explicitement marqué « non applicable ».
+- [ ] Chaque choix est relié à au moins un `FR-xxx`/`SC-xxx` (colonne « Sert »).
+- [ ] Chaque décision structurante a une **alternative écartée** nommée avec sa raison.
+- [ ] La liste « Décisions structurantes → candidats ADR » est prête à alimenter la phase `adr` (chaque ligne = un futur ADR-000N).
+
+**La structure —**
+- [ ] La § Vue d'ensemble tient en **2-4 phrases** et nomme le style **macro** et le style **micro** retenus. Aucun diagramme outillé.
 - [ ] Il y a entre **3 et 5 caractéristiques**, et chacune cite au moins un `FR-xxx`/`SC-xxx`.
-- [ ] Chaque ligne de « Contraintes imposées » nomme **qui l'impose**, et **aucune** n'a d'ADR.
-- [ ] **Chaque invariant a une classe (1-11) et une trace observable écrite** — pas « dans le code ».
-      Une ligne sans trace observable a été retirée, pas rendue vague.
+- [ ] Chaque ligne de « Contraintes imposées par la stack » nomme **qui l'impose**, et **aucune** n'a d'ADR.
+- [ ] **Chaque invariant a une classe (1-11) et une trace observable écrite** — pas « dans le code ». Une ligne sans trace observable a été retirée, pas rendue vague.
 - [ ] Chaque invariant est formulé en **interdiction ou obligation vérifiable**, jamais en intention.
-- [ ] **Chaque invariant a son candidat ADR** — c'est-à-dire qu'il est *admissible* comme décision
-      structurante et que la phase `adr` en écrira une. Au premier passage, la colonne ADR est
-      **vide** pour toutes les lignes, et c'est l'état conforme : un numéro y figurant désignerait
-      un ADR qui n'existe pas. Elle ne se renseigne qu'à une relecture post-`adr`. C'est le critère
-      de fin, et il ne s'assouplit pas.
-- [ ] La section « Ce que cette architecture n'admet pas » **nomme les classes 12-15**, plus ce qui a
-      été proposé et refusé faute de trace observable. Elle n'est ni vide ni générique.
+- [ ] **Chaque invariant a son candidat ADR** — c'est-à-dire qu'il est *admissible* comme décision structurante et que la phase `adr` en écrira une. C'est le critère de fin, et il ne s'assouplit pas.
+- [ ] La section « Ce que cette architecture n'admet pas » **nomme les classes 12-15**, plus ce qui a été proposé et refusé faute de trace observable. Elle n'est ni vide ni générique.
+
+**Les deux —**
+- [ ] Les **deux** colonnes « ADR » — « Choix retenus » et « Invariants » — sont **vides** sur toutes les lignes : au premier passage les ADR n'existent pas encore, et un numéro y figurant désignerait un fichier absent. Elles ne se renseignent qu'à la phase `adr`.
 - [ ] Aucun ADR n'a été écrit, `docs/ci.md` n'a pas été touché, aucun outil n'a été choisi.
-- [ ] `docs/stack.md` n'a pas été modifié.
+- [ ] `docs/produit.md` n'a pas été rétro-modifié pour coller à un choix technique.
 </completion>

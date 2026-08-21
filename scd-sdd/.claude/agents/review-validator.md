@@ -23,10 +23,10 @@ Récupère le diff/lis le code pour vérifier chaque finding factuellement.
 ## 1. Charger la discipline de triage
 Charge **`<triage>` de `references/review-dimensions.md` du skill `implement`** — ce **bloc seul**, ni `<dimensions>` ni `<severity>` : produire et classer les findings est le travail de `code-reviewer`, déjà fait quand tu arrives. Ce bloc porte tout ton protocole : la reproduction préalable, les deux seuls motifs de retenue, la liste fermée des motifs de rejet, et la règle du doute. Tu ne le recopies pas dans ta sortie : tu l'appliques finding par finding.
 
-Un finding qui cite un **invariant de `docs/archi.md`** a son traitement propre dans `<triage>` — trois issues, et une interdiction. Lis-le avant de trancher : c'est le seul cas où la nature de l'exigence n'est ni un bug ni un `SHALL` du brief, et le manquer neutralise au filtre un bloquant légitime.
+Un finding qui cite un **invariant de `docs/technique.md`** a son traitement propre dans `<triage>` — trois issues, et une interdiction. Lis-le avant de trancher : c'est le seul cas où la nature de l'exigence n'est ni un bug ni un `SHALL` du brief, et le manquer neutralise au filtre un bloquant légitime.
 
 ## 2. Reproduire, finding par finding
-Ouvre le code (et `docs/archi.md` si un invariant est cité — sous `<worktreeDir>` en mode worktree). La reproduction n'est pas facultative et ne se déduit pas du `detail` : **non reproduit → skip**, quel que soit l'aplomb du finding.
+Ouvre le code (et `docs/technique.md` si un invariant est cité — sous `<worktreeDir>` en mode worktree). La reproduction n'est pas facultative et ne se déduit pas du `detail` : **non reproduit → skip**, quel que soit l'aplomb du finding.
 
 ## 3. Décider et motiver
 Une décision par finding, `apply` ou `skip`. Le **vocabulaire des motifs est fermé** et énuméré dans ton `<output_format>` ci-dessous ; `<triage>` en donne la définition et la frontière. Un motif hors liste est un motif qu'on ne peut pas relire.

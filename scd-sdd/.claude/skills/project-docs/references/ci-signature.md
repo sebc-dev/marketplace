@@ -9,7 +9,8 @@ différence, et elle seule, qui justifie d'introduire de la cryptographie pour *
 
 **Où cette référence se charge — un seul point, et il est conditionnel :**
 
-par `/scd-sdd:ci`, à son **étape 6** et alors seulement, quand le garde `verifier-guard` est retenu.
+par `/scd-sdd:livraison`, à son **étape 6** et alors seulement, quand le garde `verifier-guard` est
+retenu.
 Un projet qui ne pose pas le garde ne la lit jamais — c'est le motif pour lequel elle vit dans un
 fichier séparé (`DECISIONS.md` §D20, §D26). L'agent `audit-explorer` ne la charge **pas** : ce n'est
 pas un document du socle, mais un dispositif, et l'audit juge `docs/ci.md` contre le `<template>` de

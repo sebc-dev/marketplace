@@ -2,8 +2,8 @@
 
 <role>
 Répond à **comment on garantit** ce que `CLAUDE.md` ne peut que conseiller. Les contrôles se dérivent
-d'une **grille de modes de défaillance** — ce contre quoi on se défend — et la Stack ne décide que de
-l'outil qui les rend : on trace vers elle, on ne la choisit pas ici. Produit deux artefacts —
+d'une **grille de modes de défaillance** — ce contre quoi on se défend — et `docs/technique.md` ne
+décide que de l'outil qui les rend : on trace vers lui, on ne le choisit pas ici. Produit deux artefacts —
 `docs/ci.md`, la synthèse dérivable qui prouve que la phase est faite, et le **fichier de workflow**
 de la forge, qui est le contrôle réel.
 
@@ -25,7 +25,8 @@ théorique tombe alors à zéro.
 
 **Où cette référence se charge — deux points, et le second est partiel :**
 
-1. par `/scd-sdd:ci`, **intégralement** : c'est le template et la méthode de la phase ;
+1. par `/scd-sdd:livraison`, **intégralement** : c'est le template et la méthode du premier des
+   deux documents que la phase produit ;
 2. par l'agent **`audit-explorer`**, le **seul bloc `<template>`**, quand `/scd-sdd:audit ci` juge
    ce document. Il n'en tire que la **liste des sections attendues** et ne le recopie nulle part
    (`DECISIONS.md` §D20) : produire le document appartient à la phase, constater ce qui y manque à
@@ -35,7 +36,7 @@ théorique tombe alors à zéro.
 <template>
 ```markdown
 # Contrôles CI — [Projet]
-Statut : Actif | Créé : [date] | Trace vers : docs/stack.md | Forge : [GitHub Actions]
+Statut : Actif | Créé : [date] | Trace vers : docs/technique.md | Forge : [GitHub Actions]
 
 ## Commandes du projet
 | Rôle | Commande |
@@ -61,7 +62,7 @@ Statut : Actif | Créé : [date] | Trace vers : docs/stack.md | Forge : [GitHub 
 | 9 | `workflow-integrity` | Actions épinglées par SHA + audit | ... | `.github/workflows` | Bloquant | 3d — action compromise par déplacement de tag |
 | 10 | `dependency-review` | Revue des dépendances sur le diff | ... | diff du lockfile + manifeste | Bloquant | 3a, 3c — dépendance ajoutée en silence, lockfile altéré |
 | 11 | — (résolveur) | Cooldown de dépendances | [clé de config] | installation | Bloquant (déclaratif) | 3a, 3b — version publiée depuis moins de N jours |
-| — | `arch-invariants` | Invariants d'architecture (`docs/archi.md` + ADR) | ... | diff | Informatif → bloquant après mesure | 5 — violation d'un invariant admis |
+| — | `arch-invariants` | Invariants d'architecture (`docs/technique.md` + ADR) | ... | diff | Informatif → bloquant après mesure | 5 — violation d'un invariant admis |
 | — | `lint` | Style | ... | diff | Informatif | **vérificateur** — cible du mode 2 (lisibilité) |
 | — | `test-antipatterns` | Anti-patterns de test | ... | diff des tests | Informatif | 1, partiellement — assertion faible |
 | — | `ablation` | Ablation no-op (nocturne) | ... | dépôt | Informatif | 4 — building to the test |
@@ -72,7 +73,7 @@ c'est `quality-config-guard` qui garde son abaissement.
 ## Registre des ADR vérifiés en CI
 | ADR | Invariant | Source | Contrôle | Statut |
 |---|---|---|---|---|
-| [ADR-0003] | [ex : aucun import de `db/` hors de `server/`] | `docs/archi.md` I1 | `arch-invariants` | Informatif depuis [date] |
+| [ADR-0003] | [ex : aucun import de `db/` hors de `server/`] | `docs/technique.md` I1 | `arch-invariants` | Informatif depuis [date] |
 | [ADR-0007] | [ex : invariant venu d'un ADR promu après coup] | `docs/adr/` | `arch-invariants` | Informatif depuis [date] |
 
 ## Protection de branche
@@ -89,7 +90,7 @@ générique est déjà connu, ce qui manque est son instance ici.]
 - **Mode 1 — l'oracle faux sémantique.** Aucun outil ne connaît l'intention.
   [Où, dans ce projet, un test vert ne prouverait rien : quel comportement, quel oracle.]
 - **Mode 5 — l'invariant non encore formalisé.** Un contrôle maison ne vaut que sa liste.
-  [Quels invariants de `docs/archi.md` l'outillage ne rend pas — et quelles décisions du projet
+  [Quels invariants de `docs/technique.md` l'outillage ne rend pas — et quelles décisions du projet
   ne sont encore traduites en aucune règle.]
 - **Mode 4 — le *building to the test* « propre ».**
   [Quel artefact de ce projet pourrait satisfaire un contrôle sans remplir l'exigence.]
@@ -119,7 +120,7 @@ un outil périme, un mode non.
 | 2 | **Suppression du vérificateur** | l'agent n'écrit pas du code qui échoue au typage : il **éteint le typage** sur la ligne qui échoue | `verifier-guard` (code), `test-integrity` (tests), `quality-config-guard` (config) — grep déterministe sur le diff | tout le reste : avant ce garde, un `as any` dans du code de production passait **tous** les autres contrôles au vert |
 | 3 | **Chaîne d'approvisionnement** | (a) paquet halluciné puis enregistré par un tiers · (b) paquet hostile trop récent pour figurer dans une base · (c) lockfile altéré directement · (d) action CI compromise par déplacement de tag | cooldown (a, b) · revue des dépendances sur le diff (a, c) · épinglage SHA + audit du workflow (d) | la SCA sur lockfile, qui ne voit que les **CVE connues** |
 | 4 | **Building to the test** | la logique vit dans un artefact jetable et l'artefact demandé reste mort ; ou le code satisfait le contrôle plutôt que l'exigence | ablation no-op, nocturne et informative | tout contrôle qui regarde le code livré sans vérifier qu'il **sert** |
-| 5 | **Violation d'invariant d'architecture** | le code est correct en général et viole une décision propre au projet | invariants dérivés de **`docs/archi.md`** et des **ADR**, informatifs jusqu'à mesure | tous les outils génériques : ils ne connaissent pas le contrat du projet |
+| 5 | **Violation d'invariant d'architecture** | le code est correct en général et viole une décision propre au projet | invariants dérivés de **`docs/technique.md`** et des **ADR**, informatifs jusqu'à mesure | tous les outils génériques : ils ne connaissent pas le contrat du projet |
 
 Le mode 5 est le **gisement principal** : les défauts qui comptent dans du code généré sont des
 violations de contrat propres au projet. C'est aussi celui dont le contrôle est le plus cher à régler,
@@ -305,27 +306,28 @@ et **ne pas la remplacer par un job maison** : un contrôle qui rejoue la résol
 l'épinglage de tout le fichier sans que rien ne change de couleur : c'est le job d'audit, sur
 `.github/workflows/`, qui le voit — pas la revue.
 
-## Les invariants d'architecture — le mode 5, dérivé d'`archi` et des ADR
+## Les invariants d'architecture — le mode 5, dérivé de `technique` et des ADR
 
-**La source est `docs/archi.md`**, produit par la phase `archi` : sa table des invariants porte
+**La source est `docs/technique.md`**, produit par la phase `technique` : sa table des invariants porte
 déjà, ligne à ligne, l'invariant, sa **classe** (1-11), sa **trace observable**, la caractéristique
 qu'il sert et son ADR. L'admission a été jouée là-bas ; ici on la **rend exécutable**, on ne la
 rejoue pas. Un invariant admis n'est pas pour autant rendable : ce que l'outillage atteint et ce
-qui lui résiste sont dans la section **Vérification** de `references/archi.md`, à charger à ce
+qui lui résiste sont dans la section **Vérification** de `references/technique.md`, à charger à ce
 moment-là et à ce moment-là seulement.
 
 **L'entrée reste double.** `docs/adr/` porte les décisions structurantes du projet, et la CI peut
 en dériver des contrôles — c'est le sens inverse de celui qu'interdit la règle de traçabilité : un
 rapport de recherche ne descend jamais seul dans un ADR, mais un ADR **accepté** peut remonter en
 contrôle vérifié. Un ADR promu depuis `_candidates/` après coup peut donc porter un invariant que
-`docs/archi.md` ne contient pas, et `docs/archi.md` peut retarder sur les ADR. Les deux se lisent.
+`docs/technique.md` ne contient pas, et `docs/technique.md` peut retarder sur les ADR. Les deux se
+lisent.
 
-Relire `docs/adr/`, et pour chaque décision que la table d'`archi` ne couvre pas, se poser la même
+Relire `docs/adr/`, et pour chaque décision que la table d'invariants ne couvre pas, se poser la même
 question : *cette décision laisse-t-elle une trace observable dans l'arborescence ou dans les
 imports ?* Si oui, elle donne un invariant.
 
-Un projet **sans `docs/archi.md`** ne bloque rien : le mode 5 se dérive des seuls ADR, et le manque
-se déclare dans « Ce que ces contrôles ne couvrent pas » avec le renvoi vers `/scd-sdd:archi` — un
+Un projet **sans table d'invariants** ne bloque rien : le mode 5 se dérive des seuls ADR, et le manque
+se déclare dans « Ce que ces contrôles ne couvrent pas » avec le renvoi vers `/scd-sdd:technique` — un
 gisement amputé de sa source principale n'est pas une couverture.
 
 - « la couche `db/` n'est atteinte que par `server/` » → un contrôle sur les imports.
@@ -476,7 +478,7 @@ que ces contrôles ne couvrent pas », dernière puce : le durcissement ne la fe
 </guidance>
 
 <completion>
-La phase CI est terminée quand :
+La moitié CI de la phase `livraison` est terminée quand :
 - [ ] Chaque contrôle a une **commande réelle**, ou un `[à compléter]` explicite — jamais une
       commande inventée.
 - [ ] **Aucun seuil de couverture globale** : le seuil porte sur le code nouveau.
@@ -497,9 +499,9 @@ La phase CI est terminée quand :
 - [ ] Les **trois contrôles de chaîne d'approvisionnement** sont posés : cooldown de dépendances
       (ou `[à compléter]` si le résolveur ne l'offre pas), revue des dépendances sur le diff,
       épinglage des actions par SHA complet **vérifié** par un audit du workflow.
-- [ ] Les **invariants d'architecture** sont dérivés de `docs/archi.md` **et** de `docs/adr/` — les
+- [ ] Les **invariants d'architecture** sont dérivés de `docs/technique.md` **et** de `docs/adr/` — les
       deux sources lues, pas une — et tracés dans le registre des ADR vérifiés avec leur origine,
-      **informatifs** jusqu'à mesure par rejeu sur l'historique. `docs/archi.md` absent est
+      **informatifs** jusqu'à mesure par rejeu sur l'historique. Une table d'invariants absente est
       **déclaré** comme trou, jamais tu.
 - [ ] Chaque outil retenu porte sa **date de constat de maturité** — non archivé, licence du moteur et
       des règles, palier gratuit sans carte.

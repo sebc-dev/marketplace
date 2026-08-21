@@ -17,7 +17,7 @@ contrat édité par erreur.
    - tout le reste (`003`, `auth`, `003-auth`, un chemin `specs/…`) → cible **feature**, puis
      résolution selon « Cibler une feature » du skill `feature-specs`.
 2. **Aucun argument** → n'infère rien. Énumère les candidates des trois niveaux — le socle s'il a
-   au moins un PRD, les features dont la dernière gate `analyze` est au vert, les fiches de
+   au moins un `docs/produit.md`, les features dont la dernière gate `analyze` est au vert, les fiches de
    `en-cours/` — et demande via `AskUserQuestion`.
 
 Les deux règles de résolution **intra-niveau** appartiennent à leur skill et sont référencées,
@@ -29,16 +29,18 @@ jamais recopiées. Ce bloc ne tranche que le niveau.
 <socle>
 ## Cible `socle`
 
-**Précondition.** `docs/prd.md` existe. Un socle réduit au brief n'a pas encore de plan à
-durcir : renvoie vers `/scd-sdd:prd`.
+**Précondition.** `docs/produit.md` existe. Un socle sans document Produit n'a pas encore de plan
+à durcir : renvoie vers `/scd-sdd:produit`.
 
 **Ce qui est jugé** — ceux de ces documents qui existent, sans en réclamer aucun :
-`docs/prd.md` · `docs/stack.md` · `docs/archi.md` · `docs/adr/*.md` · `docs/ci.md` · `CLAUDE.md`.
+`docs/produit.md` · `docs/technique.md` · `docs/adr/*.md` · `docs/ci.md` · `CLAUDE.md`.
 
-**Le contexte, jamais jugé** : `docs/brief.md` (l'intention d'origine) et `docs/journal/socle.md`
-(la chronologie, et sa fraîcheur). Le brief **n'est jamais remédié** : un risque qui pointe vers
-lui dit que le PRD le lit mal — c'est une remédiation du PRD — ou qu'on veut changer d'intention,
-ce qui est une décision humaine et pas une sortie de premortem.
+**Le contexte, jamais jugé** : la section `## Problème` de `docs/produit.md` (l'intention
+d'origine) et `docs/journal/socle.md` (la chronologie, et sa fraîcheur). Cette section **n'est
+jamais remédiée** : un risque qui pointe vers elle dit que le reste du document la lit mal — c'est
+une remédiation du reste — ou qu'on veut changer d'intention, ce qui est une décision humaine et
+pas une sortie de premortem. **Le reste de `docs/produit.md` est remédiable** (`DECISIONS.md`
+§D39) : la borne est la section, pas le fichier.
 
 **Ce que tu ne cherches pas ici.** La **complétude** face au template, la **traçabilité** vers
 l'amont et la **cohérence** avec lui sont l'affaire de `/scd-sdd:audit`, qui juge un document à la
@@ -51,9 +53,9 @@ en renvoyant vers l'audit du document concerné ; ce n'est pas un risque de prem
 > « Six mois après le démarrage, le projet a échoué — ou il a coûté trois fois le prévu, ou on l'a
 > refondu. Le socle disait exactement ce qu'il dit là. Raconte pourquoi. »
 
-Les lentilles se lisent au niveau produit et projet : le PRD mesure-t-il une issue ou une
-activité ? La Stack porte-t-elle une hypothèse de charge, de coût ou d'équipe qui n'est écrite
-nulle part ? Un ADR tient-il pour acquis un contexte qui aura changé ? La CI attrape-t-elle ce
+Les lentilles se lisent au niveau produit et projet : `docs/produit.md` mesure-t-il une issue ou
+une activité ? Les choix de `docs/technique.md` portent-ils une hypothèse de charge, de coût ou
+d'équipe qui n'est écrite nulle part ? Un ADR tient-il pour acquis un contexte qui aura changé ? La CI attrape-t-elle ce
 qui casse vraiment, ou ce qui est facile à mesurer ? Et les **invariants** : la structure qui
 aura vraiment fait mal six mois plus tard est-elle dans la table, ou la table ne retient-elle que
 ce qui était facile à formuler au démarrage ? Un invariant qui, tenu à la lettre, ferait échouer
@@ -61,11 +63,12 @@ le projet compte autant qu'un invariant manquant.
 
 **Formes de remédiation légales.**
 
-- **Nouveau `SC-xxx` mesurable** dans `docs/prd.md` — verbe vérifiable, jamais adjectif.
-- **Nouveau `FR-xxx` produit** dans `docs/prd.md`, prochain ID libre, jamais réattribué.
-- **Item de scope EXCLU** dans la section « NON inclus » du PRD. Quand la bonne réponse est « on
+- **Nouveau `SC-xxx` mesurable** dans `docs/produit.md` — verbe vérifiable, jamais adjectif.
+- **Nouveau `FR-xxx` produit** dans `docs/produit.md`, prochain ID libre, jamais réattribué.
+- **Item de scope EXCLU** dans la section « Périmètre EXCLU » de `docs/produit.md`. Quand la bonne réponse est « on
   ne fait pas ça », l'écrire ferme la porte — c'est souvent la remédiation la plus rentable.
-- **Contrainte ou exigence non fonctionnelle** dans `docs/stack.md`.
+- **Contrainte ou exigence non fonctionnelle** dans la section « Contraintes transverses » de
+  `docs/technique.md`.
 - **Contrôle** dans `docs/ci.md`, bloquant ou informatif selon que son taux de faux positifs a
   été mesuré sur la stack réelle. Non mesuré → informatif, et le passage en bloquant devient un
   chantier `en-attente`.
@@ -75,12 +78,12 @@ le projet compte autant qu'un invariant manquant.
 - **Candidat ADR** dans `docs/adr/_candidates/` pour une décision structurante. **Jamais** un edit
   d'ADR accepté : le hook `block-adr-edits` rend `exit 2`, et c'est voulu.
 - **Candidat ADR, encore**, pour un **invariant d'architecture manquant** — c'est la seule forme
-  par laquelle un risque sur `docs/archi.md` se referme. **Tu n'écris jamais dans `docs/archi.md` :**
-  admettre un invariant appartient à la phase `archi`, qui l'oppose à son critère de trace
-  observable dans l'arborescence ou dans les imports. Le candidat n'est donc pas un renvoi dans le
-  vide : `/scd-sdd:adr` promeut ce qui porte une trace observable, et `/scd-sdd:ci` relit
-  `docs/archi.md` **et** `docs/adr/` — l'invariant atteint son contrôle `arch-invariants` par
-  cette route. Le candidat ne se rédige qu'avec sa trace ; sans elle, ce n'est pas un invariant
+  par laquelle un risque sur la table des invariants se referme. **Tu n'écris jamais dans cette
+  table :** admettre un invariant appartient à la phase `technique`, qui l'oppose à son critère de
+  trace observable dans l'arborescence ou dans les imports. Le candidat n'est donc pas un renvoi
+  dans le vide : `/scd-sdd:adr` promeut ce qui porte une trace observable, et `/scd-sdd:livraison`
+  relit la table de `docs/technique.md` **et** `docs/adr/` — l'invariant atteint son contrôle
+  `arch-invariants` par cette route. Le candidat ne se rédige qu'avec sa trace ; sans elle, ce n'est pas un invariant
   mais une intention de design, et le risque se referme ailleurs — ou nulle part.
 - Un invariant **existant** jugé faux ou périmé n'entre dans aucune de ces formes : le rouvrir
   demande de superséder l'ADR qui le porte. Il devient une fiche `en-attente` (voir « Le risque
@@ -89,8 +92,8 @@ le projet compte autant qu'un invariant manquant.
 **Journal.** `docs/journal/socle.md`, phase `premortem`.
 
 **Ce qui suit.** Aucune gate n'existe à ce niveau : rien à re-jouer mécaniquement. Mais si la
-passe a touché `docs/prd.md` ou `docs/stack.md`, **les features déjà spécifiées peuvent avoir
-perdu leur backref** — un `FR` de spec trace vers un `FR` du PRD. Nomme-les explicitement et
+passe a touché `docs/produit.md` ou `docs/technique.md`, **les features déjà spécifiées peuvent
+avoir perdu leur backref** — un `FR` de spec trace vers un `FR` de `docs/produit.md`. Nomme-les explicitement et
 recommande `/scd-sdd:analyze NNN` sur chacune. Ne les corrige pas toi-même : ce serait une
 remédiation hors de la cible approuvée.
 </socle>
@@ -107,7 +110,7 @@ conformité ne couvre pas. `docs/journal/NNN-slug.md` en porte la trace datée �
 **Ce qui est jugé** : `specs/NNN-slug/spec.md` · `plan.md` · `tasks.md` (et `DELTA.md` en mode
 brownfield, où le premortem se scope au delta).
 
-**Le contexte, jamais jugé** : `docs/prd.md`, `docs/stack.md`, `docs/adr/`. Un risque qui pointe
+**Le contexte, jamais jugé** : `docs/produit.md`, `docs/technique.md`, `docs/adr/`. Un risque qui pointe
 vers le socle ne se remédie pas ici — il devient un signalement, ou un premortem de cible `socle`.
 
 **Scénario-cadre.**

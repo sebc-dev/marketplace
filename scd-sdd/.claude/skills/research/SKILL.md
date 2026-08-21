@@ -18,8 +18,9 @@ description: |
 
 ## Pourquoi une capacité, et pas une phase
 
-Une recherche se joue **quand la question se pose**, jamais à un rang imposé : depuis `stack`,
-`adr`, `ci` ou `plan` qui doivent sourcer un arbitrage, et le plus souvent **hors de toute phase**.
+Une recherche se joue **quand la question se pose**, jamais à un rang imposé : depuis `technique`,
+`adr`, `livraison` ou `plan` qui doivent sourcer un arbitrage, et le plus souvent **hors de toute
+phase**.
 
 Quatre conséquences, toutes **de nature** et jamais discrétionnaires. Le rationale du choix vit en
 `DECISIONS.md` §D23, et nulle part ici :
@@ -39,7 +40,7 @@ La chaîne de traçabilité du cycle est un **vecteur de *citation laundering***
 inexistante gagne en légitimité en passant successivement par des documents réels que personne ne
 vérifie :
 
-> Brief → PRD → Stack → **ADR accepté, immuable** → spec → tests → code
+> Produit → Technique → **ADR accepté, immuable** → spec → tests → code
 
 Un chiffre non vérifié entré au début ressort en décision que `CLAUDE.md` interdit de contredire, et
 que la gate `analyze` protège au lieu de la questionner. Le mécanisme n'est pas une hypothèse : la
@@ -177,7 +178,7 @@ plus**, et le fait qu'il ait été produit pour nous ne le rend pas plus vrai.
    du cycle traitera comme vrai.
 3. **Rappeler que la confiance verbalisée n'est pas une probabilité**, y compris celle du rapport.
 4. **Ne modifier aucun document du socle.** Rendre la liste ; l'humain décide ce qui descend dans
-   `docs/stack.md` ou dans un ADR.
+   `docs/technique.md` ou dans un ADR.
 
 Le contrôle négatif qui prouve que la règle a tenu : après l'import d'un rapport,
 `docs/journal/socle.md` n'a **pas** grossi, et aucun document du socle n'a été touché.

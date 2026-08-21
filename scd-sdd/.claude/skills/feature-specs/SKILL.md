@@ -43,14 +43,14 @@ recopie (on lie).
 
 | Artefact | Répond à | Trace vers | IDs |
 |---|---|---|---|
-| `docs/prd.md` (socle) | Quoi, niveau produit | Brief | `FR-xxx`, `SC-xxx` |
-| `spec.md` (feature) | Quoi, niveau feature | PRD (`FR/SC`) | `FR-xxx` feature, `SC-xxx`, `SHALL` EARS |
-| `plan.md` | Comment | spec + `docs/stack.md` + `docs/archi.md` + `docs/adr/` | fichiers, contrats |
+| `docs/produit.md` (socle) | Quoi, niveau produit | — (racine) | `FR-xxx`, `SC-xxx` |
+| `spec.md` (feature) | Quoi, niveau feature | `docs/produit.md` (`FR/SC`) | `FR-xxx` feature, `SC-xxx`, `SHALL` EARS |
+| `plan.md` | Comment | spec + `docs/technique.md` + `docs/adr/` | fichiers, contrats |
 | `tasks.md` | Découpage exécutable **et reviewable** | plan + spec (`_Requirements:_`) | `Rn` (lots), `Tn`, `[P]` |
 | *vérif + code* | *Preuve* | *tasks* | *— (niveau implémentation)* |
 
-Chaîne complète : **`FR` du PRD → `FR`/`SHALL` de la spec feature → tâche → vérification →
-code**. Ce niveau valide la chaîne **jusqu'à `tasks.md`** ; l'implémentation écrit les deux
+Chaîne complète : **`FR` de `docs/produit.md` → `FR`/`SHALL` de la spec feature → tâche →
+vérification → code**. Ce niveau valide la chaîne **jusqu'à `tasks.md`** ; l'implémentation écrit les deux
 derniers maillons. Garde les IDs stables : c'est le fil qu'elle suivra.
 
 ## Cadence : une feature à la fois (et le parallèle quand il est sûr)
@@ -164,7 +164,7 @@ transverse ou architecturale → **nouvel ADR d'abord** (`/scd-sdd:adr`, ou cand
 `docs/adr/_candidates/`).
 
 ⚠️ **Le `CLAUDE.md` du projet gagne** dès qu'il porte d'autres seuils : il *est* la constitution, et
-les quatre valeurs ci-dessus n'en sont que le **défaut** que `contract` y a fondu. Lis-le avant de
+les quatre valeurs ci-dessus n'en sont que le **défaut** que `livraison` y a fondu. Lis-le avant de
 calibrer et **dis laquelle des deux sources tu appliques** quand elles diffèrent — sinon l'écart
 reste invisible et se rejoue à chaque feature. Il se signale, il ne se corrige ni ici ni dans
 `CLAUDE.md` au passage : l'entretien du contrat est `/scd-sdd:revise-contract`.

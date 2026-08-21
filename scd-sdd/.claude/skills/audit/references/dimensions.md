@@ -17,7 +17,7 @@ anti-boucle — est dans le `SKILL.md` et ne se répète pas ici.
 2. Sinon → la dimension est la **seule existante**, `validation-socle`, et le token **est** la
    cible.
 
-`/scd-sdd:audit prd` fonctionne donc aujourd'hui et **continuera de fonctionner** quand d'autres
+`/scd-sdd:audit produit` fonctionne donc aujourd'hui et **continuera de fonctionner** quand d'autres
 dimensions existeront : leurs noms sont **composés** (`validation-socle`, et ses successeurs sur le
 même patron), aucun ne collisionne avec un token de document.
 
@@ -31,10 +31,8 @@ qu'après avoir corrigé le mauvais fichier.
 
 | Token | Ce qui est jugé |
 |---|---|
-| `brief` | `docs/brief.md` |
-| `prd` | `docs/prd.md` |
-| `stack` | `docs/stack.md` |
-| `archi` | `docs/archi.md` |
+| `produit` | `docs/produit.md` |
+| `technique` | `docs/technique.md` |
 | `adr` | `docs/adr/` — le **répertoire entier**, `_candidates/` compris |
 | `ci` | `docs/ci.md` |
 | `claude-md` *(alias accepté : `contract`)* | `CLAUDE.md` |
@@ -52,7 +50,7 @@ son amont et sa propre forme. Elle ne touche **jamais** `specs/` — `analyze` l
 ### 1. Précondition
 
 Le document cible **existe**. S'il manque, c'est un **arrêt dur** : renvoie vers la phase qui le
-produit (`/scd-sdd:brief`, `prd`, `stack`, `archi`, `adr`, `ci`, `contract`) et n'écris rien —
+produit (`/scd-sdd:produit`, `technique`, `adr`, `livraison`) et n'écris rien —
 ni fiche, ni ligne de journal. Un document absent n'est pas un finding, c'est une phase non jouée.
 
 ### 2. Ce qui est jugé
@@ -81,7 +79,7 @@ au caractère près ?* Un renvoi résout ou non, un marqueur est là ou non, une
 un ID existe dans l'amont ou non → `D` ; tout le reste est `J`. **En cas de doute, `J`** : classé
 `D` à tort, un contrôle produit du bruit à chaque passe — le défaut qu'on corrige.
 
-**Le socle commun** — les cinq contrôles qui valent pour les sept documents :
+**Le socle commun** — les cinq contrôles qui valent pour les cinq documents :
 
 1. **Complétude face au `<template>`** `D` — chaque section attendue existe et est non vide. Une
    section prévue et vide est un finding ; une section **absente** l'est aussi.
@@ -120,7 +118,7 @@ un ID existe dans l'amont ou non → `D` ; tout le reste est `J`. **En cas de do
 
 | Token | Référence dont l'explorateur charge le `<template>` |
 |---|---|
-| `brief` `prd` `stack` `archi` `adr` `ci` | `project-docs/references/<token>.md` |
+| `produit` `technique` `adr` `ci` | `project-docs/references/<token>.md` |
 | `claude-md` | `project-docs/references/claude-md.md` |
 
 *(`ci-signature.md` n'est pas un document du socle : elle n'est jamais une cible.)*
@@ -130,12 +128,10 @@ correction est légale :
 
 | Document | Amont croisé | Contrôles propres | Voie de correction |
 |---|---|---|---|
-| `brief` | — (racine) | complétude interne `D` ; **scope EXCLU non vide** `D` ; critères de succès `SC-xxx` **mesurables** (une valeur, jamais un adjectif) `J` | **Lot A** |
-| `prd` | `brief` | chaque `FR-xxx`/`SC-xxx` **trace vers le Brief** `D`, ou justifie l'écart — la **suffisance** de la justification, `J` ; **technology-agnostic** (aucun framework, lib ni DB) `J` ; IDs **sans trou** non expliqué `D` ; section « NON inclus » non vide `D` | **Lot A** |
-| `stack` | `prd` | chaque fondation est **reliée** à un `FR`/`SC` du PRD `D` ; la liste des **candidats ADR** existe et est non vide `D` ; rien n'y est décidé sans motif `J` | **Lot A** |
-| `archi` | `stack`, `prd` | chaque invariant est **falsifiable** — il nomme sa **trace observable** dans l'arborescence ou dans les imports `J` ; **3 à 5 caractéristiques** retenues `D`, chacune tracée vers un `FR`/`SC` `D` ; la **colonne ADR** est remplie ou le candidat est nommé `D` ; les classes hors périmètre sont **déclarées** `D` | **Lot A** |
-| `adr` | `stack`, `archi` | **un ADR par candidat** listé en amont `D`, ou l'écart est instruit `J` ; traçabilité **bidirectionnelle** (l'amont pointe l'ADR, l'ADR pointe l'amont) `D` ; **format Nygard** complet `D` ; **statut** présent `D` et cohérent avec le contenu `J` — un `Accepté` sans conséquences écrites est un finding | **Lot B** — candidat ou supersede **uniquement** : un ADR accepté est **immuable**, et le hook `block-adr-edits` rend `exit 2` |
-| `ci` | `archi`, `adr`, `stack` | chaque contrôle **dérive d'un mode de défaillance** de la grille, pas d'une liste d'outils `J` ; un contrôle n'est **bloquant** que si son taux de faux positifs a été **mesuré** sur la stack réelle (sinon : informatif) `D` ; la **table des commandes** est complète et exécutable `J` | **Lot A** |
+| `produit` | — (racine) | complétude interne `D` ; **périmètre EXCLU non vide** `D` — **une seule** section, aucune « Inclus » ajoutée `D` ; critères de succès `SC-xxx` **mesurables** (une valeur, jamais un adjectif) `J` ; **technology-agnostic** (aucun framework, lib ni DB) `J` ; IDs `FR`/`SC` **sans trou** non expliqué `D` | **Lot A** |
+| `technique` | `produit` | chaque fondation est **reliée** à un `FR`/`SC` de `docs/produit.md` `D` ; la liste des **candidats ADR** existe et est non vide `D` ; rien n'y est décidé sans motif `J` ; chaque invariant est **falsifiable** — il nomme sa **trace observable** dans l'arborescence ou dans les imports `J` ; **3 à 5 caractéristiques** retenues `D`, chacune tracée vers un `FR`/`SC` `D` ; les **deux** colonnes ADR sont remplies ou le candidat est nommé `D` ; les classes hors périmètre sont **déclarées** `D` | **Lot A** |
+| `adr` | `technique` | **un ADR par candidat** listé en amont `D`, ou l'écart est instruit `J` ; traçabilité **bidirectionnelle** (l'amont pointe l'ADR, l'ADR pointe l'amont) `D` ; **format Nygard** complet `D` ; **statut** présent `D` et cohérent avec le contenu `J` — un `Accepté` sans conséquences écrites est un finding | **Lot B** — candidat ou supersede **uniquement** : un ADR accepté est **immuable**, et le hook `block-adr-edits` rend `exit 2` |
+| `ci` | `technique`, `adr` | chaque contrôle **dérive d'un mode de défaillance** de la grille, pas d'une liste d'outils `J` ; un contrôle n'est **bloquant** que si son taux de faux positifs a été **mesuré** sur la stack réelle (sinon : informatif) `D` ; la **table des commandes** est complète et exécutable `J` | **Lot A** |
 | `claude-md` | `ci`, et tous les autres | chaque **pointeur résout** `D` ; la **section Commandes** correspond à `docs/ci.md` `D` ; **plafond 200 lignes** (cible 60-90) `D` ; rien d'*advisory* n'y tient lieu de contrôle déterministe `J` | **Lot C** — renvoi vers `/scd-sdd:revise-contract` : l'audit **détecte**, il n'édite **jamais** `CLAUDE.md` (§D29 — trois écrivains, pas quatre) |
 
 **Classer.** L'échelle du `SKILL.md` s'applique telle quelle. Repères pour cette dimension :
@@ -157,13 +153,29 @@ la **liste ouverte** du `## À corriger` de la fiche. Les contrôles **`D`** se 
 document, à chaque passe — ils sont gratuits et sans bruit, et c'est là que la règle « dérouler la
 grille intégralement » reste entière.
 
-**Trois cas rendent le delta incalculable. Dans les trois, la passe est intégrale :**
+**La commande commite les corrections avant de prendre son ancre** (`DECISIONS.md` §D39). Au début
+de la passe, **avant** le `git rev-parse` : si `git diff -- <chemin de la cible>` rend un diff non
+vide, `git add <chemin de la cible>` puis
+`git commit -m "docs(socle): corrections audit <document> passe N"` — et **annonce-le** en tête de
+rapport, une ligne.
+
+C'est ce qui rend la passe delta **applicable**. Sa précondition était que les corrections soient
+commitées, et **aucune** des phases qui corrigent le socle ne peut le faire : ni `produit`, ni
+`technique`, ni `adr` ne porte un motif `Bash(git …)` dans son `allowed-tools`. Seule `livraison`
+en porte — pour le workflow de la forge, pas pour rattraper une correction. Le mécanisme
+attendait donc une condition que personne n'avait le droit de remplir, et toute passe était
+intégrale. La commande, elle, porte déjà `Bash(git add *)` et `Bash(git commit *)` : la précondition
+est placée là où la donnée existe.
+
+⚠️ **Commiter n'est pas éditer**, et la règle cardinale ne bouge pas : le document jugé sort
+**bit pour bit identique**. Le contenu commité est exactement ce que l'humain vient d'écrire. Mais
+la commande devient **écrivain git** d'un document dont elle n'est pas l'auteur : elle le dit, à
+chaque fois.
+
+**Deux cas rendent le delta incalculable. Dans les deux, la passe est intégrale :**
 
 1. **Passe 1** — aucune fiche précédente, donc aucune ancre.
 2. **Pas d'ancre** — la fiche est antérieure au dispositif, ou sa ligne `HEAD` manque.
-3. **Corrections non commitées** — `git diff -- <chemin de la cible>` rend un diff non vide : ce
-   qui a bougé depuis le jugement n'est pas dans l'historique, et le diff contre l'ancre ne le
-   verrait pas.
 
 ⚠️ **Le mode dégradé se dit** — annonce la passe intégrale **et son motif** en tête de rapport. Le
 danger n'est pas l'excès de couverture, c'est l'inverse : un delta calculé sur une ancre absente
@@ -195,31 +207,31 @@ vide ne s'écrit pas.**
   commande qui le traiterait.
 
 ```markdown
-# Audit prd — 1 Critical · 2 Major
+# Audit technique — 1 Critical · 2 Major
 
 Portée : socle · audit
 Ouvert le 2026-08-12 · Actualisé le 2026-08-12 · branche `main` · HEAD `a1b2c3d`
 
 ## Objectif
-Rendre `docs/prd.md` conforme : zéro Critical.
+Rendre `docs/technique.md` conforme : zéro Critical.
 
 ## Contexte à charger
-à lire  `docs/prd.md` — le document jugé
-à lire  `docs/brief.md` — l'amont contre lequel la traçabilité se vérifie
+à lire  `docs/technique.md` — le document jugé
+à lire  `docs/produit.md` — l'amont contre lequel la traçabilité se vérifie
 
 ## À corriger
-### Lot A — éditions dans `docs/prd.md`
-- **[FR-012] Critical** — « exporter les données » ne trace vers aucun `SC` du Brief → ajouter `_(Brief: SC-002)_`, ou justifier l'écart en une ligne.
-- **[NON inclus] Major** — section vide → nommer ce que la v1 ne fait pas : facturation, multi-tenant.
+### Lot A — éditions dans `docs/technique.md`
+- **[I3] Critical** — « le code reste modulaire » ne nomme aucune trace observable → réécrire en règle falsifiable, ou retirer l'invariant.
+- **[Contraintes transverses] Major** — section vide → nommer ce qui contraint : RGPD, budget d'hébergement, plateformes cibles.
 ### Lot C — renvois et signalements
-- **[SC-002] Major** — signalement **amont** : le critère du Brief est un adjectif nu (« rapide »), rien ne peut y tracer → `/scd-sdd:audit brief`.
+- **[SC-002] Major** — signalement **amont** : le critère de `docs/produit.md` est un adjectif nu (« rapide »), aucune caractéristique ne peut y tracer → `/scd-sdd:audit produit`.
 
 ## Prochaine étape
-`/scd-sdd:resume audit-prd` pour traiter le Lot A, puis relancer `/scd-sdd:audit prd`.
+`/scd-sdd:resume audit-technique` pour traiter le Lot A, puis relancer `/scd-sdd:audit technique`.
 
 ## Écarté
-- [FR-007] IDs non contigus (FR-006 → FR-008) — assumé le 12/08 : le FR-007 a été retiré au
-  cadrage, et réattribuer son ID casserait les backrefs déjà écrits.
+- [I4] IDs d'invariants non contigus (I3 → I5) — assumé le 12/08 : I4 a été retiré au cadrage, et
+  réattribuer son ID casserait les renvois déjà écrits dans les ADR et les plans.
 ```
 
 **Cycle de vie.** Verdict `À CORRIGER` → ouvrir ou actualiser la fiche. Verdict `CONFORME` → une
@@ -231,19 +243,19 @@ fiche ouverte existe ? Ajouter `## Issue` (ce qui a été corrigé, en combien d
 **Journal.** `docs/journal/socle.md`, phase **`audit`** — le fichier ne varie pas avec la cible,
 la dimension étant celle du socle. Le verdict **en gras**, la cible, puis le décompte :
 
-- `**CONFORME** — prd · 0 Critical · 1 Major arbitré`
-- `**À CORRIGER** — prd · 2 Critical (FR-012 sans amont · NON inclus vide) · 3 Major`
+- `**CONFORME** — technique · 0 Critical · 1 Major arbitré`
+- `**À CORRIGER** — technique · 2 Critical (I3 sans trace observable · Contraintes transverses vide) · 3 Major`
 
 **Ce qui suit.** Aucune gate n'existe à ce niveau : rien à re-jouer mécaniquement, et l'audit ne
 bloque aucune phase.
 
 - **Lot A** → `/clear`, puis `/scd-sdd:resume audit-<document>`, avec le modèle adéquat. Puis
   relancer `/scd-sdd:audit <document>` — l'appariement fera le reste. **Sous réserve du budget de
-  passes** : à la 3ᵉ passe avec fiche encore ouverte, ce n'est plus une relance qu'on propose mais
+  passes** : à la 2ᵉ passe avec fiche encore ouverte, ce n'est plus une relance qu'on propose mais
   un arbitrage (§ *La garde anti-boucle* du `SKILL.md`).
 - **Lot B** → les candidats sont écrits dans `docs/adr/_candidates/` ; c'est `/scd-sdd:adr` qui
   les instruit. Le candidat n'est **pas** un renvoi dans le vide : la phase `adr` le promeut, et
-  `ci` relit ensuite `docs/archi.md` **et** `docs/adr/`.
+  `livraison` relit ensuite la table d'invariants de `docs/technique.md` **et** `docs/adr/`.
 - **Lot C** → `/scd-sdd:revise-contract` pour `claude-md` ; pour un signalement amont, la commande
   nommée dans la ligne. **Ne les traite pas toi-même.**
 </validation-socle>

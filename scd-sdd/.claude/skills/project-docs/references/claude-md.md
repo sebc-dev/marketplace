@@ -2,7 +2,7 @@
 
 <role>
 `CLAUDE.md` est le **contrat opérationnel** : chargé à chaque session, il **pointe** vers les
-documents du socle (Brief, PRD, Stack, Archi, ADR, CI) sans les recopier, et **lit** les commandes
+documents du socle (Produit, Technique, ADR, CI) sans les recopier, et **lit** les commandes
 du projet dans `docs/ci.md`. C'est ici que la **constitution est fondue** (principes non-négociables
 + seuils de déclenchement) plutôt que dans un fichier séparé. Advisory, pas exécutif.
 
@@ -15,7 +15,7 @@ qui dépasse ne se coupe pas au hasard : il se **déplace**, et la section Renvo
 table est au `SKILL.md`, § *Entretenir le contrat*. Ici, ce qui en découle : le `<template>`
 **assemble** une fois, le bloc `<revision>` **entretient**, et les deux ne se chargent jamais ensemble.
 
-**Trois points de chargement, et aucun n'est intégral :** `/scd-sdd:contract` lit **tout sauf
+**Trois points de chargement, et aucun n'est intégral :** `/scd-sdd:livraison` lit **tout sauf
 `<revision>`** ; `/scd-sdd:revise-contract` ne lit que **`<guidance>` et `<revision>`** — lui cacher
 le `<template>` est délibéré, le bloc `<revision>` dit pourquoi ; et l'agent **`audit-explorer`** ne
 lit que le **`<template>`**, quand `/scd-sdd:audit claude-md` juge le contrat. Il n'en tire que la
@@ -30,12 +30,12 @@ quatre (§D29).
 <!-- Propriétaire : @qui — Revue : /2 semaines — Règle : supprimer plus qu'on n'ajoute. Mettre à
      jour quand : erreur refaite une 2ᵉ fois · revue qui attrape ce que Claude aurait dû savoir ·
      même correction retapée · contexte qu'un nouveau coéquipier aurait cherché. Entretien :
-     /scd-sdd:revise-contract — ne PAS rejouer /scd-sdd:contract. Bloc retiré avant injection. -->
+     /scd-sdd:revise-contract — ne PAS rejouer /scd-sdd:livraison. Bloc retiré avant injection. -->
 
 ## Vue d'ensemble (3-5 bullets max)
-- Objet : [une phrase] — voir @docs/brief.md
-- Le "quoi" produit : @docs/prd.md — Les fondations techniques : @docs/stack.md
-- Ce que le code s'interdit : `docs/archi.md` — NE PAS franchir un invariant
+- Objet, le "quoi" produit et pour qui : @docs/produit.md
+- Les fondations techniques et la structure : @docs/technique.md
+- Ce que le code s'interdit : sa table des **Invariants** — NE PAS en franchir un
 - Décisions figées : @docs/adr/ — NE PAS contredire un ADR accepté
 - Ce qui est vérifié automatiquement : `docs/ci.md` — les contrôles bloquants font foi
 [Ne décris pas l'arborescence ni les dépendances : Claude les lit.]
@@ -83,12 +83,12 @@ quatre (§D29).
 </template>
 
 <guidance>
-- **Pointer, pas recopier.** Le contenu du Brief/PRD/Stack reste dans `docs/` ; CLAUDE.md ne fait que `@import` la constitution stable et *mentionner* les chemins des specs. Recopier = dérive garantie.
+- **Pointer, pas recopier.** Le contenu de Produit/Technique reste dans `docs/` ; CLAUDE.md ne fait que `@import` la constitution stable et *mentionner* les chemins des specs. Recopier = dérive garantie.
 - **`@import` avec parcimonie.** Les fichiers `@importés` sont chargés au lancement, donc **ne réduisent pas** le coût en tokens : n'importer que le stable et universel. Backticker le chemin pour le mentionner sans l'importer.
 - **Constitution fondue ici** : la section « Principes & seuils » remplace un `constitution.md` séparé (choix assumé pour un solo).
 - **Advisory ≠ garanti** — la frontière et la commande qui la franchit sont au `SKILL.md`, § *Règles d'écriture pour un agent*. Ce qui en découle pour ce document : relier chaque item de Definition of Done au **job** de `docs/ci.md` qui le vérifie, et laisser advisory — **explicitement** — ce qu'aucun job ne couvre. Un item advisory mêlé aux autres se lit comme garanti.
 - **Test de suppression.** Pour chaque ligne : « sa suppression ferait-elle échouer Claude ? » Sinon, couper. Un CLAUDE.md gonflé dilue les règles qui comptent.
-- **Commandes** : elles ne se devinent plus et ne s'inventent jamais — elles se **lisent** dans la table « Commandes du projet » de `docs/ci.md` et se recopient à l'identique. Un `[à compléter]` qui subsiste là-bas se reporte tel quel et se signale : c'est un trou de la phase `ci`, et le corriger ici créerait une commande que la CI n'exécute pas.
+- **Commandes** : elles ne se devinent plus et ne s'inventent jamais — elles se **lisent** dans la table « Commandes du projet » de `docs/ci.md` et se recopient à l'identique. Un `[à compléter]` qui subsiste là-bas se reporte tel quel et se signale : c'est un trou de la phase `livraison`, et le corriger ici créerait une commande que la CI n'exécute pas.
 - **Le pourquoi est exigé** sur toute convention non-standard : une règle sans son motif est ignorée dès que le contexte change *(constat de terrain rapporté par des praticiens, pas une mesure)*.
 
 ## Quand mettre à jour — les quatre déclencheurs
@@ -138,13 +138,13 @@ compaction**, son **autorité**.
 
 Trois conséquences. Ce qui **doit survivre à un `/compact`** va au `CLAUDE.md` racine, nulle part
 ailleurs. Un « ne jamais » qui doit tenir sous pression n'est pas une phrase : une instruction est
-suivie la plupart du temps, un hook l'est toujours — c'est la frontière que franchit la phase `ci`.
+suivie la plupart du temps, un hook l'est toujours — c'est la frontière que franchit la phase `livraison`.
 Et une rule **non** path-scopée est mécaniquement identique à du contenu mis dans `CLAUDE.md`.
 </guidance>
 
 <completion>
 CLAUDE.md est terminé quand :
-- [ ] Il **pointe** vers `docs/brief.md`, `docs/prd.md`, `docs/stack.md`, `docs/archi.md`, `docs/adr/`, `docs/ci.md` — sans recopier leur contenu, et **sans recopier la table des invariants**.
+- [ ] Il **pointe** vers `docs/produit.md`, `docs/technique.md`, `docs/adr/`, `docs/ci.md` — sans recopier leur contenu, et **sans recopier la table des invariants**.
 - [ ] La section **Commandes** est identique à la table « Commandes du projet » de `docs/ci.md` — aucune commande ajoutée, aucune reformulée.
 - [ ] Les sections **Definition of Done** (vérifiable) et **Principes & seuils** (constitution fondue) sont présentes.
 - [ ] Chaque convention non-standard porte **son pourquoi**.
@@ -157,8 +157,8 @@ CLAUDE.md est terminé quand :
 <revision>
 Bloc de l'**entretien**. Il ne s'applique qu'à un `CLAUDE.md` **existant**. Préconditions :
 
-- `CLAUDE.md` **absent** → arrêt, renvoi vers `/scd-sdd:contract`. L'entretien ne crée rien.
-- `docs/ci.md` **absent** → le volet Commandes est **impossible** : le signaler, renvoyer vers `/scd-sdd:ci`, poursuivre le reste de la checklist.
+- `CLAUDE.md` **absent** → arrêt, renvoi vers `/scd-sdd:livraison`. L'entretien ne crée rien.
+- `docs/ci.md` **absent** → le volet Commandes est **impossible** : le signaler, renvoyer vers `/scd-sdd:livraison`, poursuivre le reste de la checklist.
 
 ## La règle qui commande tout : une ligne inconnue est présumée légitime
 

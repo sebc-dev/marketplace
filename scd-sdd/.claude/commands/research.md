@@ -32,7 +32,7 @@ et décide seul de ce qui descend dans le socle ; tu composes, tu classes et tu 
 
 ## Règles absolues
 
-- **Tu ne modifies aucun document du socle.** Ni `docs/stack.md`, ni un ADR, ni `CLAUDE.md`, ni
+- **Tu ne modifies aucun document du socle.** Ni `docs/technique.md`, ni un ADR, ni `CLAUDE.md`, ni
   une spec. Tu rends une liste ; l'humain décide. C'est la règle centrale du skill `research`, et
   la seule qui reste écrite ici alors qu'elle est chargée : tu es la commande du couple qui a
   `Write` et `Edit`, donc la seule qui pourrait l'enfreindre. Le mécanisme qu'elle bloque — le
@@ -111,7 +111,7 @@ référent y est écrit — la décision servie, pas la phase.)*
 
 8. **Charge le skill `exposition`** — **régime *options*** — et **rends la liste** (voir le bloc
    ci-dessous), puis **arrête-toi là**. Tu ne descends rien dans
-   `docs/stack.md` ni dans un ADR : tu nommes la commande qui le ferait, l'humain la joue.
+   `docs/technique.md` ni dans un ADR : tu nommes la commande qui le ferait, l'humain la joue.
 
 9. **Commite** : `git add <le rapport>` puis `git commit -m "docs(research): <slug>"`, scopé au
    seul fichier.
@@ -134,7 +134,7 @@ Ne se reprend PAS comme acquis
 Rappel   Les niveaux de confiance du rapport classent, ils ne mesurent pas.
 Murs     2 sources derrière connexion, non lues — le rapport le dit.
 
-→ Rien n'a été modifié dans le socle. Ce qui doit descendre : /scd-sdd:ci (ou un ADR).
+→ Rien n'a été modifié dans le socle. Ce qui doit descendre : /scd-sdd:livraison (ou un ADR).
 ```
 
 Hors de toute phase, la ligne `Décision servie` porte la décision que le prompt nommait, et la
@@ -189,8 +189,8 @@ Puis : « Colle ce prompt dans Claude Research (Claude Desktop). Au retour, enre
 et joue `/scd-sdd:research docs/research/<AAAA-MM-JJ-slug>.md` pour la classer et la relire. »
 
 **Au retour** : rappelle en une ligne que **rien n'a été modifié dans le socle**, et nomme la
-commande qui ferait descendre ce qui est actionnable — `/scd-sdd:stack`, `/scd-sdd:adr`,
-`/scd-sdd:ci` ou `/scd-sdd:plan` selon la phase servie. **Tu ne la lances pas** : c'est la décision
+commande qui ferait descendre ce qui est actionnable — `/scd-sdd:technique`, `/scd-sdd:adr`,
+`/scd-sdd:livraison` ou `/scd-sdd:plan` selon la phase servie. **Tu ne la lances pas** : c'est la décision
 de l'humain, et c'est tout l'intérêt de la règle.
 
 Si la recherche ne servait **aucune phase** — le cas le plus fréquent —, ne nomme aucune de ces

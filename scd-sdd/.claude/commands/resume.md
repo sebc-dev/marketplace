@@ -131,7 +131,7 @@ Acquis         Le rate-limit passe en local (vérifié).
                « Compteur décidé dans la table login_attempt, pas le cache. »
 Prochaine       Écrire le test rouge `locks_after_fifth_failure` dans
 étape           test/auth/lockout.test.ts — non présent à ce jour.
-Écarté         Redis (absent de docs/stack.md) · middleware rateLimit (compte par IP).
+Écarté         Redis (absent de docs/technique.md) · middleware rateLimit (compte par IP).
 ```
 
 La ligne `Contexte rechargé` **dit ce que chaque classe a fait**, elle ne récite pas ses noms — la

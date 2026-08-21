@@ -39,12 +39,12 @@ est `J`.
 
 **Le critère est falsifiable** : *une seconde exécution, sur le même texte, reproduit-elle le finding
 au caractère près ?* Un backref résout ou non, un marqueur est là ou non, une section existe ou non,
-un `FR` existe dans le PRD ou non → `D` ; tout le reste — EARS, verticalité, dimensionnement,
+un `FR` existe dans `docs/produit.md` ou non → `D` ; tout le reste — EARS, verticalité, dimensionnement,
 cohérence avec le socle — est `J`. **En cas de doute, `J`** : classé `D` à tort, un contrôle produit
 du bruit à chaque passe, ce qui est le défaut qu'on corrige.
 
 **Traçabilité (la chaîne doit être complète et sans orphelin)**
-1. **spec → PRD** `D` : chaque `FR-xxx`/`SC-xxx` de la feature trace vers un `FR/SC` du `docs/prd.md` (`_(PRD: FR-0xx)_`), ou l'écart est explicitement justifié — la **suffisance** de cette justification, `J`.
+1. **spec → produit** `D` : chaque `FR-xxx`/`SC-xxx` de la feature trace vers un `FR/SC` de `docs/produit.md` (backref `_(PRD: FR-0xx)_`, dont le nom est **historique** et ne change pas), ou l'écart est explicitement justifié — la **suffisance** de cette justification, `J`.
 2. **spec → tasks** `D` : chaque `FR`/`SHALL` a, dans **un seul** lot, ≥ 1 tâche **d'impl** et ≥ 1 **vérification observable** — tâche test (`TDD`/`test-after`), tâche check (`check`), ou le critère d'acceptation de l'impl lui-même (`inhérent`). Chaque lot **déclare** son mode `D` ; tout mode ≠ `TDD` est **justifié** (une ligne) — la justification est présente `D`, sa pertinence `J` —, et un `check`/`inhérent` posé sur de la logique métier est un finding `J`.
 3. **tasks → spec** `D` : chaque tâche porte un backref `_Requirements:_` valide. Une tâche orpheline = scope creep.
 
@@ -59,7 +59,7 @@ du bruit à chaque passe, ce qui est le défaut qu'on corrige.
 9. **Ambiguïtés** `D` : zéro `[NEEDS CLARIFICATION]` restant.
 
 **Cohérence**
-10. **Socle** `J` : `plan.md` ne contredit aucun ADR accepté, ne re-décide rien de `docs/stack.md`, et toute décision structurante nouvelle est un **candidat** dans `docs/adr/_candidates/`. Aucune info du socle n'est recopiée (on lie).
+10. **Socle** `J` : `plan.md` ne contredit aucun ADR accepté, ne re-décide rien de `docs/technique.md`, et toute décision structurante nouvelle est un **candidat** dans `docs/adr/_candidates/`. Aucune info du socle n'est recopiée (on lie).
 11. **Contradictions internes** `J` : aucun couple de critères mutuellement incompatibles. Les trois **présences** attendues dans `plan.md` — des fichiers précis nommés, un patron de référence cité, **une** étape de vérification bout-en-bout définie — sont `D`.
 
 **Reviewability du découpage (ce qui décide si la review humaine aval sera réelle ou fictive)**
@@ -68,7 +68,7 @@ du bruit à chaque passe, ce qui est le défaut qu'on corrige.
 14. **Dimensionnement** `J` : aucun lot ne dépasse les signaux de scission (≈ 400 lignes estimées, ≈ 7 concepts, ≈ 5-7 critères par exigence) sans justification. Un dépassement est **Major, jamais Critical** — ces seuils sont transposés du code par analogie et le budget est une estimation, pas une mesure. Symétriquement : un lot qui ne livre aucun incrément vérifiable est une couche déguisée à refusionner. *(Une estimation ne se reproduit pas au caractère près : ce contrôle est de jugement par construction.)*
 
 **Architecture (le socle structurel, quand il existe)**
-15. **Invariants d'architecture** `J` — la **présence** d'une dérogation nommée dans « Réutilisation du socle » est `D` : les fichiers touchés de `plan.md` respectent les invariants de `docs/archi.md` — aucune frontière franchie, aucun sens de dépendance inversé, aucun artefact placé hors du dossier prescrit —, ou la dérogation est **nommée et justifiée** dans « Réutilisation du socle » (l'étape de confrontation de `/scd-sdd:plan`). Une dérogation muette est un **Major**. Ce contrôle est **Major, jamais Critical** : bloquer la gate dessus ferait d'`analyze` un `arch-invariants` avant l'heure, alors que c'est la CI qui mesure une violation sur le code réel. **Pas de `docs/archi.md` → le contrôle est sans objet**, et son absence n'est pas un finding : la phase `archi` n'a simplement pas été jouée.
+15. **Invariants d'architecture** `J` — la **présence** d'une dérogation nommée dans « Réutilisation du socle » est `D` : les fichiers touchés de `plan.md` respectent les invariants de `docs/technique.md` — aucune frontière franchie, aucun sens de dépendance inversé, aucun artefact placé hors du dossier prescrit —, ou la dérogation est **nommée et justifiée** dans « Réutilisation du socle » (l'étape de confrontation de `/scd-sdd:plan`). Une dérogation muette est un **Major**. Ce contrôle est **Major, jamais Critical** : bloquer la gate dessus ferait d'`analyze` un `arch-invariants` avant l'heure, alors que c'est la CI qui mesure une violation sur le code réel. **Table d'invariants absente ou vide dans `docs/technique.md` → le contrôle est sans objet**, et son absence n'est pas un finding : la seconde moitié de la phase `technique` n'a simplement pas été jouée.
 
 **Gherkin dérivé (quand la feature en porte)**
 16. **`.feature` dérivé et bien formé** — la **résolution** de la référence citée (le `FR-0xx`/`SHALL` existe-t-il dans `spec.md` ?) est `D` ; l'**écart** avec ce `SHALL` et la **forme** sont `J` : la feature porte-t-elle des `specs/NNN-slug/acceptance/*.feature` ? **Aucun → le contrôle ne se déclenche pas**, et ce n'est pas un finding : c'est une non-applicabilité (le Gherkin est un complément réservé aux critères à combinatoire réelle). Au moins un → **charge le bloc `<guidance>` de `references/gherkin.md`** — il porte les règles de dérivation et de forme, qui **ne sont pas recopiées ici** — et confronte chaque fichier à ses deux questions : est-il **dérivé** d'un `FR-0xx`/`SHALL` de `spec.md` qu'il cite et dont il ne s'écarte pas, et est-il **bien formé** ? Trois natures de finding, trois sévérités. Un `.feature` qui **contredit** le `SHALL` qu'il cite est un **Critical** : deux vérités concurrentes dans le même contrat, et c'est l'exécutable que l'aval suivra — rien en aval ne rattrape l'écart, puisque l'implémentation le fera passer au vert tel quel. Un `.feature` **sans `SHALL` d'origine** (aucune référence, ou une référence vers un `FR` inexistant) est un **Major** : du scope creep exécutable, précédent exact de la tâche orpheline du contrôle 3. Un défaut de **forme** est un **Major**. Ce contrôle **ne porte jamais sur le vert** : ce plugin n'exécute aucun test, et le faire passer appartient au workflow d'implémentation.
@@ -80,14 +80,18 @@ gate** (`<gate>` ci-dessous) — sans quoi elle meurt au `/clear` suivant, et la
 repart à froid. Findings classés par ce qu'ils coûtent en aval :
 
 - **Critical** — rend l'implémentation non fiable, ou la review aval fictive : `FR` sans impl ou sans vérification observable, `[NEEDS CLARIFICATION]` restant, plan contredisant un ADR, scope EXCLU violé, critère non testable (adjectif nu), **lot horizontal**, **lot à sujets multiples**, mode `check`/`inhérent` masquant l'absence de preuve sur de la **logique métier**, **`.feature` contredisant le `SHALL` qu'il cite**.
-- **Major** — fera perdre du temps : backref manquant, tâche orpheline, critère hors EARS, fuite de stack dans la spec, `FR` non atomique, **lot hors seuils de scission**, **mode de vérification ≠ `TDD` non justifié**, **invariant de `docs/archi.md` franchi sans dérogation justifiée**, **`.feature` sans `SHALL` d'origine ou mal formé**.
+- **Major** — fera perdre du temps : backref manquant, tâche orpheline, critère hors EARS, fuite de stack dans la spec, `FR` non atomique, **lot hors seuils de scission**, **mode de vérification ≠ `TDD` non justifié**, **invariant de `docs/technique.md` franchi sans dérogation justifiée**, **`.feature` sans `SHALL` d'origine ou mal formé**.
 - **Minor** — améliore : `[P]` douteux, patron de référence absent, formulation perfectible.
 
 **Le rapport ouvre sur la trajectoire, pas sur les findings.** Avant toute liste : la **trajectoire
-des décomptes** lue au journal (`3 Critical → 2 → 2 → 4`, une ligne par passe), le **régime de la
-passe** — delta, ou intégrale **et pourquoi** —, puis, si elle s'est déclenchée, la **garde sur la
-divergence** (`<gate>`). C'est cela qui se décide ; les findings ne sont que le détail de la passe
-courante.
+des décomptes** lue au journal (`3C·5M → 2C·4M → 2C·6M`, une ligne par passe), le **régime de la
+passe** — delta, ou intégrale **et pourquoi** —, le **commit de corrections** s'il a eu lieu, puis,
+si elle s'est déclenchée, la **garde sur la divergence** (`<gate>`). C'est cela qui se décide ; les
+findings ne sont que le détail de la passe courante.
+
+La trajectoire porte **les deux décomptes**, `C` et `M` : la garde lit leur somme (§D39), le verdict
+les seuls `C`. Une trajectoire qui n'afficherait que les Critical rendrait la garde inexplicable au
+moment où elle se déclenche.
 
 **Le verdict est monotone.** À partir de la passe 2, un **Critical neuf** n'est admissible que s'il
 est **déterministe** ou porte sur du **texte modifié depuis l'ancre** ; tout autre **plafonne en
@@ -100,8 +104,9 @@ est neuf sur du texte modifié.
 Format :
 ```
 ## Validation — specs/NNN-feature
-Trajectoire : 3 Critical → 2 → 2 → 4 · passe 4 · régime : delta (ancre a1b2c3d)
-⚠ Garde : le décompte ne baisse plus depuis la passe 2.
+Trajectoire : 3C·5M → 2C·4M → 2C·6M · passe 3 · régime : delta (ancre a1b2c3d)
+Corrections non commitées trouvées → commitées (docs(specs): corrections gate 001-auth passe 3)
+⚠ Garde : Critical + Major ne baisse plus depuis la passe 2 (6 → 8).
 _Critical = bloque l'implémentation · Major = à corriger, ne bloque pas le démarrage ·
 Minor = amélioration_
 ### Critical (N)
@@ -109,8 +114,9 @@ Minor = amélioration_
   → Remplacer par une valeur mesurable (ex. « P99 < 50 ms »). Fichier : spec.md
 - [R2] « table users + API + UI » : lot horizontal → non reviewable seul.
   → Scinder par étape du workflow : R2a « s'inscrire », R2b « se connecter ». Fichier : tasks.md
-### Major (N) / ### Minor (N)
+### Major (N)
 - …
+### Minor — passe 1 : détaillés · passe ≥ 2 : « N Minor, non détaillés »
 
 ### Corrigés depuis la passe du JJ/MM (N)
 - [FR-003] adjectif sans cible — absent ce coup-ci.
@@ -144,7 +150,7 @@ feature est grosse) :
 
 Ils sont indépendants : les lancer en parallèle, puis fusionner leurs findings dans un rapport
 unique sans les rejuger. **Les contrôles 15 et 16 ne sont délégués ni à l'un ni à l'autre**, et les
-deux mandats **1-11 / 12-14 restent bornés tels quels** : le 15 se juge contre `docs/archi.md`, que
+deux mandats **1-11 / 12-14 restent bornés tels quels** : le 15 se juge contre `docs/technique.md`, que
 le contexte principal a lu ; le 16 porte sur `acceptance/*.feature`, que ni l'un ni l'autre ne
 reçoit dans son protocole d'entrée, et demande un chargement conditionnel qu'aucun des deux ne
 déclare. Ajouter « et 16 » à un mandat contigu coûterait plus qu'il ne rapporte.
@@ -230,6 +236,22 @@ nature** (`[FR-003] spec.md adjectif-sans-cible`). À chaque passe :
    indétectable ; le compter rétablirait la boucle.
 5. Le reste → rapport normal, et écrit dans la fiche.
 
+**L'auto-écart des Major, dès la passe 2** (`DECISIONS.md` §D39). Un Major **encore présent et non
+traité** depuis la passe précédente passe **de lui-même** en `## Écarté`, motif
+`non traité à la passe N`, est **nommé une fois** au rapport — et **ne se redemande plus**.
+
+C'est ce qui casse la boucle sans rien perdre. Jusqu'ici, chaque Major non arbitré était redemandé
+**à chaque passe, avec exigence de motif** : sur une grille qui porte 22 clauses de jugement, c'est
+la source directe de l'aller-retour. ⚠️ **Il n'est pas effacé** — il reste dans la fiche, dans
+`## Écarté`, donc greppable, relisible et **réouvrable** à tout moment : la règle est *cesser de
+demander*, jamais *cacher*. Et elle ne touche **pas les Critical**, qui ne s'arbitrent jamais, ni à
+la main ni automatiquement.
+
+**Les Minor se taisent dès la passe 2.** Ils ne sont portés par aucune fiche (leur appariement est
+faible), ne comptent dans aucun verdict, et se re-dérivent à chaque passe pour rien. À la **passe 1**
+ils sont rendus **en entier** : c'est là qu'ils ont de la valeur. Aux suivantes, une ligne suffit —
+« N Minor, non détaillés (passe ≥ 2) ».
+
 ### La partition de la grille, et la passe delta
 
 Chaque contrôle porte sa **nature** — `D` ou `J` — **dans la grille** (`<checks>`), jamais ici ni
@@ -247,14 +269,28 @@ pour ce qui a bougé depuis. Les contrôles **`J`** ne s'appliquent qu'à ces li
 entiers, à chaque passe — ils sont gratuits et sans bruit, et c'est là que la règle « dérouler la
 grille intégralement » reste entière.
 
-**Trois cas rendent le delta incalculable. Dans les trois, la passe est intégrale :**
+**La gate commite les corrections avant de prendre son ancre** (`DECISIONS.md` §D39). Au début de la
+passe, **avant** le `git rev-parse` : si `git diff -- specs/NNN-slug/` rend un diff non vide,
+`git add specs/NNN-slug/` puis
+`git commit -m "docs(specs): corrections gate <cible> passe N"` — et **annonce-le** en tête de
+rapport, une ligne.
+
+C'est ce qui rend la passe delta **applicable**. Sa précondition était que les corrections soient
+commitées, et **aucune** des quatre phases de correction ne peut le faire : ni `specify`, ni
+`clarify`, ni `plan`, ni `tasks` ne porte un motif `Bash(git …)` dans son `allowed-tools`. Le
+mécanisme attendait donc une condition que personne n'avait le droit de remplir, et toute passe était
+intégrale. La gate, elle, porte déjà `Bash(git add *)` et `Bash(git commit *)` : la précondition est
+placée là où la donnée existe.
+
+⚠️ **Commiter n'est pas éditer.** Le contenu commité est **exactement** ce que l'humain vient
+d'écrire, et `spec.md`/`plan.md`/`tasks.md` sortent toujours de la gate **bit pour bit identiques**.
+Mais la gate devient **écrivain git** de documents dont elle n'est pas l'auteur : elle le dit, à
+chaque fois.
+
+**Deux cas rendent le delta incalculable. Dans les deux, la passe est intégrale :**
 
 1. **Passe 1** — aucune fiche précédente, donc aucune ancre.
 2. **Pas d'ancre** — la fiche est antérieure au dispositif, ou sa ligne `HEAD` manque.
-3. **Corrections non commitées** — `git diff -- specs/NNN-slug/` rend un diff non vide : ce qui a
-   bougé depuis le jugement n'est pas dans l'historique, et le diff contre l'ancre ne le verrait
-   pas. C'est le cas **courant** ici, les phases `specify`/`clarify`/`plan`/`tasks` ne commitant
-   rien elles-mêmes : la passe delta suppose des corrections commitées.
 
 ⚠️ **Le mode dégradé se dit** — annonce la passe intégrale **et son motif** en tête de rapport. Le
 danger n'est pas l'excès de couverture, c'est l'inverse : un delta calculé sur une ancre absente
@@ -268,13 +304,19 @@ se lit dans `docs/journal/NNN-slug.md`, une ligne de phase `analyze` par passe �
 c'est elle qui se décide.
 
 **La garde mesure la divergence, pas la stagnation** : **dès la passe 2** — avant, il n'y a pas de
-décompte précédent et la garde ne peut rien dire —, elle se déclenche quand le décompte des
-**Critical** — celui qui décide du verdict — **n'est pas strictement inférieur** à celui de la passe
-précédente. Une garde qui n'attraperait que « rien ne bouge » serait muette exactement dans le cas du
-**tapis roulant** — on corrige à chaque tour, et le total ne baisse pas. Les **Major** ne la
-déclenchent pas : leur variation se lit dans la trajectoire, elle ne prononce rien.
+décompte précédent et la garde ne peut rien dire —, elle se déclenche quand le décompte
+**`Critical + Major`** **n'est pas strictement inférieur** à celui de la passe précédente. Une garde
+qui n'attraperait que « rien ne bouge » serait muette exactement dans le cas du **tapis roulant** —
+on corrige à chaque tour, et le total ne baisse pas.
 
-**Le budget : trois passes.** Dès la **3ᵉ passe avec fiche de gate encore ouverte**, cesse de
+⚠️ **Le décompte de la garde n'est pas celui du verdict**, et les deux ne se confondent jamais : le
+**verdict** ne compte que les **Critical** (`PRÊT` ssi zéro Critical) ; la **garde** compte
+`Critical + Major`. §D38 avait écarté les Major — *« leur variation se lit dans la trajectoire, elle
+ne prononce rien »* — et **§D39 renverse cet arbitrage** : c'est en Major que vit le bruit qui fait
+boucler, puisque le verdict ne les compte pas et que la grille en produit à volonté (22 clauses de
+jugement). Une garde qui les ignore est muette exactement là où l'humain fatigue.
+
+**Le budget : deux passes.** Dès la **2ᵉ passe avec fiche de gate encore ouverte**, cesse de
 proposer une relance et **pose l'arbitrage** — **trois issues**, dont « une passe de plus » qui reste
 valide : le blocage est **en amont** (le socle manque de ce sur quoi la spec devrait tracer) · la
 **phase a été jouée trop tôt**, et c'est elle qu'il faut reprendre — périmètre trop large,
@@ -311,7 +353,7 @@ avec l'avis.
   la fiche de gate** (`<gate>`), donc la commande de correction part d'elle et non d'une
   re-dérivation à froid ; et un Major qu'on assume **s'arbitre une fois** au lieu d'être re-signalé
   indéfiniment. **La garde, elle, mesure la divergence** — un décompte qui ne baisse plus — et un
-  **budget de trois passes** propose la sortie : condition, trajectoire et issues en `<gate>`,
+  **budget de deux passes** propose la sortie : condition, trajectoire et issues en `<gate>`,
   § *La garde sur la divergence, et le budget de passes*. Une garde qui n'attraperait que « rien ne
   bouge » serait muette exactement là où on tourne en rond **en avançant**.
 - **Le cycle boucle après la conformité.** Un verdict `PRÊT` ouvre le passage de main. Pour une feature à fort enjeu, la passe optionnelle `premortem` durcit le contrat d'abord (puis on relance cette gate). Une fois `PRÊT` (re)confirmé, le contrat part vers le workflow d'implémentation et on repart sur la suivante par `/scd-sdd:kickoff-feature` (ou `/scd-sdd:status-specs` si plusieurs sont en vol).

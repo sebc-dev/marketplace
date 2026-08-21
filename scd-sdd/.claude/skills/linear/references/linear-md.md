@@ -21,7 +21,7 @@ relit.
 ## Les sept rubriques — et pas une de plus
 
 Écrit **une fois** par `/scd-sdd:linear-setup`, qui **refuse d'écraser** un fichier existant (garde
-anti-écrasement, modèle de `contract`, §D29). La mise à jour est une **édition manuelle**.
+anti-écrasement, modèle de `livraison`, §D29). La mise à jour est une **édition manuelle**.
 
 1. la **clé de l'équipe** (`ENG`) et son nom ;
 2. le **nom** de la variable d'environnement qui porte la clé d'API — **jamais sa valeur**
@@ -32,7 +32,7 @@ anti-écrasement, modèle de `contract`, §D29). La mise à jour est une **édit
 6. la table de **propriété des champs** ;
 7. l'**initiative** — rubrique **optionnelle** : `<nom>` ou `aucune`. Le nom est une
    **configuration** (précédent exact de la clé d'équipe, §D31), proposé au setup depuis le nom du
-   repo ou `docs/brief.md`, confirmé par l'humain, **jamais re-dérivé**.
+   repo ou `docs/produit.md`, confirmé par l'humain, **jamais re-dérivé**.
 
 **Rétro-compatibilité.** Un fichier à **six rubriques** (1.10.0) reste intégralement valide :
 rubrique 7 **absente ou `aucune`** → aucune écriture d'initiative, comportement sans initiative

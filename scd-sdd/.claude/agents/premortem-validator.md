@@ -84,7 +84,7 @@ Reçus : N risques · Retenus : R · Chantiers : C · Signalements : S · Rejet�
 - P2 → éprouver la restauration de sauvegarde. Portée : socle. Aucun texte ne referme ce risque.
 
 ### Signalements hors cible (S)
-- P3 → vise docs/prd.md, listé « contexte, jamais jugé ». → /scd-sdd:premortem socle
+- P3 → vise docs/produit.md, listé « contexte, jamais jugé ». → /scd-sdd:premortem socle
 
 ### Rejetés (J)
 - P4 → REJETÉ (déjà couvert). FR-002 critère 3 spécifie déjà la validation d'entrée.

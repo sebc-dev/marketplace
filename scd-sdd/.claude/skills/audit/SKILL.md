@@ -6,7 +6,7 @@ description: |
   temps — explorer, juger, gate humain, écrire —, l'explorateur collecte sans juger, verdict
   binaire CONFORME | À CORRIGER, appariement entre passes. S'applique à des DIMENSIONS qui
   changent les documents jugés et la grille, jamais la méthode ; une seule existe —
-  validation-socle, sur les sept documents du socle. Se charge pendant /scd-sdd:audit, seule
+  validation-socle, sur les cinq documents du socle. Se charge pendant /scd-sdd:audit, seule
   commande qui l'invoque. Porte UNIQUEMENT la méthode et la table des dimensions : le contrat
   des documents jugés reste au skill project-docs, la fiche au skill chantier, la ligne de
   journal au skill journal. N'écrit JAMAIS dans le document jugé, ne couvre ni les specs
@@ -20,9 +20,10 @@ description: |
 
 Le socle s'écrit par interview, puis se consomme tel quel. Rien ne le relit : les trois `status`
 ne testent que l'**existence** des documents, et la chaîne de traçabilité
-`Brief → PRD → Stack → Archi → ADR → CI → CLAUDE.md` propage un défaut d'amont sans que rien ne
-le voie — un `FR` sans lien vers le Brief, un candidat ADR listé dans `stack.md` que la phase
-`adr` n'a jamais instruit, un invariant sans trace observable, un pointeur mort dans `CLAUDE.md`.
+`Produit → Technique → ADR → CI → CLAUDE.md` propage un défaut d'amont sans que rien ne
+le voie — un choix de stack qui ne sert aucun `FR`, un candidat ADR listé dans `docs/technique.md`
+que la phase `adr` n'a jamais instruit, un invariant sans trace observable, un pointeur mort dans
+`CLAUDE.md`.
 L'audit comble ce trou, **document par document**, quand on veut le combler.
 
 Deux conséquences, toutes deux **de nature** et jamais discrétionnaires :
@@ -63,9 +64,9 @@ Le jugement reste donc à la **session principale** — le modèle le plus capab
 celui qui a lu la grille. `producteur ≠ vérificateur` tient alors par deux moyens, tous deux
 nécessaires :
 
-- le **`/clear` prescrit dans le texte de l'accroche** des sept commandes de phase du socle — il
-  n'est pas cosmétique, c'est lui qui garantit que la session qui juge n'est pas celle qui a
-  rédigé ;
+- le **`/clear` prescrit dans le texte des accroches** — cinq, dans les quatre commandes de phase
+  du socle, `livraison` en portant deux pour ses deux documents. Il n'est pas cosmétique : c'est
+  lui qui garantit que la session qui juge n'est pas celle qui a rédigé ;
 - un **signalement** de la commande si la session courante a rédigé le document malgré tout. Elle
   ne bloque pas : elle le dit, et recommande `/clear` puis relance.
 
@@ -112,6 +113,18 @@ Un finding est identifié par le triplet **`[ID]` · fichier · nature**. À cha
    indétectable ; le compter rétablirait la boucle.
 5. Le reste → rapport normal, et écrit dans la fiche.
 
+**L'auto-écart des Major, dès la passe 2** (`DECISIONS.md` §D39). Un Major **encore présent et non
+traité** depuis la passe précédente passe **de lui-même** en `## Écarté`, motif
+`non traité à la passe N`, est **nommé une fois** au rapport — et **ne se redemande plus**. Jusqu'ici
+il était redemandé **à chaque passe, avec exigence de motif** : c'est la source directe de
+l'aller-retour. ⚠️ **Il n'est pas effacé** — il reste dans la fiche, greppable et **réouvrable** : la
+règle est *cesser de demander*, jamais *cacher*. Et elle ne touche **pas les Critical**, qui ne
+s'arbitrent jamais, ni à la main ni automatiquement.
+
+**Les Minor se taisent dès la passe 2.** Ils ne sont portés par aucune fiche, ne comptent dans aucun
+verdict, et se re-dérivent pour rien. À la **passe 1** ils sont rendus **en entier** ; aux suivantes,
+une ligne suffit — « N Minor, non détaillés (passe ≥ 2) ».
+
 #### La partition de la grille, et la passe delta
 
 Chaque contrôle porte sa **nature** — `déterministe` ou `jugement` — **dans la grille**, jamais ici
@@ -133,17 +146,25 @@ l'arbitrage tombe avec son **objet**, jamais avec l'avis.
 
 ### 6. La garde anti-boucle
 
-**La trajectoire s'affiche en tête de rapport**, avant les findings : `3 Critical → 2 → 2 → 4`. Elle
-se lit dans le **journal**, une ligne par passe — déjà versionnée, et c'est elle qui se décide.
+**La trajectoire s'affiche en tête de rapport**, avant les findings : `3C·5M → 2C·4M → 2C·6M`. Elle
+se lit dans le **journal**, une ligne par passe — déjà versionnée, et c'est elle qui se décide. Elle
+porte **les deux décomptes**, `C` et `M` : la garde lit leur somme, le verdict les seuls `C`. Une
+trajectoire qui n'afficherait que les Critical rendrait la garde inexplicable au moment où elle se
+déclenche.
 
 **La garde mesure la divergence, pas la stagnation** : **dès la passe 2** — avant, il n'y a pas de
-décompte précédent et la garde ne peut rien dire —, elle se déclenche quand le décompte des
-**Critical** — celui du verdict — **n'est pas strictement inférieur** à celui de la passe précédente.
-Une garde qui n'attraperait que « rien ne bouge » serait muette dans le cas du **tapis roulant** : on
-corrige à chaque tour, et le total ne baisse pas. Les **Major** ne la déclenchent pas — leur
-variation se lit dans la trajectoire, elle ne prononce rien.
+décompte précédent et la garde ne peut rien dire —, elle se déclenche quand le décompte
+**`Critical + Major`** **n'est pas strictement inférieur** à celui de la passe précédente. Une garde
+qui n'attraperait que « rien ne bouge » serait muette dans le cas du **tapis roulant** : on corrige à
+chaque tour, et le total ne baisse pas.
 
-**Le budget : trois passes.** Dès la **3ᵉ passe avec fiche encore ouverte**, cesse de proposer une
+⚠️ **Le décompte de la garde n'est pas celui du verdict.** Le **verdict** ne compte que les
+**Critical** (`CONFORME` ssi zéro Critical, § 4) ; la **garde** compte `Critical + Major`. §D38 avait
+écarté les Major — *« leur variation se lit dans la trajectoire, elle ne prononce rien »* — et
+**§D39 renverse cet arbitrage** : c'est en Major que vit le bruit qui fait boucler, puisque le
+verdict ne les compte pas et que la grille en produit à volonté.
+
+**Le budget : deux passes.** Dès la **2ᵉ passe avec fiche encore ouverte**, cesse de proposer une
 relance et **pose l'arbitrage** — **trois issues** : le blocage est **en amont** (un amont qui
 n'existe pas) · la **phase a été jouée trop tôt**, et c'est elle qu'il faut reprendre · **une passe
 de plus**, qui reste valide. Ce n'est **pas une interdiction** — aucun hook, aucun blocage
@@ -161,7 +182,7 @@ elle, est identique.
 
 | Dimension | Ce qui est jugé | Précondition | Journal |
 |---|---|---|---|
-| **`validation-socle`** | **UN** des sept documents du socle — `brief` `prd` `stack` `archi` `adr` `ci` `claude-md` | le document existe | `docs/journal/socle.md`, phase `audit` |
+| **`validation-socle`** | **UN** des cinq documents du socle — `produit` `technique` `adr` `ci` `claude-md` | le document existe | `docs/journal/socle.md`, phase `audit` |
 
 **Une dimension future — sécurité, UX, cohérence documentaire — est un bloc de plus dans
 `references/dimensions.md`, et rien d'autre.** Ni commande neuve, ni skill neuf, ni agent neuf :

@@ -2,14 +2,14 @@
 
 Chargée par ce qui **écrit** une fiche, et par rien d'autre : `/scd-sdd:pause` (intégralement — seul
 applicateur de `<elagage>`), `/scd-sdd:note` (intégralement **sauf `<elagage>`** — une fiche
-d'archive naît fermée), `/scd-sdd:analyze`, `/scd-sdd:audit` et `/scd-sdd:ci` (`<interdits>`,
+d'archive naît fermée), `/scd-sdd:analyze`, `/scd-sdd:audit` et `/scd-sdd:livraison` (`<interdits>`,
 `<template>` et `<frontiere>`), `/scd-sdd:premortem` de cible `chantier` (`<interdits>` et
 `<template>`), et l'agent `premortem-applier` (`<template>` seul — il inscrit une fiche
 `en-attente/` déjà approuvée, il n'en arbitre pas le contenu).
 
 `<frontiere>` ne se charge que là où le choix se pose : celle qui écrit une fiche **et** journalise
 par ailleurs doit trancher — ce contenu va-t-il dans la fiche, ou dans la ligne de journal ?
-`analyze`, `audit` et `ci` la chargent à ce titre. `premortem` de cible `chantier` n'a pas ce
+`analyze`, `audit` et `livraison` la chargent à ce titre. `premortem` de cible `chantier` n'a pas ce
 choix : elle ne journalise pas, la fiche **est** le fait.
 
 Les commandes qui **lisent** une fiche — `status`, `status-impl`, les phases specs devant une fiche
@@ -91,7 +91,7 @@ Faire passer FR-004 au vert sans toucher au middleware de session.
 Écrire le test rouge `locks_after_fifth_failure` dans `test/auth/lockout.test.ts`.
 
 ## Écarté
-- Redis — absent de `docs/stack.md`.
+- Redis — absent de `docs/technique.md`.
 - Middleware `rateLimit` existant — compte par IP, le critère demande par compte.
 ```
 
@@ -104,8 +104,8 @@ Faire passer FR-004 au vert sans toucher au middleware de session.
 - Les règles du `## Contexte à charger` — les quatre classes, leurs seuils, le budget — et les
   exemples des quatre classes vivent dans `references/manifeste.md`, qui se charge **bloc par
   bloc** : `<regle_maitresse>`, `<classes>` et `<controles>` pour écrire. Le template n'en garde
-  qu'**une** ligne, et c'est une exception assumée à « charge ou recopie » (§D35) : `analyze`, `ci`,
-  `audit` et `premortem` écrivent un manifeste — deux ou trois documents, tous `à lire` — sans
+  qu'**une** ligne, et c'est une exception assumée à « charge ou recopie » (§D35) : `analyze`,
+  `livraison`, `audit` et `premortem` écrivent un manifeste — deux ou trois documents, tous `à lire` — sans
   jamais charger `<classes>`, il leur faut la forme d'une ligne sous les yeux.
 
 **Le commit.** Une fiche est **versionnée, et commitée par la commande qui l'écrit**, dans un commit

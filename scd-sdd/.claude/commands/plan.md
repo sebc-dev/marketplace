@@ -1,5 +1,5 @@
 ---
-description: "Phase 3 des specs : produit specs/NNN-slug/plan.md EN PLAN MODE. Le comment — approche, réutilisation du socle (stack/ADR jamais re-décidés), confrontation des fichiers touchés aux invariants de docs/archi.md, contrats, étape de vérif bout-en-bout. Décision structurante nouvelle → candidat dans docs/adr/_candidates/."
+description: "Phase 3 des specs : produit specs/NNN-slug/plan.md EN PLAN MODE. Le comment — approche, réutilisation du socle (stack/ADR jamais re-décidés), confrontation des fichiers touchés aux invariants de docs/technique.md, contrats, étape de vérif bout-en-bout. Décision structurante nouvelle → candidat dans docs/adr/_candidates/."
 argument-hint: "[NNN ou slug — optionnel, résolu sinon]"
 allowed-tools:
   - Read
@@ -14,7 +14,7 @@ allowed-tools:
 
 Tu produis le **plan technique** de la feature : le *comment*.
 
-Il **applique** le socle (`docs/stack.md`, `docs/archi.md` s'il existe, `docs/adr/`) — il ne
+Il **applique** le socle (`docs/technique.md`, `docs/adr/`) — il ne
 re-décide jamais ce qui est déjà tranché. À exécuter **en plan mode** — le réglage de modèle
 recommandé est dans `references/plan.md`, chargée à l'étape 2. Un plan court a un meilleur taux
 d'acceptation qu'un plan fleuve : il est relu.
@@ -24,10 +24,10 @@ Ratio : 50% humain / 50% AI (arbitrages techniques partagés).
 ## Règles absolues
 
 - **Ne re-décide rien du socle.** Langage, framework, DB, auth, déploiement, tests sont fixés
-  par `stack.md` et les ADR acceptés. Contredire un ADR accepté est interdit — le hook
+  par `docs/technique.md` et les ADR acceptés. Contredire un ADR accepté est interdit — le hook
   `block-adr-edits` empêche même d'en réécrire un (`exit 2`).
-- **Les invariants de `docs/archi.md` ne se re-décident pas non plus** — ils tiennent leur
-  autorité de la phase `archi` et des ADR qui les portent. Un lot qui franchit une frontière ou
+- **Les invariants de `docs/technique.md` ne se re-décident pas non plus** — ils tiennent leur
+  autorité de la phase `technique` et des ADR qui les portent. Un lot qui franchit une frontière ou
   inverse un sens de dépendance change de découpage, ou **écrit et justifie** sa dérogation dans
   le plan. C'est par là que la dérive structurelle entre : une feature à la fois, par des
   décisions ad hoc que rien ne relit.
@@ -73,16 +73,16 @@ Ratio : 50% humain / 50% AI (arbitrages techniques partagés).
 
 2. **Charge la référence** : `references/plan.md` du skill `feature-specs`.
 
-3. **Lis les prérequis** : `specs/<cible>/spec.md`, `docs/stack.md`, `docs/archi.md` **s'il
-   existe** et `docs/adr/`. Repère nommément les ADR contraignants, les choix de stack et les
-   **invariants** qui s'appliquent ici.
+3. **Lis les prérequis** : `specs/<cible>/spec.md`, `docs/technique.md` et `docs/adr/`. Repère
+   nommément les ADR contraignants, les choix de stack et les **invariants** qui s'appliquent
+   ici — les deux derniers vivent dans le même fichier, mais dans deux tables distinctes.
 
 4. **Explore le repo** avant de rédiger : les fichiers voisins de ceux que tu vas toucher, les
    utilitaires réutilisables, le patron dominant du projet.
 
 5. **Rédige `specs/<cible>/plan.md`** selon le template :
    - l'approche, en une section courte ;
-   - la **réutilisation du socle** — stack, invariants d'`archi` et ADR cités, pas paraphrasés ;
+   - la **réutilisation du socle** — choix de stack, invariants et ADR cités, pas paraphrasés ;
    - les **fichiers touchés** nommés, chacun avec son patron de référence existant ;
    - les **contrats d'interface**, cohérents avec les contrats d'E/S de la spec ;
    - les décisions et les **alternatives écartées** avec leur raison ; candidat ADR si une
@@ -99,7 +99,7 @@ Ratio : 50% humain / 50% AI (arbitrages techniques partagés).
    projet, et ce que chacune coûte ou ferme. Ce qui découle de la stack, d'un ADR accepté ou d'un
    invariant n'est **pas** un arbitrage : c'est un fait, on l'applique.
 
-6. **Confronte les fichiers touchés aux invariants de `docs/archi.md`.** Une seule question, posée
+6. **Confronte les fichiers touchés aux invariants de `docs/technique.md`.** Une seule question, posée
    invariant par invariant sur la liste que tu viens d'écrire : **ce lot franchit-il une frontière,
    inverse-t-il un sens de dépendance, place-t-il un artefact hors du dossier prescrit ?**
 
@@ -108,12 +108,13 @@ Ratio : 50% humain / 50% AI (arbitrages techniques partagés).
      rester dans l'invariant. Si la dérogation est réellement nécessaire, elle s'écrit et se
      **justifie** dans « Réutilisation du socle », en nommant l'invariant (`I3`) et la raison.
      `/scd-sdd:analyze` la cherche là : une dérogation muette est un **Major** à la gate.
-   - **Pas de `docs/archi.md`** → **saute cette étape et annonce-le** (« pas de `docs/archi.md` :
-     confrontation aux invariants sautée »). La phase `archi` n'a pas été jouée ; rien ne bloque.
+   - **Pas de table d'invariants dans `docs/technique.md`** → **saute cette étape et annonce-le**
+     (« aucun invariant dans `docs/technique.md` : confrontation sautée »). La seconde moitié de la
+     phase `technique` n'a pas été jouée ; rien ne bloque.
 
    Une dérogation qui revient à chaque feature n'est pas une dérogation : c'est le signe que
-   l'invariant est faux ou périmé. Dis-le et renvoie vers `/scd-sdd:archi` — **tu ne modifies pas
-   `docs/archi.md`**.
+   l'invariant est faux ou périmé. Dis-le et renvoie vers `/scd-sdd:technique` — **tu ne modifies
+   pas `docs/technique.md`**.
 
 7. **Vérifie la couverture** : chaque `FR` de la spec est couvert par une portion du plan.
    Nomme ceux qui ne le sont pas plutôt que d'élargir le plan en silence.
@@ -126,8 +127,8 @@ Ratio : 50% humain / 50% AI (arbitrages techniques partagés).
 
 - Aucun découpage en tâches numérotées : c'est `tasks`.
 - **Aucune écriture dans `docs/adr/`** — `_candidates/` seulement.
-- **Aucune écriture dans `docs/archi.md`.** Tu confrontes le lot aux invariants, tu ne les
-  amendes pas, tu n'en ajoutes pas : c'est `/scd-sdd:archi`, et l'invariant y devient un ADR.
+- **Aucune écriture dans `docs/technique.md`.** Tu confrontes le lot aux invariants, tu ne les
+  amendes pas, tu n'en ajoutes pas : c'est `/scd-sdd:technique`, et l'invariant y devient un ADR.
 - Tu n'implémentes rien et tu n'exécutes aucun test : le code est le niveau suivant.
 - Tu ne recopies pas le socle dans le plan. Tu lies.
 

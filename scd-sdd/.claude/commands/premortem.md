@@ -21,7 +21,7 @@ allowed-tools:
 Tout le cycle demande « ce document est-il bien formé ? ». Cette commande pose la question
 orthogonale : **s'il était honoré tel quel, est-ce que ça échouerait quand même ?**
 
-Un PRD peut être parfaitement mesurable et viser la mauvaise issue. Un contrat de feature peut
+Un document Produit peut être parfaitement mesurable et viser la mauvaise issue. Un contrat de feature peut
 être tracé, testable et bien découpé, et omettre le chemin d'erreur qui le fera tomber en
 production. Une fiche de chantier peut être à jour et illisible pour celui qui la reprendra dans
 trois semaines. C'est un **premortem** : on se projette après coup **en supposant l'échec**, puis
@@ -145,7 +145,7 @@ est **limitative par cible** ; ce qui n'y entre pas prend la sortie de secours (
   remédiation hors des formes légales de la cible.
 - Tu ne prescris pas **comment** implémenter, tu n'écris pas de code, tu n'exécutes aucun test.
 - Tu n'édites aucun ADR accepté — candidats seulement (le hook `block-adr-edits` le bloque de
-  toute façon, `exit 2`). Tu n'édites jamais `docs/brief.md`.
+  toute façon, `exit 2`). Tu n'édites jamais la section `## Problème` de `docs/produit.md`.
 - Tu ne rejoues aucune gate toi-même : tu les recommandes.
 - **Tu ne touches pas à une fiche de gate** (`docs/chantiers/en-cours/*-gate-NNN-*.md`) quand tu
   durcis une feature. Tu viens de modifier le contrat : sa liste de corrections est **périmée**, et
@@ -202,9 +202,10 @@ Selon la cible et l'issue :
   `/scd-sdd:analyze NNN`** pour reconfirmer `PRÊT` avant le passage de main. » Ajoute, si une fiche
   de gate est ouverte : « sa liste de corrections est périmée jusqu'à cette re-passe — n'y travaille
   pas d'ici là. »
-- **Socle, remédiations appliquées** : « Socle durci — R remédiations inscrites. » Si `prd.md` ou
-  `stack.md` a bougé, **nomme les features déjà spécifiées** et recommande `/scd-sdd:analyze NNN`
-  sur chacune : leurs backrefs pointent vers ce qui vient de changer.
+- **Socle, remédiations appliquées** : « Socle durci — R remédiations inscrites. » Si
+  `docs/produit.md` ou `docs/technique.md` a bougé, **nomme les features déjà spécifiées** et
+  recommande `/scd-sdd:analyze NNN` sur chacune : leurs backrefs pointent vers ce qui vient de
+  changer.
 - **Chantier, remédiations appliquées** : « Fiche durcie et commitée — R remédiations. La reprise
   se fera par `/scd-sdd:resume <slug>`. »
 - **Rien retenu ou approuvé** : « Premortem passé sans remédiation : les documents tiennent tels

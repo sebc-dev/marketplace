@@ -5,9 +5,9 @@ description: |
   l'ordre des couches, le mécanisme expliqué quand le choix en dépend, le raisonnement
   raconté en scène, la longueur réglée sur l'enjeu. DEUX RÉGIMES — options concurrentes
   (un sujet, plusieurs issues) et gate d'approbation (N items à trier) — qui changent
-  l'usage de l'ordre, jamais la méthode. Se charge pendant /scd-sdd:stack, archi, adr,
-  ci, research, resume, premortem, analyze, audit, revise-contract et migrate, à l'étape
-  qui restitue. Porte UNIQUEMENT l'exposition : les six règles de langage restent dans le
+  l'usage de l'ordre, jamais la méthode. Se charge pendant /scd-sdd:technique, adr,
+  livraison, research, resume, premortem, analyze, audit, revise-contract et migrate, à
+  l'étape qui restitue. Porte UNIQUEMENT l'exposition : les six règles de langage restent dans le
   ## Règles absolues de chaque commande (DECISIONS.md §D32) et tiennent sans lui ; le
   contenu de l'arbitrage appartient au skill de son niveau ; la ligne de journal au
   skill journal. Ne prescrit aucun gabarit : un plan-type en huit sections sur une
@@ -118,7 +118,7 @@ La méthode ne change pas ; ce que l'humain doit faire change, et donc l'usage d
 | Rôle de l'ordre (point 1) | **faire comprendre** — en plein | **trier** — une fois, en tête |
 | Longueur (point 6) | l'enjeu du choix | le **nombre** d'items |
 
-### Régime options — `stack` · `archi` · `adr` · `ci` · `research` · `resume`
+### Régime options — `technique` · `adr` · `livraison` · `research` · `resume`
 
 Les sept points s'appliquent en plein. Chaque option porte **ce qu'on paie** en termes du projet —
 ce qui s'ajoute à entretenir, ce qui se perd, qui devra le porter —, jamais un nom de procédure
@@ -150,7 +150,8 @@ quels : un item dont le mécanisme n'est pas compris ne se juge pas plus qu'une 
 s'y donne dans l'unité de la décision, et un ID y porte ce que sa décision a fait.
 
 ⚠️ **Les deux gates empruntent aussi le régime *options*, une fois.** Quand leur **budget de passes**
-est atteint — 3ᵉ passe avec fiche encore ouverte (`DECISIONS.md` §D38) —, `analyze` et `audit` ne
+est atteint — **2ᵉ** passe avec fiche encore ouverte (`DECISIONS.md` §D38, budget ramené à deux
+par §D39) —, `analyze` et `audit` ne
 font plus trier une liste : ils posent un **choix entre issues concurrentes**. C'est le régime
 *options* qui s'applique là, pas celui-ci, et les commandes le nomment à l'appel.
 

@@ -1,6 +1,6 @@
 ---
 description: "Audit d'un document du socle déjà produit — on le confronte à une grille de conformité (complétude, traçabilité vers l'amont, cohérence, forme) et ce qui manque devient une liste de travail, jamais une réécriture. Le document jugé sort bit pour bit identique : la commande écrit deux choses, une ligne de journal et une fiche de chantier (le pense-bête daté qui survit au /clear). Un explorateur collecte les preuves sans juger, la session juge, l'humain arbitre les Major. Verdict CONFORME uniquement si zéro Critical. Capacité transverse à dimensions, pas une phase : optionnelle, jamais réclamée par status."
-argument-hint: "[dimension] brief | prd | stack | archi | adr | ci | claude-md — jamais deviné"
+argument-hint: "[dimension] produit | technique | adr | ci | claude-md — jamais deviné"
 allowed-tools:
   - Read
   - Glob
@@ -21,10 +21,10 @@ allowed-tools:
 ## Contexte
 
 Le socle s'écrit par interview, puis se consomme tel quel. **Rien ne le relit.** Les trois `status`
-ne testent que l'**existence** des documents, et la chaîne `Brief → PRD → Stack → Archi → ADR → CI
-→ CLAUDE.md` propage un défaut d'amont sans que rien ne le voie : un `FR` qui ne trace vers rien, un
-candidat ADR listé dans la Stack que la phase `adr` n'a jamais instruit, un invariant sans trace
-observable, un pointeur mort dans `CLAUDE.md`.
+ne testent que l'**existence** des documents, et la chaîne `Produit → Technique → ADR → CI →
+CLAUDE.md` propage un défaut d'amont sans que rien ne le voie : un choix de stack qui ne sert aucun
+`FR`, un candidat ADR listé dans `docs/technique.md` que la phase `adr` n'a jamais instruit, un
+invariant sans trace observable, un pointeur mort dans `CLAUDE.md`.
 
 Le niveau specs a `analyze` pour ça. Le socle n'a rien — et `/scd-sdd:premortem socle` ne comble pas
 le trou : il juge l'**ensemble** sous l'angle de la **projection d'échec**, quand la question posée
@@ -50,7 +50,10 @@ décide de corriger).
 - **Un défaut de l'amont n'est pas un finding du document jugé.** C'est un **signalement**, nommé,
   avec la commande qui le traiterait. Rien ne s'abandonne en silence.
 - **Tu ne corriges pas toi-même** : tu nommes le fichier, l'ID et l'action.
-- **Verdict `CONFORME` uniquement si zéro Critical.**
+- **Verdict `CONFORME` uniquement si zéro Critical.** La **garde**, elle, lit `Critical + Major` :
+  deux décomptes distincts, jamais confondus (`DECISIONS.md` §D39).
+- **Les Minor se taisent dès la passe 2.** Rendus en entier à la passe 1 ; ensuite, une ligne — « N
+  Minor, non détaillés ». Ils ne comptent dans aucun verdict et ne sont portés par aucune fiche.
 - **Le problème avant les options.** Au gate d'arbitrage, chaque finding s'ouvre sur **ce que le
   défaut coûterait en aval**, en langage courant — c'est ce qui se décide ; le fichier, l'ID et la
   correction ne sont que l'endroit où l'écrire. Arbitrer sans avoir compris le coût n'est pas
@@ -118,7 +121,19 @@ signalements. Un lot vide ne s'écrit pas.
      sont datées **au jour**, et un `CONFORME` du matin qui a archivé la fiche précédente porte la
      même date que la fiche ouverte l'après-midi. Aucune fiche ouverte → passe **1** ;
    - **la trajectoire des décomptes**, dans l'ordre, telle qu'elle s'affichera en tête de rapport :
-     `3 Critical → 2 → 2 → 4`.
+     `3C·5M → 2C·4M → 2C·6M` — **les deux décomptes**, la garde lisant leur somme et le verdict les
+     seuls Critical.
+
+4bis. **Commite les corrections, puis prends l'ancre.** `git diff -- <chemin de la cible>` : diff non
+   vide → `git add <chemin de la cible>` puis
+   `git commit -m "docs(socle): corrections audit <document> passe N"`, **annoncé en une ligne** en
+   tête de rapport. Puis `git rev-parse HEAD`.
+
+   C'est ce qui rend la passe delta applicable : **aucune** des phases qui produisent le socle ne
+   porte `Bash(git …)`, donc personne ne pouvait remplir sa précondition et toute passe était
+   intégrale (`DECISIONS.md` §D39). Tu commites **exactement** ce que l'humain vient d'écrire — le
+   document jugé sort toujours de cette commande **bit pour bit identique**. Rien à commiter → tu ne
+   commites pas, et tu ne l'annonces pas.
 
 5. **Délègue l'exploration** à `audit-explorer` (outil `Task`), en lui passant : la dimension, le
    **chemin du document jugé**, la **liste de ses amonts** avec leurs chemins, la **grille du bloc**
@@ -132,14 +147,15 @@ signalements. Un lot vide ne s'écrit pas.
 
 6. **Juge, ici, au contexte principal.** Le **régime de la passe** décide de ce que tu déroules sur
    le dossier de preuves — la règle est au § *La partition de la grille, et la passe delta* du
-   skill, le calcul et les **trois cas de mode dégradé** au § *La passe delta* du bloc de dimension,
+   skill, le calcul et les **deux cas de mode dégradé** au § *La passe delta* du bloc de dimension,
    et la **nature** de chaque contrôle dans la grille elle-même. **Ne recopie aucun des trois.** Tu
    n'as qu'à trancher la branche :
 
-   - **Passe 1**, ou l'un des trois cas dégradés → passe **intégrale**, annoncée **avec son motif**
+   - **Passe 1**, ou l'un des deux cas dégradés → passe **intégrale**, annoncée **avec son motif**
      en tête de rapport ;
-   - **Passe 2 et au-delà**, ancre présente et rien de non commité sur la cible → passe **delta**,
-     sur ce que rend `git diff <ancre> -- <chemin de la cible>`.
+   - **Passe 2 et au-delà**, ancre présente → passe **delta**, sur ce que rend
+     `git diff <ancre> -- <chemin de la cible>`. L'étape 4bis a déjà commité ce qui traînait : le cas
+     « corrections non commitées » n'existe plus.
 
    Classe chaque finding en **Critical / Major / Minor** selon l'échelle du skill, applique la
    **monotonie du verdict** (§ 4), puis **apparie** avec la passe précédente selon le
@@ -150,18 +166,27 @@ signalements. Un lot vide ne s'écrit pas.
 
    1. la **trajectoire** des décomptes et le **régime** de la passe — delta, ou intégrale et
       pourquoi —, **avant tout finding** : c'est elle qui se décide ;
-   2. **dès la passe 2**, si la **garde sur la divergence** s'est déclenchée, dis-le ici, et pas
-      ailleurs ;
-   3. les findings par sévérité, chacun avec sa **voie de correction** (lot A, B ou C) ;
-   4. les blocs d'appariement, puis le **Verdict**.
+   2. le **commit de corrections** de l'étape 4bis, s'il a eu lieu ;
+   3. **dès la passe 2**, si la **garde sur la divergence** (`Critical + Major`) s'est déclenchée,
+      dis-le ici, et pas ailleurs ;
+   4. les findings par sévérité, chacun avec sa **voie de correction** (lot A, B ou C) ;
+   5. les blocs d'appariement, puis le **Verdict**.
 
 7. **Gate d'arbitrage humain** (`AskUserQuestion`) — **charge le skill `exposition`**, **régime
    *gate*** : le décor de l'audit se pose **une fois en tête**, et chaque finding ne porte ensuite
-   que ce qui lui est propre. S'il reste des Major non arbitrés, demande lesquels sont assumés et
-   **exige un motif** pour chacun. Chaque finding s'ouvre sur **ce que le défaut coûterait en
-   aval**, en langage courant, avant le triplet fichier / ID / correction proposée. Un refus de
-   trancher est une réponse valide : le Major reste dans la liste. Rien n'est écrit avant cette
+   que ce qui lui est propre. Chaque finding s'ouvre sur **ce que le défaut coûterait en aval**, en
+   langage courant, avant le triplet fichier / ID / correction proposée. Rien n'est écrit avant cette
    étape.
+
+   **Ce que tu soumets dépend de la passe** (§ *L'appariement entre passes* du skill) :
+
+   - **Passe 1** — les Major **neufs**, un par un : demande lesquels sont assumés et **exige un
+     motif**. Un refus de trancher est une réponse valide, le Major reste dans la liste.
+   - **Passe 2 et au-delà** — tu ne redemandes **que les Major neufs de cette passe**. Ceux qui
+     restaient **non traités** depuis la précédente sont passés **seuls** en `## Écarté`, motif
+     `non traité à la passe N` : tu les **nommes une fois** au rapport, tu ne les soumets plus, et tu
+     dis qu'ils restent dans la fiche et **se rouvrent** sur demande. Cesser de demander n'est pas
+     cacher.
 
 8. **Écris les deux artefacts, et rien d'autre.** Le § *La fiche et ses lots* du bloc de dimension
    dit tout : où va la fiche, ce qu'elle porte, comment son `## À corriger` s'organise en lots, et —
@@ -221,9 +246,9 @@ d'audit.
 
 - `audit` — la méthode : les quatre temps, l'échelle, le verdict binaire **et monotone**,
   l'appariement et ses quatre issues, la partition de la grille et la passe delta, la garde sur la
-  **divergence** et le **budget de passes**. Charge `references/dimensions.md`, bloc `<resolution>`
+  **divergence** (`Critical + Major`) et le **budget de deux passes**. Charge `references/dimensions.md`, bloc `<resolution>`
   à l'étape 1, puis **le seul bloc de la dimension résolue** — dont le § *La passe delta* porte
-  l'ancre, le calcul et les trois cas dégradés.
+  l'ancre, le commit préalable et les deux cas dégradés.
 - `chantier` — anatomie, nommage, `Portée`, cycle de vie. Tu **écris** une fiche, donc tu charges
   `references/fiche.md`, blocs **`<interdits>`**, **`<template>`** et **`<frontiere>`**. Tu n'as
   **pas** besoin de `references/manifeste.md` : le `## Contexte à charger` d'une fiche d'audit se
@@ -261,10 +286,10 @@ renvoie lot par lot (n'annonce que les lots réellement écrits) :
 **Puis le budget de passes décide de ce que tu proposes** — § *La garde anti-boucle* du skill, qui
 porte la condition et les issues. **Deux branches, une seule s'applique.**
 
-**Sous le budget** (passe 1 ou 2) — « Puis relancer `/scd-sdd:audit <document>` : l'appariement fera
-le reste. »
+**Sous le budget** (passe 1) — « Puis relancer `/scd-sdd:audit <document>` : l'appariement fera
+le reste, et la passe suivante ne re-jugera que ce qui a bougé. »
 
-**Au budget** — **3ᵉ passe, et fiche encore ouverte** : à la place de la relance, charge le skill
+**Au budget** — **2ᵉ passe, et fiche encore ouverte** : à la place de la relance, charge le skill
 `exposition`, **régime *options***, et **pose l'arbitrage** par `AskUserQuestion` — c'est un choix
 entre issues concurrentes, pas un tri. Les **trois issues sont au § *La garde anti-boucle*** du
 skill ; ce que la commande ajoute, c'est de les **ancrer dans ce projet-ci** :

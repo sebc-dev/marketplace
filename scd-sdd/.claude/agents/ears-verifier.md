@@ -17,7 +17,7 @@ Un chemin `specs/NNN-feature/`. Si non fourni, demande-le.
 
 <process>
 1. Lis `specs/NNN-feature/spec.md`. Extrais les `FR-xxx`, leurs critères **EARS** (`SHALL` / `If…then…shall`), les `SC-xxx`, la section « NON inclus » et les backrefs PRD.
-2. Lis `plan.md` et `tasks.md`. Lis le socle : `docs/prd.md`, `docs/stack.md`, `docs/adr/`.
+2. Lis `plan.md` et `tasks.md`. Lis le socle : `docs/produit.md`, `docs/technique.md`, `docs/adr/`.
 3. Établis les mappings, par lecture croisée (`Grep`/`Glob` sur les IDs) :
    - **FR → tâches** : chaque `FR`/`SHALL` a-t-il, dans un seul lot, ≥ 1 tâche *d'impl* et ≥ 1 *vérification observable* (tâche test en mode `TDD`/`test-after`, tâche check en mode `check`, ou le critère d'acceptation de l'impl en mode `inhérent`) ? Le lot **déclare**-t-il son mode, et tout mode ≠ `TDD` est-il justifié ? (Un `inhérent` légitime — CI, infra, config — n'a pas de test : vérifie que son critère d'impl est observable, ne le compte pas « sans test ».)
    - **tâche → FR** : chaque tâche a-t-elle un `_Requirements:_` valide ? (sinon : orpheline)

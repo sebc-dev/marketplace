@@ -1,5 +1,5 @@
 ---
-description: "Ouvre le niveau SOCLE d'un projet : scaffolde docs/, docs/adr/, docs/research/, docs/journal/socle.md et les trois répertoires d'état de docs/chantiers/, établit ce qui est déjà fait, présente la séquence brief → prd → stack → archi → adr → ci → contract, puis lance la première phase manquante. À jouer une fois au démarrage — rejouable sans risque pour reprendre."
+description: "Ouvre le niveau SOCLE d'un projet : scaffolde docs/, docs/adr/, docs/research/, docs/journal/socle.md et les trois répertoires d'état de docs/chantiers/, établit ce qui est déjà fait, présente la séquence produit → technique → adr → livraison, puis lance la première phase manquante. À jouer une fois au démarrage — rejouable sans risque pour reprendre."
 argument-hint: "[nom ou idée du projet — optionnel]"
 allowed-tools:
   - Read
@@ -12,10 +12,10 @@ allowed-tools:
 
 ## Contexte
 
-Tu ouvres le **niveau socle** d'un projet : les sept documents qu'on écrit une fois, au
-démarrage, et sur lesquels tout le reste du cycle s'appuie. Ta mission ici est
-d'**orienter et préparer**, pas de produire les documents — chaque document a sa propre
-commande.
+Tu ouvres le **niveau socle** d'un projet : les **cinq documents** qu'on écrit une fois, au
+démarrage, et sur lesquels tout le reste du cycle s'appuie. Ils se produisent en **quatre
+phases** — la dernière en écrit deux. Ta mission ici est d'**orienter et préparer**, pas de
+produire les documents : chaque phase a sa propre commande.
 
 Cette commande est **idempotente**. Elle n'est pas réservée à un répertoire vierge : sur
 un projet déjà entamé, elle complète ce qui manque et te dit où reprendre. Un projet
@@ -25,13 +25,14 @@ Ratio : 20% humain / 80% AI (scaffolding mécanique + établissement de l'état)
 
 ## Règles absolues
 
-- **Tu n'écrases jamais un document existant.** `docs/brief.md` déjà là = phase faite ;
+- **Tu n'écrases jamais un document existant.** `docs/produit.md` déjà là = phase faite ;
   tu ne la rejoues pas et tu ne proposes pas de l'écraser. Pour reprendre un document,
   c'est sa commande dédiée, en connaissance de cause.
 - **Tu ne crées aucun contenu de document.** Tu crées des répertoires et le journal, rien
   d'autre.
 - **Tu dérives l'état des fichiers, jamais d'un fichier d'état.** La présence de
-  `docs/prd.md` est ce qui prouve que la phase PRD est faite — pas une ligne de journal.
+  `docs/produit.md` est ce qui prouve que la phase Produit est faite — pas une ligne de
+  journal.
 - **Tu ne reconstruis jamais le journal a posteriori.** Sur un projet démarré sans lui,
   tu le crées vide : on n'invente pas de dates. Sur un projet venu des trois anciens
   plugins, c'est `/scd-sdd:migrate` qui reconstitue les lignes datables depuis git — pas
@@ -43,20 +44,23 @@ Ratio : 20% humain / 80% AI (scaffolding mécanique + établissement de l'état)
    traçabilité, méthode d'interview, règles d'écriture).
 
 2. **Établis l'état du socle** — l'existence de chaque fichier, rien de plus. Le socle a
-   **sept phases** :
+   **quatre phases** pour **cinq documents** : la phase 4 en produit deux.
 
    | Fichier | Phase | Commande |
    |---|---|---|
-   | `docs/brief.md` | 1 — Brief | `/scd-sdd:brief` |
-   | `docs/prd.md` | 2 — PRD | `/scd-sdd:prd` |
-   | `docs/stack.md` | 3 — Stack | `/scd-sdd:stack` |
-   | `docs/archi.md` | 4 — Archi | `/scd-sdd:archi` |
-   | `docs/adr/*.md` | 5 — ADR | `/scd-sdd:adr` |
-   | `docs/ci.md` | 6 — CI | `/scd-sdd:ci` |
-   | `CLAUDE.md` | 7 — Contrat | `/scd-sdd:contract` |
+   | `docs/produit.md` | 1 — Produit | `/scd-sdd:produit` |
+   | `docs/technique.md` | 2 — Technique | `/scd-sdd:technique` |
+   | `docs/adr/*.md` | 3 — ADR | `/scd-sdd:adr` |
+   | `docs/ci.md` **puis** `CLAUDE.md` | 4 — Livraison | `/scd-sdd:livraison` |
 
    Un fichier présent **contenant encore un `[NEEDS CLARIFICATION]`** compte comme
    **incomplet**, pas comme fait : signale-le nommément.
+
+   La phase 4 est la seule qui puisse être **à moitié faite** — `docs/ci.md` écrit, `CLAUDE.md`
+   absent. Elle compte alors comme **incomplète**, et c'est `/scd-sdd:livraison` qu'on relance :
+   elle rejoue sa moitié CI, puis assemble le contrat. L'inverse — `CLAUDE.md` présent — ne se
+   rattrape jamais par un rejeu : la commande **refuse d'écraser** le contrat et renvoie vers
+   `/scd-sdd:revise-contract`.
 
    Si une phase est **incomplète** et qu'une phase **plus tardive manque**, les deux points de
    reprise ne sont pas équivalents et tu ne devines pas : pose la question par `AskUserQuestion`.
@@ -94,7 +98,7 @@ Ratio : 20% humain / 80% AI (scaffolding mécanique + établissement de l'état)
 
 ## Ce que tu NE fais PAS
 
-- Tu n'écris aucun document de contenu (Brief, PRD, Stack, ADR, CLAUDE.md).
+- Tu n'écris aucun document de contenu (Produit, Technique, ADR, CI, CLAUDE.md).
 - Tu ne présumes ni de la stack, ni du périmètre, ni du nom du projet.
 - Tu n'interviewes pas : c'est le travail des phases suivantes.
 - Tu ne remplis pas rétroactivement le journal pour les phases déjà faites — tu renvoies
@@ -110,7 +114,7 @@ par `Edit` ciblé (jamais de réécriture du fichier) :
 - **Phase** : `init-project`
 - **Résultat** : ce qui a été scaffoldé, et le socle préexistant le cas échéant —
   `docs/ · docs/adr/ · docs/journal/socle.md créés` ou `arborescence déjà en place ·
-  brief + prd présents · reprise en stack`.
+  produit présent · reprise en technique`.
 
 ## Skill active
 
@@ -120,7 +124,7 @@ par `Edit` ciblé (jamais de réécriture du fichier) :
 ## À la fin
 
 Annonce la première phase manquante et propose de l'enchaîner. Pour un projet vierge :
-« Prêt ? Lance `/scd-sdd:brief $ARGUMENTS` — et fais `/clear` avant chaque phase pour
+« Prêt ? Lance `/scd-sdd:produit $ARGUMENTS` — et fais `/clear` avant chaque phase pour
 garder le contexte propre. »
 
 **Si au moins une phase du socle manque ou est incomplète** — au sens de l'étape 2 : un fichier
@@ -133,12 +137,12 @@ l'humain connaît ces mots.
 ```
 Vocabulaire — à lire une fois
 
-   socle      les 7 documents écrits une fois au démarrage, avant toute feature
-   phase      une étape du socle : une commande, un document, puis /clear
+   socle      les 5 documents écrits une fois au démarrage, avant toute feature
+   phase      une étape du socle : une commande, puis /clear — 4 phases en tout
    ADR        une décision figée dans un fichier court, immuable une fois acceptée
    contrat    CLAUDE.md — ce que l'agent relit à chaque session, donc court par nécessité
    journal    docs/journal/ — la trace datée de ce qui a été joué, une ligne par événement
 ```
 
-Si les sept phases sont déjà faites, ne relance rien : le socle est complet, la suite est
+Si les quatre phases sont déjà faites, ne relance rien : le socle est complet, la suite est
 `/scd-sdd:kickoff-feature`.

@@ -10,23 +10,32 @@ Cycle spec-driven complet, du projet vide à la PR — en un seul plugin.
 
 | Niveau | Quand | Produit |
 |---|---|---|
-| **Socle** | une fois, au démarrage du projet | `docs/{brief,prd,stack,archi,ci}.md`, `docs/adr/NNNN-*.md`, le workflow de CI, `CLAUDE.md` |
+| **Socle** | une fois, au démarrage du projet | `docs/{produit,technique,ci}.md`, `docs/adr/NNNN-*.md`, le workflow de CI, `CLAUDE.md` |
 | **Specs** | une fois par feature | `specs/NNN-slug/{spec,plan,tasks}.md` |
 | **Implémentation** | un lot de review `Rn` à la fois | code, tests, commits, une PR par lot |
 
 ## Commandes
 
-### Socle
+### Socle — **quatre phases, cinq documents**
 | Commande | Produit |
 |---|---|
 | `/scd-sdd:init-project` | `docs/`, `docs/adr/`, `docs/journal/socle.md`, `docs/chantiers/` |
-| `/scd-sdd:brief` | `docs/brief.md` |
-| `/scd-sdd:prd` | `docs/prd.md` |
-| `/scd-sdd:stack` | `docs/stack.md` |
-| `/scd-sdd:archi` | `docs/archi.md` — caractéristiques retenues et table d'invariants falsifiables |
+| `/scd-sdd:produit` | `docs/produit.md` — le problème, les utilisateurs, les `FR-xxx`, le périmètre EXCLU, les `SC-xxx` |
+| `/scd-sdd:technique` | `docs/technique.md` — les fondations choisies, les caractéristiques retenues et la table d'invariants falsifiables |
 | `/scd-sdd:adr` | `docs/adr/NNNN-*.md` |
-| `/scd-sdd:ci` | `docs/ci.md` + le workflow de la forge |
-| `/scd-sdd:contract` | `CLAUDE.md` |
+| `/scd-sdd:livraison` | `docs/ci.md` + le workflow de la forge, **puis** `CLAUDE.md` |
+
+La chaîne de traçabilité tient donc en **cinq maillons** :
+`Produit → Technique → ADR → CI → CLAUDE.md`.
+
+⚠️ **Quatre commandes pour cinq documents, et le compte est juste** : `/scd-sdd:livraison` en
+produit **deux**. `docs/ci.md` et `CLAUDE.md` ne fusionnent pas — le contrat est chargé en entier
+dans chaque session et a **trois écrivains** (voir « L'entretien du contrat » plus bas), quand
+`docs/ci.md` n'en a qu'un.
+
+⚠️ **C'est un changement cassant pour un projet déjà suivi**, et le numéro de version ne le dit
+pas : on reste en `1.x` tant que le socle fusionné n'a pas servi en situation réelle.
+`/scd-sdd:migrate` est le seul garde-fou — voir « Migration » en bas.
 
 ### Specs
 | Commande | Produit |
@@ -79,7 +88,7 @@ Cycle spec-driven complet, du projet vide à la PR — en un seul plugin.
 ### Audit
 | Commande | Effet |
 |---|---|
-| `/scd-sdd:audit` | juge **un** document du socle — `brief` `prd` `stack` `archi` `adr` `ci` `claude-md` — contre une grille de conformité. Verdict `CONFORME` ou `À CORRIGER` au journal, corrections dans une fiche de chantier ; **le document jugé sort bit pour bit identique** |
+| `/scd-sdd:audit` | juge **un** document du socle — cinq dimensions : `produit` `technique` `adr` `ci` `claude-md` — contre une grille de conformité. Verdict `CONFORME` ou `À CORRIGER` au journal, corrections dans une fiche de chantier ; **le document jugé sort bit pour bit identique** |
 
 ### Miroir Linear — **opt-in**
 | Commande | Effet |
@@ -156,7 +165,7 @@ consignerait, et une fiche fabriquée est pire qu'un dossier vide.
 en **lecteurs** et **écrivains** : `chantier/SKILL.md` porte ce qu'on lit d'une fiche —
 anatomie, résolution de cible, contrôle de fraîcheur, cycle de vie —, et ses deux
 références portent le reste, chargées **bloc par bloc**. `fiche.md` sert à en écrire une,
-`manifeste.md` à recharger un contexte, et **treize des dix-neuf commandes qui chargent le
+`manifeste.md` à recharger un contexte, et **huit des quinze commandes qui chargent le
 skill n'ont besoin d'aucune des deux**. `/scd-sdd:resume` charge de même `exposition`
 **seulement quand la fiche est ressortie suspecte, ancienne ou consommée** — c'est-à-dire
 quand il y a réellement un arbitrage à exposer ; sur une fiche fraîche, « reprendre » est
@@ -197,17 +206,23 @@ la tâche orpheline du contrôle 3. Un défaut de **forme** est **Major**. Le co
 Le rapport gagne aussi un bloc **« Corrigés depuis »** : le signal qui manquait pour
 distinguer *corrigé* de *pas re-mentionné cette fois*.
 
-## La phase `archi` — des invariants falsifiables, jamais un design
+## La phase `technique` — des invariants falsifiables, jamais un design
 
 L'architecture était présente **quatre fois** dans le plugin, et uniquement du côté des
-**consommateurs** : `docs/stack.md` n'en demandait que quelques phrases de prose, `adr` ne
-posait **aucune question structurelle**, le contrôle `arch-invariants` de la phase `ci`
+**consommateurs** : la phase de stack n'en demandait que quelques phrases de prose, `adr` ne
+posait **aucune question structurelle**, le contrôle `arch-invariants` du pipeline
 était décrit de bout en bout mais branché sur une prise vide, et la dimension
 `architecture` du reviewer avait pour seul référent « l'existant » — c'est-à-dire la dérive
 déjà accumulée, pas une intention. Le tuyau était posé ; il manquait la source.
 
-C'est ce que produit `/scd-sdd:archi`, **quatrième phase du socle**, entre `stack` et `adr` :
-`docs/archi.md`. La dérive s'installe exactement par le chemin qui restait ouvert —
+C'est ce que produit `/scd-sdd:technique`, **deuxième phase du socle**, entre `produit` et
+`adr` : `docs/technique.md`. Elle **choisit les fondations puis en dérive la structure dans la
+même session** — langage, framework, base de données, auth, déploiement, tests, reliés aux
+`FR`/`SC` de `docs/produit.md` ; puis les invariants qui en découlent. Les deux moitiés étaient
+deux phases, et la seconde relisait la première pour en faire son constat : c'est le `/clear`
+supprimé qui paie la fusion, pas une règle retirée.
+
+La dérive s'installe exactement par le chemin qui restait ouvert —
 *developers make ad-hoc decisions when implementing*, décision par décision, feature par
 feature (Anthony et al., ICSA 2024). Les contrôles automatiques de conformité de dépendances
 la réduisent réellement — ≈ 60 % de violations structurelles en moins avec feedback (Knodel,
@@ -233,8 +248,8 @@ jamais « l'architecture est décrite ». C'est ce qui empêche la phase de dég
 design up front*, son risque n° 1, puisqu'une part de la structure est de toute façon
 imposée par le framework.
 
-`docs/archi.md` porte aussi les **caractéristiques architecturales retenues** — 3 à 5,
-jamais plus, chacune tracée vers des `FR`/`SC` du PRD. C'est la seule passerelle documentée
+`docs/technique.md` porte aussi les **caractéristiques architecturales retenues** — 3 à 5,
+jamais plus, chacune tracée vers des `FR`/`SC` de `docs/produit.md`. C'est la seule passerelle documentée
 entre exigences et structure, et au-delà de cinq on décrit une architecture générique.
 
 ### Ce qui entre, et ce que la phase n'admet pas
@@ -249,14 +264,15 @@ La grille d'admission est une taxonomie de **onze classes statiques** — sens d
 dépendances, cycles, couches, frontières de modules, placement, nommage structurel,
 visibilité déclarée, isolation du framework, imports prohibés, métriques structurelles
 seuillées, couplage statique. Les quatre autres — sémantique, runtime, holistique — sont
-**hors périmètre par construction**, et `docs/archi.md` les **nomme** dans une section
+**hors périmètre par construction**, et `docs/technique.md` les **nomme** dans une section
 dédiée : taire un trou ferait croire le contraire.
 
 ### Le pont : un invariant devient un contrôle
 
 Chaque ligne à colonne `ADR` vide est un **candidat** que la phase `adr` promeut — exactement
-comme les décisions de `docs/stack.md`. L'entrée de la phase `ci` devient alors **double** et
-**ordonnée** : la table de `docs/archi.md` d'abord, déjà admise et déjà classée, puis
+comme les décisions de fondation, listées **dans le même fichier**. L'entrée de la phase
+`livraison` devient alors **double** et **ordonnée** : la table de `docs/technique.md` d'abord,
+déjà admise et déjà classée, puis
 `docs/adr/` pour ce qu'elle n'a pas vu — un ADR promu après coup peut porter un invariant que
 la phase n'a pas vu passer. `arch-invariants` a enfin sa source.
 
@@ -265,22 +281,26 @@ Côté specs, l'accroche est **double**, parce que l'advisory seul ne tient pas 
 défaut étant de **changer le découpage**, la dérogation devant être nommée et justifiée — et
 `/scd-sdd:analyze` va la chercher en **15ᵉ contrôle**, classé **Major et jamais Critical** :
 bloquer une gate documentaire ferait d'elle un `arch-invariants` avant l'heure, alors que
-c'est la CI qui mesure sur le code réel. Le reviewer, lui, prend `docs/archi.md` pour
+c'est la CI qui mesure sur le code réel. Le reviewer, lui, prend `docs/technique.md` pour
 référent — violation d'un invariant = **bloquant** — et « cohérence avec l'existant » devient
 le **repli nommé**, écrit comme le mode dégradé qu'il est.
 
 Enfin, la phase **admet**, elle ne vérifie pas : elle n'écrit rien dans `docs/ci.md`, ne
 choisit aucun outil et **n'en exécute aucun**. L'inventaire d'outillage par écosystème vit
-dans une section de référence que seule la phase `ci` charge, au moment d'en dériver les
-contrôles — un instantané **daté**, à re-vérifier à l'adoption. Et tout est **additif** :
-sans `docs/archi.md`, `arch-invariants` reste vide, le reviewer garde son repli, le 15ᵉ
-contrôle ne se déclenche pas. Rien ne casse.
+dans une section de référence que seule `livraison` charge, au moment d'en dériver les
+contrôles — un instantané **daté**, à re-vérifier à l'adoption. Et tout est **additif** : table
+d'invariants **absente ou vide**, `arch-invariants` reste vide, le reviewer garde son repli, le
+15ᵉ contrôle ne se déclenche pas. Rien ne casse — c'est exactement l'état d'un projet converti
+depuis une stack d'avant la fusion.
 
-## La phase `ci` — la vérification sort de l'agent
+## La phase `livraison` — la vérification sort de l'agent, puis le contrat s'assemble
 
 `CLAUDE.md` est **advisory par construction** : écrire « les tests doivent passer » ne fait
-pas passer les tests. Le socle s'arrêtait là. Il gagne une phase avant sa dernière,
-`/scd-sdd:ci`, qui rend **déterministe** ce que le contrat ne peut que conseiller.
+pas passer les tests. `/scd-sdd:livraison`, **quatrième et dernière phase du socle**, rend d'abord
+**déterministe** ce que le contrat ne peut que conseiller — `docs/ci.md` et le workflow de la
+forge —, **puis** assemble `CLAUDE.md` par-dessus. L'ordre n'est pas décoratif : la section
+« Commandes » du contrat est une recopie de la table de `docs/ci.md`, donc le contrat ne peut pas
+être écrit avant elle.
 
 Pourquoi de l'extérieur : le niveau implémentation atteste **de lui-même** que les tests
 sont intacts. C'est la seule configuration producteur-vérificateur du plugin, et le terrain
@@ -295,7 +315,7 @@ du vérificateur · chaîne d'approvisionnement (quatre sous-cas) · *building t
 violation d'invariant d'architecture — et chaque contrôle porte le sien. Une grille est
 agnostique par construction, là où une liste d'outils est un instantané qui périme seul.
 
-De là, **onze contrôles bloquants**. Cinq se dérivent de `docs/stack.md`, puisque leurs
+De là, **onze contrôles bloquants**. Cinq se dérivent des fondations de `docs/technique.md`, puisque leurs
 commandes dépendent de l'écosystème : build et typage, tests et couverture *différentielle*,
 SCA sur lockfile committé, secrets vérifiés, SAST. Les six autres n'en dépendent pas — ce
 sont des `git diff` sur des chemins, ou une clé de résolveur. **Trois visent l'agent** et non
@@ -326,9 +346,10 @@ compromise par déplacement de tag, ni une altération directe du lockfile.
 S'y ajoute un contrôle **informatif promouvable**, `arch-invariants` — le gisement
 principal, puisque les défauts qui comptent dans du code généré sont des violations de
 contrat propres au projet, qu'aucun outil générique ne connaît. Son entrée est **double et
-ordonnée** : la table d'invariants de `docs/archi.md`, déjà admise et déjà classée, puis les
+ordonnée** : la table d'invariants de `docs/technique.md`, déjà admise et déjà classée, puis les
 **ADR acceptés** pour ce qu'elle n'a pas vu. Un ADR y entre s'il laisse une **trace
-observable dans l'arborescence ou dans les imports** — le même critère, dont `archi` est
+observable dans l'arborescence ou dans les imports** — le même critère, dont la moitié
+architecture de `technique` est
 désormais la source principale. Le contrôle reste informatif jusqu'à mesure par **rejeu sur
 l'historique**, et le seuil vaut dans les deux sens : au-delà de 15 % de faux positifs, un
 bloquant rebascule en informatif.
@@ -355,7 +376,7 @@ vert trompeur que la phase existe pour supprimer. Et **le plugin n'exécute aucu
 cryptographie** : il écrit le workflow qui la vérifie, comme il rend la recette de
 protection de branche sans la jouer.
 
-### Ce que la phase pose, et ce qu'elle laisse à l'humain
+### Ce que la moitié CI pose, et ce qu'elle laisse à l'humain
 
 Elle écrit `docs/ci.md` et le fichier de workflow ; elle **rend sans les exécuter** la
 recette `gh` de protection de branche et le bloc `PreToolUse` qui bloque `--no-verify` en
@@ -370,7 +391,7 @@ réserve qui vaut pour tous les gardes greppables — **réprimer un comportemen
 plus subtil plutôt que l'éliminer.**
 
 Le hook local `format-lint.sh` (PostToolUse) est, lui, **livré inerte** — placeholders
-`FORMAT_CMD`/`LINT_CMD` vides, no-op tant qu'ils le restent — et la phase `ci` n'y touche
+`FORMAT_CMD`/`LINT_CMD` vides, no-op tant qu'ils le restent — et `livraison` n'y touche
 pas : il vit dans le cache du plugin, remis à vide à chaque mise à jour, et un renseignement
 one-shot s'y perdrait. C'est `/scd-sdd:kickoff-feature` qui propose de le renseigner, à
 chaque feature, depuis les commandes que `CLAUDE.md` tient de `docs/ci.md` ; et
@@ -383,14 +404,14 @@ Une recherche ne joue **aucune phase** : elle ne journalise pas, le **rapport es
 (un prompt Claude Research prêt à coller) et le retour (le rapport classé sous
 `docs/research/AAAA-MM-JJ-slug.md`).
 
-La moitié qui compte est **le retour**. La chaîne de traçabilité du plugin — Brief → PRD →
-Stack → Archi → **ADR immuable** → spec → code — est un vecteur de *citation laundering* : une
+La moitié qui compte est **le retour**. La chaîne de traçabilité du plugin — Produit →
+Technique → **ADR immuable** → CI → spec → code — est un vecteur de *citation laundering* : une
 source inexistante gagne en légitimité en traversant des documents réels que personne ne
 vérifie, et ressort en décision que `CLAUDE.md` interdit de contredire. D'où la règle
 centrale : **`research` ne modifie aucun document du socle.** Il isole ce qui porte
 `[À VÉRIFIER]`, `[INCERTAIN]`, « source unique non recoupée », « éval interne », « préprint »
 ou « commercial », le nomme comme **non repris comme acquis**, et rend une liste.
-L'humain décide ce qui descend dans `stack.md` ou dans un ADR.
+L'humain décide ce qui descend dans `docs/technique.md` ou dans un ADR.
 
 Le lien va donc de la décision vers sa source, **jamais l'inverse** : un rapport qui
 listerait les décisions qu'il a servies serait un fichier qui croît.
@@ -408,7 +429,7 @@ d'écrire, jamais la méthode :
 
 | Cible | Ce qui est jugé | Ce qui suit |
 |---|---|---|
-| `/scd-sdd:premortem socle` | `prd.md` `stack.md` `archi.md` `adr/` `ci.md` `CLAUDE.md` | les features en vol dont les backrefs ont bougé sont **nommées** |
+| `/scd-sdd:premortem socle` | `produit.md` (**sauf sa section `Problème`**) `technique.md` `adr/` `ci.md` `CLAUDE.md` | les features en vol dont les backrefs ont bougé sont **nommées** |
 | `/scd-sdd:premortem 003` | `spec.md` `plan.md` `tasks.md`, après une gate au vert **et sans modification depuis** | **re-passe `analyze` imposée** |
 | `/scd-sdd:premortem chantier <slug>` | une fiche de `docs/chantiers/` | rien — `resume` lira la fiche durcie |
 
@@ -429,24 +450,23 @@ exception, la cible `chantier` : la fiche est le fait, son `Actualisé le` suffi
 
 ## L'entretien du contrat — `CLAUDE.md` n'est pas écrit une fois pour toutes
 
-`contract` assemble le contrat **une fois**. Rien ne le relisait ensuite, alors que trois
+`livraison` assemble le contrat **une fois**. Rien ne le relisait ensuite, alors que trois
 consommateurs le **lisent** — `kickoff-feature` pour renseigner le hook de format/lint, le brief
 de lot, la dimension `conventions` de la review : ils consomment sa dérive sans pouvoir la voir.
 
 Et cette dérive est **mécanique**, pas hypothétique. La section « Commandes » du contrat est une
 recopie de la table de `docs/ci.md` *à un caractère près*, et **rien ne rejoue cette recopie**
-quand la phase `ci` est rejouée. Le plugin fabriquait donc lui-même ce que sa propre commande
-qualifie de **deux vérités concurrentes**. La seule issue apparente était piégée : rejouer
-`contract` **ré-assemble depuis le template**, donc écrase les remédiations de `premortem socle`
-et tout ajout humain — une voie de destruction qui a l'air d'une voie de mise à jour. `contract`
-refuse désormais d'écraser un `CLAUDE.md` existant, et `ci` sort vers l'entretien quand le contrat
-existe déjà.
+quand `livraison` est rejouée pour son seul `docs/ci.md`. Le plugin fabriquait donc lui-même ce que
+sa propre commande qualifie de **deux vérités concurrentes**. La seule issue apparente était
+piégée : ré-assembler depuis le template écrase les remédiations de `premortem socle` et tout ajout
+humain — une voie de destruction qui a l'air d'une voie de mise à jour. `livraison` s'**arrête**
+donc devant un `CLAUDE.md` existant et sort vers l'entretien, après avoir réécrit `docs/ci.md`.
 
 Trois écrivains, trois rôles disjoints — c'est la ligne à ne pas perdre :
 
 | Écrivain | Rôle | Geste |
 |---|---|---|
-| `/scd-sdd:contract` | **assemble**, une fois | écrit le fichier depuis le template, refuse d'écraser un fichier existant |
+| `/scd-sdd:livraison` | **assemble**, une fois | écrit le fichier depuis le template, refuse d'écraser un fichier existant |
 | `/scd-sdd:revise-contract` | **entretient** | retire, resynchronise, déplace vers un renvoi — n'enrichit pas |
 | `/scd-sdd:premortem socle` | **durcit** | ajoute un principe ou un item de Definition of Done, borné |
 
@@ -482,10 +502,10 @@ consigne aussi : c'est un résultat, pas une absence de fait.
 Le socle s'écrit par interview, puis se consomme tel quel. Le niveau specs a `analyze` — 16
 contrôles, un verdict, une fiche de gate ; le socle n'avait **rien** d'équivalent, et les trois
 `status` ne testent que l'**existence** des documents. La chaîne
-`Brief → PRD → Stack → Archi → ADR → CI → CLAUDE.md` propageait donc un défaut d'amont sans que
-rien ne le voie : un `FR` sans lien vers le Brief, un candidat ADR listé dans `stack.md` que la
-phase `adr` n'a jamais instruit, un invariant sans trace observable, un pointeur mort dans
-`CLAUDE.md`.
+`Produit → Technique → ADR → CI → CLAUDE.md` propage donc un défaut d'amont sans que
+rien ne le voie : un `FR` sans lien vers le problème posé, un candidat ADR listé dans
+`docs/technique.md` que la phase `adr` n'a jamais instruit, un invariant sans trace observable, un
+pointeur mort dans `CLAUDE.md`.
 
 `/scd-sdd:audit` juge **un** document, frais de sa phase, contre une grille — complétude face au
 template, marqueurs restants, traçabilité vers l'amont, cohérence, forme —, plus les contrôles
@@ -513,7 +533,8 @@ la fiche n'a besoin d'**aucun outillage neuf** ; **Lot B**, candidat ou supersed
 pas quatre), et un défaut vu dans l'**amont** est **nommé** avec la commande qui le traiterait,
 jamais corrigé ici.
 
-Deux choses la tiennent en place. Le `/clear` **prescrit dans le texte** des sept accroches : la
+Deux choses la tiennent en place. Le `/clear` **prescrit dans le texte** des cinq accroches — une
+par document produit, donc **deux** dans `livraison` : la
 session qui juge n'est pas celle qui a rédigé, et si elle l'est, la commande le **signale** —
 `producteur ≠ vérificateur` ne se décrète pas, il s'organise. Et l'**appariement entre passes** :
 relancée, la commande relit la fiche ouverte et distingue ce qui a été corrigé de ce qui revient,
@@ -521,7 +542,8 @@ au lieu de repartir de zéro.
 
 Enfin, la commande est une **capacité à dimensions**, pas un audit unique : la dimension change
 les documents jugés et la grille, jamais la méthode. Une seule est livrée — `validation-socle`,
-sur les sept documents du socle. Une dimension future — sécurité, UX, cohérence documentaire —
+sur les **cinq** documents du socle : `produit` · `technique` · `adr` · `ci` · `claude-md`. Une
+dimension future — sécurité, UX, cohérence documentaire —
 est **un bloc de plus** dans la référence des dimensions, et rien d'autre : ni commande neuve, ni
 skill neuf, ni agent neuf.
 
@@ -541,19 +563,31 @@ passes sans correction ni arbitrage neuf* — quand le symptôme est le **tapis 
 passe corrige quelque chose, donc la condition est remise à zéro à chaque tour. Une garde qui
 n'attrape que « rien ne bouge » est muette exactement quand on tourne en rond **en avançant**.
 
+Et le premier remède ne pouvait pas s'appliquer. Sa passe **delta** avait pour unique précondition
+*des corrections commitées* — or **aucune** commande de correction ne porte de motif `Bash(git …)`
+dans ses outils autorisés : elles ne peuvent pas commiter, mécaniquement. Toute passe était donc
+**intégrale**, toujours, dans les deux gates. La gate **commite donc elle-même** ce qu'elle trouve
+de non commité sur sa cible, l'annonce, et prend son ancre ensuite : le mécanisme prescrit depuis
+une version devient enfin atteignable.
+
 Quatre mécanismes, identiques dans les deux gates.
 
 | Mécanisme | Ce qu'il fait |
 |---|---|
 | **la trajectoire** | `3 Critical → 2 → 2 → 4`, en **tête de rapport**, avant les findings. Elle se lit dans le journal — une ligne par passe, déjà versionnée : la donnée existait, personne ne la lisait |
-| **la garde sur la divergence** | elle se déclenche quand le décompte des **Critical** n'est pas strictement inférieur à celui de la passe précédente. Les Major se lisent dans la trajectoire et ne prononcent rien |
+| **la garde sur la divergence** | elle se déclenche quand le décompte **`Critical + Major`** n'est pas strictement inférieur à celui de la passe précédente. Le **verdict**, lui, ne compte toujours que les Critical : le bruit qui fait boucler est en Major, mais un Major n'a jamais bloqué |
 | **la passe delta** | dès la passe 2, les contrôles **de jugement** ne s'appliquent qu'à ce qui a bougé depuis l'**ancre `HEAD`** de la fiche, plus la liste ouverte. Les contrôles **déterministes** portent toujours sur tout le document |
 | **le verdict monotone** | après la passe 1, un Critical neuf n'est admissible que s'il est déterministe ou porte sur du texte modifié. Sinon il plafonne en Major, et le rapport dit qu'il a plafonné |
 
-**Le budget : trois passes.** Dès la 3ᵉ passe avec fiche encore ouverte, la commande cesse de
+**Le budget : deux passes.** Dès la 2ᵉ passe avec fiche encore ouverte, la commande cesse de
 proposer une relance et **pose l'arbitrage** — le blocage est en **amont** · la **phase a été jouée
 trop tôt** · **une passe de plus**, qui reste une réponse valide. Ce n'est pas une interdiction :
 aucun hook, aucun blocage mécanique, et le chiffre est un **repère**, pas une mesure.
+
+**Et le bruit se tait de lui-même.** Dès la passe 2, un Major encore présent et **non traité**
+passe seul en `## Écarté` avec son motif — nommé **une fois** au rapport, jamais redemandé ; les
+Minor ne se rapportent plus du tout. C'est ce qui faisait le tapis roulant : un Major refusé une
+fois revenait avec son motif à chaque tour.
 
 Ce que le dispositif **ne** fait **pas**, et qui se reperdrait :
 
@@ -564,12 +598,13 @@ Ce que le dispositif **ne** fait **pas**, et qui se reperdrait :
 - **il ne mémorise rien.** Aucune fiche ne gagne de champ « section jugée conforme » — ce serait un
   fait dérivable dans une fiche. La mémoire du delta est l'ancre `HEAD` plus `git diff`, et rien
   d'autre ;
-- **il n'efface pas ce qu'il écarte.** Un finding de jugement neuf sur du texte qui n'a pas bougé se
-  rapporte **nommément** — « non détecté à la passe N » : il sort du décompte, il ne disparaît pas.
-  L'effacer rendrait le dispositif indétectable ; le compter rétablirait la boucle ;
-- **il se dit quand il est dégradé.** Passe 1, ancre absente, ou corrections non commitées → passe
-  **intégrale**, annoncée comme telle. Côté specs c'est le cas courant : aucune des quatre phases de
-  correction ne commite ce qu'elle édite.
+- **il n'efface rien de ce qu'il écarte.** Un Major auto-écarté **reste dans la fiche**, greppable
+  et réouvrable : la règle est *cesser de demander*, jamais *cacher* — et elle ne touche **pas** les
+  Critical, qui ne s'arbitrent jamais. De même, un finding de jugement neuf sur du texte qui n'a pas
+  bougé se rapporte **nommément** — « non détecté à la passe N » : il sort du décompte, il ne
+  disparaît pas ;
+- **il se dit quand il est dégradé.** Passe 1 ou ancre absente → passe **intégrale**, annoncée comme
+  telle. Le troisième cas dégradé, *corrections non commitées*, a disparu : la gate les commite.
 
 ## Le miroir Linear — opt-in, poussé, et strictement à sens unique
 
@@ -607,7 +642,7 @@ des sous-issues — une issue reste **une unité priorisable**.
 
 Au-dessus, une **initiative** peut regrouper les projets d'un même produit. Elle est
 **optionnelle**, et c'est une **configuration, jamais une dérivation** : aucun fichier du dépôt ne
-porte le nom d'un produit de façon stable — le titre de `docs/brief.md` est libre, le nom du dépôt
+porte le nom d'un produit de façon stable — le titre de `docs/produit.md` est libre, le nom du dépôt
 peut changer, et un nom dérivé casserait au premier renommage. Il s'arbitre donc **une fois**, au
 setup, et vit dans la 7ᵉ rubrique de `docs/linear.md`. `/scd-sdd:linear-setup` la crée si elle
 manque ; `/scd-sdd:linear` la **résout par son nom** et y rattache les projets qui n'y sont pas
@@ -735,16 +770,16 @@ Rien n'a été retiré du vocabulaire. Ce qui a été ajouté, ce sont des défi
 et pas un de plus :
 
 - **dans les documents produits** — cinq templates portent une `## Légende` (`spec`, `delta`,
-  `prd`, `archi`, `tasks`) : elle définit les notations là où on les lit, et pas dans un fichier
-  qu'on n'ouvrira jamais. C'est aussi elle qui dit enfin **pourquoi les critères EARS sont en
-  anglais** : les cinq mots-clés (`When`, `While`, `If…then`, `Where`, `shall`) sont la syntaxe de
-  la méthode, pas un choix de style — le PRD, lui, n'emprunte l'anglais qu'aux trois mots-clés d'un
-  scénario (`Given`/`When`/`Then`), glosés dans sa propre Légende ;
+  `tasks`, `produit`, `technique`) : elle définit les notations là où on les lit, et pas dans un
+  fichier qu'on n'ouvrira jamais. C'est aussi elle qui dit enfin **pourquoi les critères EARS sont
+  en anglais** : les cinq mots-clés (`When`, `While`, `If…then`, `Where`, `shall`) sont la syntaxe
+  de la méthode, pas un choix de style — `docs/produit.md`, lui, n'emprunte l'anglais qu'aux trois
+  mots-clés d'un scénario (`Given`/`When`/`Then`), glosés dans sa propre Légende ;
 - **dans ce que la commande t'affiche** — descriptions du menu `/`, rapports, sorties de fin. Le
   rapport d'`analyze` dit désormais ce que son échelle signifie ; le gate de `premortem` ouvre
   chaque remédiation sur *ce que le risque ferait au produit*, avant le fichier et l'ID ; un
   statut `blocked-*` s'affiche avec sa traduction ;
-- **en session** — les 23 commandes qui dialoguent posent **le problème avant les options**, et
+- **en session** — les 20 commandes qui dialoguent posent **le problème avant les options**, et
   chaque option décrit sa conséquence en termes du projet, jamais en jargon. Une option énoncée
   sans son enjeu ne se choisit pas, elle se subit. La gestion de chantier en fait partie :
   `/scd-sdd:resume` ne se contente plus de lister quatre suites possibles, il dit ce que chacune
@@ -771,9 +806,9 @@ choisir. L'obstacle n'était pas dans les mots — il était dans l'**ordre**. L
 restitué dans l'ordre de son travail (ce qu'elle avait mesuré d'abord, puis ses objections, puis
 les options), qui suppose acquis tout ce que l'instruction lui avait appris.
 
-Onze commandes chargent donc un skill dédié au moment où elles te font trancher — `stack`, `archi`,
-`adr`, `ci`, `research`, `resume`, `premortem`, `analyze`, `audit`, `revise-contract`, `migrate`. Ce
-qu'il change, concrètement :
+Dix commandes chargent donc un skill dédié au moment où elles te font trancher — `technique`,
+`adr`, `livraison`, `research`, `resume`, `premortem`, `analyze`, `audit`, `revise-contract`,
+`migrate`. Ce qu'il change, concrètement :
 
 - **l'objet vient avant le problème.** À quoi sert la chose dont on parle, et quelle exigence la
   demande — avant ce qui cloche avec elle ;
@@ -831,17 +866,29 @@ chantiers non plus : rien n'a existé avant `docs/chantiers/`, il n'y a rien à 
 
 ## Migration depuis une version antérieure de `scd-sdd`
 
-Depuis la **1.2.0**, `scd-sdd` **éclate `docs/JOURNAL.md`** en un fichier par cible. C'est un
-changement **cassant** pour un projet déjà suivi, et le chemin de reprise est le même : **une
-fois par projet**, `/scd-sdd:migrate`.
+Deux ruptures, **le même chemin de reprise** : **une fois par projet**, `/scd-sdd:migrate`.
 
 > ⚠️ Le numéro de version reste en `1.x` tant que le dispositif n'a pas été éprouvé en
 > situation réelle. Il ne signale donc **pas** la rupture — `/scd-sdd:migrate` est le seul
 > garde-fou, et il faut le jouer avant toute autre commande sur un projet existant.
 
-La conversion est un **déplacement de lignes** — chaque section `##` devient un fichier,
-lignes inchangées au caractère près, l'ancien fichier n'étant supprimé qu'après vérification
-du compte. Aucune ligne n'est réécrite, aucune n'est inventée. `migrate` scaffolde au
-passage les trois répertoires de `docs/chantiers/`.
+**Depuis la `1.2.0`**, `scd-sdd` **éclate `docs/JOURNAL.md`** en un fichier par cible. La
+conversion est un **déplacement de lignes** — chaque section `##` devient un fichier, lignes
+inchangées au caractère près, l'ancien fichier n'étant supprimé qu'après vérification du compte.
+Aucune ligne n'est réécrite, aucune n'est inventée. `migrate` scaffolde au passage les trois
+répertoires de `docs/chantiers/`.
 
-Les autres artefacts (`docs/`, `specs/`) sont inchangés.
+**Depuis la `1.19.0`**, le socle **fusionne** : `docs/brief.md` + `docs/prd.md` deviennent
+`docs/produit.md`, `docs/stack.md` + `docs/archi.md` deviennent `docs/technique.md`. Même
+principe — du contenu **déplacé**, jamais réécrit —, avec trois points qui ne se devinent pas :
+
+- les `FR-xxx` et les `SC-xxx` **gardent leurs numéros**, sans quoi le backref de toute spec
+  déjà écrite serait cassé. `migrate` ne touche **jamais** à `specs/` ;
+- **écrire et supprimer sont deux accords distincts.** La suppression des anciens fichiers n'est
+  proposée qu'une fois la cible écrite et le report vérifié **section par section**. Un refus
+  laisse les deux jeux de fichiers — état sale, mais sûr, et noté au rapport ;
+- **le journal ne se réécrit pas.** Ses lignes passées portent `brief`, `prd`, `stack`, `archi`,
+  `ci`, `contract` ; les nouvelles porteront `produit`, `technique`, `livraison`. Un fichier
+  portera donc **deux vocabulaires**, et c'est correct : `status` lit les deux.
+
+Les autres artefacts (`docs/adr/`, `specs/`) sont inchangés.

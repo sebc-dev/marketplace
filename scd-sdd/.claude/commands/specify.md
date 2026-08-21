@@ -1,5 +1,5 @@
 ---
-description: "Phase 1 des specs : produit specs/NNN-slug/spec.md par interview « une question à la fois ». Critères d'acceptation en EARS (des exigences en phrases normées, directement traduisibles en test), FR atomiques traçant vers le PRD, scope EXCLU, marqueurs [NEEDS CLARIFICATION] posés et non résolus (les ambiguïtés sont marquées, jamais tranchées en silence). Technology-agnostic (aucun choix technique n'entre ici). Racine de la traçabilité feature."
+description: "Phase 1 des specs : produit specs/NNN-slug/spec.md par interview « une question à la fois ». Critères d'acceptation en EARS (des exigences en phrases normées, directement traduisibles en test), FR atomiques traçant vers docs/produit.md, scope EXCLU, marqueurs [NEEDS CLARIFICATION] posés et non résolus (les ambiguïtés sont marquées, jamais tranchées en silence). Technology-agnostic (aucun choix technique n'entre ici). Racine de la traçabilité feature."
 argument-hint: "[NNN ou slug — optionnel, résolu sinon]"
 allowed-tools:
   - Read
@@ -11,7 +11,7 @@ allowed-tools:
 
 ## Contexte
 
-Tu élabores la **spec de feature** : le *quoi* au niveau feature, décliné de `docs/prd.md`.
+Tu élabores la **spec de feature** : le *quoi* au niveau feature, décliné de `docs/produit.md`.
 
 La qualité vient de l'**interview**, pas de la génération. Une spec produite d'un bloc à partir
 d'une phrase est plausible et fausse : elle comble les trous par des choix silencieux, et
@@ -67,8 +67,8 @@ Ratio : 60% humain / 40% AI (l'humain répond, tu structures en EARS).
 2. **Charge les références** : `references/spec.md` et `references/ears.md` du skill
    `feature-specs` — plus `references/delta.md` si un `DELTA.md` est présent (brownfield).
 
-3. **Ancre la traçabilité** : lis `docs/prd.md` (et `docs/brief.md` si utile) et identifie
-   nommément le ou les `FR`/`SC` produit que cette feature décline.
+3. **Ancre la traçabilité** : lis `docs/produit.md` et identifie nommément le ou les `FR`/`SC`
+   produit que cette feature décline.
 
 4. **Mène l'interview**, dans cet ordre : capacité et valeur → user stories priorisées →
    critères EARS nominaux → cas limites et comportements indésirables (`If… then… shall`) →

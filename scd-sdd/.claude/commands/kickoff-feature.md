@@ -12,9 +12,9 @@ allowed-tools:
 
 ## Contexte
 
-Tu ouvres le **niveau specs** pour **une** feature. Le socle existe déjà (`docs/prd.md`,
-`docs/stack.md`, `docs/adr/`, `CLAUDE.md`) ; ta mission ici est de **cadrer et préparer**, pas
-de produire la spec — ça, ce sont les phases suivantes.
+Tu ouvres le **niveau specs** pour **une** feature. Le socle existe déjà (`docs/produit.md`,
+`docs/technique.md`, `docs/adr/`, `CLAUDE.md`) ; ta mission ici est de **cadrer et préparer**,
+pas de produire la spec — ça, ce sont les phases suivantes.
 
 L'essentiel de cette commande tient en une question que personne d'autre ne pose : **cette
 feature mérite-t-elle un cycle complet ?** Un diff descriptible en une phrase n'a pas besoin
@@ -48,15 +48,18 @@ Ratio : 30% humain / 70% AI (setup mécanique + cadrage ; l'humain tranche l'éc
 1. **Charge la connaissance transverse** : lis le skill `feature-specs` (traçabilité, EARS,
    seuils, greenfield/delta, advisory-vs-déterministe).
 
-2. **Vérifie le socle** — `docs/prd.md`, `docs/stack.md`, `docs/adr/`. S'il manque quoi que ce
-   soit, **arrête-toi** : « `/scd-sdd:init-project` d'abord — ce niveau décline le socle, il ne
-   l'invente pas. »
+2. **Vérifie le socle** — `docs/produit.md`, `docs/technique.md`, `docs/adr/`. S'il manque quoi
+   que ce soit, **arrête-toi** : « `/scd-sdd:init-project` d'abord — ce niveau décline le socle,
+   il ne l'invente pas. »
 
-   `docs/archi.md` et `docs/ci.md` **ne sont pas exigés** : les deux phases sont additives, et
-   un projet ouvert avant elles n'a aucune raison d'être bloqué ici. Leur absence n'arrête donc
-   rien — mentionne-la simplement, avec la commande qui la comblerait (`/scd-sdd:archi`,
-   `/scd-sdd:ci`). Sans `docs/archi.md`, l'étape 6 de `plan.md` et le contrôle 15 d'`analyze`
-   n'ont pas de référent : c'est un mode dégradé assumé, pas un défaut de la feature.
+   `docs/ci.md` **n'est pas exigé** : la moitié CI de la phase `livraison` est additive, et un
+   projet ouvert avant elle n'a aucune raison d'être bloqué ici. Son absence n'arrête donc
+   rien — mentionne-la simplement, avec la commande qui la comblerait (`/scd-sdd:livraison`).
+
+   Même chose, un cran plus bas, pour la **table des invariants** de `docs/technique.md` : elle
+   peut être absente ou vide sur un projet converti d'avant la fusion de `1.19.0`.
+   L'étape 6 de `plan.md` et le contrôle 15 d'`analyze` n'ont alors pas de référent — c'est un
+   mode dégradé assumé, pas un défaut de la feature, et il se comble par `/scd-sdd:technique`.
 
 3. **Établis les features en vol** : scanne `specs/` et dérive la phase de chacune selon la
    table de la section « Cibler une feature » du skill. S'il en existe de non validées :
@@ -126,7 +129,7 @@ Les gates liées à l'exécution des tests relèvent du niveau implémentation �
 ## Ce que tu NE fais PAS
 
 - Tu n'écris aucun contenu de `spec.md`, `plan.md` ou `tasks.md`.
-- Tu ne présumes ni le périmètre ni la stack (elle est fixée par `docs/stack.md`).
+- Tu ne présumes ni le périmètre ni la stack (elle est fixée par `docs/technique.md`).
 - Tu ne prescris pas **comment** implémenter et tu ne promets aucune vérification du code : ce
   niveau est documentaire et s'arrête à `analyze` (plus le `premortem` optionnel).
 - Tu ne réattribues jamais un `NNN` libéré.

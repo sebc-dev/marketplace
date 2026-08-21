@@ -1,5 +1,5 @@
 ---
-description: "Reprend un projet venu de scd-project-docs / scd-feature-specs / scd-implement, ou d'une version antérieure à l'éclatement du journal : diagnostique l'installation et le projet, convertit un docs/JOURNAL.md monolithique en docs/journal/*.md, reconstitue depuis l'historique git ce qui manque, scaffolde docs/chantiers/, applique les correctifs après accord, puis rend le point de reprise. À jouer une fois par projet migré."
+description: "Reprend un projet venu de scd-project-docs / scd-feature-specs / scd-implement, ou d'une version antérieure à la fusion du socle : diagnostique l'installation et le projet, convertit les quatre anciens documents (brief, prd, stack, archi) en docs/produit.md et docs/technique.md, convertit un docs/JOURNAL.md monolithique en docs/journal/*.md, reconstitue depuis l'historique git ce qui manque, scaffolde docs/chantiers/, applique les correctifs après accord, puis rend le point de reprise. À jouer une fois par projet migré."
 argument-hint: "(aucun — inspecte l'installation, docs/ et specs/)"
 allowed-tools:
   - Read
@@ -10,6 +10,8 @@ allowed-tools:
   - AskUserQuestion
   - Bash(git log *)
   - Bash(git rev-parse *)
+  - Bash(git rm docs/*)
+  - Bash(rm docs/*)
 ---
 
 ## Contexte
@@ -30,8 +32,17 @@ ailleurs, et c'est invisible tant que rien ne le nomme :
 **Deuxième provenance** : un projet suivi sous une version de `scd-sdd` **antérieure à
 l'éclatement du journal** a un `docs/JOURNAL.md` **monolithique**, à sections. Il se convertit en
 un fichier par cible. C'est un **déplacement de lignes**, pas une
-réécriture — et c'est toi qui le fais. Les deux provenances se cumulent sans se gêner : un projet
-peut avoir besoin de la conversion **et** de la reconstitution des phases jamais journalisées.
+réécriture — et c'est toi qui le fais.
+
+**Troisième provenance, et la plus cassante** : un projet suivi **avant `1.19.0`** porte les quatre
+documents d'avant la fusion du socle — `docs/brief.md`, `docs/prd.md`, `docs/stack.md`,
+`docs/archi.md`. Ils sont remplacés par **deux** : `docs/produit.md` et `docs/technique.md`
+(`DECISIONS.md` §D39). Rien dans le numéro de version ne signale la rupture, et **tu es le seul
+chemin de conversion** : sans toi, un projet reste avec quatre fichiers que plus aucune commande ne
+lit. Là encore c'est un **déplacement de sections**, jamais une réécriture.
+
+Les trois provenances se cumulent sans se gêner : un projet peut avoir besoin des deux conversions
+**et** de la reconstitution des phases jamais journalisées.
 
 Tu diagnostiques ces plans, tu convertis, tu reconstitues ce que git permet de reconstituer, et tu
 rends la main. Tu es une commande de **reprise**, jouée une fois — pas une phase du cycle.
@@ -43,14 +54,27 @@ désinstalle les anciens plugins).
 
 - **Tu ne désinstalles ni n'installes aucun plugin.** `/plugin uninstall` appartient à l'humain ;
   tu produis les lignes prêtes à copier.
-- **Tu ne convertis aucun artefact.** `docs/` et `specs/` se reprennent tels quels. Un `tasks.md`
-  sans `_vérif :_` ou sans ligne `Fichiers :` est **signalé**, jamais réécrit : la
-  rétro-compatibilité est déjà portée par `implement/references/tasks-parsing.md`.
+- **Tu ne convertis rien dans `specs/`.** Les specs par feature se reprennent **telles quelles**,
+  quelle que soit leur ancienneté. Un `tasks.md` sans `_vérif :_` ou sans ligne `Fichiers :` est
+  **signalé**, jamais réécrit : la rétro-compatibilité est déjà portée par
+  `implement/references/tasks-parsing.md`. Le backref `_(PRD: FR-0xx)_` d'une spec **ne se renomme
+  pas** — `PRD` y est un nom de notation, pas un nom de fichier.
 - **Tu n'écris rien sans accord explicite** (`AskUserQuestion`), écriture par écriture, avec
   l'aperçu de ce qui sera écrit.
-- **La conversion ne réécrit aucune ligne.** Un `docs/JOURNAL.md` monolithique se convertit par
-  **déplacement** : chaque section devient un fichier, lignes inchangées au caractère près. Tu
-  comptes les lignes avant et après ; si le total diverge, tu **t'arrêtes** sans rien supprimer.
+- **Une conversion est un déplacement, jamais une réécriture.** Les deux obéissent à la même
+  règle : le contenu passe d'un fichier à l'autre **inchangé**, et rien n'est supprimé avant
+  vérification du report.
+  - Socle — chaque section va dans la cible que la table de `references/reconstitution.md` lui
+    donne. Une section hors table → **STOP** et demande.
+  - Journal — chaque section devient un fichier, lignes inchangées au caractère près. Tu comptes
+    les lignes avant et après ; si le total diverge, tu **t'arrêtes** sans rien supprimer.
+- **Tu ne renumérotes jamais un identifiant.** Un `FR-xxx`, un `SC-xxx`, un numéro d'ADR gardent
+  leur valeur à travers la conversion, y compris si la fusion crée un trou ou un doublon apparent.
+  Un doublon réel se **signale** au rapport ; il ne se résout pas ici, parce que tout l'aval —
+  specs déjà écrites, backrefs, colonnes ADR — pointe vers ces numéros.
+- **Tu ne fabriques aucune section pour combler.** Une source absente laisse la section cible
+  absente. Inventer un contenu pour « compléter » le document fusionné rendrait faux le premier
+  audit qui le lira.
 - **Tu ne reconstitues une cible que si son fichier `docs/journal/<cible>.md` est absent.**
   Présent → tu n'y ajoutes que ta propre ligne. C'est ce qui te rend **rejouable sans doubler
   quoi que ce soit**.
@@ -115,37 +139,60 @@ désinstalle les anciens plugins).
      le hook est un no-op. Cherche les commandes réelles dans `CLAUDE.md` ; à défaut, demande.
 
 4. **Diagnostique les artefacts** — tu **constates**, tu ne convertis rien :
-   - socle : lesquels des sept documents existent (`docs/brief.md`, `docs/prd.md`,
-     `docs/stack.md`, `docs/archi.md`, `docs/adr/*.md`, `docs/ci.md`, `CLAUDE.md`).
-     `docs/archi.md` et `docs/ci.md` manquent **forcément** sur un projet venu des trois
-     anciens plugins : les phases `archi` et `ci` leur sont postérieures. Ce sont des
-     manques à **déclarer** — le socle est alors incomplet de deux phases, qui se jouent
-     dans l'ordre (`archi` avant `adr`, `ci` avant de rouvrir `contract`) — jamais une
-     anomalie de migration à corriger ici ;
+   - socle **actuel** : lesquels des cinq documents existent (`docs/produit.md`,
+     `docs/technique.md`, `docs/adr/*.md`, `docs/ci.md`, `CLAUDE.md`). Rappel : la phase
+     `livraison` en produit **deux**, donc `docs/ci.md` écrit et `CLAUDE.md` absent est un état
+     légal, compté **incomplet** et jamais fait ;
+   - socle **d'avant `1.19.0`** : lesquels des quatre anciens documents subsistent
+     (`docs/brief.md`, `docs/prd.md`, `docs/stack.md`, `docs/archi.md`). Chacun présent est une
+     **conversion à proposer**, et la table de correspondance vit dans
+     `references/reconstitution.md`. `docs/archi.md` et `docs/ci.md` manquent **forcément** sur un
+     projet venu des trois anciens plugins : les phases leur sont postérieures. Un `docs/stack.md`
+     sans `docs/archi.md` donne donc un `docs/technique.md` **sans table d'invariants** — état
+     légal, à déclarer, jamais une anomalie à corriger ici ;
+   - ⚠️ **les deux socles peuvent coexister**, et c'est le cas le plus piégeux : une conversion
+     interrompue laisse `docs/brief.md` **et** `docs/produit.md`. Tu ne convertis alors **rien**
+     pour ce document — la cible existe —, et tu **signales** l'ancien fichier comme résidu à
+     retirer à la main, avec ce qu'il contient et ce que la cible contient ;
    - features : chaque `specs/NNN-slug/` et sa phase dérivée selon la table du skill
      `feature-specs`, plus le mode (`DELTA.md` présent → delta) ;
    - lots : les `## Rn` sans `_vérif :_` (→ traités en **`TDD`** par défaut) et sans ligne
      `Fichiers :` (→ `run-parallel` **sérialisera** au lieu de paralléliser). Signale-les
      nommément : ce sont des conséquences réelles, pas des défauts à corriger.
 
-5. **Prépare la conversion, puis la reconstitution** — dans cet ordre, les deux selon
+5. **Prépare les deux conversions, puis la reconstitution** — dans cet ordre, les trois selon
    `references/reconstitution.md`, qui fait autorité :
 
-   - **Conversion.** `docs/JOURNAL.md` présent → compose l'arborescence cible : `## Socle` →
+   - **Conversion du socle.** Pour chaque cible absente dont au moins une source est présente,
+     compose le document fusionné **section par section** selon la table de la référence. Présente
+     le fichier **complet** avant écriture. Deux points que la table porte et qu'on perd sinon : le
+     `## Contraintes` du Brief va dans **`docs/technique.md`**, et la moitié *incluse* du
+     `## Périmètre` du Brief n'a **aucune section d'accueil** — elle est déjà portée par la liste
+     des `FR-xxx`, et créer une section « Inclus » produirait un finding au premier audit.
+   - **Conversion du journal.** `docs/JOURNAL.md` présent → compose l'arborescence cible : `## Socle` →
      `docs/journal/socle.md`, chaque `## NNN-slug` → `docs/journal/NNN-slug.md`. Une section que
      tu ne sais pas classer → **STOP** et demande ; on ne classe pas au jugé. Compte les lignes de
      table avant et après : elles doivent être égales.
    - **Reconstitution.** Pour chaque cible dont le fichier reste **absent** après conversion, et
      si le projet est un dépôt git (`git rev-parse --git-dir`), compose les lignes depuis
      l'historique. Présente chaque fichier **complet**, lignes triées par date croissante.
+     ⚠️ La date d'un document fusionné se prend sur le **plus ancien des fichiers absorbés**, pas
+     sur son propre ajout — sinon tout le socle daterait du jour de la migration. La suppression
+     des anciens fichiers ne gêne pas : `git log` lit l'historique, pas l'arbre de travail.
 
-   Un projet déjà éclaté n'a donc rien à convertir ; un projet venu des trois anciens plugins n'a
-   rien à convertir non plus, mais tout à reconstituer ; un projet à moitié suivi a besoin des deux.
+   Un projet déjà fusionné et déjà éclaté n'a rien à convertir ; un projet venu des trois anciens
+   plugins a le socle à convertir et tout à reconstituer ; un projet à moitié suivi a besoin des
+   trois opérations.
 
 6. **Charge le skill `exposition`** — **régime *gate*** —, puis **demande l'accord, écriture par
    écriture** (`AskUserQuestion`) — jamais un accord global. Le décor se pose **une fois** : ce
    que le diagnostic a trouvé et ce que la migration change. Chaque écriture ne porte ensuite que
    ce qui lui est propre, plus **ce qui se passe si on la refuse** :
+   - écrire `docs/produit.md`, puis `docs/technique.md`, depuis leurs sources ;
+   - **puis, en accord séparé**, supprimer les quatre anciens fichiers. Écrire et supprimer ne se
+     demandent **jamais ensemble** : la suppression ne se propose qu'une fois la cible écrite et
+     le report vérifié section par section. Un refus laisse les deux jeux de fichiers en place,
+     ce qui est un état sale mais **sûr** — tu le notes au rapport comme résidu ;
    - convertir `docs/JOURNAL.md` en `docs/journal/*.md` (et le supprimer **seulement** après que
      le compte de lignes est vérifié) ;
    - créer les `docs/journal/<cible>.md` manquants (avec ou sans lignes reconstituées) ;
@@ -165,7 +212,11 @@ désinstalle les anciens plugins).
 
 Installation   ⚠ 3 anciens plugins encore installés
 Projet         ⚠ 2 pointeurs périmés · hooks projet OK · format-lint à renseigner
-Artefacts      ✅ socle complet · 2 features · 1 lot sans `Fichiers :`
+Socle          ✅ converti — brief + prd → produit.md (9 sections, 24 FR, 6 SC)
+               ✅ converti — stack → technique.md (5 sections, sans invariants : pas d'archi.md)
+               ✅ 4 anciens fichiers supprimés après vérification du report
+               ⚠ CLAUDE.md absent — la phase livraison est incomplète
+Artefacts      ✅ 2 features · 1 lot sans `Fichiers :`
 Journal        ✅ converti — 24 lignes → socle.md (7) · 001-auth.md (11) · 002-billing.md (6)
                ✅ + 3 lignes reconstituées depuis git (2026-07-25 → 2026-07-29)
 Chantiers      ✅ docs/chantiers/{en-cours,en-attente,archive}/ créés — vides
@@ -179,8 +230,8 @@ Tant qu'ils sont là : block-adr-edits et format-lint tournent deux fois, et deu
 de skills se disputent le routage.
 
 ### Pointeurs périmés (à corriger à la main)
-CLAUDE.md:14      /scd-feature-specs:analyze   → /scd-sdd:analyze
-docs/stack.md:71  /scd-implement:status        → /scd-sdd:status-impl
+CLAUDE.md:14          /scd-feature-specs:analyze  → /scd-sdd:analyze
+docs/technique.md:71  /scd-implement:status       → /scd-sdd:status-impl
 
 ### Non reconstituable — définitivement absent du journal
 analyze · premortem · runs des lots — aucune trace sur disque ni dans git.
@@ -203,7 +254,13 @@ la plage de dates couverte, à charge du lecteur de voir ce qui manque — la se
   l'humain est l'auteur (`CLAUDE.md`, ses notes). Tu les listes avec leur remplaçant.
 - Tu n'écris aucun contenu de document, tu ne rejoues aucune phase, tu ne lances aucune gate.
 - Tu ne réécris ni `spec.md`, ni `plan.md`, ni `tasks.md` — pas même pour ajouter un `_vérif :_`
-  manquant.
+  manquant, pas même pour renommer un backref `_(PRD: FR-0xx)_`. **`specs/` ne se touche pas.**
+- Tu ne reformules aucune phrase d'un document converti, tu ne renumérotes aucun `FR-xxx`,
+  `SC-xxx` ni ADR, et tu n'ajoutes aucune section que les sources ne portaient pas — en
+  particulier **aucune section « Inclus »** dans `docs/produit.md`.
+- Tu ne supprimes un ancien document du socle qu'après un accord **distinct de celui de
+  l'écriture**, et après avoir vérifié que chacune de ses sections a bien été reportée.
+- Tu ne convertis pas un document dont la cible existe déjà : tu signales le résidu.
 - Tu ne reconstitues ni verdict `analyze`, ni `premortem`, ni issue de lot, et tu ne les déduis
   pas des cases cochées.
 - Tu ne touches pas à un `docs/journal/<cible>.md` déjà présent, hors ta propre ligne.
@@ -217,10 +274,16 @@ Charge le skill `journal` et ajoute **une ligne** dans `docs/journal/socle.md`,
 par `Edit` ciblé — **après** les lignes reconstituées, et datée du **jour** :
 
 - **Phase** : `migrate`
-- **Résultat** : ce qui a été constaté et corrigé — `3 anciens plugins à désinstaller · journal
-  converti (24 lignes, 3 fichiers) · 3 lignes reconstituées · chantiers/ créé · format-lint
-  renseigné`. Si aucun ancien plugin n'a été trouvé et que rien n'a été écrit : `rien à migrer ·
-  journal déjà éclaté`.
+- **Résultat** : ce qui a été constaté et corrigé — `3 anciens plugins à désinstaller · socle
+  converti (4 documents → 2) · journal converti (24 lignes, 3 fichiers) · 3 lignes reconstituées ·
+  chantiers/ créé · format-lint renseigné`. Si aucun ancien plugin n'a été trouvé et que rien n'a
+  été écrit : `rien à migrer · socle déjà fusionné · journal déjà éclaté`.
+
+⚠️ **Cette ligne porte le vocabulaire du jour** (`migrate`), et elle est la **seule** que tu
+écris. Les lignes passées du journal portent `brief`, `prd`, `stack`, `archi`, `ci`, `contract` :
+elles **ne se réécrivent jamais**, même quand leur document a fusionné. Un fichier de journal porte
+alors deux vocabulaires, et c'est correct — l'ancien décrit ce qui est arrivé, le neuf ce qui
+arrivera.
 
 Cette ligne est écrite **même si l'humain a refusé toutes les autres écritures** : le diagnostic
 a eu lieu, c'est un événement. Elle ne l'est pas si `docs/journal/socle.md` n'a pas pu être créé

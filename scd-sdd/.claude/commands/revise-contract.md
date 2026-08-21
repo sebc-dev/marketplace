@@ -13,17 +13,17 @@ allowed-tools:
 Tu **entretiens** `CLAUDE.md`, le contrat opérationnel chargé à chaque session — un fichier qui
 existe déjà et que personne ne relit.
 
-Le cycle sait l'écrire une fois : c'est la phase `contract`. Il ne sait pas le maintenir. Or il
+Le cycle sait l'écrire une fois : c'est la phase `livraison`. Il ne sait pas le maintenir. Or il
 dérive, et d'abord par un endroit précis : la section **Commandes** est recopiée de la table
 « Commandes du projet » de `docs/ci.md` au caractère près, et **rien ne rejoue cette recopie quand
-`ci` est rejoué**. C'est la section que `/scd-sdd:kickoff-feature` consomme. Deux vérités
+`livraison` est rejouée**. C'est la section que `/scd-sdd:kickoff-feature` consomme. Deux vérités
 concurrentes s'installent sans que rien ne les signale.
 
-La seule issue apparente est piégée : **rejouer `contract` ré-assemble depuis le template**, donc
+La seule issue apparente est piégée : **rejouer `livraison` ré-assemble depuis le template**, donc
 écrase les remédiations de `premortem socle` et tout ajout humain. C'est une voie de destruction
 qui a l'air d'une voie de mise à jour — et c'est pourquoi cette commande existe séparément.
 
-Trois écrivains, trois gestes qui ne se recouvrent pas : `contract` **assemble**, une fois ;
+Trois écrivains, trois gestes qui ne se recouvrent pas : `livraison` **assemble**, une fois ;
 `premortem socle` **durcit**, en ajoutant un principe ou un item de DoD ; toi, tu **entretiens** —
 tu retires, tu resynchronises, tu déplaces vers un renvoi. Tu n'enrichis pas.
 
@@ -45,7 +45,7 @@ Ratio : 50% humain / 50% AI (la machine détecte et propose, l'humain tranche ch
   n'est produite de ton cru. Enrichir le contrat appartient à `premortem socle`.
 - **La section Commandes n'a qu'une source et qu'un sens de correction** : elle se resynchronise
   **depuis** `docs/ci.md`, jamais l'inverse. Un `[à compléter]` se reporte tel quel et se signale —
-  c'est un trou de la phase `ci`, pas une décision à prendre ici.
+  c'est un trou de la moitié CI de la phase `livraison`, pas une décision à prendre ici.
 - **Rien n'est écrit avant l'arbitrage humain.** Tu proposes, il tranche, tu appliques ce qui a été
   retenu et rien de plus.
 - **Signaler n'est pas écrire.** Un skill à créer, une rule path-scopée, un hook, un trou de
@@ -64,10 +64,11 @@ Ratio : 50% humain / 50% AI (la machine détecte et propose, l'humain tranche ch
 ## Processus
 
 1. **Vérifie les préconditions.**
-   - `CLAUDE.md` **absent** → **arrête-toi** et renvoie vers `/scd-sdd:contract`. L'entretien ne
+   - `CLAUDE.md` **absent** → **arrête-toi** et renvoie vers `/scd-sdd:livraison`. L'entretien ne
      crée rien : il n'y a pas de contrat à réviser.
    - `docs/ci.md` **absent** → le volet mécanique n° 1 est **impossible**. Signale-le, renvoie vers
-     `/scd-sdd:ci`, et **poursuis** le reste de la checklist : les autres contrôles tiennent seuls.
+     `/scd-sdd:livraison`, et **poursuis** le reste de la checklist : les autres contrôles tiennent
+     seuls.
 
 2. **Charge les deux blocs** : `references/claude-md.md` du skill `project-docs`, blocs
    **`<guidance>`** et **`<revision>`** — et **eux seuls**. Le `<template>` est exclu, la référence
@@ -175,6 +176,6 @@ Rappelle, dans cet ordre :
 3. **La fiche d'audit**, si tu en as consommé une : elle reste **ouverte**, et c'est voulu — tu ne
    la refermes pas. Renvoie vers « `/clear`, puis `/scd-sdd:audit claude-md` » : la passe suivante
    constatera ce qui a disparu, et archivera la fiche si plus rien ne reste.
-4. **Ne pas rejouer `/scd-sdd:contract`** sur ce projet : il ré-assemblerait depuis le template et
-   écraserait ce que le premortem et l'humain ont ajouté. L'entretien passe par ici, et seulement
-   par ici.
+4. **Ne pas rejouer `/scd-sdd:livraison`** sur ce projet : elle ré-assemblerait depuis le template
+   et écraserait ce que le premortem et l'humain ont ajouté. L'entretien passe par ici, et
+   seulement par ici.

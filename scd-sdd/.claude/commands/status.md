@@ -15,8 +15,8 @@ allowed-tools:
 ## Contexte
 
 Tu réponds à « **où on en est ?** » — la question qu'on pose en rouvrant un projet sans savoir
-s'il lui manque un PRD, une gate, ou juste le prochain lot. Une vue, les trois niveaux, **une**
-prochaine commande.
+s'il lui manque un document du socle, une gate, ou juste le prochain lot. Une vue, les trois
+niveaux, **une** prochaine commande.
 
 Tu es la vue **d'ensemble**, et c'est ta contrainte principale : tu rends chaque niveau en
 quelques lignes, puis tu **renvoies** pour le détail. `/scd-sdd:status-specs` croise les
@@ -77,12 +77,17 @@ Ratio : 5% humain / 95% AI (lecture mécanique ; l'humain choisit la suite).
    `implement` (lots `Rn`, tâches `Tn`, état d'un lot).
 
 2. **Niveau socle** — l'existence des fichiers, rien de plus, dans l'ordre de la chaîne du skill
-   `project-docs` : `docs/brief.md` → `brief`, `docs/prd.md` → `prd`, `docs/stack.md` → `stack`,
-   `docs/archi.md` → `archi`, `docs/adr/*.md` → `adr`, `docs/ci.md` → `ci`, `CLAUDE.md` →
-   `contract`. C'est l'état que
+   `project-docs` : `docs/produit.md` → `produit`, `docs/technique.md` → `technique`,
+   `docs/adr/*.md` → `adr`, `docs/ci.md` **puis** `CLAUDE.md` → `livraison`. **Quatre phases,
+   cinq documents** : la dernière en produit deux, et elle est la seule qui puisse être à moitié
+   faite — `docs/ci.md` seul se rend **incomplet**, jamais fait. C'est l'état que
    `/scd-sdd:init-project` établit ; tu le relis, tu ne le complètes pas. Un fichier présent
    contenant encore un `[NEEDS CLARIFICATION]` compte comme **incomplet**, pas comme fait —
    nomme-le.
+
+   Un projet suivi avant `1.19.0` peut encore porter `docs/brief.md`, `prd.md`, `stack.md` ou
+   `archi.md` : ne les compte pas comme des phases, **nomme-les** et renvoie vers
+   `/scd-sdd:migrate`, qui est le seul chemin de conversion.
 
 3. **Niveau specs** — pour chaque `specs/NNN-slug/`, applique la **table de dérivation de phase**
    du skill `feature-specs`. Relève aussi le mode (`DELTA.md` présent → delta).
@@ -128,7 +133,8 @@ Ratio : 5% humain / 95% AI (lecture mécanique ; l'humain choisit la suite).
 9. **Choisis LA prochaine commande**, une seule, par ordre de priorité :
 
    1. **Socle incomplet** → sa première phase manquante. Si des features sont déjà en vol,
-      signale-le comme un **trou de traçabilité** (des specs qui tracent vers un PRD absent) sans
+      signale-le comme un **trou de traçabilité** (des specs qui tracent vers un `docs/produit.md`
+      absent) sans
       effacer le travail en cours du rapport.
    2. **Gate périmée** → `/scd-sdd:analyze NNN`. Elle passe devant : sinon le contrat part à
       l'implémentation sur un verdict qui ne vaut plus.
@@ -156,7 +162,7 @@ Ratio : 5% humain / 95% AI (lecture mécanique ; l'humain choisit la suite).
 
 ## Où on en est
 
-Socle       ✅ complet — brief · prd · stack · archi · 6 ADR · ci · CLAUDE.md
+Socle       ✅ complet — produit · technique · 6 ADR · ci · CLAUDE.md
 Specs       2 features · 1 validée · 1 à revalider
 Implém.     001-auth : 2/4 lots faits · PR #10, #12 journalisées
 
@@ -210,7 +216,7 @@ toutes, la plus récemment actualisée d'abord.
 
 ## Dégradations
 
-- **Pas de `docs/`** (ni `brief.md`, ni `prd.md`, ni `CLAUDE.md`) → le projet n'a pas de socle :
+- **Pas de `docs/`** (ni `produit.md`, ni `technique.md`, ni `CLAUDE.md`) → le projet n'a pas de socle :
   « Rien à rendre. Ouvre le projet avec `/scd-sdd:init-project`. » N'affiche pas de tableau vide.
 - **Socle présent, `specs/` vide ou absent** → rends le niveau socle, puis « Aucune feature.
   Démarre avec `/scd-sdd:kickoff-feature [feature]`. »
@@ -260,7 +266,7 @@ en log d'accès. C'est de nature, pas un oubli.
 - `feature-specs` — table de dérivation (§ « Cibler une feature ») et `references/status.md`
   (colonne `Gate`, règle de fraîcheur).
 - `implement` — `references/tasks-parsing.md` pour l'état des lots `Rn`.
-- `project-docs` — chaîne du socle (brief → prd → stack → archi → adr → ci → CLAUDE.md).
+- `project-docs` — chaîne du socle (produit → technique → adr → ci → CLAUDE.md).
 - `chantier` — § « Contrôle de fraîcheur » et format de l'en-tête (**en-tête seul, lecture seule
   ici** ; tu ne charges pas `references/manifeste.md`).
 - **Pas** le skill `journal`. Tu **lis** le journal, tu ne l'écris jamais, et ce dont tu as besoin

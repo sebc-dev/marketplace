@@ -48,12 +48,13 @@ there: its deliverable is the corpus. The subject map carries the campaign's sta
 domain packs; `campaign` orchestrates and composes nothing itself.
 Human-in-the-loop by construction: no session can launch Research. 7 slash commands.
 
-### [scd-sdd](./scd-sdd/) `v1.18.1`
+### [scd-sdd](./scd-sdd/) `v1.19.0`
 
 Complete spec-driven development cycle, from empty repo to reviewable PR — one plugin, three
-chained levels. **Foundation** (once per project): brief → PRD → stack → architecture invariants →
-foundational ADRs → CI → CLAUDE.md, by one-question-at-a-time interview, where the `ci` phase makes
-deterministic and verifiable *outside the agent* what CLAUDE.md can only advise. **Specs** (once per
+chained levels. **Foundation** (once per project): four phases producing five documents —
+`produit` → `technique` → ADR → `livraison`, the last writing `docs/ci.md` and then `CLAUDE.md` —
+by one-question-at-a-time interview, where CI makes deterministic and verifiable *outside the
+agent* what CLAUDE.md can only advise. **Specs** (once per
 feature): specify → clarify → plan → tasks → analyze conformance gate (16 checks), with EARS acceptance
 criteria, Kiro backrefs, and review lots (`Rn`) sized so a human can actually review each one.
 **Implementation** (one lot at a time): a dynamic workflow orchestrating 21 dedicated subagents —
@@ -62,20 +63,23 @@ check / inherent), fresh-context code review, adversarial finding triage, PR des
 review artifact, one ready-for-review PR per lot — with stacked-PR anti-orphaning and real
 parallelism via git worktrees.
 
-The `ci` phase derives its checks from a grid of five failure modes rather than a list of tools:
+The CI half of `livraison` derives its checks from a grid of five failure modes rather than a list of tools:
 eleven blocking jobs, six of them aimed at the agent rather than at the code it writes — including
 a guard against silencing the type checker, the linter or the SAST line by line, whose only escape
 hatch is a commit signature verified offline against a key registry versioned in the repo. The
 plugin runs no cryptography of its own: it writes the workflow that verifies it, and renders the
 branch-protection recipe without executing it.
 
-The `archi` phase gives that machinery its source. It produces `docs/archi.md` in three steps —
+The `technique` phase gives that machinery its source. It picks the foundations — language,
+framework, database, auth, deployment, tests, each tied to an `FR`/`SC` of `docs/produit.md` — and
+then, **in the same session**, derives the structure that follows from them, in three steps:
 observe what the stack already imposes (no ADR: you don't decide what is already decided), weigh
 options on the two open axes (macro decomposition, micro organisation), then compile **falsifiable
 invariants**: a rule only enters if it leaves an *observable trace in the tree or in the imports*.
 Never a design — the end criterion is that every invariant has its trace and its candidate ADR.
 Each one becomes an ADR, then an `arch-invariants` check; `plan` confronts every lot with them and
-`analyze` checks it, as its 15th control.
+`analyze` checks it, as its 15th control. Those two halves used to be two phases, and the second
+re-read the first to build its own premise: what the merge buys is the `/clear` in between.
 
 State is always derived from files, never from a state file: `/clear` wipes the context, not the
 progress. No shared file grows. Each phase appends a dated line to its own target's journal
@@ -96,14 +100,14 @@ forms, approved by the human before anything is written; whatever no text can cl
 chantier instead.
 
 `CLAUDE.md` is no longer written once and never read again. Its "Commands" section is a
-character-for-character copy of the `docs/ci.md` table, and nothing replayed that copy when the
-`ci` phase was replayed — while three consumers kept reading it. `/scd-sdd:revise-contract`
+character-for-character copy of the `docs/ci.md` table, and nothing replayed that copy when
+`livraison` was replayed for its `docs/ci.md` alone — while three consumers kept reading it. `/scd-sdd:revise-contract`
 reviews the contract against a two-part checklist (mechanical: command drift, size, dangling
 pointers — judgement: the deletion test, reinstalled procedures, guardrails written as prose),
 reports, **waits for the human**, then applies surgical edits. It never re-assembles from the
 template: a line the template doesn't know is presumed legitimate. Three writers, three disjoint
-roles — `contract` assembles once and refuses to overwrite, `revise-contract` maintains,
-`premortem` hardens.
+roles — `livraison` assembles once and refuses to overwrite an existing `CLAUDE.md`,
+`revise-contract` maintains, `premortem` hardens.
 
 The third is the **Linear mirror**, and it is **opt-in**. It pushes what the repo already knows —
 features become projects, `Rn`
@@ -125,8 +129,8 @@ equipment; no command ever calls it.
 
 The fourth is the **audit**. Foundation documents were written by interview and then consumed
 as-is: the specs level has `analyze`, the foundation had nothing, and the three dashboards only
-test that a document *exists*. `/scd-sdd:audit` judges **one** of them — `brief`, `prd`, `stack`,
-`archi`, `adr`, `ci` or `CLAUDE.md` — against a conformance grid: completeness against its
+test that a document *exists*. `/scd-sdd:audit` judges **one** of them — five dimensions:
+`produit`, `technique`, `adr`, `ci`, `claude-md` — against a conformance grid: completeness against its
 template, leftover markers, every ID and cross-reference resolving upstream, coherence, form. A
 read-only explorer **collects evidence without judging** (verbatim quotes, line numbers), the
 session judges, the human arbitrates the Majors, and only then does the command write — **exactly
@@ -140,25 +144,30 @@ the dimensions reference, not a new command.
 Both gates are **replayed until their object passes**, and both now **converge**. Their anti-loop
 guard measured *stagnation* — two passes with no correction and no new arbitration — whereas the
 real failure is a **conveyor belt**: every pass fixes something, so the condition resets each time,
-and the gate keeps recommending one more pass while re-judging the whole document. Four mechanisms,
-identical in `analyze` and `audit`. The **trajectory** (`3 Critical → 2 → 2 → 4`) opens the report,
-read from the journal — one line per pass, already versioned, and nothing read it. The **guard**
-now fires on **divergence**: the Critical count failing to strictly decrease. The **delta pass**
-restricts *judgement* checks, from pass 2 on, to what moved since the card's `HEAD` anchor plus the
-open list — *deterministic* checks still run over the whole document, because that is what stops a
-gate from becoming a rubber stamp. And the verdict is **monotone**: a new Critical is only
-admissible if it is deterministic or lands on modified text. Beyond a **three-pass budget** with
+and the gate keeps recommending one more pass while re-judging the whole document. The first fix
+could not even fire: its **delta pass** required *committed corrections*, yet no correction command
+carries a `Bash(git …)` pattern in its allowed tools — mechanically, they cannot commit. So the gate
+now **commits its target itself**, announces it, and takes its `HEAD` anchor afterwards. From pass 2
+on, *judgement* checks are restricted to what moved since that anchor plus the open list, while
+*deterministic* checks still run over the whole document — that is what stops a gate from becoming a
+rubber stamp. The **trajectory** (`3 Critical → 2 → 2 → 4`) opens the report, read from the journal:
+one line per pass, already versioned, and nothing read it. The **guard** fires on divergence of
+`Critical + Major`, while the **verdict** still counts Critical alone — the noise that makes a gate
+loop is in the Majors, but a Major has never blocked. The verdict is **monotone**: a new Critical is
+only admissible if it is deterministic or lands on modified text. Beyond a **two-pass budget** with
 the card still open, the command stops offering a rerun and puts the decision to you — the blocker
 is upstream, the phase was played too early, or one more pass, which stays a valid answer. It is a
-question, not a lock: no hook, no mechanical block. Nothing is memoised (the anchor plus `git diff`
-*is* the delta's memory — no card ever gains a "section judged clean" field), a judgement finding
-that appears on unmodified text is reported **by name** as missed by the previous pass rather than
-erased, and a degraded pass — no anchor, uncommitted fixes — runs **in full** and says so.
+question, not a lock: no hook, no mechanical block. And the noise silences itself: from pass 2 on, an
+untreated Major moves on its own into the card's `## Écarté` with its reason, named **once** and
+never asked again — never erased, since the rule is *stop asking*, not *hide* — and Minors stop being
+reported at all. Nothing is memoised (the anchor plus `git diff` *is* the delta's memory — no card
+ever gains a "section judged clean" field), and a judgement finding that appears on unmodified text
+is reported **by name** as missed by the previous pass rather than dropped.
 
 Throughout, the plugin **explains its own vocabulary once**. Its terms — review lot `Rn`, gate,
 EARS, invariant, ADR — stay precise and greppable; what changed is that they are now defined where
 you meet them: a `## Légende` in five produced-document templates (including *why* EARS criteria
-stay in normed English), a glossed term in every command description and report, and — in the 23
+stay in normed English), a glossed term in every command description and report, and — in the 20
 commands that hold a dialogue — **the problem stated before the options**, each option carrying its
 consequence in project terms rather than jargon. Work-in-progress management is part of that:
 `/scd-sdd:resume` no longer just lists four possible follow-ups, it says what each one does — and
@@ -169,9 +178,9 @@ shows the repo object next to the Linear candidate and states what the wrong ans
 **two issues for the same lot, which the mirror will never remove**.
 A gloss is one line, appears once, and stops entirely as soon as you use the term yourself.
 
-Those rules govern the *sentence*. When you actually have to **decide**, eleven commands — `stack`,
-`archi`, `adr`, `ci`, `research`, `resume`, `premortem`, `analyze`, `audit`, `revise-contract`,
-`migrate` — also load a dedicated skill that governs the *exposition*: the object before the problem, the
+Those rules govern the *sentence*. When you actually have to **decide**, ten commands —
+`technique`, `adr`, `livraison`, `research`, `resume`, `premortem`, `analyze`, `audit`,
+`revise-contract`, `migrate` — also load a dedicated skill that governs the *exposition*: the object before the problem, the
 mechanism explained whenever the choice depends on one of its properties (a one-line gloss names a
 term, it does not make you understand a property), reasoning told as a scene rather than stated as
 an abstraction, figures given in the unit the decision is made in, an identifier carrying what its
@@ -183,10 +192,15 @@ front and giving each entry only what is specific to it, plus what happens if yo
 it. It is not a template, and not blanket popularisation: what the choice depends on gets
 explained, the rest gets named.
 
-33 slash commands, including three dashboards — `/scd-sdd:status` (all three levels in one view,
+30 slash commands, including three dashboards — `/scd-sdd:status` (all three levels in one view,
 plus the next command to run), `/scd-sdd:status-specs`, `/scd-sdd:status-impl` (merge-safety of
-every lot PR) — and `/scd-sdd:migrate` to pick up a project coming from the three former plugins.
-Replaces `scd-project-docs`, `scd-feature-specs` and `scd-implement`.
+every lot PR) — and `/scd-sdd:migrate`, which picks up a project coming from the three former
+plugins **and converts a foundation written before the merge**: `brief` + `prd` become
+`docs/produit.md`, `stack` + `archi` become `docs/technique.md`, content moved and never rewritten,
+`FR`/`SC` numbers untouched so no already-written spec loses its backref, and old files deleted only
+as a separate, explicit approval. The journal is never rewritten — one file will carry both
+vocabularies, and that is correct. Replaces `scd-project-docs`, `scd-feature-specs` and
+`scd-implement`.
 
 ## Installation
 

@@ -38,7 +38,7 @@ ambigus ; tu interroges l'API, tu proposes la correspondance et tu écris le fic
 
 - **Tu n'écrases jamais un `docs/linear.md` existant.** Tu configures une fois. La mise à jour est
   une **édition manuelle** : rejouer cette commande écraserait des correspondances de statuts
-  arbitrées avec l'humain, sans rien signaler (garde anti-écrasement, modèle de `contract`,
+  arbitrées avec l'humain, sans rien signaler (garde anti-écrasement, modèle de `livraison`,
   `DECISIONS.md` §D29).
 - **La valeur de la clé d'API ne s'écrit nulle part** — ni dans le fichier, ni dans le rapport, ni
   dans une commande que tu affiches. Tu passes la **variable**, jamais son contenu. `docs/linear.md`
@@ -132,7 +132,7 @@ ambigus ; tu interroges l'API, tu proposes la correspondance et tu écris le fic
      et la checklist du rapport conseillera l'activation (*Settings → Initiatives*). **Dégradation
      douce, jamais d'arrêt** : « l'appel est la commande » ne vaut que pour la clé ;
    - **l'API répond** → `AskUserQuestion` : le nom que tu proposes (dérivé du nom du repo ou du
-     titre de `docs/brief.md`), un autre nom, ou aucune initiative. Le nom retenu est une
+     titre de `docs/produit.md`), un autre nom, ou aucune initiative. Le nom retenu est une
      **configuration** (§D31) : arbitré ici, une fois, jamais re-dérivé. Ensuite :
      - une initiative **existante** porte ce nom → tu la réutilises, tu ne crées rien ;
      - **aucune** ne le porte → crée-la par `initiativeCreate` et **lis `success`** — la

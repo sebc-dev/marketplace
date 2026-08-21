@@ -38,7 +38,8 @@ qu'après l'implémentation.
 
 Et une contrainte que les passes précédentes t'imposent : **converger**. Une gate qu'on rejoue
 trois fois en re-listant les mêmes findings ne valide rien, elle use. C'est pourquoi la liste de
-travail est portée par un **chantier de gate** et qu'un Major s'arbitre **une fois**.
+travail est portée par un **chantier de gate**, qu'un Major s'arbitre **une fois** — et, dès la
+passe 2, **s'écarte de lui-même** s'il n'a pas été traité.
 
 Ratio : 30% humain / 70% AI (analyse mécanique ; l'humain décide de corriger, d'arbitrer ou de
 passer la main).
@@ -70,13 +71,16 @@ passer la main).
   indépendance.
 - **Un invariant d'architecture franchi est un Major, jamais un Critical.** Bloquer la gate
   dessus, ce serait faire d'`analyze` un `arch-invariants` avant l'heure : c'est la **CI** qui
-  mesure une violation sur le code réel, pas une gate documentaire sur un plan. Et **sans
-  `docs/archi.md`, le contrôle 15 ne se déclenche pas** — ce n'est pas un finding, c'est une
-  phase du socle qui n'a pas été jouée.
+  mesure une violation sur le code réel, pas une gate documentaire sur un plan. Et **sans table
+  d'invariants dans `docs/technique.md`, le contrôle 15 ne se déclenche pas** — ce n'est pas un
+  finding, c'est une moitié de phase du socle qui n'a pas été jouée.
 - **Sans aucun `.feature`, le contrôle 16 ne se déclenche pas** — même règle : ce n'est pas un
   finding, c'est une non-applicabilité. Et quand il se déclenche, il ne porte **jamais** sur le
   vert : tu n'exécutes aucun test, tu juges la **dérivation** et la **forme**.
-- **Verdict `PRÊT` uniquement si zéro Critical.**
+- **Verdict `PRÊT` uniquement si zéro Critical.** La **garde**, elle, lit `Critical + Major` : deux
+  décomptes distincts, jamais confondus (`DECISIONS.md` §D39).
+- **Les Minor se taisent dès la passe 2.** Rendus en entier à la passe 1 ; ensuite, une ligne — « N
+  Minor, non détaillés ». Ils ne comptent dans aucun verdict et ne sont portés par aucune fiche.
 - **Glose au premier emploi.** Le premier terme de méthode que tu adresses à l'humain — EARS,
   gate, lot, ADR, invariant, advisory… — reçoit une glose d'**une ligne**, entre parenthèses ou
   entre tirets. Jamais un paragraphe, jamais deux fois, et **plus du tout dès que l'humain
@@ -96,8 +100,9 @@ passer la main).
 2. **Charge la référence** : `references/analyze.md` du skill `feature-specs` — dont sa section
    `<gate>`, qui porte le contrat du chantier de gate.
 
-3. **Lis** `specs/<cible>/spec.md`, `plan.md`, `tasks.md`, plus `docs/prd.md`,
-   `docs/stack.md`, `docs/archi.md` **s'il existe** et `docs/adr/`.
+3. **Lis** `specs/<cible>/spec.md`, `plan.md`, `tasks.md`, plus `docs/produit.md`,
+   `docs/technique.md` — sa table d'**invariants** comprise, si elle en porte une — et
+   `docs/adr/`.
 
 3bis. **Récupère l'historique — la fiche, puis le journal.** Sans lui tu repartirais à froid, et
    surtout tu ne saurais ni à quelle passe tu es, ni si les précédentes ont fait baisser quoi que ce
@@ -119,18 +124,30 @@ passer la main).
      sont datées **au jour**, et un `PRÊT` du matin qui a archivé la fiche précédente porte la même
      date que la fiche ouverte l'après-midi. Aucune fiche ouverte → passe **1** ;
    - **la trajectoire des décomptes**, dans l'ordre, telle qu'elle s'affichera en tête de rapport :
-     `3 Critical → 2 → 2 → 4`.
+     `3C·5M → 2C·4M → 2C·6M` — **les deux décomptes**, la garde lisant leur somme et le verdict les
+     seuls Critical.
+
+3ter. **Commite les corrections, puis prends l'ancre.** `git diff -- specs/<cible>/` : diff non vide
+   → `git add specs/<cible>/` puis
+   `git commit -m "docs(specs): corrections gate <cible> passe N"`, **annoncé en une ligne** en tête
+   de rapport. Puis `git rev-parse HEAD`.
+
+   C'est ce qui rend la passe delta applicable : **aucune** des quatre phases de correction ne porte
+   `Bash(git …)`, donc personne ne pouvait remplir sa précondition et toute passe était intégrale
+   (`DECISIONS.md` §D39). Tu commites **exactement** ce que l'humain vient d'écrire — les trois
+   documents sortent toujours de cette commande **bit pour bit identiques**. Rien à commiter → tu ne
+   commites pas, et tu ne l'annonces pas.
 
 4. **Déroule les 16 contrôles** de `references/analyze.md` :
 
    | Groupe | Contrôles | Objet |
    |---|---|---|
-   | Traçabilité | 1-3 | spec→PRD, spec→tasks, tasks→spec |
+   | Traçabilité | 1-3 | spec→produit, spec→tasks, tasks→spec |
    | Qualité des critères | 4-6 | EARS, verbe vérifiable, atomicité |
    | Frontières | 7-9 | technology-agnostic, scope EXCLU, ambiguïtés |
    | Cohérence | 10-11 | socle, contradictions internes |
    | Reviewability | 12-14 | verticalité, sujet unique, dimensionnement |
-   | Architecture | 15 | invariants de `docs/archi.md` — **Major**, et sans objet s'il n'existe pas |
+   | Architecture | 15 | invariants de `docs/technique.md` — **Major**, et sans objet si la table est absente ou vide |
    | Gherkin | 16 | `.feature` dérivé de son `SHALL` et bien formé — sans objet s'il n'y en a aucun |
 
    **Le contrôle 16 charge sa propre référence, et seulement s'il se déclenche** : `Glob` sur
@@ -138,14 +155,15 @@ passer la main).
    `references/gherkin.md` avant de juger. Aucun → dis-le en une ligne et passe.
 
    **Le régime de la passe décide de ce que tu déroules sur quoi** — la règle, le calcul et les
-   **trois cas de mode dégradé** sont au § *La partition de la grille, et la passe delta* (`<gate>`
+   **deux cas de mode dégradé** sont au § *La partition de la grille, et la passe delta* (`<gate>`
    de la référence), la **nature** de chaque contrôle dans la grille elle-même (`<checks>`). **Ne
    recopie ni l'un ni l'autre.** Tu n'as qu'à trancher la branche :
 
-   - **Passe 1**, ou l'un des trois cas dégradés → passe **intégrale**, annoncée **avec son motif**
+   - **Passe 1**, ou l'un des deux cas dégradés → passe **intégrale**, annoncée **avec son motif**
      en tête de rapport ;
-   - **Passe 2 et au-delà**, ancre présente et rien de non commité sur `specs/<cible>/` → passe
-     **delta**, sur ce que rend `git diff <ancre> -- specs/<cible>/`.
+   - **Passe 2 et au-delà**, ancre présente → passe **delta**, sur ce que rend
+     `git diff <ancre> -- specs/<cible>/`. L'étape 3ter a déjà commité ce qui traînait : le cas
+     « corrections non commitées » n'existe plus.
 
 5. **Délègue un second regard en contexte frais** (outil `Task`, les deux **en parallèle** —
    leurs mandats sont disjoints) : **`ears-verifier`** pour les contrôles 1-11,
@@ -153,7 +171,7 @@ passer la main).
    c'est cette session qui a rédigé les documents : elle est alors mal placée pour les juger.
 
    **Les contrôles 15 et 16 restent au contexte principal** : les deux mandats délégués sont
-   **bornés à 1-11 et 12-14** et ne bougent pas. C'est toi qui as lu `docs/archi.md` à l'étape 3,
+   **bornés à 1-11 et 12-14** et ne bougent pas. C'est toi qui as lu `docs/technique.md` à l'étape 3,
    et c'est toi qui charges `references/gherkin.md` à l'étape 4 — aucun des deux agents ne reçoit
    les `.feature` dans son protocole d'entrée.
 
@@ -169,17 +187,26 @@ passer la main).
 
    1. la **trajectoire** des décomptes et le **régime** de la passe — delta, ou intégrale et
       pourquoi —, **avant tout finding** : c'est cela qui se décide ;
-   2. **dès la passe 2**, si la **garde sur la divergence** s'est déclenchée, dis-le ici, et pas
-      ailleurs ;
-   3. les findings par sévérité, puis les blocs d'appariement ;
-   4. la couverture chiffrée, le récapitulatif du découpage et le **Verdict**.
+   2. le **commit de corrections** de l'étape 3ter, s'il a eu lieu ;
+   3. **dès la passe 2**, si la **garde sur la divergence** (`Critical + Major`) s'est déclenchée,
+      dis-le ici, et pas ailleurs ;
+   4. les findings par sévérité, puis les blocs d'appariement ;
+   5. la couverture chiffrée, le récapitulatif du découpage et le **Verdict**.
 
 8. **Propose les arbitrages** (`AskUserQuestion`) — **charge le skill `exposition`**, **régime
    *gate*** : le décor de la gate se pose **une fois en tête** (ce qui a été examiné, contre quoi,
    ce que le verdict veut dire), et chaque finding ne porte ensuite que ce qui lui est propre, plus
-   **ce qui se passe s'il n'est pas approuvé**. S'il reste des Major non arbitrés, demande lesquels
-   sont assumés et **exige un motif** pour chacun. Un refus de trancher est une réponse valide — le
-   Major reste dans la liste. **Ne propose jamais d'arbitrer un Critical.**
+   **ce qui se passe s'il n'est pas approuvé**. **Ne propose jamais d'arbitrer un Critical.**
+
+   **Ce que tu soumets dépend de la passe** (`<gate>`, § *L'auto-écart des Major*) :
+
+   - **Passe 1** — les Major **neufs**, un par un : demande lesquels sont assumés et **exige un
+     motif** pour chacun. Un refus de trancher est une réponse valide, le Major reste dans la liste.
+   - **Passe 2 et au-delà** — tu ne redemandes **que les Major neufs de cette passe**. Ceux qui
+     restaient **non traités** depuis la précédente sont passés **seuls** en `## Écarté`, motif
+     `non traité à la passe N` : tu les **nommes une fois** au rapport, tu ne les soumets plus, et tu
+     dis qu'ils restent dans la fiche et **se rouvrent** sur demande. Cesser de demander n'est pas
+     cacher.
 
 9. **Écris le chantier de gate**, selon `<gate>` de la référence :
    - **`CORRIGER D'ABORD`** → ouvre `docs/chantiers/en-cours/AAAA-MM-JJ-gate-<cible>.md` (ou
@@ -202,8 +229,8 @@ passer la main).
 ## Ce que tu NE fais PAS
 
 - Aucune modification de `spec.md`, `plan.md`, `tasks.md`, ni du socle.
-- **Tu ne juges pas le socle.** Tu le lis comme référentiel — un `FR` de spec doit tracer vers le
-  PRD —, mais la conformité de `docs/brief.md`, `prd.md`, `stack.md`, `archi.md`, `docs/adr/`,
+- **Tu ne juges pas le socle.** Tu le lis comme référentiel — un `FR` de spec doit tracer vers
+  `docs/produit.md` —, mais la conformité de `docs/produit.md`, `technique.md`, `docs/adr/`,
   `ci.md` et `CLAUDE.md` relève d'`/scd-sdd:audit <document>`. Un défaut constaté **dans le socle**
   se **signale**, en nommant cette commande ; il ne devient jamais un finding de cette gate, qui
   atteste des specs.
@@ -250,8 +277,8 @@ Une gate au rouge se consigne **aussi** : c'est la moitié de l'histoire qui a d
 
 - `feature-specs` — charge `references/analyze.md`, dont sa section `<gate>` : le contrat de la
   fiche, l'appariement et ses **quatre** issues, la **partition** de la grille et la **passe
-  delta** (l'ancre, le calcul, les trois cas dégradés), la garde sur la **divergence** et le
-  **budget de passes**. La **nature** `D`/`J` de chaque contrôle vit dans `<checks>`, et la
+  delta** (l'ancre, le commit préalable, les deux cas dégradés), la garde sur la **divergence** (`Critical + Major`) et le
+  **budget de deux passes**. La **nature** `D`/`J` de chaque contrôle vit dans `<checks>`, et la
   **monotonie** du verdict dans `<report>`. Plus, **sous condition et seul bloc `<guidance>`**,
   `references/gherkin.md` : uniquement si la feature porte au moins un `acceptance/*.feature`
   (contrôle 16).
@@ -300,10 +327,10 @@ Rappelle que la liste est **dans la fiche de gate**, pas seulement à l'écran :
 budget de passes* (`<gate>` de la référence), qui porte la condition et les issues. **Deux branches,
 une seule s'applique.**
 
-**Sous le budget** (passe 1 ou 2) — « Puis relancer `/scd-sdd:analyze NNN` : l'appariement fera le
+**Sous le budget** (passe 1) — « Puis relancer `/scd-sdd:analyze NNN` : l'appariement fera le
 reste, et la passe suivante ne re-jugera que ce qui a bougé. »
 
-**Au budget** — **3ᵉ passe, et fiche de gate encore ouverte** : à la place de la relance, charge le
+**Au budget** — **2ᵉ passe, et fiche de gate encore ouverte** : à la place de la relance, charge le
 skill `exposition`, **régime *options***, et **pose l'arbitrage** par `AskUserQuestion` — c'est un
 choix entre issues concurrentes, pas un tri. Les **trois issues** sont au
 § *La garde sur la divergence, et le budget de passes* (`<gate>`) ; ce que la commande ajoute, c'est

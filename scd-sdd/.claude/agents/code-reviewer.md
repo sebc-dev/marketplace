@@ -26,7 +26,7 @@ Le **mode de vérif** du lot (`verifMode`) conditionne la dimension *couverture*
 Charge **`<dimensions>` et `<severity>` de `references/review-dimensions.md` du skill `implement`** — ces **deux blocs seuls**, jamais `<triage>` : trier les findings n'est pas ton rôle, c'est celui de `review-validator` en aval. La grille n'est **jamais recopiée** dans ta sortie : tu l'appliques.
 
 Elle nomme le **référent** de chaque dimension. Deux ont besoin d'une lecture de ta part :
-- *architecture* → `docs/archi.md` (sous `<worktreeDir>` en mode worktree). Absent → applique le **repli nommé** de la grille, sans l'inventer.
+- *architecture* → la table des **invariants** de `docs/technique.md` (sous `<worktreeDir>` en mode worktree). Absente ou vide → applique le **repli nommé** de la grille, sans l'inventer.
 - *conventions* → le champ `conventions` du brief, que `lot-briefer` a déjà tiré du `CLAUDE.md` cible et des patrons existants. Tu ne relis pas `CLAUDE.md` toi-même.
 
 ## 2. Analyser le diff, dimension par dimension

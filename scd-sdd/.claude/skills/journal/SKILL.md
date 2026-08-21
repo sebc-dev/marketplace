@@ -4,7 +4,7 @@ description: |
   Contrat des fichiers de suivi docs/journal/socle.md et docs/journal/NNN-slug.md du cycle
   spec-driven : emplacement, format, règle d'ajout, vocabulaire de chaque phase, et la
   frontière événement-vs-état qui décide ce qui a le droit d'y figurer. Se charge quand une
-  commande /scd-sdd:* consigne la phase qu'elle vient de jouer — les 19 commandes de phase,
+  commande /scd-sdd:* consigne la phase qu'elle vient de jouer — les 16 commandes de phase,
   d'init-project à reland — plus premortem, revise-contract et audit, qui ne sont pas des phases
   mais dont le résultat ne se dérive d'aucun fichier. Ni lookup, ni research, ni les commandes linear* n'y écrivent :
   leur rapport, ou docs/linear.md et le miroir lui-même, est le fait (skills research, linear).
@@ -168,13 +168,10 @@ Court, chiffré, factuel. Ce qu'on veut relire dans six mois — pas une phrase.
 |---|---|
 | `init-project` | ce qui a été scaffoldé · socle préexistant le cas échéant |
 | `migrate` | anciens plugins à désinstaller · nb de lignes converties et reconstituées · correctifs appliqués |
-| `brief` | personas · critères de succès · exclusions |
-| `prd` | nb FR · nb SC · marqueurs restants |
-| `stack` | choix structurants · nb de décisions → ADR |
-| `archi` | nb d'invariants · nb de candidats ADR · nb de caractéristiques |
-| `adr` | plage de numéros écrits · rétro-liage de `stack.md` et `archi.md` |
-| `ci` | la forge · nb de contrôles bloquants et informatifs · seuil de couverture différentielle |
-| `contract` | nb de principes · taille de la DoD |
+| `produit` | personas · nb FR · nb SC · exclusions · marqueurs restants |
+| `technique` | choix structurants · nb de caractéristiques · nb d'invariants · nb de candidats ADR |
+| `adr` | plage de numéros écrits · rétro-liage des **deux** tables de `docs/technique.md` |
+| `livraison` | la forge · nb de contrôles bloquants et informatifs · seuil de couverture différentielle · nb de principes et taille de la DoD — ou `docs/ci.md` seul, quand la phase s'est arrêtée devant un `CLAUDE.md` existant |
 | `revise-contract` | taille avant → après · Commandes resynchronisées ou alignées · nb de signalements |
 | `audit` | **verdict en gras** — la cible auditée · nb Critical (avec leur cause en clair) · nb Major, arbitrés ou non |
 | `kickoff-feature` | dossier `NNN-slug` créé · échelle · greenfield ou delta |
@@ -186,6 +183,23 @@ Court, chiffré, factuel. Ce qu'on veut relire dans six mois — pas une phrase.
 | `premortem` | nb remédiations appliquées · les IDs ou rubriques créés · nb chantiers ouverts |
 | `run Rn` | `✅ done` ou `⛔ <statut>` · mode de vérif · nb tests · n° de PR |
 | `sync` / `reland` | l'action effectuée · n° de PR concernée |
+
+**Les six phases de socle d'avant `1.19.0`**, qu'aucune commande n'écrit plus. Elles restent ici
+parce qu'un journal **ne se réécrit jamais** (règle d'ajout n° 4) : un projet suivi avant la fusion
+porte ces mots, et une session qui les lit doit savoir les interpréter — pas les corriger.
+
+| Phase *(avant 1.19.0)* | Contenu attendu | Absorbée par |
+|---|---|---|
+| `brief` | personas · critères de succès · exclusions | `produit` |
+| `prd` | nb FR · nb SC · marqueurs restants | `produit` |
+| `stack` | choix structurants · nb de décisions → ADR | `technique` |
+| `archi` | nb d'invariants · nb de candidats ADR · nb de caractéristiques | `technique` |
+| `ci` | la forge · nb de contrôles bloquants et informatifs · seuil de couverture différentielle | `livraison` |
+| `contract` | nb de principes · taille de la DoD | `livraison` |
+
+Un même fichier de journal portera donc **deux vocabulaires**, et c'est correct : l'ancien décrit ce
+qui est arrivé, le neuf ce qui arrivera. `/scd-sdd:migrate` convertit les documents, **jamais** les
+lignes.
 
 Statuts d'échec journalisables par `run` : `blocked-dirty-tree`, `blocked-branch`,
 `blocked-rebase`, `blocked-impl`, `blocked-red`, `blocked-tests-modified`, `blocked-verify`,
