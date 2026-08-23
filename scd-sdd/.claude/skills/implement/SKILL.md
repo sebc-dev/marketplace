@@ -2,14 +2,14 @@
 name: implement
 description: |
   Le NIVEAU IMPLÉMENTATION du cycle spec-driven : honorer et vérifier le contrat produit en
-  amont, un ticket de review NN à la fois, via un dynamic workflow qui orchestre des subagents
+  amont, un ticket NN à la fois, via un dynamic workflow qui orchestre des subagents
   dédiés. Mode de vérification déclaré par ticket (**Vérif :** — `test` par défaut, sinon
-  observé), règle « une critère = une vérification observable », porte de vérif
+  observé), règle « un critère = une vérification observable », porte de vérif
   par preuve et jamais par affirmation, producteur ≠ vérificateur, triage adversarial des
   findings, description de PR comme artefact de review, anti-orphelinage des PR empilées,
   isolation par worktree pour le parallélisme réel. Se charge pendant /scd-sdd:run,
   run-parallel, sync, reland et status. Porte UNIQUEMENT l'exécution du ticket — ni le
-  socle (skill project-docs), ni l'écriture des specs (skill specs), ni le contrat du
+  socle (skill socle), ni l'écriture des specs (skill specs), ni le contrat du
   travail hors cycle (skill chantier).
 ---
 

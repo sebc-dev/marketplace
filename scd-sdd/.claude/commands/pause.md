@@ -154,7 +154,7 @@ quatre classes atteignent l'humain, et `/scd-sdd:resume` rend le même compte au
   et `<elagage>`, dont tu es le **seul** applicateur, à l'actualisation),
   et `references/manifeste.md` blocs **`<regle_maitresse>`** `<classes>` `<controles>` — **pas**
   `<lecture>` ni `<delegation>`, qui appartiennent à `resume`.
-- `feature-specs` — section « Cibler une feature », uniquement pour résoudre la portée quand le
+- `specs` — section « Cibler une feature », uniquement pour résoudre la portée quand le
   travail touche une feature.
 
 ## À la fin

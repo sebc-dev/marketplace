@@ -32,7 +32,7 @@ anti-écrasement, modèle de `livraison`, §D29). La mise à jour est une **édi
 6. la table de **propriété des champs** ;
 7. l'**initiative** — rubrique **optionnelle** : `<nom>` ou `aucune`. Le nom est une
    **configuration** (précédent exact de la clé d'équipe, §D31), proposé au setup depuis le nom du
-   repo ou `docs/produit.md`, confirmé par l'humain, **jamais re-dérivé**.
+   repo ou `CLAUDE.md`, confirmé par l'humain, **jamais re-dérivé**.
 
 **Rétro-compatibilité.** Un fichier à **six rubriques** (1.10.0) reste intégralement valide :
 rubrique 7 **absente ou `aucune`** → aucune écriture d'initiative, comportement sans initiative

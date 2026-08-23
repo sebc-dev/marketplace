@@ -129,7 +129,7 @@ Ratio : 30% humain / 70% AI (l'humain dit ce qui mérite une fiche ; tu la compo
   le *pourquoi*, les interdits, le template et les règles de commit ; l'élagage appartient à
   `pause`, une fiche d'archive naît fermée. Tu n'as **pas** besoin de
   `references/manifeste.md` : une fiche archivée n'a en général pas de manifeste.
-- `feature-specs` — section « Cibler une feature », uniquement pour résoudre la portée.
+- `specs` — section « Cibler une feature », uniquement pour résoudre la portée.
 
 ## À la fin
 

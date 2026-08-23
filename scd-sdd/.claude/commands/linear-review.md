@@ -98,7 +98,7 @@ rends).
    - **contrepartie fichier disparue** — le seul contrôle qui croise le disque : pour chaque issue
      **du miroir** (marqueur reconnu), vérifie par `Glob`/`Read` que la feature, le ticket ou la fiche
      que sa clé nomme existe encore sous `specs/` ou `docs/chantiers/`. C'est un contrôle
-     d'**existence**, en lecture seule — tu ne charges ni `feature-specs`, ni `chantier` : il n'y a
+     d'**existence**, en lecture seule — tu ne charges ni `specs`, ni `chantier` : il n'y a
      aucune cible à résoudre.
 
 6. **Rends Now/Next/Later** — les trois listes de `<rendu>`, dérivées du **seul champ `priority`**

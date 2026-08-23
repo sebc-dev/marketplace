@@ -55,7 +55,9 @@ from rewriting whatever verifies its own work.
 
 > **`2.0.0` is breaking.** The `1.x` cycle — four foundation phases, `specify → clarify → plan →
 > tasks → analyze`, two blocking gates, a journal, EARS notation — is *replaced*, not extended.
-> An already-tracked project converts through `/scd-sdd:migrate`, and that is the only path.
+> An already-tracked project is taken over by `/scd-sdd:migrate`, and that is the only path: it
+ARCHIVES the whole `1.x` tree into `docs/1.x/` — nothing is deleted — and the normal workflow then
+rewrites from that archive.
 
 The reason is not taste. **A gate costs at writing time, at review time and at convergence time —
 and what it catches is text.** The defects that actually cost are defects in how the agent behaves

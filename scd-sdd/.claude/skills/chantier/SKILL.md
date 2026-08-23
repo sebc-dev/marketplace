@@ -8,10 +8,10 @@ description: |
   références chargées bloc par bloc : fiche.md pour qui ÉCRIT, manifeste.md pour le
   contexte rechargé à la reprise. Se charge pendant /scd-sdd:pause, resume et note, quand
   run ou run-parallel ouvrent une fiche sur un run bloqué, quand status, une commande
-  specs devant une fiche de gate, linear ou le hook SessionStart en lisent une sans
-  l'écrire, et quand migrate scaffolde les trois répertoires. Porte UNIQUEMENT les
+  specs devant une fiche, linear ou le hook SessionStart en lisent une sans
+  l'écrire, et quand migrate répare la ligne Portée d'une fiche héritée. Porte UNIQUEMENT les
   chantiers : ni la dérivation de
-  l'état du cycle depuis les fichiers (skills project-docs, feature-specs, implement), ni le
+  l'état du cycle depuis les fichiers (skills socle, specs, implement), ni le
   contenu des documents produits. Une fiche ne dit jamais où en est le projet.
 ---
 

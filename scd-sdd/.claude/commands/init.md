@@ -76,9 +76,13 @@ Ratio : 40% humain / 60% AI (tu constates et tu rédiges ; l'humain arbitre et d
      bloc `<ci-md>` de `references/guards.md`. Poursuis en 3.
    - `CLAUDE.md` **présent** → révision : charge `<guidance>` et `<revision>` **seuls**, saute aux
      étapes 7 et 8, puis 9.
-   - Traces d'un projet `1.x` (`docs/produit.md`, `docs/technique.md`, `docs/journal/`,
-     `specs/*/tasks.md`) → **arrête-toi** et renvoie vers `/scd-sdd:migrate`. Écrire par-dessus
-     laisserait deux vocabulaires concurrents dans le même dépôt.
+   - Traces d'un projet `1.x` → **arrête-toi** et renvoie vers `/scd-sdd:migrate`. Écrire
+     par-dessus laisserait deux vocabulaires concurrents dans le même dépôt. Le cycle `1.x` a eu
+     **deux formes**, et il faut chercher les deux : `docs/produit.md` et `docs/technique.md`
+     après la fusion `1.19.0`, `docs/brief.md`, `docs/prd.md`, `docs/stack.md` et `docs/archi.md`
+     avant — plus `docs/journal/` et `specs/*/tasks.md`, communs aux deux.
+     ⚠️ `docs/1.x/` n'est **pas** une trace : c'est l'archive que `/scd-sdd:migrate` vient
+     d'écrire, et sa présence signifie que la reprise est faite. Elle est hors de ta lecture.
 
 3. **Scaffolde ce qui manque**, et rien de plus : `docs/`, `docs/adr/`, `docs/adr/_candidates/`,
    `docs/chantiers/{en-cours,en-attente,archive}/`, `specs/`. Un répertoire existant n'est pas

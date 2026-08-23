@@ -32,7 +32,7 @@ et décide seul de ce qui descend dans le socle ; tu composes, tu classes et tu 
 
 ## Règles absolues
 
-- **Tu ne modifies aucun document du socle.** Ni `docs/technique.md`, ni un ADR, ni `CLAUDE.md`, ni
+- **Tu ne modifies aucun document du socle.** Ni un ADR, ni `docs/ci.md`, ni `CLAUDE.md`, ni
   une spec. Tu rends une liste ; l'humain décide. C'est la règle centrale du skill `research`, et
   la seule qui reste écrite ici alors qu'elle est chargée : tu es la commande du couple qui a
   `Write` et `Edit`, donc la seule qui pourrait l'enfreindre. Le mécanisme qu'elle bloque — le
@@ -110,8 +110,8 @@ référent y est écrit — la décision servie, pas la phase.)*
      rapport dit avoir manqué faute d'accès borne ce qu'on peut en reprendre.
 
 8. **Charge le skill `exposition`** — **régime *options*** — et **rends la liste** (voir le bloc
-   ci-dessous), puis **arrête-toi là**. Tu ne descends rien dans
-   `docs/technique.md` ni dans un ADR : tu nommes la commande qui le ferait, l'humain la joue.
+   ci-dessous), puis **arrête-toi là**. Tu ne descends rien dans un ADR :
+   tu nommes la commande qui le ferait, l'humain la joue.
 
 9. **Commite** : `git add <le rapport>` puis `git commit -m "docs(research): <slug>"`, scopé au
    seul fichier.
@@ -167,7 +167,7 @@ cycle.` Une recherche sans décision nommable l'écrit telle quelle — jamais u
 - `exposition` — **régime *options***, chargé à l'étape 8, pour rendre la liste. Aucune
   `references/`.
 
-**`project-docs` n'est pas chargé, et c'est volontaire.** Nommer la décision — ou la phase — que le
+**`socle` n'est pas chargé, et c'est volontaire.** Nommer la décision — ou la phase — que le
 rapport doit servir ne demande pas de le charger : aucun document du socle ne sort d'ici, et charger
 le skill qui les écrit rendrait tentant de le faire.
 

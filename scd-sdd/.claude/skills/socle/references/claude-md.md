@@ -196,7 +196,8 @@ ce fait**, jamais sans.
    « que **déplacer** », et vers quel mécanisme.
 3. **Pointeurs.** Chaque `@chemin` et chaque chemin en backticks résout-il ? Un pointeur mort fait
    croire à un document. ⚠️ Un projet migré depuis `1.x` en porte presque toujours :
-   `docs/produit.md`, `docs/technique.md`, `docs/journal/`.
+   `docs/produit.md`, `docs/technique.md`, `docs/brief.md`, `docs/prd.md`, `docs/stack.md`,
+   `docs/archi.md`, `docs/journal/` — tous déplacés dans `docs/1.x/` par `/scd-sdd:migrate`.
 4. **En-tête de maintenance.** Commentaires HTML présents, avec propriétaire et déclencheurs ?
    Absents, l'entretien n'a personne pour le porter.
 

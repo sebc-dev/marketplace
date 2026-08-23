@@ -177,8 +177,7 @@ plus**, et le fait qu'il ait été produit pour nous ne le rend pas plus vrai.
    Isoler ne veut pas dire jeter — ça veut dire que ça ne descend pas dans un document que la suite
    du cycle traitera comme vrai.
 3. **Rappeler que la confiance verbalisée n'est pas une probabilité**, y compris celle du rapport.
-4. **Ne modifier aucun document du socle.** Rendre la liste ; l'humain décide ce qui descend dans
-   `docs/technique.md` ou dans un ADR.
+4. **Ne modifier aucun document du socle.** Rendre la liste ; l'humain décide ce qui descend dans un ADR.
 
 Le contrôle négatif qui prouve que la règle a tenu : après l'import d'un rapport,
 aucun document du socle n'a été touché.

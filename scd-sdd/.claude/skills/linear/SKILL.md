@@ -59,7 +59,7 @@ deviennent pas des sous-issues : elles vivent dans la description de l'issue du 
 est l'**équipe**, choisie une fois au setup. La table de correspondance complète vit dans le
 `README.md` du plugin et dans le rapport de `linear-setup`.
 
-**La résolution des cibles ne vit pas ici** : sections « Cibler une feature » (skill `feature-specs`)
+**La résolution des cibles ne vit pas ici** : sections « Cibler une feature » (skill `specs`)
 et « Cibler un chantier » (skill `chantier`), référencées et **jamais recopiées** (charte §1).
 
 ## La clé est dérivée du nom de fichier

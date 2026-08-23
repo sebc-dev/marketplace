@@ -131,7 +131,7 @@ Acquis         Le rate-limit passe en local (vérifié).
                « Compteur décidé dans la table login_attempt, pas le cache. »
 Prochaine       Écrire le test rouge `locks_after_fifth_failure` dans
 étape           test/auth/lockout.test.ts — non présent à ce jour.
-Écarté         Redis (absent de docs/technique.md) · middleware rateLimit (compte par IP).
+Écarté         Redis (aucun ADR ne l'autorise) · middleware rateLimit (compte par IP).
 ```
 
 La ligne `Contexte rechargé` **dit ce que chaque classe a fait**, elle ne récite pas ses noms — la
@@ -163,7 +163,7 @@ ailleurs depuis (HEAD a1b2c3d n'est plus un ancêtre)`, et le rapport ajoute en 
 - `exposition` — **régime *options***, **conditionnel** : chargé à l'étape 6 **seulement si**
   l'étape 2 a rendu au moins un ⚠ suspect, ⚠ ancien ou ✔ consommé. Aucune `references/`. Les quatre
   suites sont des issues concurrentes, pas une liste à trier.
-- **Pas `feature-specs`.** La `Portée` de la fiche est **déjà résolue** (`001-auth · ticket R2`) : tu
+- **Pas `specs`.** La `Portée` de la fiche est **déjà résolue** (`001-auth · ticket R2`) : tu
   la lis, tu ne la résous pas. « Cibler une feature » répond à *quelle feature est en cours après
   un `/clear`* — question que tu n'as pas. Un `Glob specs/NNN-*/` suffit à vérifier l'existence.
 

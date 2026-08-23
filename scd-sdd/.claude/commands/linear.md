@@ -100,7 +100,7 @@ compares et tu pousses).
 
 3. **Résous le périmètre.** `tout` → toutes les features de `specs/` **et** les trois répertoires de
    `docs/chantiers/`. `chantiers` → les fiches seules. Un `NNN` ou un slug → cette feature, résolue
-   selon la section **« Cibler une feature »** du skill `feature-specs` ; une fiche se résout selon
+   selon la section **« Cibler une feature »** du skill `specs` ; une fiche se résout selon
    **« Cibler un chantier »** du skill `chantier`. Ces deux règles sont la source unique : tu les
    **appliques**, tu ne les recopies pas (charte §1). Sans argument, le miroir ne joue aucune phase :
    les candidates sont **toutes** les features, donc une seule → prends-la et **annonce-la** ; zéro
@@ -225,7 +225,7 @@ Priorité chez Linear — lecture seule, rien de tout ça ne redescend
 - `linear` — contrat du miroir : granularité, clé dérivée et résolution des renommages, propriété des
   champs, statuts par défaut, sens unique. Charge `references/api.md` **intégralement** — endpoint,
   requêtes, mutations, pagination, quotas, comptes à rendre — après en avoir lu la date en tête.
-- `feature-specs` — **uniquement** pour « Cibler une feature » et pour lire les tickets `NN` de
+- `specs` — **uniquement** pour « Cibler une feature » et pour lire les tickets `NN` de
   le ticket. Tu ne joues aucune phase des specs et tu n'écris dans aucun de leurs documents.
 - `chantier` — **uniquement** pour « Cibler un chantier ». L'état d'une fiche est son **répertoire** ;
   tu ne l'ouvres, ne la déplaces et ne la modifies jamais.

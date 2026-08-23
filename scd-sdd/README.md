@@ -5,7 +5,9 @@ réécrire ce qui vérifie son travail.
 
 > **`2.0.0` est cassant.** Le cycle `1.x` — socle en 4 phases, `specify → clarify → plan → tasks →
 > analyze`, deux gates, journal, notation EARS — est **remplacé**, pas étendu. Un projet déjà suivi
-> se convertit par **`/scd-sdd:migrate`**, et c'est le seul chemin.
+> se reprend par **`/scd-sdd:migrate`**, et c'est le seul chemin : elle ARCHIVE l'arbre `1.x`
+> entier dans `docs/1.x/` — rien n'est supprimé — puis le workflow normal réécrit au format
+> `2.0.0` depuis cette archive.
 
 ---
 
@@ -206,7 +208,7 @@ est réellement co-parallélisable (fichiers disjoints **et** aucun blocage mutu
 | `/scd-sdd:lookup` | une réponse sourcée en session, sans rien écrire |
 | `/scd-sdd:research` | compose un prompt Claude Research, puis classe le rapport revenu |
 | `/scd-sdd:linear` · `linear-setup` · `linear-review` | miroir Linear **poussé**, opt-in, strictement unidirectionnel |
-| `/scd-sdd:migrate` | convertit un projet `1.x` |
+| `/scd-sdd:migrate` | archive l'arbre `1.x` dans `docs/1.x/`, répare ce qui le nomme, rend la séquence de réécriture |
 
 ---
 
@@ -240,7 +242,8 @@ Puis, dans un projet :
 /scd-sdd:spec      # la première feature
 ```
 
-Un projet déjà suivi en `1.x` : **`/scd-sdd:migrate` d'abord**, et rien d'autre avant.
+Un projet déjà suivi en `1.x` : **`/scd-sdd:migrate` d'abord**, et rien d'autre avant. Elle archive,
+elle ne convertit pas — `/scd-sdd:init` vient juste après, et le reste s'écrit dessous.
 
 ---
 

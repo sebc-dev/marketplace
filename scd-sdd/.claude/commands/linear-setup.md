@@ -132,7 +132,7 @@ ambigus ; tu interroges l'API, tu proposes la correspondance et tu écris le fic
      et la checklist du rapport conseillera l'activation (*Settings → Initiatives*). **Dégradation
      douce, jamais d'arrêt** : « l'appel est la commande » ne vaut que pour la clé ;
    - **l'API répond** → `AskUserQuestion` : le nom que tu proposes (dérivé du nom du repo ou du
-     titre de `docs/produit.md`), un autre nom, ou aucune initiative. Le nom retenu est une
+     titre de `CLAUDE.md`), un autre nom, ou aucune initiative. Le nom retenu est une
      **configuration** (§D31) : arbitré ici, une fois, jamais re-dérivé. Ensuite :
      - une initiative **existante** porte ce nom → tu la réutilises, tu ne crées rien ;
      - **aucune** ne le porte → crée-la par `initiativeCreate` et **lis `success`** — la
@@ -233,7 +233,7 @@ Vocabulaire — à lire une fois si tu viens de Jira
   `references/linear-md.md`, **intégralement** : le contrat des rubriques et son `<template>`.
 
 **Un seul skill, et c'est volontaire.** Tu ne lis ni le ticket, ni une fiche de chantier : charger
-`feature-specs` ou `chantier` ici n'aurait servi qu'à rendre tentant un push que cette commande n'a
+`specs` ou `chantier` ici n'aurait servi qu'à rendre tentant un push que cette commande n'a
 pas le droit de faire.
 
 ## À la fin

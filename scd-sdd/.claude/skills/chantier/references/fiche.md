@@ -7,7 +7,7 @@ quand un run se **bloque** : la fiche est alors le seul endroit où ce fait lais
 
 Les commandes qui **lisent** une fiche — `status`, `linear` pour cibler un chantier, le hook
 `SessionStart` — n'en ont **pas** besoin : l'anatomie de la fiche et la ligne `Portée` sont dans le
-`SKILL.md`. `migrate` non plus : il ne scaffolde que les trois répertoires.
+`SKILL.md`. `migrate` non plus : il ne fait que réparer la ligne `Portée` d'une fiche héritée.
 
 <pourquoi>
 
@@ -83,7 +83,7 @@ Faire passer FR-004 au vert sans toucher au middleware de session.
 Écrire le test rouge `locks_after_fifth_failure` dans `test/auth/lockout.test.ts`.
 
 ## Écarté
-- Redis — absent de `docs/technique.md`.
+- Redis — aucun ADR ne l'autorise.
 - Middleware `rateLimit` existant — compte par IP, le critère demande par compte.
 ```
 
@@ -129,8 +129,8 @@ Relis chaque ligne existante contre le disque, **avant** d'ajouter quoi que ce s
 - **`## Écarté` ne s'élague jamais** : les pistes mortes ne sont dérivables de nulle part — c'est
   la rubrique de plus forte valeur, et la seule dont la croissance est légitime.
 
-**Tout retrait est annoncé au gate de validation**, ligne par ligne, avec son motif (« porté par
-`a1b2c3d` », « intégré à `spec.md` FR-004 »). Le contenu d'une fiche est inféré de la session : un
+**Tout retrait est annoncé à l'humain**, ligne par ligne, avec son motif (« porté par
+`a1b2c3d` », « intégré à `SPEC.md` »). Le contenu d'une fiche est inféré de la session : un
 retrait silencieux perdrait un acquis sans témoin.
 
 </elagage>
