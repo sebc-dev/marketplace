@@ -26,7 +26,7 @@ et tu qualifies).
 - **Tu appliques le skill `research`, tu ne le résumes pas.** Sa méthode est **chargée** — voir
   `## Skill active`, qui dit ce qu'elle contient —, donc absente d'ici. Elle ne s'assouplit **pas**
   parce que la question est courte : c'est justement là qu'on est tenté de la sauter.
-- **Tu n'écris aucun fichier.** Ni rapport, ni note, ni ligne de journal, ni document du socle.
+- **Tu n'écris aucun fichier.** Ni rapport, ni note, ni document du socle.
   Ta sortie est la session, point. C'est ce qui te distingue de `/scd-sdd:research`, et ton
   `allowed-tools` en est la preuve : tu n'as aucun outil d'écriture.
 - **Tu annonces les murs avant de chercher, jamais après.** Une question dont la réponse est
@@ -97,21 +97,11 @@ Une question trop large ajoute en pied :
 
 - Tu n'écris aucun fichier, nulle part — y compris pas de brouillon « pour ne pas perdre ».
 - Tu ne modifies aucun document du socle ni aucune spec, et tu n'ouvres aucun candidat d'ADR.
-- Tu n'écris aucune ligne de journal (voir ci-dessous).
 - Tu ne composes pas de prompt de recherche approfondie et tu ne classes aucun rapport : c'est
   `/scd-sdd:research`, dans ses deux temps.
 - Tu ne contournes aucun mur — pas de cache, pas de miroir, pas de reformulation d'URL pour
   passer sous un `robots.txt`.
 - Tu ne lances aucune commande, tu n'installes rien, tu n'exécutes aucun outil « pour voir ».
-
-## Consigne au journal
-
-**Aucune.** Tu ne joues aucune phase du cycle, et tu ne produis même aucun fichier : il n'y a
-rien à consigner. Une recherche qui n'a rien persisté n'est pas un événement du cycle.
-C'est de nature, pas un oubli.
-
-Si ce que tu as trouvé mérite de survivre à la session, ce n'est pas une ligne de journal qu'il
-faut : c'est un rapport, donc `/scd-sdd:research`.
 
 ## Skill active
 

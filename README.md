@@ -48,187 +48,70 @@ there: its deliverable is the corpus. The subject map carries the campaign's sta
 domain packs; `campaign` orchestrates and composes nothing itself.
 Human-in-the-loop by construction: no session can launch Research. 7 slash commands.
 
-### [scd-sdd](./scd-sdd/) `v1.20.0`
+### [scd-sdd](./scd-sdd/) `v2.0.0`
 
-Complete spec-driven development cycle, from empty repo to reviewable PR — one plugin, three
-chained levels. **Foundation** (once per project): four phases producing five documents —
-`produit` → `technique` → ADR → `livraison`, the last writing `docs/ci.md` and then `CLAUDE.md` —
-by one-question-at-a-time interview, where CI makes deterministic and verifiable *outside the
-agent* what CLAUDE.md can only advise. **Specs** (once per
-feature): specify → clarify → plan → tasks → analyze conformance gate (16 checks), with EARS acceptance
-criteria, Kiro backrefs, and review lots (`Rn`) sized so a human can actually review each one.
-**Implementation** (one lot at a time): a dynamic workflow orchestrating 21 dedicated subagents —
-dedicated branch, verification per the lot's declared mode (TDD by default, else test-after /
-check / inherent), fresh-context code review, adversarial finding triage, PR description as a
-review artifact, one ready-for-review PR per lot — with stacked-PR anti-orphaning and real
-parallelism via git worktrees.
+Lean spec-driven cycle, from empty repo to reviewable PR — and the **guards** that stop the agent
+from rewriting whatever verifies its own work.
 
-The CI half of `livraison` derives its checks from a grid of five failure modes rather than a list of tools:
-eleven blocking jobs, six of them aimed at the agent rather than at the code it writes — including
-a guard against silencing the type checker, the linter or the SAST line by line, whose only escape
-hatch is a commit signature verified offline against a key registry versioned in the repo. The
-plugin runs no cryptography of its own: it writes the workflow that verifies it, and renders the
-branch-protection recipe without executing it.
+> **`2.0.0` is breaking.** The `1.x` cycle — four foundation phases, `specify → clarify → plan →
+> tasks → analyze`, two blocking gates, a journal, EARS notation — is *replaced*, not extended.
+> An already-tracked project converts through `/scd-sdd:migrate`, and that is the only path.
 
-That escape hatch is a **human** door, and the plugin deliberately does not write the tool that
-opens it — a signing tool the agent could modify would display one thing and sign another. So the
-cycle knew how to *install* the door and never said *when to push it*. `/scd-sdd:signer` fills that
-gap, and it carries **no list of reasons**: a project always widens the signing surface beyond the
-recipe, and a hard-coded list eventually says "ordinary commit, no signature needed" about a commit
-CI will refuse. It derives instead, from two crossed sources — what `docs/ci.md` declares, what the
-workflows actually carry — and compares. A guard present in CI but missing from the summary does
-not make it sign as a precaution: it **removes its right to conclude**. It never signs, never
-writes or runs the signing tool, and never makes you sign for nothing — what gets signed too often
-stops being read, and being read is the only thing a signature attests.
+The reason is not taste. **A gate costs at writing time, at review time and at convergence time —
+and what it catches is text.** The defects that actually cost are defects in how the agent behaves
+*while writing code*: silencing the type checker, neutralising a test, bypassing a hook. No
+documentary check sees those, and none ever could. So `2.0.0` doesn't remove rigour — it **moves**
+it, from gates to guards. 31 commands → **20**, 21 agents → **15**, 5 foundation documents → **3**,
+2 blocking gates → **0**.
 
-The `technique` phase gives that machinery its source. It picks the foundations — language,
-framework, database, auth, deployment, tests, each tied to an `FR`/`SC` of `docs/produit.md` — and
-then, **in the same session**, derives the structure that follows from them, in three steps:
-observe what the stack already imposes (no ADR: you don't decide what is already decided), weigh
-options on the two open axes (macro decomposition, micro organisation), then compile **falsifiable
-invariants**: a rule only enters if it leaves an *observable trace in the tree or in the imports*.
-Never a design — the end criterion is that every invariant has its trace and its candidate ADR.
-Each one becomes an ADR, then an `arch-invariants` check; `plan` confronts every lot with them and
-`analyze` checks it, as its 15th control. Those two halves used to be two phases, and the second
-re-read the first to build its own premise: what the merge buys is the `/clear` in between.
+**Foundation**, once, in one short conversation: `docs/adr/` (immutable decisions), `docs/ci.md`
+(what blocks a PR), `CLAUDE.md` (conventions, Definition of Done, domain glossary). `/scd-sdd:init`
+does not interview — it *reads the repo* and asks only what the repo cannot answer. It is
+replayable: on an existing `CLAUDE.md` it **revises** section by section and never re-assembles.
 
-State is always derived from files, never from a state file: `/clear` wipes the context, not the
-progress. No shared file grows. Each phase appends a dated line to its own target's journal
-(`docs/journal/socle.md` or `NNN-slug.md`), the only place five facts live: the analyze verdict,
-applied premortem remediations, a lot's outcome (including a blocked run), and the outcome of a
-contract revision (including a pass that changes nothing), and an audit verdict — the judged
-document comes out byte-for-byte identical, so nothing else carries it. Work outside the
-phases — or interrupted mid-flight by a `/clear` — becomes a **chantier**: a card under
-`docs/chantiers/`, whose state *is* its directory.
+**Per feature**: `/scd-sdd:spec` writes a ~40-line spec by synthesising the conversation already
+had; `/scd-sdd:tickets` cuts it into **vertical slices**, each carrying its observable criteria and
+the tickets that block it. Zero gate, zero verdict, zero normed notation. Validation is two human
+gestures and no third: read the spec, arbitrate ticket granularity. A wide refactor is the one
+exception to vertical slicing and sequences as expand → migrate in batches → contract.
 
-Four capabilities are **transverse**, outside the phases and never reported as missing.
-**Research**: `/scd-sdd:lookup` answers in-session and writes nothing, `/scd-sdd:research`
-composes a Claude Research prompt then files and critically re-reads the report — a report never
-descends into the foundation on its own. **Premortem**: `/scd-sdd:premortem` assumes failure and
-traces back to what the documents left out, on the **foundation**, a **feature** or a
-**chantier** — every retained risk closes with a document change drawn from its target's legal
-forms, approved by the human before anything is written; whatever no text can close becomes a
-chantier instead.
+**Implementation**: `/scd-sdd:run` drives a dynamic workflow of dedicated subagents per ticket —
+dedicated branch, `test` mode (red before green, proof is real `0 failed` output) or `observed`
+mode (proof is a captured observation), fresh-context review, adversarial finding triage, one
+ready-for-review PR per ticket — with stacked-PR anti-orphaning and real parallelism via git
+worktrees.
 
-`CLAUDE.md` is no longer written once and never read again. Its "Commands" section is a
-character-for-character copy of the `docs/ci.md` table, and nothing replayed that copy when
-`livraison` was replayed for its `docs/ci.md` alone — while three consumers kept reading it. `/scd-sdd:revise-contract`
-reviews the contract against a two-part checklist (mechanical: command drift, size, dangling
-pointers — judgement: the deletion test, reinstalled procedures, guardrails written as prose),
-reports, **waits for the human**, then applies surgical edits. It never re-assembles from the
-template: a line the template doesn't know is presumed legitimate. Three writers, three disjoint
-roles — `livraison` assembles once and refuses to overwrite an existing `CLAUDE.md`,
-`revise-contract` maintains, `premortem` hardens.
+**The guards** are what replaces the gates, and the field evidence is unambiguous: an agent bypassed
+pre-commit hooks via `--no-verify`, `git stash` and silent flags across **six consecutive commits**,
+despite explicit `CLAUDE.md` rules. Text the agent reads does not constrain it. So: a `PreToolUse`
+hook blocks writes to protected **paths** (tests, CI workflows, tooling config); a second one
+inspects the **content being written** and blocks the introduction of `@ts-ignore`, `as any`,
+`eslint-disable`, `.skip(`, `# noqa`, `--no-verify`; a CI job catches what entered outside a
+session. The second layer is the one that matters — it targets a file the agent is perfectly
+entitled to edit, which makes it structurally invisible to the first.
 
-The third is the **Linear mirror**, and it is **opt-in**. It pushes what the repo already knows —
-features become projects, `Rn`
-review lots become issues (`Tn` tasks as a checklist, dependencies as relations), chantier cards
-become labelled issues — to the workspace where the team does its prioritisation. Those
-prioritisation facts are derivable from no file in the repo, and writing them there would recreate
-the state file the plugin refuses everywhere else. The mirror is **strictly one-way**, and that is
-not a promise in prose: `/scd-sdd:linear` has no `Write`, no `Edit` and no git command at all — its
-`allowed-tools` *is* the proof. The opt-in is a file: without `docs/linear.md`, written once by
-`/scd-sdd:linear-setup`, a project sees strictly no change. No Linear id or URL ever enters the
-repo; the file key lives in the Linear title, never the other way round. An optional **initiative**
-groups a product's projects — configured once, never derived. `/scd-sdd:linear-review` steers in
-**read-only**: the 250-issue Free-plan wall, four backlog hygiene checks, a Now/Next/Later view —
-rendered in session, persisted nowhere, on either side. And when the mirror is on, a lot's PR
-carries the Linear magic word in its **body** (`Fixes` on the default branch, `Part of` when
-stacked) so the native GitHub integration transitions the issue — best-effort, never blocking,
-never in the title or the branch name. Linear's official MCP server is documented as *your IDE's*
-equipment; no command ever calls it.
+**The trace is the deliverable; blocking is only its consequence.** Every attempt writes a line to
+`.claude/guard-log.jsonl` — date, tool, file, rule, offending snippet. The question the mechanism
+answers is not *was it stopped?* but **did it try?** The perimeter belongs to the project
+(`.claude/guards.json`, which the plugin never guesses); the mechanism belongs to the plugin. Three
+paths are hard-protected regardless: an agent must be able neither to edit its own leash nor to
+erase the record of its attempts.
 
-The fourth is the **audit**. Foundation documents were written by interview and then consumed
-as-is: the specs level has `analyze`, the foundation had nothing, and the three dashboards only
-test that a document *exists*. `/scd-sdd:audit` judges **one** of them — five dimensions:
-`produit`, `technique`, `adr`, `ci`, `claude-md` — against a conformance grid: completeness against its
-template, leftover markers, every ID and cross-reference resolving upstream, coherence, form. A
-read-only explorer **collects evidence without judging** (verbatim quotes, line numbers), the
-session judges, the human arbitrates the Majors, and only then does the command write — **exactly
-two things**: the verdict as a dated journal line (`CONFORME` only on zero Critical), and the
-work list as an ordinary chantier card, grouped by correction route. The judged document is never
-one of them: it comes out byte-for-byte identical, `CLAUDE.md` findings are routed to
-`/scd-sdd:revise-contract` rather than edited, and an accepted ADR can only be superseded. It is
-a capability with **dimensions**, not a one-off audit — a future dimension is one more block in
-the dimensions reference, not a new command.
+What the guards do **not** cover is written down rather than implied: a false oracle (no tool knows
+intent), a bypass in a form no pattern recognises, and a missing `python3` — under which layers 1
+and 2 simply do not run, *without a message*, since a hook that never starts cannot announce
+itself. And the reservation that holds for every greppable guard: **suppressing a behaviour may
+make it subtler rather than eliminate it.** The escape hatch stays a **human** door — a signed
+commit, verified offline against a versioned key registry. The plugin runs no cryptography of its
+own: it writes the workflow that verifies it.
 
-Both gates are **replayed until their object passes**, and both now **converge**. Their anti-loop
-guard measured *stagnation* — two passes with no correction and no new arbitration — whereas the
-real failure is a **conveyor belt**: every pass fixes something, so the condition resets each time,
-and the gate keeps recommending one more pass while re-judging the whole document. The first fix
-could not even fire: its **delta pass** required *committed corrections*, yet no correction command
-carries a `Bash(git …)` pattern in its allowed tools — mechanically, they cannot commit. So the gate
-now **commits its target itself**, announces it, and takes its `HEAD` anchor afterwards. From pass 2
-on, *judgement* checks are restricted to what moved since that anchor plus the open list, while
-*deterministic* checks still run over the whole document — that is what stops a gate from becoming a
-rubber stamp. The **trajectory** (`3 Critical → 2 → 2 → 4`) opens the report, read from the journal:
-one line per pass, already versioned, and nothing read it. The **guard** fires on divergence of
-`Critical + Major`, while the **verdict** still counts Critical alone — the noise that makes a gate
-loop is in the Majors, but a Major has never blocked. The verdict is **monotone**: a new Critical is
-only admissible if it is deterministic or lands on modified text. Beyond a **two-pass budget** with
-the card still open, the command stops offering a rerun and puts the decision to you — the blocker
-is upstream, the phase was played too early, or one more pass, which stays a valid answer. It is a
-question, not a lock: no hook, no mechanical block. And the noise silences itself: from pass 2 on, an
-untreated Major moves on its own into the card's `## Écarté` with its reason, named **once** and
-never asked again — never erased, since the rule is *stop asking*, not *hide* — and Minors stop being
-reported at all. Nothing is memoised (the anchor plus `git diff` *is* the delta's memory — no card
-ever gains a "section judged clean" field), and a judgement finding that appears on unmodified text
-is reported **by name** as missed by the previous pass rather than dropped.
+State is always **derived** — no state file, no journal. Ticket checkboxes say what is done, the
+forge says what is in review, `git log` says what was committed, the guard log says what was
+attempted. Exactly one fact escapes all four: a `run` that **blocks** checks nothing and opens no
+PR, so it opens a work-item card instead. Work cut mid-flight becomes a **chantier** whose state is
+its directory. 20 slash commands, 15 subagents, 7 skills.
 
-Throughout, the plugin **explains its own vocabulary once**. Its terms — review lot `Rn`, gate,
-EARS, invariant, ADR — stay precise and greppable; what changed is that they are now defined where
-you meet them: a `## Légende` in five produced-document templates (including *why* EARS criteria
-stay in normed English), a glossed term in every command description and report, and — in the 21
-commands that hold a dialogue — **the problem stated before the options**, each option carrying its
-consequence in project terms rather than jargon. Work-in-progress management is part of that:
-`/scd-sdd:resume` no longer just lists four possible follow-ups, it says what each one does — and
-above all that putting a chantier on hold is reversible, while closing or abandoning it is not.
-So is the Linear mirror, where the stakes are higher because the answer is written into someone
-else's workspace: `/scd-sdd:linear` no longer asks "is this the issue?" with two bare IDs — it
-shows the repo object next to the Linear candidate and states what the wrong answer costs, namely
-**two issues for the same lot, which the mirror will never remove**.
-A gloss is one line, appears once, and stops entirely as soon as you use the term yourself.
+⚠️ Written and mechanically verified, **never played end to end**. The open question is the whole
+refonte: does the lean cycle produce specs good enough for `/scd-sdd:run` to hold, without the gate
+that used to guarantee it?
 
-Those rules govern the *sentence*. When you actually have to **decide**, ten commands —
-`technique`, `adr`, `livraison`, `research`, `resume`, `premortem`, `analyze`, `audit`,
-`revise-contract`, `migrate` — also load a dedicated skill that governs the *exposition*: the object before the problem, the
-mechanism explained whenever the choice depends on one of its properties (a one-line gloss names a
-term, it does not make you understand a property), reasoning told as a scene rather than stated as
-an abstraction, figures given in the unit the decision is made in, an identifier carrying what its
-decision actually did, and length set by what is at stake rather than by a ceiling — a text too
-short costs a full round trip. It has **two regimes**: presenting competing options uses order to
-*explain* one subject; walking you through a list — the `premortem`, `analyze` and `audit` gates,
-the `revise-contract` edits, the `migrate` writes — uses order to *sort*, setting the scene once up
-front and giving each entry only what is specific to it, plus what happens if you do not approve
-it. It is not a template, and not blanket popularisation: what the choice depends on gets
-explained, the rest gets named.
-
-31 slash commands, including three dashboards — `/scd-sdd:status` (all three levels in one view,
-plus the next command to run), `/scd-sdd:status-specs`, `/scd-sdd:status-impl` (merge-safety of
-every lot PR) — and `/scd-sdd:migrate`, which picks up a project coming from the three former
-plugins **and converts a foundation written before the merge**: `brief` + `prd` become
-`docs/produit.md`, `stack` + `archi` become `docs/technique.md`, content moved and never rewritten,
-`FR`/`SC` numbers untouched so no already-written spec loses its backref, and old files deleted only
-as a separate, explicit approval. The journal is never rewritten — one file will carry both
-vocabularies, and that is correct. Replaces `scd-project-docs`, `scd-feature-specs` and
-`scd-implement`.
-
-## Installation
-
-```bash
-# Add the marketplace
-/plugin marketplace add sebc-dev/marketplace
-
-# Install a plugin
-/plugin install scd-astro@sebc-dev-marketplace
-/plugin install scd-writer@sebc-dev-marketplace
-/plugin install scd-svelte@sebc-dev-marketplace
-/plugin install scd-tauri@sebc-dev-marketplace
-/plugin install scd-flutter@sebc-dev-marketplace
-/plugin install scd-sdd@sebc-dev-marketplace
-/plugin install scd-atlas@sebc-dev-marketplace
-```
-
-## License
-
-MIT

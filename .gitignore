@@ -3,3 +3,5 @@ node_modules/
 *.local.json
 .DS_Store
 *.stackdump
+__pycache__/
+*.pyc

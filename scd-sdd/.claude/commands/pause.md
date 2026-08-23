@@ -45,9 +45,9 @@ Ratio : 40% humain / 60% AI (tu composes depuis la session ; l'humain valide ava
 - **Tu commites la fiche**, dans un commit isolé dont le `git add` est **scopé au fichier** — sans
   quoi `/scd-sdd:run` tombera en `blocked-dirty-tree`. Tu ne commites **jamais** le code en vol.
 - **Tu n'écris aucun contenu de document et tu ne joues aucune phase.** Pas de `spec.md`, pas de
-  `tasks.md`, pas de ligne de journal.
+  le fichier du ticket.
 - **Plafond ~50 lignes.** À l'**écriture initiale**, dépasser signale un périmètre de feature :
-  dis-le et renvoie vers `/scd-sdd:kickoff-feature`. À l'**actualisation**, ça signale
+  dis-le et renvoie vers `/scd-sdd:spec`. À l'**actualisation**, ça signale
   l'accumulation : élague d'abord (étape 4) — le renvoi ne vaut que si la fiche élaguée dépasse
   encore.
 - **Le problème avant les options.** Avant de faire valider ou de faire trancher, dis en deux ou
@@ -76,7 +76,7 @@ Ratio : 40% humain / 60% AI (tu composes depuis la session ; l'humain valide ava
    sinon tu en ouvres une neuve. **Annonce ce que tu retiens**, ne devine pas.
 
 2. **Résous la portée.** Le travail touche `specs/NNN-slug/` ou son code → `NNN-slug`, plus
-   `· lot Rn` si un lot est en jeu ; il touche le socle → `socle` ; sinon → `hors-cycle`. Ambigu →
+   `· ticket NN` si un ticket est en jeu ; il touche le socle → `socle` ; sinon → `hors-cycle`. Ambigu →
    `AskUserQuestion`.
 
 3. **Prends l'ancre** : `git rev-parse --abbrev-ref HEAD` et `git rev-parse --short HEAD`, plus la
@@ -120,7 +120,7 @@ Ratio : 40% humain / 60% AI (tu composes depuis la session ; l'humain valide ava
 <report>
 ```
 ⏸ Chantier posé — « Verrouillage du compte après 5 échecs »
-   docs/chantiers/en-cours/2026-08-04-verrou-compte.md · portée 001-auth · lot R2
+   docs/chantiers/en-cours/2026-08-04-verrou-compte.md · portée 001-auth · ticket R2
    branche impl/auth-R2 · a1b2c3d · commit 4f2e1a0
 
    À recharger au retour : 2 fichiers à lire (118 l.) · 1 extrait ciblé · 1 question déléguée
@@ -141,19 +141,10 @@ quatre classes atteignent l'humain, et `/scd-sdd:resume` rend le même compte au
 - Tu ne fais pas le travail, tu le consignes.
 - Tu ne commites ni ne pousses le code en vol ; tu ne crées ni ne changes aucune branche.
 - Tu ne recopies aucun contenu de fichier dans la fiche — que des références.
-- Tu n'écris aucune ligne de journal : la fiche **est** le fait.
 - Tu ne déplaces aucune fiche entre répertoires — c'est `/scd-sdd:resume` qui change l'état.
 - Tu ne consignes pas une décision **structurante** : elle va dans `docs/adr/_candidates/`. Ni un
   changement de comportement : il va dans `spec.md`.
 - Tu ne promets pas que la reprise sera automatique. Elle sera **moins chère**, jamais gratuite.
-
-## Consigne au journal
-
-**Aucune.** Tu ne joues aucune phase du cycle, et le fait que tu produis est la **fiche
-elle-même** — l'écrire aussi au journal mettrait la même information à deux endroits et ferait
-recroître un fichier partagé. C'est de nature, pas un oubli.
-
-Le lien du chantier avec une feature passe par son champ `Portée`, que `/scd-sdd:status` greppe.
 
 ## Skill active
 

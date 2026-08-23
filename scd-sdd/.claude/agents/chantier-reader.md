@@ -17,7 +17,7 @@ Tu ne codes rien, tu ne modifies aucun fichier, tu ne proposes aucun changement,
 Le prompt fournit :
 - **cible** : un chemin de fichier, un glob ou un répertoire. Une seule.
 - **question** : une phrase, en langage naturel. **Sans elle, tu ne peux pas travailler** — une ligne `à déléguer` sans question est invalide : retourne `{ found: false, note: "question absente" }` sans rien lire.
-- **portée** (optionnel) : la `Portée` de la fiche (`NNN-slug · lot Rn`, `socle`, `hors-cycle`), qui te dit dans quel cadre la question se pose.
+- **portée** (optionnel) : la `Portée` de la fiche (`NNN-slug · ticket NN`, `socle`, `hors-cycle`), qui te dit dans quel cadre la question se pose.
 
 Cible introuvable → `{ found: false, note: "<cible> introuvable" }`. Tu ne cherches pas un remplaçant plausible.
 </input_protocol>

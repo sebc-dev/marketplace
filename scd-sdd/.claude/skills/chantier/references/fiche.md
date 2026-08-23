@@ -2,20 +2,12 @@
 
 Chargée par ce qui **écrit** une fiche, et par rien d'autre : `/scd-sdd:pause` (intégralement — seul
 applicateur de `<elagage>`), `/scd-sdd:note` (intégralement **sauf `<elagage>`** — une fiche
-d'archive naît fermée), `/scd-sdd:analyze`, `/scd-sdd:audit` et `/scd-sdd:livraison` (`<interdits>`,
-`<template>` et `<frontiere>`), `/scd-sdd:premortem` de cible `chantier` (`<interdits>` et
-`<template>`), et l'agent `premortem-applier` (`<template>` seul — il inscrit une fiche
-`en-attente/` déjà approuvée, il n'en arbitre pas le contenu).
+d'archive naît fermée), et `/scd-sdd:run` / `/scd-sdd:run-parallel` (`<interdits>` et `<template>`)
+quand un run se **bloque** : la fiche est alors le seul endroit où ce fait laisse une trace.
 
-`<frontiere>` ne se charge que là où le choix se pose : celle qui écrit une fiche **et** journalise
-par ailleurs doit trancher — ce contenu va-t-il dans la fiche, ou dans la ligne de journal ?
-`analyze`, `audit` et `livraison` la chargent à ce titre. `premortem` de cible `chantier` n'a pas ce
-choix : elle ne journalise pas, la fiche **est** le fait.
-
-Les commandes qui **lisent** une fiche — `status`, `status-impl`, les phases specs devant une fiche
-de gate, `linear` pour cibler un chantier, le hook `SessionStart` — n'en ont **pas** besoin :
-l'anatomie de la fiche et la ligne `Portée` sont dans le `SKILL.md`. `migrate` non plus : il ne
-scaffolde que les trois répertoires.
+Les commandes qui **lisent** une fiche — `status`, `linear` pour cibler un chantier, le hook
+`SessionStart` — n'en ont **pas** besoin : l'anatomie de la fiche et la ligne `Portée` sont dans le
+`SKILL.md`. `migrate` non plus : il ne scaffolde que les trois répertoires.
 
 <pourquoi>
 
@@ -43,7 +35,7 @@ il devient l'archive de ce qui a été fait et pourquoi.
 Le repo refuse les fichiers d'état. Une fiche n'en est pas un ; trois propriétés le
 garantissent :
 
-1. **Aucun fait dérivable n'a le droit d'y figurer** — état de lot, résultat de tests, verdict
+1. **Aucun fait dérivable n'a le droit d'y figurer** — état d'un ticket, résultat de tests, verdict
    de gate, inventaire de fichiers, pourcentage d'avancement, numéro de PR présenté comme un
    état. Un artefact qui ne contient aucun fait dérivable **ne peut pas contredire les
    fichiers**.
@@ -67,14 +59,14 @@ dire dépend de la **nature** de la fiche, et l'issue avec :
 
 | Nature | Un dépassement signale | L'issue |
 |---|---|---|
-| travail ouvert (`pause`) | à l'écriture initiale : un périmètre de feature ; à l'actualisation : l'accumulation | renvoyer vers `/scd-sdd:kickoff-feature` ; **élaguer d'abord** (bloc `<elagage>`), le renvoi ne vaut que si la fiche élaguée dépasse encore |
+| travail ouvert (`pause`) | à l'écriture initiale : un périmètre de feature ; à l'actualisation : l'accumulation | renvoyer vers `/scd-sdd:spec` ; **élaguer d'abord** (bloc `<elagage>`), le renvoi ne vaut que si la fiche élaguée dépasse encore |
 | archive (`note`) | la fiche **héberge** la connaissance au lieu de l'**indexer** — le travail est terminé, ce n'est jamais une feature | router le surplus — candidat ADR, `spec.md`, message de commit — et garder l'index |
-| liste de corrections (`analyze` · gate, `audit`) | un contrat très cassé — la taille suit le nombre de findings | format serré (une ligne par finding), coût annoncé, **jamais tronquer** : corriger le contrat, pas raccourcir la fiche |
+| run bloqué (`run`, `run-parallel`) | le workflow s'est arrêté — la taille suit ce qu'il a produit avant | format serré : le statut `blocked-*`, ce qui a été écrit, ce qui reste. **Jamais tronquer** la sortie d'erreur |
 
 ```markdown
 # Verrouillage du compte après 5 échecs
 
-Portée : 001-auth · lot R2
+Portée : 001-auth · ticket 02
 Ouvert le 2026-08-04 · Actualisé le 2026-08-05 · branche `impl/auth-R2` · HEAD `a1b2c3d`
 
 ## Objectif
@@ -104,15 +96,15 @@ Faire passer FR-004 au vert sans toucher au middleware de session.
 - Les règles du `## Contexte à charger` — les quatre classes, leurs seuils, le budget — et les
   exemples des quatre classes vivent dans `references/manifeste.md`, qui se charge **bloc par
   bloc** : `<regle_maitresse>`, `<classes>` et `<controles>` pour écrire. Le template n'en garde
-  qu'**une** ligne, et c'est une exception assumée à « charge ou recopie » (§D35) : `analyze`,
-  `livraison`, `audit` et `premortem` écrivent un manifeste — deux ou trois documents, tous `à lire` — sans
+  qu'**une** ligne, et c'est une exception assumée à « charge ou recopie » (§D35) : `run` et
+  `run-parallel` écrivent un manifeste — le ticket et sa spec, tous deux `à lire` — sans
   jamais charger `<classes>`, il leur faut la forme d'une ligne sous les yeux.
 
 **Le commit.** Une fiche est **versionnée, et commitée par la commande qui l'écrit**, dans un commit
 isolé dont le `git add` est **scopé à la fiche**. `git status --porcelain` non vide fait tomber
 `/scd-sdd:run` en `blocked-dirty-tree` : une fiche non commitée casserait le niveau
 implémentation ; le code en vol, lui, reste non commité. Corollaire assumé — la fiche d'un chantier
-lié à un lot arrive dans le diff de la PR de ce lot.
+lié à un ticket arrive dans le diff de la PR de ce ticket.
 
 </template>
 
@@ -121,7 +113,7 @@ lié à un lot arrive dans le diff de la PR de ce lot.
 ## L'élagage à l'actualisation — `pause` seul
 
 Appliqué par `/scd-sdd:pause` quand il **actualise** une fiche existante — jamais à l'écriture
-initiale, jamais par un autre écrivain (`premortem` **signale** un dépassement, il n'élague pas).
+initiale, jamais par un autre écrivain.
 Ce n'est pas une compression : une actualisation ajoute et rien ne retirait, si bien que la fiche
 finissait par porter des faits que le disque porte désormais — l'élagage est le contrôle de
 l'interdit n° 1 **dans le temps**.
@@ -145,13 +137,18 @@ retrait silencieux perdrait un acquis sans témoin.
 
 <frontiere>
 
-## La frontière avec le journal
+## La frontière : ce qui vit ailleurs n'entre pas dans une fiche
 
-> Ce qui garde de la valeur **une fois le travail terminé** va au journal ; ce qui n'a de valeur
-> que **pour le reprendre** va dans la fiche.
+> Ce qu'un **artefact du cycle** porte déjà n'entre pas dans une fiche ; ce qui n'a de valeur que
+> **pour reprendre le travail** y entre, et n'a nulle part ailleurs où aller.
 
-Concrètement : `docs/journal/*.md` porte les **phases du cycle** (une ligne = un événement daté,
-immuable), `docs/chantiers/` **tout le reste**. Un chantier fermé n'écrit **aucune** ligne de
-journal — son lien avec une feature passe par `Portée`, greppé par `status`. Contrat : skill `journal`.
+Concrètement : un ticket porte ses critères, un ADR porte sa décision, `git log` porte ce qui a été
+commité, `.claude/guard-log.jsonl` porte les tentatives bloquées. Une fiche qui les redirait
+créerait une seconde vérité qui dérive. Ce qu'elle porte, et qu'aucun de ces fichiers ne porte :
+**l'intention en vol** — ce que tu allais faire, ce que tu as écarté et pourquoi, ce qu'il faut
+recharger pour continuer.
+
+Un chantier fermé n'écrit **rien** ailleurs : son lien avec une feature passe par `Portée`, greppée
+par `status`.
 
 </frontiere>

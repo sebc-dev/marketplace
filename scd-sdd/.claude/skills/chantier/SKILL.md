@@ -7,10 +7,10 @@ description: |
   sélection par branche pour les worktrees, contrôle de fraîcheur, cycle de vie. Deux
   références chargées bloc par bloc : fiche.md pour qui ÉCRIT, manifeste.md pour le
   contexte rechargé à la reprise. Se charge pendant /scd-sdd:pause, resume et note, quand
-  analyze, ci, premortem ou audit écrivent leur fiche, quand status, status-impl, une phase
+  run ou run-parallel ouvrent une fiche sur un run bloqué, quand status, une commande
   specs devant une fiche de gate, linear ou le hook SessionStart en lisent une sans
   l'écrire, et quand migrate scaffolde les trois répertoires. Porte UNIQUEMENT les
-  chantiers : ni la chronologie des phases jouées (skill journal), ni la dérivation de
+  chantiers : ni la dérivation de
   l'état du cycle depuis les fichiers (skills project-docs, feature-specs, implement), ni le
   contenu des documents produits. Une fiche ne dit jamais où en est le projet.
 ---
@@ -38,7 +38,7 @@ docs/chantiers/
   **aucun** champ `État :` dans une fiche : un chemin et un champ finiraient par se contredire, et
   rien ne trancherait.
 - **`en-cours/` peut contenir plusieurs fiches** — c'est le cas normal quand `run-parallel` fait
-  tourner plusieurs lots en worktrees isolés. La branche lève l'ambiguïté (§ « Cibler un
+  tourner plusieurs tickets en worktrees isolés. La branche lève l'ambiguïté (§ « Cibler un
   chantier »).
 - **Nom : `AAAA-MM-JJ-slug.md`, daté de l'ouverture**, jamais renommé. Le tri par nom donne la
   chronologie gratuitement, dans les trois répertoires. Aucun compteur à maintenir.
@@ -54,10 +54,10 @@ même valeur partout, mais ce qu'un dépassement signale dépend de la **nature*
 (`references/fiche.md`, bloc `<template>`). Le **template complet** est dans le même bloc — il ne
 se charge que pour écrire.
 
-- **`Portée`**, vocabulaire fermé donc greppable : `NNN-slug · lot Rn` | `NNN-slug · gate` |
-  `NNN-slug` | `socle` | `socle · audit` | `hors-cycle`. Deux sont des listes de corrections :
-  `· gate`, laissée par `/scd-sdd:analyze` (contrat `feature-specs/references/analyze.md`, section
-  `<gate>`), et `socle · audit`, laissée par `/scd-sdd:audit` (`audit/references/dimensions.md`).
+- **`Portée`**, vocabulaire fermé donc greppable : `NNN-slug · ticket NN` | `NNN-slug` | `socle` |
+  `hors-cycle`. La forme `· ticket NN` est celle
+  qu'ouvrent `/scd-sdd:run` et `/scd-sdd:run-parallel` sur un run **bloqué** — le seul fait de ce
+  niveau qu'aucun fichier ne dérive.
 - **`branche`** porte une double charge : c'est l'**ancre de fraîcheur** *et* la **clé de sélection
   par worktree**. Ne l'omets jamais.
 - Un champ **`Bloqué par :`** est admis sous l'en-tête quand le chantier attend un tiers (review,
@@ -79,7 +79,7 @@ identique partout**, dans cet ordre :
    répertoires. Plusieurs correspondances → liste et `AskUserQuestion`.
 2. Sinon, la fiche de `en-cours/` dont le champ **`branche`** vaut la branche courante
    (`git rev-parse --abbrev-ref HEAD`) → c'est elle. **C'est le cas worktree**, et c'est ce qui
-   rend la sélection déterministe quand plusieurs lots tournent en parallèle.
+   rend la sélection déterministe quand plusieurs tickets tournent en parallèle.
 3. Sinon, s'il n'y a qu'**une seule** fiche dans `en-cours/` → la prendre et **l'annoncer**.
 4. Sinon (0 ou ≥ 2 sans correspondance) → **ne devine jamais** : liste les candidates avec leur
    portée et leur date, et demande via `AskUserQuestion`.
@@ -92,8 +92,8 @@ ne la recopient jamais.
 
 ## Contrôle de fraîcheur
 
-Une fiche est une intention datée : tout lecteur la contrôle **avant** de la restituer, comme la
-règle de péremption du journal. Trois contrôles, indépendants :
+Une fiche est une intention datée : tout lecteur la contrôle **avant** de la restituer. Trois
+contrôles, indépendants :
 
 | Contrôle | Comment | Verdict |
 |---|---|---|
@@ -111,15 +111,14 @@ l'invalidation se **calcule à la lecture**, elle n'est pas un artefact.
 |---|---|---|
 | ouverture / actualisation | `pause` | écrit dans `en-cours/` après validation humaine, puis commite |
 | travail déjà terminé | `note` | écrit directement dans `archive/`, avec `## Issue` |
-| liste de corrections | `analyze` (gate specs) · `audit` (socle) | ouvre ou actualise `en-cours/…-gate-<cible>.md` ou `…-audit-<document>.md` ; au verdict vert — `PRÊT`, `CONFORME` —, ajoute `## Issue` et archive. L'audit ne touche **jamais** le document jugé |
-| durcissement différé | `ci` · `premortem` | écrivent dans `en-attente/`, repris via `resume`. La cible `chantier` de `premortem` édite la fiche et actualise `Actualisé le`, **sans ligne de journal** |
+| run bloqué | `run` · `run-parallel` | ouvrent `en-cours/…-run-<slug>-<NN>.md` quand le workflow s'arrête sur un `blocked-*` : aucun critère coché, aucune PR — **la fiche est la seule trace** |
 | annonce | hook `SessionStart` | lit l'en-tête, n'écrit rien, n'affirme aucune fraîcheur |
-| signalement | `status`, `status-impl`, phases specs | lisent sous contrôle de fraîcheur — l'en-tête seul pour les `status` |
+| signalement | `status` | lit sous contrôle de fraîcheur — l'en-tête seul |
 | mise de côté · fermeture · abandon | `resume` | `git mv` vers `en-attente/` ; ou `## Issue` puis `git mv` vers `archive/` |
 
 Une fiche archivée n'est **jamais** supprimée : l'archive est la chronologie du hors-cycle, que son
-tri par nom rend lisible sans index. La frontière avec le journal est dans `references/fiche.md`,
-bloc `<frontiere>`.
+tri par nom rend lisible sans index. Ce qui n'a **pas** sa place dans une fiche est dans
+`references/fiche.md`, bloc `<frontiere>`.
 
 ## Références
 
@@ -131,5 +130,5 @@ fait avec ce `SKILL.md` et lui seul.
 
 | Fichier | Qui la charge, et quels blocs |
 |---|---|
-| `references/fiche.md` | **écrire une fiche** — `pause` intégralement (seul applicateur de `<elagage>`, à l'actualisation) ; `note` intégralement sauf `<elagage>` ; `analyze`, `audit` et `ci` : `<interdits>`, `<template>` et `<frontiere>`, parce qu'elles journalisent par ailleurs ; `premortem` (cible `chantier`) : `<interdits>` et `<template>`, elle ne journalise pas ; l'agent `premortem-applier` : `<template>` seul |
-| `references/manifeste.md` | **le contexte à charger** — `pause` : `<regle_maitresse>` `<classes>` `<controles>` ; `resume` : `<classes>` `<lecture>` `<delegation>` ; `premortem` (cible `chantier`) : les trois d'écriture pour écrire, `<classes>` `<lecture>` pour lire, plus `<delegation>` s'il résout une ligne `à déléguer` |
+| `references/fiche.md` | **écrire une fiche** — `pause` intégralement (seul applicateur de `<elagage>`, à l'actualisation) ; `note` intégralement sauf `<elagage>` ; `run` et `run-parallel` : `<interdits>` et `<template>`, sur un run bloqué seulement |
+| `references/manifeste.md` | **le contexte à charger** — `pause` : `<regle_maitresse>` `<classes>` `<controles>` ; `resume` : `<classes>` `<lecture>` `<delegation>` |

@@ -1,287 +1,148 @@
 ---
-description: "Vue d'ensemble des trois niveaux du cycle — socle, specs, implémentation — en une seule lecture, plus les chantiers ouverts. Dérive l'état des fichiers, extrait de docs/journal/*.md les faits non dérivables (verdict analyze, issue des lots) en contrôlant leur péremption, et donne UNE prochaine commande. Le point d'entrée quand on rouvre un projet. Lecture seule."
-argument-hint: "(aucun — scanne docs/ et specs/)"
+description: "Où en est le projet, en une lecture : le socle (les trois artefacts et l'état des gardes), les features et leurs tickets, les PR ouvertes avec leur SÛRETÉ DE MERGE (OK, DANGEREUX, EMPILÉ EN ATTENTE, ORPHELIN), les chantiers ouverts, et le compte des tentatives bloquées par les gardes. Tout est DÉRIVÉ des fichiers et de la forge — aucun fichier d'état, aucun journal. Donne UNE prochaine commande. Lecture seule : n'écrit rien, et n'a aucun outil pour le faire."
+argument-hint: "[NNN|slug — optionnel, sinon tout le projet]"
 allowed-tools:
   - Read
   - Glob
   - Grep
-  - Bash(git log *)
-  - Bash(git rev-parse *)
+  - Bash(git fetch *)
+  - Bash(git symbolic-ref *)
   - Bash(git merge-base *)
-  - Bash(grep *)
-  - Bash(ls *)
+  - Bash(git rev-parse *)
+  - Bash(git show *)
+  - Bash(git ls-remote *)
+  - Bash(git log *)
+  - Bash(gh pr list *)
+  - Bash(gh pr view *)
+  - Bash(glab mr list *)
+  - Bash(glab mr view *)
 ---
 
 ## Contexte
 
-Tu réponds à « **où on en est ?** » — la question qu'on pose en rouvrant un projet sans savoir
-s'il lui manque un document du socle, une gate, ou juste le prochain lot. Une vue, les trois
-niveaux, **une** prochaine commande.
+Tu réponds à **« où en est ce projet, et qu'est-ce que je lance maintenant ? »**. C'est le point
+d'entrée après un `/clear`, ou après une semaine d'absence.
 
-Tu es la vue **d'ensemble**, et c'est ta contrainte principale : tu rends chaque niveau en
-quelques lignes, puis tu **renvoies** pour le détail. `/scd-sdd:status-specs` croise les
-« Fichiers touchés » des features ; `/scd-sdd:status-impl` classe la sûreté de merge des PR.
-Refaire leur travail ici rendrait cette vue illisible et ces deux commandes inutiles.
+**Tout se dérive.** Les fichiers disent l'état du socle et des features ; la forge dit l'état des PR ;
+les fiches de `docs/chantiers/` disent ce qu'un `/clear` a interrompu ; `.claude/guard-log.jsonl` dit
+ce que l'agent a tenté d'écrire et n'a pas pu. **Il n'y a aucun fichier d'état à maintenir, et il n'y
+a plus de journal** (`DECISIONS.md` §D41) : une session qui en chercherait un chercherait un fichier
+qui n'existe pas.
 
-Tu croises **quatre sources** :
+Cette commande a remplacé trois tableaux de bord (`status`, `status`, `status`). Elle rend
+**un** rapport, et son argument le restreint à une feature.
 
-- **les fichiers**, qui donnent l'état courant des trois niveaux — robuste, rien à maintenir ;
-- **`docs/journal/*.md`**, qui donnent les cinq faits que les fichiers ne portent pas : verdict
-  d'une gate `analyze`, verdict d'un `audit`, `premortem` appliqué, contrat révisé, issue d'un lot
-  (y compris un run **bloqué**, qui ne coche rien et n'ouvre aucune PR) ;
-- **`docs/chantiers/`**, dont l'arborescence donne le travail ouvert hors des phases, ou interrompu
-  en vol — l'état est le répertoire, donc un `ls` suffit ;
-- **les dates**, qui décident si une ligne de journal ou une fiche vaut encore quelque chose.
-
-**Tu extrais, tu n'ouvres pas.** Un journal ne se `Read` jamais en entier : tu en tires par motif
-les quelques lignes qui t'intéressent (étape 5). C'est ce qui garde ton coût quasi constant quel
-que soit le nombre de features.
-
-Ratio : 5% humain / 95% AI (lecture mécanique ; l'humain choisit la suite).
+Ratio : 10% humain / 90% AI (lecture mécanique ; l'humain choisit la suite).
 
 ## Règles absolues
 
-- **Lecture seule.** Tu ne modifies aucun fichier — **ni un journal, ni une fiche de chantier** —
-  et tu n'as pas `Edit`. Tu ne joues aucune phase, donc tu ne consignes rien : c'est de nature,
-  pas un oubli.
-- **Dérive l'état des fichiers**, jamais du contexte (il a été effacé) ni d'un fichier d'état (il
-  dériverait).
-- **Une ligne de journal n'est jamais un état.** C'est un événement daté. Tu ne la présentes comme
-  une gate valide qu'après le **contrôle de fraîcheur**.
-- **Une fiche de chantier n'est jamais un état de projet.** C'est une intention datée, et elle peut
-  être fausse. Tu l'affiches **à part**, sous contrôle de fraîcheur, jamais dans une colonne du
-  tableau des features — et elle ne modifie ni la phase d'une feature, ni l'avancement d'un lot,
-  ni la prochaine commande que tu dérives.
-- **Tu lis les en-têtes de fiche, jamais leur corps.** Restituer une intention et recharger son
-  manifeste est le travail de `/scd-sdd:resume`, et ça coûte un contexte qu'un tableau de bord ne
-  dépense pas.
-- **Tu n'ouvres jamais un fichier de journal en entier.** Tu extrais par motif (`grep`), et tu ne
-  lis intégralement que `docs/journal/socle.md`, qui est borné par construction.
-- **Tu ne recopies aucune règle déjà écrite.** Trois sources font autorité et tu les charges : la
-  table de dérivation de phase (skill `feature-specs`, § « Cibler une feature »), l'avancement des
-  lots (`implement/references/tasks-parsing.md`), la règle de fraîcheur
-  (`feature-specs/references/status.md`, colonne `Gate`).
-- **Tu ne descends pas dans le détail.** Aucun appel `gh`/`glab`, aucune classification de sûreté
-  de merge, aucun croisement des « Fichiers touchés » : c'est le périmètre des deux `status`
-  détaillés, vers lesquels tu renvoies.
-- **Les runs en vol restent hors périmètre.** Tu ne scannes ni `git worktree list` ni les branches
-  `impl/<slug>-Rn`. Un run interrompu se voit **au journal** (`⛔ blocked-*`) et, s'il a été relayé,
-  dans le bloc « Chantiers » — jamais par une inspection du dépôt.
-- **Tu n'inventes aucune date**, et tu ne reconstruis jamais le journal a posteriori.
+- **Tu n'écris rien.** Ton `allowed-tools` n'a ni `Write`, ni `Edit`, ni aucune commande git qui
+  modifie — c'est la **preuve**, pas une phrase de ce corps.
+- **Tu ne devines aucun état.** Un fait que tu ne peux pas dériver se dit **inconnu**, jamais
+  supposé. C'est particulièrement vrai des PR quand ni `gh` ni `glab` n'est disponible.
+- **Une seule prochaine commande.** Trois suggestions valent zéro suggestion. S'il y a plusieurs
+  fronts, nomme celui qui débloque le reste et **dis pourquoi**.
+- **Une PR non classée n'existe pas.** Chaque PR ouverte reçoit sa classe de sûreté ; « je n'ai pas
+  pu déterminer » est une classe et se dit.
+- **Un ID se cite avec son intitulé** à sa première mention — « 03 (export CSV vide) », jamais
+  « 03 » nu. La règle vaut pour **tout** identifiant que tu emploies.
+- **Tu parles la langue de l'humain.**
+
+## Définitions
+
+- **Ticket démarrable** — à faire ou en cours, et **tous** ses bloqueurs sont faits.
+- **PR empilée** — sa base n'est pas la branche par défaut mais la branche d'un autre ticket.
+- **Orphelin** — un ticket dont la PR a été mergée dans une branche de ticket intermédiaire
+  (cul-de-sac) au lieu de la branche par défaut : **son code est absent de `main`**.
 
 ## Processus
 
-1. **Charge les trois sources de vérité** : la section « Cibler une feature » du skill
-   `feature-specs` (dérivation de phase), `references/status.md` du même skill (colonne `Gate`,
-   règle de fraîcheur, dégradation « journal absent »), et `references/tasks-parsing.md` du skill
-   `implement` (lots `Rn`, tâches `Tn`, état d'un lot).
+1. **Charge le skill `specs`** pour la table « Cibler une feature » et la dérivation d'état, et le
+   skill `implement` (`references/tickets-parsing.md`, blocs `<etats>` et `<resolution>`).
+   Communique en français.
 
-2. **Niveau socle** — l'existence des fichiers, rien de plus, dans l'ordre de la chaîne du skill
-   `project-docs` : `docs/produit.md` → `produit`, `docs/technique.md` → `technique`,
-   `docs/adr/*.md` → `adr`, `docs/ci.md` **puis** `CLAUDE.md` → `livraison`. **Quatre phases,
-   cinq documents** : la dernière en produit deux, et elle est la seule qui puisse être à moitié
-   faite — `docs/ci.md` seul se rend **incomplet**, jamais fait. C'est l'état que
-   `/scd-sdd:init-project` établit ; tu le relis, tu ne le complètes pas. Un fichier présent
-   contenant encore un `[NEEDS CLARIFICATION]` compte comme **incomplet**, pas comme fait —
-   nomme-le.
+2. **Le socle** — présence de `docs/adr/` *(et le compte d'ADR)*, `docs/ci.md`, `CLAUDE.md`. Puis
+   les **gardes** : `.claude/guards.json` existe-t-il, combien de chemins protège-t-il, et
+   `.claude/guard-log.jsonl` porte combien de lignes ? **Un socle incomplet se dit avant tout le
+   reste** : il change la valeur de tout ce qui suit.
 
-   Un projet suivi avant `1.19.0` peut encore porter `docs/brief.md`, `prd.md`, `stack.md` ou
-   `archi.md` : ne les compte pas comme des phases, **nomme-les** et renvoie vers
-   `/scd-sdd:migrate`, qui est le seul chemin de conversion.
+3. **Les features.** `specs/*/` ; pour chacune, l'état selon la table du skill `specs`, puis, si
+   elle a des tickets : combien de faits, combien démarrables, lesquels bloqués et par quoi.
+   ⚠️ **Signale les features dont les lignes `Fichiers :` se recoupent** — deux features actives sur
+   les mêmes fichiers est le conflit qu'on découvre au merge, jamais avant.
 
-3. **Niveau specs** — pour chaque `specs/NNN-slug/`, applique la **table de dérivation de phase**
-   du skill `feature-specs`. Relève aussi le mode (`DELTA.md` présent → delta).
+4. **Les PR.** `git fetch`, puis `gh pr list` / `glab mr list`. Pour chaque PR de ticket ouverte,
+   classe-la :
 
-4. **Niveau implémentation** — pour chaque feature ayant un `tasks.md`, compte les lots `Rn`
-   **faits / en cours / à faire** depuis les cases locales, et détermine le **prochain lot
-   lançable** (premier `Rn` non fait dont toutes les dépendances `dépend de :` sont faites).
-   Les cases sont autoritaires à ce niveau.
+   | Classe | Condition | Ce que ça veut dire |
+   |---|---|---|
+   | **OK** | base = branche par défaut | mergeable telle quelle |
+   | **DANGEREUX** | base = branche d'un ticket **déjà mergé** | merger **orphelinerait** ce code — rebaser d'abord (`/scd-sdd:sync`) |
+   | **EMPILÉ EN ATTENTE** | base = branche d'un ticket **non mergé** | normal ; attendre que la base soit mergée |
+   | **ORPHELIN** | mergée, mais son code est absent de la branche par défaut | rattraper (`/scd-sdd:reland`) |
+   | **INCONNU** | ni `gh` ni `glab`, ou la base ne se résout pas | dis-le, ne suppose pas |
 
-5. **Extrais des journaux, sans les ouvrir.** Les dates étant en ISO, le tri lexical est
-   chronologique :
+   Un **orphelin** se détecte en croisant l'état « mergée » de la PR et l'absence de son contenu à
+   `origin/<défaut>` — les critères cochés du ticket sont le signal le plus simple.
 
-   ```bash
-   grep -h '| analyze |'   docs/journal/NNN-slug.md | tail -1   # dernier verdict de la feature
-   grep -h '| premortem |' docs/journal/NNN-slug.md | tail -1   # dernière passe de durcissement
-   grep -h '| run R'       docs/journal/NNN-slug.md              # issue de chaque lot
-   grep -h '^| 20'         docs/journal/*.md | sort -r | head -5 # derniers événements, tous fichiers
-   ```
+5. **Les chantiers.** `docs/chantiers/en-cours/` et `en-attente/` : titre, `Portée`, date
+   d'actualisation. **C'est ici que vivent les runs bloqués** : un `/scd-sdd:run` qui échoue ne coche
+   aucun critère et n'ouvre aucune PR — sans sa fiche, il serait indiscernable d'un ticket jamais
+   lancé. Une fiche dont la `Portée` nomme un ticket est donc un fait de premier ordre.
 
-   `docs/journal/socle.md` est le seul que tu peux lire en entier : il est borné à quelques lignes,
-   écrites une fois. Il peut y figurer une ligne `premortem` — le durcissement s'applique aussi au
-   socle. Elle n'y **manque** jamais : le premortem n'est pas une phase, tu ne le réclames pas.
+6. **La trace des gardes.** Si `.claude/guard-log.jsonl` n'est pas vide : le **compte**, la règle la
+   plus fréquente, la date de la plus récente. Une ligne, pas un tableau — le détail est un fichier
+   que l'humain ouvre, et `/scd-sdd:guards` le déroule.
 
-6. **Contrôle la fraîcheur de chaque gate** — applique la règle de `references/status.md`
-   (`git log -1 --format=%cI -- <fichier>` sur `spec.md`, `plan.md` et `tasks.md`, repli sur la
-   mtime). Rien modifié après la gate → **✅ validé** ; un document modifié après → **⚠ périmé**,
-   avec le fichier et sa date, et `analyze` redevient la prochaine commande de cette feature.
-
-7. **Compose les derniers événements** : les 3 à 5 dernières lignes du journal, **tous fichiers
-   confondus**, les plus récentes d'abord. C'est la chronologie, pas un état — ne la commente
-   pas, elle se lit seule. Ajoute les 2 ou 3 derniers chantiers archivés
-   (`ls docs/chantiers/archive/ | tail -3`) : le tri par nom **est** leur chronologie, et c'est la
-   seule trace du travail hors-cycle.
-
-8. **Relève les chantiers**, sans ouvrir un seul corps de fiche :
-   `ls docs/chantiers/en-cours/` et `ls docs/chantiers/en-attente/`. Pour chaque fiche de
-   `en-cours/`, lis **l'en-tête seul** — titre, `Portée`, `Actualisé le`, `branche` — et applique
-   le **contrôle de fraîcheur** du skill `chantier` (ancre : branche courante et
-   `git merge-base --is-ancestor` ; âge : plus de 14 jours). `en-attente/` n'est que **compté**.
-
-   Aucun chantier → pas de bloc, et **aucune mention** : c'est le cas normal.
-
-9. **Choisis LA prochaine commande**, une seule, par ordre de priorité :
-
-   1. **Socle incomplet** → sa première phase manquante. Si des features sont déjà en vol,
-      signale-le comme un **trou de traçabilité** (des specs qui tracent vers un `docs/produit.md`
-      absent) sans
-      effacer le travail en cours du rapport.
-   2. **Gate périmée** → `/scd-sdd:analyze NNN`. Elle passe devant : sinon le contrat part à
-      l'implémentation sur un verdict qui ne vaut plus.
-   3. **Dernier run d'un lot bloqué** (`⛔ blocked-*` au journal, aucune case cochée derrière) →
-      `/scd-sdd:run NNN Rn`, à relancer.
-   4. Sinon la **feature la plus avancée** : gate `PRÊT` fraîche et lots restants →
-      `/scd-sdd:run NNN <prochain lot lançable>` ; sinon la commande suivante de sa phase dérivée.
-   5. **Aucune feature** → `/scd-sdd:kickoff-feature`.
-
-   **Un chantier ne devient jamais ta prochaine commande.** L'échelle ci-dessus répond à « que doit
-   faire le projet ensuite » ; un chantier répond à « qu'étais-**tu** en train de faire ». Les
-   mélanger laisserait une intention écraser une nécessité dérivée. Le bloc « Chantiers » est
-   simplement affiché **avant** — parce qu'il est le plus périssable — et il ne remplace rien.
-
-10. **Produis le rapport** selon le bloc `<report>`, avec la prochaine commande de chaque feature
-    prête à copier, argument `NNN` inclus.
-
-<report>
-```
-### Chantiers — docs/chantiers/
-⏸ « Verrouillage du compte après 5 échecs » — portée 001-auth · lot R2
-   actualisé le 05/08 sur `impl/auth-R2` · à jour
-   → /scd-sdd:resume avant de suivre la prochaine commande ci-dessous
-· 2 en attente · dernier archivé : 2026-08-02-vitest-3
-
-## Où on en est
-
-Socle       ✅ complet — produit · technique · 6 ADR · ci · CLAUDE.md
-Specs       2 features · 1 validée · 1 à revalider
-Implém.     001-auth : 2/4 lots faits · PR #10, #12 journalisées
-
-### Features — specs/
-| NNN | Feature | Phase courante                                  | Lots      | Prochaine commande   |
-|-----|---------|-------------------------------------------------|-----------|----------------------|
-| 001 | auth    | ✅ validé (analyze 28/07)                        | 2/4 faits | /scd-sdd:run 001 R3  |
-| 002 | billing | ⚠ analyze PRÊT (26/07) · tasks.md modifié 29/07 | —         | /scd-sdd:analyze 002 |
-
-### Derniers événements — docs/journal/
-30/07  001-auth  run R2    ✅ done · TDD · 4 tests · PR #12
-28/07  001-auth  analyze   PRÊT — 0 Critical
-02/08  chantier  archivé   vitest 1.6 → 3.0
-
-→ Prochaine : /scd-sdd:run 001 R3
-   Détail PR : /scd-sdd:status-impl 001 · Détail specs : /scd-sdd:status-specs
-```
-
-Lire l'exemple : 001 et 002 ont tous deux un `tasks.md`, donc la **dérivation** les dit tous deux
-« à valider » — et elle le dira toujours. C'est le journal, contrôlé en fraîcheur, qui les sépare :
-001 a été gaté et rien n'a bougé depuis, 002 a été édité après le sien.
-
-Ce que la colonne **Phase courante** peut porter :
-
-- `à spécifier` / `à clarifier` / `à planifier` / `à découper` : phase dérivée, aucune gate encore.
-- `✅ validé (analyze JJ/MM)` : dernière ligne `analyze` du journal, aucun document modifié depuis.
-  Ajouter `· premortem JJ/MM` si une ligne `premortem` la suit.
-- `⚠ analyze <verdict> (JJ/MM) · <fichier> modifié JJ/MM` : gate **périmée**.
-- `à valider` sans date : `tasks.md` présent mais aucune ligne `analyze` — jamais gatée, ou journal
-  absent. Ce n'est pas une anomalie.
-
-La ligne **Implém.** ne dit que ce que les cases et le journal portent : lots faits, et les numéros
-de PR **journalisés**. Elle n'affirme jamais qu'une PR est ouverte, mergeable ou orpheline — l'état
-des PR exige `gh`/`glab`, donc `/scd-sdd:status-impl`.
-
-Le bloc **Chantiers** ouvre le rapport parce qu'il est le plus périssable, **pas** parce qu'il
-prime. Ce qu'il peut porter après le titre et la portée :
-
-- `à jour` — l'ancre tient, la fiche a moins de 14 jours ;
-- `⚠ suspect — écrit sur impl/auth-R2, tu es sur main` : l'ancre ne tient plus ;
-- `⚠ ancien (24 j)` ;
-- `✔ consommé (déjà fait) — le test locks_after_fifth_failure existe` → suggère `/scd-sdd:resume`
-  pour le refermer.
-
-Ces quatre mentions se lisent seules : chacune porte son motif dans la même ligne. C'est ce qui
-dispense d'expliquer le vocabulaire des chantiers dans un rapport qui doit rester court.
-
-Plusieurs fiches dans `en-cours/` n'est pas une anomalie : c'est le mode worktree. Liste-les
-toutes, la plus récemment actualisée d'abord.
-</report>
-
-## Dégradations
-
-- **Pas de `docs/`** (ni `produit.md`, ni `technique.md`, ni `CLAUDE.md`) → le projet n'a pas de socle :
-  « Rien à rendre. Ouvre le projet avec `/scd-sdd:init-project`. » N'affiche pas de tableau vide.
-- **Socle présent, `specs/` vide ou absent** → rends le niveau socle, puis « Aucune feature.
-  Démarre avec `/scd-sdd:kickoff-feature [feature]`. »
-- **`docs/journal/` absent** (projet démarré avant le journal, ou avec les trois anciens
-  plugins) → **vue dérivée complète, sans la section « Derniers événements »**, et une ligne de
-  pied qui le dit : « Pas de `docs/journal/` — le verdict `analyze` et l'issue des runs ne sont
-  pas connaissables hors session. Ils apparaîtront aux prochaines phases. » **Toi, tu ne le
-  crées ni ne le reconstruis** : tu es en lecture seule. Si le projet vient des trois anciens
-  plugins, ajoute le renvoi `/scd-sdd:migrate` — c'est la commande qui le crée et reconstitue
-  depuis git les lignes que les artefacts permettent de dater.
-- **`docs/JOURNAL.md` présent** (projet suivi avant l'éclatement du journal) → dis-le en
-  une ligne et renvoie vers `/scd-sdd:migrate`, qui le convertit. **Tu ne le lis pas** et tu ne le
-  convertis pas toi-même : rendre une vue depuis les deux formats te ferait porter deux règles de
-  lecture pour toujours.
-- **`docs/journal/NNN-slug.md` absent pour une feature existante** → phase dérivée seule, sans date.
-- **`docs/chantiers/` absent, ou ses trois répertoires vides** → **pas de bloc « Chantiers », et
-  aucune mention**. C'est le cas normal ; l'annoncer à chaque fois serait du bruit.
-- **Hors dépôt git** → repli sur la mtime pour la fraîcheur, et signale que le contrôle est moins
-  fiable (une copie de fichiers réinitialise les mtime).
-- **Des lots faits, donc des PR probablement en vol** → ajoute toujours le renvoi
-  `/scd-sdd:status-impl NNN`. Tu ne peux voir ni un **🔴 ORPHELIN** ni un **⚠️ DANGEREUX**, et ces
-  deux-là passeraient devant tout ce que tu recommandes.
+7. **Une prochaine commande**, et une seule.
 
 ## Ce que tu NE fais PAS
 
-- Tu ne lances aucune phase et tu ne corriges rien : tu orientes, une commande à la fois.
-- **Tu n'écris rien**, ni dans les documents, ni dans le journal. Tu es **idempotent** et
-  relançable sans effet.
-- Tu n'interroges ni `gh` ni `glab`, tu ne classes pas la sûreté de merge des PR, tu ne croises pas
-  les « Fichiers touchés » — les deux `status` détaillés existent pour ça.
-- Tu ne scannes ni les worktrees ni les branches `impl/` : ce que le journal ne dit pas d'un run,
-  tu ne l'inventes pas.
-- Tu ne rejoues pas `analyze` pour « vérifier » un verdict périmé — tu le signales et tu renvoies.
-- Tu ne recopies ni la table de dérivation, ni la règle de fraîcheur, ni le parsing de `tasks.md` :
-  tu les charges.
-- Tu ne lis pas le **corps** d'une fiche de chantier, tu n'en charges pas le manifeste, tu ne la
-  déplaces ni ne la modifies — `/scd-sdd:resume` fait tout cela.
+- Tu **n'écris aucun fichier**, ne commites rien, ne pousses rien, ne merges rien.
+- Tu **ne relances aucune commande** du cycle — tu dis laquelle jouer.
+- Tu **ne rejoues aucune vérification** : tu ne lances ni tests, ni lint, ni build.
+- Tu **ne scannes pas les worktrees**. Un travail en vol se déclare par une fiche de chantier ; s'il
+  n'y en a pas, il est invisible, et **c'est un fait que tu peux dire** plutôt qu'un trou à combler.
 
-## Consigne au journal
+<report>
 
-**Aucune.** Tu ne joues aucune phase : tu **lis** le journal pour rendre une vue, tu n'y ajoutes
-rien. Une consultation n'est pas un événement du cycle — la journaliser transformerait le journal
-en log d'accès. C'est de nature, pas un oubli.
+```
+# [Projet] — [date]
+
+## Socle
+ADR        : [N] · docs/ci.md : [oui|MANQUANT] · CLAUDE.md : [oui|MANQUANT]
+Gardes     : [N chemins protégés | ABSENTS] · trace : [N] tentatives [depuis date]
+
+## Features
+| Feature | État | Tickets | Démarrables |
+|---|---|---|---|
+| 001-auth | en implémentation | 3/5 faits | 04 |
+[⚠ recoupement de fichiers entre … et … : à dire ici]
+
+## PR ouvertes
+| PR | Ticket | Base | Sûreté |
+|---|---|---|---|
+| #12 | 03 (export CSV vide) | main | OK |
+| #13 | 04 (…) | impl/auth-03 | DANGEREUX — 03 est mergé, rebaser |
+
+## Chantiers
+[titre — portée — actualisé le … | « aucun »]
+
+## Prochaine commande
+`/scd-sdd:…`  — [pourquoi celle-là, en une phrase]
+```
+
+</report>
 
 ## Skill active
 
-- `feature-specs` — table de dérivation (§ « Cibler une feature ») et `references/status.md`
-  (colonne `Gate`, règle de fraîcheur).
-- `implement` — `references/tasks-parsing.md` pour l'état des lots `Rn`.
-- `project-docs` — chaîne du socle (produit → technique → adr → ci → CLAUDE.md).
-- `chantier` — § « Contrôle de fraîcheur » et format de l'en-tête (**en-tête seul, lecture seule
-  ici** ; tu ne charges pas `references/manifeste.md`).
-- **Pas** le skill `journal`. Tu **lis** le journal, tu ne l'écris jamais, et ce dont tu as besoin
-  est déjà chez toi : les trois règles de lecture dans tes `## Règles absolues`, les motifs
-  d'extraction à l'étape 5. Charger le contrat par-dessus serait le doublon que
-  `DECISIONS.md` §D35 interdit.
+- Skill `specs` — section « Cibler une feature » et dérivation d'état, **référencées** et jamais
+  recopiées.
+- Skill `implement` — `references/tickets-parsing.md`, blocs `<etats>` et `<resolution>`.
+- Skill `chantier` — pour lire l'en-tête d'une fiche. **Pas** ses références d'écriture : tu ne
+  produis aucune fiche.
 
 ## À la fin
 
-Donne **une** prochaine commande, prête à copier, selon l'ordre de priorité du `## Processus`
-étape 9 — et dis en une ligne pourquoi c'est celle-là.
-
-Si un chantier est ressorti **à jour**, rappelle en une ligne que `/scd-sdd:resume` vient **avant**
-cette commande — sans jamais la remplacer.
-
-Rappelle les deux vues détaillées : `/scd-sdd:status-specs` pour les features et leurs
-recoupements de fichiers, `/scd-sdd:status-impl NNN` pour l'avancement des lots et la sûreté de
-merge des PR.
+Rien de plus que le rapport. La prochaine commande **est** la conclusion : ne la répète pas, et
+n'en ajoute pas une seconde.

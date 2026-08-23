@@ -13,7 +13,7 @@ agents. Ce qui est ici ne se recopie **ni** dans leur corps, **ni** dans leur so
 <role>
 Le standard de qualité des tests que `test-writer` produit et que `test-validator` fait respecter. Distillé de la discipline du test (Fowler, Khorikov, Meszaros, données Google). Agnostique à toute techno.
 
-**Portée** : ce rubric régit les modes **porteurs de test** — `TDD` (test avant impl, rouge attendu) et `test-after` (test après impl, vert attendu). Les modes `check`/`inhérent` n'ont **pas** de test automatisé : leur preuve est une vérif observable (agent `verifier`, voir `references/verification-modes.md`), à laquelle ce rubric ne s'applique pas.
+**Portée** : ce rubric régit les modes **porteurs de test** — `test` (test avant impl, rouge attendu) et `test` (test après impl, vert attendu). Les modes `observé` n'ont **pas** de test automatisé : leur preuve est une vérif observable (agent `verifier`, voir `references/verification-modes.md`), à laquelle ce rubric ne s'applique pas.
 </role>
 
 <principles>
@@ -49,7 +49,7 @@ Pour chaque comportement, couvrir systématiquement :
 3. **Error** — entrées invalides, null/undefined/vide.
 4. **Edge** — collections vides, chaîne vide, zéro, négatifs.
 
-Isoler chaque partition invalide (un cas par test) pour localiser précisément la cause d'échec. Les cas `error`/`edge` correspondent souvent aux SHALL `If… then… shall…`.
+Isoler chaque partition invalide (un cas par test) pour localiser précisément la cause d'échec. Les cas `error`/`edge` correspondent souvent aux critère `If… then… shall…`.
 
 ## Données de test
 - **Test Data Builder** avec valeurs par défaut sensées ; ne spécifier **que** les champs pertinents au comportement testé.

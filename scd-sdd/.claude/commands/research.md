@@ -47,7 +47,7 @@ et décide seul de ce qui descend dans le socle ; tu composes, tu classes et tu 
 - **Tu commites, `git add` scopé au seul fichier écrit.** Jamais le travail en vol autour — sans
   quoi `/scd-sdd:run` tombera plus tard en `blocked-dirty-tree`.
 - **Glose au premier emploi.** Le premier terme de méthode que tu adresses à l'humain — EARS,
-  gate, lot, ADR, invariant, advisory… — reçoit une glose d'**une ligne**, entre parenthèses ou
+  ticket, ADR, invariant, garde, advisory… — reçoit une glose d'**une ligne**, entre parenthèses ou
   entre tirets. Jamais un paragraphe, jamais deux fois, et **plus du tout dès que l'humain
   emploie le terme lui-même** : c'est ce signal-là qui règle le niveau, pas une question.
 - **Tu parles la langue de l'humain**, dans les questions comme dans le rapport.
@@ -134,7 +134,7 @@ Ne se reprend PAS comme acquis
 Rappel   Les niveaux de confiance du rapport classent, ils ne mesurent pas.
 Murs     2 sources derrière connexion, non lues — le rapport le dit.
 
-→ Rien n'a été modifié dans le socle. Ce qui doit descendre : /scd-sdd:livraison (ou un ADR).
+→ Rien n'a été modifié dans le socle. Ce qui doit descendre : /scd-sdd:adr (ou /scd-sdd:guards).
 ```
 
 Hors de toute phase, la ligne `Décision servie` porte la décision que le prompt nommait, et la
@@ -144,26 +144,15 @@ cycle.` Une recherche sans décision nommable l'écrit telle quelle — jamais u
 
 ## Ce que tu NE fais PAS
 
-- Tu ne modifies aucun document du socle, aucune spec, aucun `tasks.md` — même quand le rapport
+- Tu ne modifies aucun document du socle, aucune spec, aucun ticket — même quand le rapport
   paraît trancher net. Tu n'ouvres pas non plus de candidat d'ADR à sa place.
 - Tu ne lances aucune recherche web : tu n'en as pas les outils. C'est `/scd-sdd:lookup` en
   session, ou Claude Desktop pour le rapport.
-- Tu n'écris aucune ligne de journal (voir ci-dessous).
 - Tu ne mets à jour, ne renommes ni ne supprimes un rapport existant, et tu n'y ajoutes aucun
   rétro-lien vers les décisions qu'il a servies.
 - Tu ne réécris pas le rapport revenu pour l'améliorer : tu le classes tel quel et tu le
   qualifies à côté. Un rapport corrigé n'est plus une source.
 - Tu ne commites rien d'autre que le fichier que tu viens d'écrire.
-
-## Consigne au journal
-
-**Aucune.** Tu ne joues aucune phase du cycle, et le fait que tu produis est le **rapport
-lui-même** — l'écrire aussi au journal mettrait la même information à deux endroits et ferait
-recroître un fichier partagé. C'est de nature, pas un oubli.
-
-La chronologie des recherches est déjà portée par les **noms datés** de `docs/research/`, qui se
-trient tout seuls. Le contrôle négatif qui prouve que la règle a tenu : après l'import d'un
-rapport, `docs/journal/socle.md` n'a **pas** grossi.
 
 ## Skill active
 
@@ -189,8 +178,8 @@ Puis : « Colle ce prompt dans Claude Research (Claude Desktop). Au retour, enre
 et joue `/scd-sdd:research docs/research/<AAAA-MM-JJ-slug>.md` pour la classer et la relire. »
 
 **Au retour** : rappelle en une ligne que **rien n'a été modifié dans le socle**, et nomme la
-commande qui ferait descendre ce qui est actionnable — `/scd-sdd:technique`, `/scd-sdd:adr`,
-`/scd-sdd:livraison` ou `/scd-sdd:plan` selon la phase servie. **Tu ne la lances pas** : c'est la décision
+commande qui ferait descendre ce qui est actionnable — `/scd-sdd:adr`, `/scd-sdd:guards` ou
+`/scd-sdd:spec` selon ce qui est servi. **Tu ne la lances pas** : c'est la décision
 de l'humain, et c'est tout l'intérêt de la règle.
 
 Si la recherche ne servait **aucune phase** — le cas le plus fréquent —, ne nomme aucune de ces

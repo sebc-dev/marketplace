@@ -38,7 +38,7 @@ doc Linear le décourage explicitement.
 | **terminées non archivées** | `state.type` ∈ `completed`/`canceled`, non archivées | candidates à l'archivage — c'est du plafond qui se libère ; si elles s'accumulent, l'auto-archivage est probablement inactif |
 | **sans priorité** | `priority` = No priority sur des issues non terminées | à prioriser dans Linear (raccourci `P`) — sans priorité, une issue tombe en Later par défaut |
 | **`started` dormantes** | `state.type` = `started`, `updatedAt` au-delà d'un cycle de revue (2-4 semaines, la cadence recommandée en solo) | du travail commencé qui n'avance plus : à finir, re-prioriser ou rendre au backlog — dans Linear |
-| **contrepartie fichier disparue** | issue du miroir — **marqueur reconnu** en pied de description — dont la feature, le lot ou la fiche n'existe plus sur le disque | candidate à l'archivage, **rapportée et jamais touchée** — le miroir ne supprime ni n'archive rien |
+| **contrepartie fichier disparue** | issue du miroir — **marqueur reconnu** en pied de description — dont la feature, le ticket ou la fiche n'existe plus sur le disque | candidate à l'archivage, **rapportée et jamais touchée** — le miroir ne supprime ni n'archive rien |
 
 Le quatrième contrôle est le seul qui croise le disque : `Glob`/`Read` sur `specs/` et
 `docs/chantiers/`, en lecture seule. Une issue **sans marqueur** n'est pas du miroir : elle

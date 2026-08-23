@@ -87,7 +87,7 @@ chantier
 | Objet | Titre |
 |---|---|
 | projet d'une feature | NNN-slug |
-| issue d'un lot | Rn — <intitulé du lot> |
+| issue d'un ticket | NN — <intitulé du ticket> |
 | issue de chantier | AAAA-MM-JJ-slug — <titre de la fiche> |
 
 Le préfixe-clé appartient au miroir ; tout le reste du titre appartient à l'humain.
@@ -97,7 +97,7 @@ Le préfixe-clé appartient au miroir ; tout le reste du titre appartient à l'h
 | Champ | Propriétaire |
 |---|---|
 | préfixe-clé des titres | miroir |
-| description d'une issue de lot (checklist Tn + marqueur) | miroir — reconstruite à chaque push |
+| description d'une issue de ticket (checklist des critères + marqueur) | miroir — reconstruite à chaque push |
 | workflow state | miroir — n'avance que vers un type supérieur, ne rétrograde jamais |
 | relations « dépend de » | miroir |
 | label chantier | miroir — posé au push, créé au seul setup |

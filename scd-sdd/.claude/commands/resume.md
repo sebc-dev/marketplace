@@ -114,13 +114,13 @@ Ratio : 15% humain / 85% AI (sélection et contrôles mécaniques ; l'humain dé
 
    Tout déplacement est suivi de `git add` scopé et d'un commit `chore(chantier): <action> <titre>`.
 
-7. **Si la portée nomme une feature ou un lot**, donne la commande du cycle qui suit —
-   `/scd-sdd:run NNN Rn`, par exemple. **Tu ne la lances pas.**
+7. **Si la portée nomme une feature ou un ticket**, donne la commande du cycle qui suit —
+   `/scd-sdd:run NNN NN`, par exemple. **Tu ne la lances pas.**
 
 <report>
 ```
 ⏸ Chantier repris — « Verrouillage du compte après 5 échecs »
-   Portée 001-auth · lot R2 · posé le 04/08, actualisé le 05/08 sur `impl/auth-R2`
+   Portée 001-auth · ticket R2 · posé le 04/08, actualisé le 05/08 sur `impl/auth-R2`
    Fraîcheur : ✔ même branche qu'à l'écriture · ✔ 1 j · prochaine étape pas encore faite
 
 Contexte rechargé — 2 fichiers lus (118 l.) · 1 extrait ciblé (class RateLimiter)
@@ -154,13 +154,6 @@ ailleurs depuis (HEAD a1b2c3d n'est plus un ancêtre)`, et le rapport ajoute en 
 - Tu ne récrits pas l'histoire d'une fiche : `## Acquis` et `## Écarté` se complètent, jamais ne
   se corrigent rétroactivement.
 
-## Consigne au journal
-
-**Aucune.** Reprendre, mettre en attente ou fermer un chantier n'est pas une phase du cycle, et le
-déplacement de la fiche **est** la trace — l'archive datée par son nom porte la chronologie.
-Journaliser chaque pause et chaque reprise polluerait la chronologie des
-phases avec du bruit à la paire. C'est de nature, pas un oubli.
-
 ## Skill active
 
 - `chantier` — contrat de `docs/chantiers/` : § « Cibler un chantier », § « Contrôle de
@@ -170,7 +163,7 @@ phases avec du bruit à la paire. C'est de nature, pas un oubli.
 - `exposition` — **régime *options***, **conditionnel** : chargé à l'étape 6 **seulement si**
   l'étape 2 a rendu au moins un ⚠ suspect, ⚠ ancien ou ✔ consommé. Aucune `references/`. Les quatre
   suites sont des issues concurrentes, pas une liste à trier.
-- **Pas `feature-specs`.** La `Portée` de la fiche est **déjà résolue** (`001-auth · lot R2`) : tu
+- **Pas `feature-specs`.** La `Portée` de la fiche est **déjà résolue** (`001-auth · ticket R2`) : tu
   la lis, tu ne la résous pas. « Cibler une feature » répond à *quelle feature est en cours après
   un `/clear`* — question que tu n'as pas. Un `Glob specs/NNN-*/` suffit à vérifier l'existence.
 

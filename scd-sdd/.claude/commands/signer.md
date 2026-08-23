@@ -19,7 +19,7 @@ allowed-tools:
 
 Tu prépares un commit sur un projet où **la signature d'un commit est le mécanisme d'autorisation
 d'au moins un contrôle bloquant** — la soupape de `verifier-guard`, écrite par
-`/scd-sdd:livraison` quand le garde est retenu (`DECISIONS.md` §D26).
+`/scd-sdd:guards` quand le garde est retenu (`DECISIONS.md` §D26).
 
 Cette soupape est un **geste humain**, et le plugin n'écrit pas l'outillage qui la produit : c'est
 le seul endroit du dispositif où le concours de l'agent est un risque et non une aide. Le cycle
@@ -62,7 +62,7 @@ outil lui affiche, et tape sa phrase de passe — ou ne la tape pas).
 - **Glose au premier emploi.** Le premier terme de méthode que tu adresses à l'humain — soupape,
   garde, scope, registre de clés, index — reçoit une glose d'**une ligne**. Jamais deux fois, et
   **plus du tout dès que l'humain emploie le terme lui-même**.
-- **Un ID se cite avec son intitulé** — un job, un contrôle, un ADR, un lot `Rn` ne descend jamais
+- **Un ID se cite avec son intitulé** — un job, un contrôle, un ADR, un ticket `NN` ne descend jamais
   nu dans un message de commit ni dans une question.
 - **Tu parles la langue de l'humain.**
 
@@ -79,7 +79,7 @@ facilement que la modification qu'il déclare.
 ## Processus
 
 1. **Vérifie les préconditions.**
-   - `docs/ci.md` **absent** → arrête-toi et renvoie vers `/scd-sdd:livraison`. Sans lui, tu
+   - `docs/ci.md` **absent** → arrête-toi et renvoie vers `/scd-sdd:guards`. Sans lui, tu
      n'aurais aucune source pour dériver quoi que ce soit, et tu retomberais sur une liste
      devinée.
    - `docs/ci.md` présent mais **aucune soupape par signature** déclarée (ni section
@@ -175,34 +175,24 @@ facilement que la modification qu'il déclare.
 - Tu n'ajoutes ni ne retires aucune clé du registre : `verifier-guard` exige qu'un commit y
   touchant soit signé par une clé **déjà** de confiance, que tu ne peux pas produire.
 - Tu ne corriges pas `docs/ci.md` quand la comparaison de l'étape 4c révèle un trou — tu le
-  **signales**, et il se referme en rejouant `/scd-sdd:livraison`.
+  **signales**, et il se referme en rejouant `/scd-sdd:guards`.
 - Tu ne pousses rien, tu n'ouvres aucune PR, tu ne poses aucun label.
 - Tu ne commites pas un index que l'humain n'a pas confirmé quand le tri était ambigu.
-
-## Consigne au journal
-
-**Aucune ligne.** Le commit **est** le fait, et il est intégralement dérivable : `git log` porte le
-message et le scope, `git log --show-signature` porte la signature et son attribution. Rien ici
-n'échappe aux fichiers, donc rien ne se consigne — la règle est *ce qui n'est dérivable de nulle
-part se consigne*, pas *toute commande journalise* (charte § 1).
-
-C'est le motif des trois commandes du miroir Linear, pas celui des trois `status` : tu **écris**,
-mais ce que tu écris se relit à sa source.
 
 ## Skill active
 
 - **Aucun.** La connaissance dont tu as besoin n'est pas dans le plugin mais dans le `docs/ci.md`
   **du projet** et dans ses workflows — et c'est délibéré : une liste de motifs figée dans le
   plugin dériverait pour tous les projets à la fois (`DECISIONS.md` §D40, écarté n° 2).
-- `references/ci-signature.md` **n'est pas chargée** : elle porte la doctrine de la soupape pour
-  qui l'**écrit**, à l'étape 6 de `/scd-sdd:livraison`. Tu la consommes, tu ne la poses pas.
+- `references/signature.md` **n'est pas chargée** : elle porte la doctrine de la soupape pour
+  qui l'**écrit**, à l'étape 7 de `/scd-sdd:guards`. Tu la consommes, tu ne la poses pas.
 
 ## À la fin
 
 **Motif trouvé, ou verdict suspendu** — rappelle le motif en une ligne, puis termine par la ligne
 de passation, **et rien d'autre** : l'outillage du projet s'il existe, sinon
 `git commit -S -F .git/COMMIT_A_SIGNER`. Ajoute, s'il y a lieu, le trou de `docs/ci.md` que
-l'étape 4c a révélé et le renvoi vers `/scd-sdd:livraison`.
+l'étape 4c a révélé et le renvoi vers `/scd-sdd:guards`.
 
 **Commit ordinaire** — affiche le commit créé, et arrête-toi. Rien n'est poussé ; la suite
 appartient au niveau où le travail se poursuit.

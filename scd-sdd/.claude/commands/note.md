@@ -1,5 +1,5 @@
 ---
-description: "Consigne un travail hors-cycle DÉJÀ TERMINÉ — debug, hotfix, refactor, spike, montée de version, ops — en écrivant une fiche directement dans docs/chantiers/archive/, datée du jour. Ce qu'un commit ne dit jamais : le pourquoi, la cause trouvée, ce qui a été écarté. N'ouvre aucun chantier en cours, n'écrit aucune ligne de journal, ne joue aucune phase."
+description: "Consigne un travail hors-cycle DÉJÀ TERMINÉ — debug, hotfix, refactor, spike, montée de version, ops — en écrivant une fiche directement dans docs/chantiers/archive/, datée du jour. Ce qu'un commit ne dit jamais : le pourquoi, la cause trouvée, ce qui a été écarté. N'ouvre aucun chantier en cours et ne joue aucune commande du cycle."
 argument-hint: "<ce qui a été fait — texte libre>"
 allowed-tools:
   - Read
@@ -18,7 +18,7 @@ allowed-tools:
 
 Une partie du travail réel ne passe par aucune des phases du cycle : un flake corrigé, une montée
 de version, un spike qui tranche une option, un hotfix livré en quarante minutes. Rien ne le
-porte — ni fichier de specs, ni case, ni PR de lot. Au mieux un commit, qui dit le **quoi** et
+porte — ni fichier de specs, ni case, ni PR de ticket. Au mieux un commit, qui dit le **quoi** et
 jamais le **pourquoi**, ni la cause trouvée, ni ce qui a été essayé sans succès.
 
 Tu écris une fiche de chantier **déjà fermée** : directement dans `archive/`, datée du jour. Le
@@ -35,10 +35,10 @@ Ratio : 30% humain / 70% AI (l'humain dit ce qui mérite une fiche ; tu la compo
   n'écris rien dans `archive/`.
 - **Une invocation, une fiche.** Une session qui a fait trois choses en écrit une par sujet, ou
   une seule qui les résume. Jamais un déversement.
-- **Tu n'écris jamais de ligne de journal**, et surtout pas une ligne dont la phase serait l'une
-  des phases du cycle. Ces lignes appartiennent à leur commande : un `analyze` non joué ne se
-  note pas, il se joue. Sans cette règle, tu serais une porte dérobée pour fabriquer un verdict de
-  gate — le fait même pour lequel le journal existe.
+- **Tu ne consignes jamais du travail que le cycle porte lui-même.** Un ticket implémenté, une
+  spec écrite, un ADR figé : ces faits vivent dans leurs artefacts, et une fiche qui les redirait
+  serait une seconde vérité. Ce que tu consignes est ce qu'**aucun fichier du cycle ne porte** —
+  un debug, un hotfix, un spike, une montée de version.
 - **Aucun fait dérivable dans la fiche.** Ce qui compte comme tel est énuméré par le bloc
   `<interdits>` que tu charges — tu ne t'en fais pas une liste de tête plus courte.
 - **Plafond ~50 lignes.** Un dépassement ne peut pas signaler une feature — le travail est
@@ -113,7 +113,7 @@ Ratio : 30% humain / 70% AI (l'humain dit ce qui mérite une fiche ; tu la compo
 ## Ce que tu NE fais PAS
 
 - Tu ne fais pas le travail, tu le consignes après coup.
-- Tu n'écris **aucune** ligne de journal, et jamais une ligne de phase du cycle.
+
 - Tu ne crées pas de fiche dans `en-cours/` ni dans `en-attente/` — seulement dans `archive/`.
 - Tu ne commites que la fiche, jamais le reste de l'arbre.
 - Tu ne consignes pas une décision **structurante** : elle va dans `docs/adr/_candidates/`. Ni un
@@ -121,15 +121,6 @@ Ratio : 30% humain / 70% AI (l'humain dit ce qui mérite une fiche ; tu la compo
   dans le message de commit. La fiche **indexe** un événement, elle n'héberge pas la connaissance
   du projet.
 - Tu ne réécris ni ne supprimes une fiche déjà archivée.
-
-## Consigne au journal
-
-**Aucune.** Le travail que tu consignes ne relève d'aucune phase du cycle, et le fait que tu
-produis est la **fiche elle-même** — la dupliquer au journal mettrait la même information à deux
-endroits et ferait recroître un fichier partagé. C'est de nature, pas un oubli.
-
-La chronologie du hors-cycle est le **tri par nom** de `docs/chantiers/archive/`, que
-`/scd-sdd:status` lit sans ouvrir un seul fichier.
 
 ## Skill active
 
@@ -145,5 +136,5 @@ La chronologie du hors-cycle est le **tri par nom** de `docs/chantiers/archive/`
 Rappelle le chemin de la fiche et son commit, en une ligne.
 
 Si le travail que tu viens de consigner révèle un manque dans le contrat — un critère absent, un
-cas limite jamais spécifié — dis-le et renvoie vers `/scd-sdd:specify NNN` ou
-`/scd-sdd:premortem NNN`. **Tu ne le corriges pas toi-même.**
+cas limite jamais spécifié — dis-le et renvoie vers `/scd-sdd:spec NNN` ou
+`/scd-sdd:tickets NNN`. **Tu ne le corriges pas toi-même.**

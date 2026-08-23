@@ -2,9 +2,9 @@
 name: linear
 description: |
   La CAPACITÉ DE MIROIR LINEAR transverse, OPT-IN : ce que le dépôt sait déjà —
-  features, lots Rn, fiches de chantier — est POUSSÉ vers un workspace Linear, où
+  features, tickets NN, fiches de chantier — est POUSSÉ vers un workspace Linear, où
   l'équipe fait sa priorisation. Granularité produit (configuré au setup) →
-  initiative · feature → projet · lot Rn → issue (tâches Tn en checklist,
+  initiative · feature → projet · ticket NN → issue (critères en checklist,
   dépendances en relations) · fiche → issue labellisée. Clé dérivée du nom de
   fichier, idempotence, propriété des champs, pilotage en lecture seule, accroche
   PR best-effort, contrat de docs/linear.md. Sens STRICTEMENT unique : rien de ce
@@ -25,9 +25,9 @@ artefact** dans le dépôt : son résultat vit chez Linear.
 
 Trois conséquences, toutes **de nature** et jamais discrétionnaires :
 
-- **Aucune ligne de journal.** Le miroir ne produit aucun fait non dérivable : son résultat est
+- **Aucune trace dans le dépôt.** Le miroir ne produit aucun fait non dérivable : son résultat est
   interrogeable chez Linear, et la vue de `linear-review` meurt avec la session. Le `## Consigne au
-  journal` des trois commandes existe quand même, pour dire qu'elles n'écrivent rien et pourquoi.
+  frontière négative des trois commandes le dit explicitement, et leur `allowed-tools` le prouve.
 - **Aucun état dérivé.** `docs/linear.md` n'apparaît dans **aucune** table d'état de `status` : l'y
   faire figurer ferait croire à une phase, et un projet sans miroir n'est pas un projet incomplet.
 - **Aucune accroche qui pousse.** Aucune phase ne pousse le miroir : une accroche l'aurait suspendue
@@ -44,7 +44,7 @@ de fichiers, jamais un champ à maintenir (charte §5). Ce fichier est légal au
 |---|---|---|
 | le produit — **configuré au setup**, rubrique 7 optionnelle | **initiative** | — (elle appartient à l'humain) |
 | feature `specs/NNN-slug/` | **projet** — rattaché à l'initiative si configurée | — (Linear calcule l'avancement depuis les issues) |
-| lot `Rn` de `tasks.md` | **issue** du projet — tâches `Tn` en checklist, dépendances en relations | cases cochées : 0 → Backlog · partiel → In Progress · toutes → Done |
+| ticket `NN` de le ticket | **issue** du projet — critères en checklist, dépendances en relations | cases cochées : 0 → Backlog · partiel → In Progress · toutes → Done |
 | fiche `docs/chantiers/<état>/AAAA-MM-JJ-slug.md` | **issue** labellisée `chantier` | son **répertoire**, via la table de `docs/linear.md` |
 
 Le produit n'est **pas une dérivation** : aucun fichier n'en porte le nom de façon stable, donc le
@@ -52,7 +52,7 @@ nom de l'initiative est une **configuration** arbitrée au setup, jamais re-dér
 miroir ne possède de l'initiative **que le rattachement des projets** — tout le reste est à l'humain.
 
 La hiérarchie reste **plate** — initiative → projet → issue → checklist. Les tâches `Tn` ne
-deviennent pas des sous-issues : elles vivent dans la description de l'issue du lot, ce qui garde
+deviennent pas des sous-issues : elles vivent dans la description de l'issue du ticket, ce qui garde
 **une issue = une unité priorisable**.
 
 « Un projet Linear par feature » se lit, en Jira, *une epic par feature* ; le conteneur permanent
@@ -69,7 +69,7 @@ Le **titre** Linear porte la clé, en préfixe :
 | Objet | Titre |
 |---|---|
 | projet d'une feature | `NNN-slug` |
-| issue d'un lot | `Rn — <intitulé du lot>` |
+| issue d'un ticket | `NN — <intitulé du ticket>` |
 | issue de chantier | `AAAA-MM-JJ-slug — <titre de la fiche>` |
 
 Et la **dernière ligne de la description** porte un marqueur de secours :
@@ -105,7 +105,7 @@ est un **défaut de matching**, pas un run normal.
 | priorité, estimation, assigné, cycle, autres labels, commentaires | humain — jamais touchés |
 
 ⚠ **La description est reconstruite, pas fusionnée.** Du texte humain écrit dans la description d'une
-issue de lot est **perdu au push suivant**. Les **commentaires** ne sont jamais touchés : c'est là
+issue de ticket est **perdu au push suivant**. Les **commentaires** ne sont jamais touchés : c'est là
 que ça se dit, et `linear-setup` le porte en avertissement.
 
 Le **label de chantier** et l'**initiative** suivent le même pattern : créés au **seul setup** (le
@@ -122,9 +122,9 @@ API au setup.
 
 | Source | Condition | Type visé |
 |---|---|---|
-| lot `Rn` | aucune case cochée | `backlog` |
-| lot `Rn` | au moins une cochée, pas toutes | `started` |
-| lot `Rn` | toutes cochées | `completed` |
+| ticket `NN` | aucune case cochée | `backlog` |
+| ticket `NN` | au moins une cochée, pas toutes | `started` |
+| ticket `NN` | toutes cochées | `completed` |
 | chantier | `en-cours/` | `started` |
 | chantier | `en-attente/` | `backlog` |
 | chantier | `archive/` | `completed` |
@@ -174,7 +174,7 @@ casse jamais. L'agent charge `<auth>` + `<accroche_pr>` d'`api.md`, en lecture s
 - Il ne crée **ni** chantier, **ni** feature, **ni** tâche depuis une issue Linear. Une issue **sans
   contrepartie fichier n'est ni touchée, ni signalée** au push : elle appartient à l'humain —
   `linear-review` la **rapporte** si elle porte le marqueur du miroir, et n'y touche pas plus.
-- Il ne **supprime** ni n'**archive** jamais rien côté Linear — un lot disparu d'un `tasks.md`
+- Il ne **supprime** ni n'**archive** jamais rien côté Linear — un ticket disparu d'un le ticket
   laisse son issue en place — et ne **bloque** jamais une phase : aucune table de dérivation,
   aucun `status` ne le réclame.
 - Il ne pousse **jamais** le contenu des documents (`spec.md`, fiches de chantier) : titres,

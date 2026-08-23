@@ -1,199 +1,127 @@
 ---
-description: "Phase 3 du socle : fige les décisions structurantes en ADR (Architecture Decision Record : une décision consignée dans un fichier court et immuable une fois acceptée — le pourquoi qu'on relira dans six mois) dans docs/adr/NNNN-*.md, une par candidat — listé dans docs/technique.md, posé en invariant par la table du même fichier, ou laissé en brouillon dans docs/adr/_candidates/ par le niveau specs (plan, premortem), dont c'est la voie de promotion. Format Nygard (contexte · décision · conséquences), statut Accepté, immuables. Boucle la traçabilité bidirectionnelle avec les DEUX colonnes ADR de docs/technique.md."
-argument-hint: "(aucun — lit docs/technique.md)"
+description: "Fige une décision structurante en ADR — Architecture Decision Record : un fichier court et IMMUABLE une fois accepté, qui porte le pourquoi qu'on relira dans six mois. Écrit docs/adr/NNNN-titre.md au format Nygard (contexte · décision · conséquences · alternatives écartées). Deux sources de candidats : la conversation en cours, et les brouillons laissés dans docs/adr/_candidates/ par /scd-sdd:spec ou /scd-sdd:tickets — dont c'est la seule voie de promotion. Rejouable à tout moment du projet."
+argument-hint: "[la décision à figer — optionnel, sinon relève les candidats]"
 allowed-tools:
   - Read
   - Glob
+  - Grep
   - Write
-  - Edit
   - AskUserQuestion
+  - Bash(date -I)
 ---
 
 ## Contexte
 
-Tu figes les **décisions structurantes du départ** en ADR, à partir de deux sources qui
-vivent désormais dans le **même fichier** : la liste « Décisions structurantes → candidats
-ADR » de `docs/technique.md`, et la table des **invariants** du même document, dont chaque
-ligne est un candidat au même titre. Un ADR = une décision, au format Nygard, **immuable**.
+Tu figes des **décisions structurantes** — celles dont quelqu'un se demanderait, dans six mois,
+pourquoi c'est comme ça. Une décision, un fichier, jamais réécrit.
 
-Ce qu'un ADR achète : il empêche la décision de rester « dans la tête ». Six mois plus
-tard, personne — humain ou agent — ne peut rouvrir un choix sans savoir ce qu'il coûtait
-d'en changer. C'est pour ça que la **conséquence négative** est obligatoire : un ADR qui
-ne nomme que des avantages ne documente pas une décision, il la vend.
+Ce n'est pas une phase et ça ne se joue pas une fois : les ADR sont le seul artefact du socle qui
+croît avec le projet. Une décision peut surgir n'importe quand — pendant `/scd-sdd:init`, en
+écrivant une spec, en découpant des tickets, ou dans une conversation ordinaire.
 
-C'est un travail de rédaction cadré : tu drafts, l'humain valide avant de figer.
+**L'immutabilité est mécanique, pas une consigne.** Un hook du plugin bloque la réécriture d'un ADR
+qui existe déjà ; seule la création passe. Tu ne pourras donc pas corriger un ADR mal écrit — d'où
+la relecture avant écriture, à l'étape 5.
 
-Ratio : 30% humain / 70% AI (dérivation depuis `docs/technique.md` ; l'humain valide le
-contenu).
+Ratio : 50% humain / 50% AI (l'humain détient la décision et ses motifs ; tu instruis et tu
+rédiges).
 
 ## Règles absolues
 
-- **Un ADR par décision structurante**, ni plus ni moins. Aucun ADR pour une
-  non-décision (utilitaire mineur, convention évidente) : le bruit dilue le signal.
-- **Numérotation `NNNN` sur 4 chiffres**, séquentielle, au **plus petit numéro libre**
-  dans `docs/adr/`. Un numéro n'est **jamais réutilisé**, même si un ADR est abandonné.
-- **Conséquence négative obligatoire** dans chaque ADR : ce que le choix coûte ou ferme.
-- **Immutabilité.** Ici on **crée** (statut « Accepté »). On ne réédite jamais un ADR
-  existant — s'il devient faux, un futur ADR le remplacera.
-- **Traçabilité bidirectionnelle.** L'ADR trace vers `docs/technique.md`, et la **colonne
-  « ADR » de la table dont il vient** — « Choix retenus » ou « Invariants » — doit le
-  référencer en retour. Un sens sans l'autre laisse la boucle ouverte, et les deux colonnes se
-  bouclent séparément.
-- **Un fait daté se cite par sa source, jamais nu.** Si elle est un rapport de recherche,
-  c'est `docs/research/AAAA-MM-JJ-slug.md`, nommé dans le Contexte ou les Alternatives.
-  Un ADR est **immuable** : ce qui entre ici sans source ressort en décision que
-  `CLAUDE.md` interdit de contredire et que la gate `analyze` protège au lieu de la
-  questionner. Un fait que tu ne tiens pas de mémoire se source **avant** d'être figé —
-  `/scd-sdd:lookup` s'il est ponctuel, `/scd-sdd:research` s'il porte l'arbitrage.
-- **Un ADR accepté peut remonter en contrôle vérifié.** Une décision qui laisse une **trace
-  observable** — dans l'arborescence ou dans les imports — est dérivable en contrôle
-  automatique par `/scd-sdd:livraison`, qui relit `docs/technique.md` **et** `docs/adr/` pour
-  ça. C'est le sens **inverse** de celui que la règle précédente interdit : un rapport ne
-  descend jamais seul dans un ADR immuable, mais ce qu'un ADR a figé peut monter en invariant
-  vérifié. Ici tu le **repères et tu le signales** — tu ne dérives aucun contrôle, et tu
-  n'ajoutes rien à l'ADR pour le marquer : la phase `livraison` re-dérive depuis `docs/adr/`,
-  qui reste la source.
+- **Un ADR = une décision.** Deux décisions dans un fichier ne se superseden­t pas séparément, et
+  l'une des deux mourra en emportant l'autre.
+- **Aucune conséquence négative = ADR suspect.** Un choix qui n'a que des avantages n'a pas été
+  instruit. Si tu n'en trouves pas, c'est la question à poser, pas une section à sauter.
+- **Aucune alternative inventée.** Une alternative écartée est une option réellement considérée,
+  avec le motif réel du rejet. « Solution B : écartée car moins adaptée » n'apprend rien à
+  personne.
+- **Tu n'écris jamais par-dessus un ADR existant.** S'il est faux, tu en écris un **nouveau** qui le
+  remplace, et tu **signales** que l'ancien doit passer à « Remplacé par ADR-XXXX » — geste que tu
+  ne peux pas faire, et qui revient à l'humain.
+- **La numérotation ne se renumérote jamais.** `NNNN` sur quatre chiffres, le plus petit libre.
+- **Tu ne supprimes aucun brouillon.** Tu n'en as pas l'outil, et un brouillon promu qui reste se
+  représentera en candidat : signale-le pour que l'humain le retire.
 - **Le problème avant les options.** Avant chaque arbitrage, pose le problème en deux ou trois
   phrases : ce qui est en jeu pour ce projet, et en quoi les options diffèrent vraiment. Chaque
   option décrit sa **conséquence en termes du projet**, jamais en jargon. Une option énoncée sans
   son enjeu ne se choisit pas, elle se subit.
-- **Glose au premier emploi.** Le premier terme de méthode que tu adresses à l'humain — EARS,
-  gate, lot, ADR, invariant, advisory… — reçoit une glose d'**une ligne**, entre parenthèses ou
-  entre tirets. Jamais un paragraphe, jamais deux fois, et **plus du tout dès que l'humain
-  emploie le terme lui-même** : c'est ce signal-là qui règle le niveau, pas une question.
-- **Un ID se cite avec son intitulé** à sa première mention — « FR-003 (export CSV) », jamais
-  « FR-003 » nu. La règle vaut pour **tout** identifiant que tu emploies, y compris ceux que le
-  projet ou la session viennent de créer et que le plugin ne connaît pas. Un identifiant seul
-  n'explique rien à qui ne l'a pas sous les yeux.
+- **Glose au premier emploi.** Le premier terme de méthode que tu adresses à l'humain — ADR,
+  supersede, invariant, trace observable… — reçoit une glose d'**une ligne**, entre parenthèses ou
+  entre tirets. Jamais un paragraphe, jamais deux fois, et **plus du tout dès que l'humain emploie
+  le terme lui-même**.
+- **Un ID se cite avec son intitulé** à sa première mention — « ADR-0003 (import de `db/` interdit
+  hors de `server/`) », jamais « ADR-0003 » nu. La règle vaut pour **tout** identifiant que tu
+  emploies, y compris ceux que le projet ou la session viennent de créer.
+- **Tu parles la langue de l'humain**, dans les questions comme dans le rapport.
 
 ## Processus
 
-1. **Lis `docs/technique.md`** — prérequis strict. S'il manque, **arrête-toi** et renvoie
-   vers `/scd-sdd:technique` (phase 2) : les candidats ADR viennent de là. Récupère les
-   **deux** listes — « Décisions structurantes → candidats ADR » **et** la table des
-   **invariants** : chaque invariant dont la colonne « ADR » est vide est un candidat, et il
-   se traite exactement comme une décision structurante.
+1. **Charge la référence `adr.md`** (voir `## Skill active`). Communique en français.
 
-   Complète-la des **brouillons** de `docs/adr/_candidates/*.md` (`Glob`), s'il y en a :
-   les décisions structurantes laissées par le niveau specs (`plan`, `premortem`)
-   attendent leur promotion **ici** — c'est cette commande que `plan` nomme pour ça.
-   Chaque brouillon se traite comme un candidat de plus, validation humaine comprise.
+2. **Relève les candidats, des deux sources.** L'argument s'il y en a un, ou la décision qui vient
+   d'être prise dans la conversation ; et `docs/adr/_candidates/*.md`. Si les deux sont vides, dis-le
+   et arrête-toi : il n'y a rien à figer, et fabriquer un ADR pour justifier la commande est le
+   défaut à éviter.
 
-2. **Charge le template et ses règles** : lis `references/adr.md` du skill
-   `project-docs`.
+3. **Trie.** Pour chaque candidat, une question : *est-ce structurant ?* Ce qui ne l'est pas se
+   dit et ne s'écrit pas — un utilitaire, une convention évidente, un choix réversible en une heure.
+   Rends ce tri à l'humain avant d'écrire, pas après.
 
-3. **Détermine la numérotation** : liste `docs/adr/*.md` et prends le **plus petit
-   numéro libre**. Sur un projet vierge, `0001`. Sur un projet déjà pourvu d'ADR, tu
-   continues la série — tu ne repars jamais de `0001`.
+4. **Instruis chaque décision retenue.** Trois choses te manquent presque toujours, et aucune ne se
+   devine : **pourquoi maintenant** (ce qui la rendait nécessaire), **ce qu'elle coûte**, et **ce
+   qui a été réellement envisagé d'autre**. Demande-les. Une seule question à la fois si l'humain
+   hésite.
 
-4. **Pour chaque décision structurante**, écris `docs/adr/NNNN-titre-en-kebab-case.md` :
-   - **Contexte** — forces en présence, contraintes, et les `FR`/`SC` que la décision
-     sert (cités nommément). Pour un invariant venu de la table de `docs/technique.md`, cite
-     aussi la **caractéristique architecturale** qu'il sert et sa **trace observable** : c'est
-     ce qui rend l'ADR dérivable en contrôle à la phase `livraison`. Un fait qui vient d'une
-     recherche se cite par son fichier,
-     `docs/research/AAAA-MM-JJ-slug.md` — et ce qui y portait `[À VÉRIFIER]`,
-     `[INCERTAIN]` ou « source unique non recoupée » ne se fige pas ici sans que
-     l'utilisateur l'ait explicitement validé ;
-   - **Décision** — en **voix active** : « Nous utiliserons X », pas « X pourrait être
-     utilisé » ;
-   - **Conséquences** — positives **et** négatives ; ce à quoi le code s'engage désormais ;
-   - **Alternatives considérées** — au moins une, écartée, avec sa raison.
+5. **Relis avant d'écrire.** Restitue chaque ADR en trois lignes — décision, coût principal,
+   alternative écartée — et attends l'accord. C'est la **seule** relecture possible : après
+   l'écriture, le hook interdit la correction.
 
-   **Charge le skill `exposition`** au premier ADR présenté — **régime *options***.
+6. **Écris**, un fichier par décision, `docs/adr/NNNN-titre-en-kebab.md`, sur le `<template>`.
+   `date -I` pour la date. Renseigne la section **`Vérifiable ?`** : la décision laisse-t-elle une
+   **trace observable dans l'arborescence ou dans les imports** ? C'est le critère qui décide si
+   `/scd-sdd:guards` pourra en dériver un contrôle — et « non, décision de principe » est la réponse
+   la plus fréquente, pas un échec.
 
-   **Fais valider le contenu par l'utilisateur** avant de figer le statut « Accepté » —
-   `AskUserQuestion`, **un ADR à la fois**, jamais un lot de dix d'un coup. Un ADR accepté est
-   **immuable** : c'est la seule occasion de le corriger, et c'est ce qu'il faut dire en posant la
-   question. Présente d'abord ce que la décision engage — ce à quoi le code se lie, ce qu'on ne
-   pourra plus faire sans coût —, puis demande : figer, amender, ou écarter le candidat.
-
-5. **Boucle la traçabilité — les deux colonnes** : l'étape que rien d'autre ne rattrape.
-   Dans `docs/technique.md`, renseigne la colonne « ADR » du tableau « Choix retenus » pour
-   chaque décision structurante, **et** la colonne « ADR » de la table des invariants pour
-   chaque invariant promu — tant qu'elle est vide, l'invariant n'est qu'un candidat. Ce sont
-   les **deux seules** éditions d'un artefact antérieur de tout le socle ; elles se font par
-   `Edit` ciblé sur les cellules concernées, sans rien réécrire d'autre. Qu'elles vivent
-   désormais dans le même fichier ne les fusionne pas : ce sont deux tables, et une seule
-   bouclée laisse l'autre ouverte.
-
-6. **Signale le sort des brouillons promus** : chaque fichier de `_candidates/` devenu un
-   ADR est à **supprimer par l'utilisateur** — tu n'as aucun outil pour le faire — sans
-   quoi il se représentera en candidat à la prochaine passe. Les deux colonnes « ADR » de
-   l'étape 5 ne concernent que les candidats issus de `docs/technique.md` : un brouillon
-   promu trace vers son origine (le plan de la feature), pas vers un tableau du socle.
-
-7. **Repère les décisions à trace observable** — celles qui laisseront un contrôle
-   automatique derrière elles. Une seule question par ADR écrit : *cette décision laisse-t-elle
-   une trace observable dans l'arborescence ou dans les imports ?* « la couche `db/` n'est
-   atteinte que par `server/` » → oui ; « nous utiliserons PostgreSQL » → non. Note celles qui
-   répondent oui pour les nommer à la fin : `/scd-sdd:livraison` relira `docs/technique.md`
-   **et** `docs/adr/`, et en dérivera des **invariants d'architecture**, informatifs jusqu'à
-   mesure.
-
-   **La source principale de ces invariants est la phase `technique`**, qui pose la question à
-   tout ce qu'elle compile ; cette étape ne disparaît pas pour autant. Un ADR promu depuis
-   `_candidates/` peut porter un invariant que la table de `docs/technique.md` ne contient pas.
-   Tu ne les dérives pas ici, et rien n'est perdu si tu en manques une — la phase `livraison`
-   repart des fichiers, pas de ta liste.
-
-8. **Relis contre le bloc `<completion>`** de `references/adr.md` — en particulier :
-   chaque candidat des **trois** sources — les deux tables de `docs/technique.md` et les
-   brouillons — a **exactement un** ADR, et chaque ADR a au moins une conséquence négative.
-
-9. **Consigne au journal** (voir ci-dessous).
+7. **Signale les gestes que tu ne peux pas faire** : les brouillons promus à supprimer, un ADR
+   ancien à passer en « Remplacé par », et — si un ADR neuf est vérifiable — le renvoi vers
+   `/scd-sdd:guards`.
 
 ## Ce que tu NE fais PAS
 
-- Tu ne réédites aucun ADR existant, et tu ne changes le statut d'aucun.
-- Tu n'installes pas de hook d'immutabilité ADR : c'est de la maintenance, hors du socle
-  de création — signale-le comme étape aval.
-- Tu ne crées pas d'ADR pour une décision absente de la liste des candidats — les deux tables
-  de `docs/technique.md` ou `_candidates/` — sans faire valider l'ajout par l'utilisateur.
-- Tu ne supprimes ni ne modifies aucun brouillon de `_candidates/` : promu ou écarté, son
-  sort se signale à l'utilisateur, il ne s'exécute pas ici.
-- Tu ne modifies rien d'autre, dans `docs/technique.md`, que les **deux** colonnes « ADR ». Tu
-  n'ajoutes aucun invariant, tu n'en retires aucun et tu ne reformules aucune trace
-  observable : c'est la phase `technique` qui les admet.
-- Tu ne dérives aucun contrôle de CI et tu n'écris rien dans `docs/ci.md`. Repérer une trace
-  observable (étape 7) n'est pas poser un invariant : le formuler ici le figerait dans un
-  document immuable, avant même que la phase `livraison` ait vu l'écosystème qui doit le
-  rendre.
-- Tu ne touches à aucun rapport de `docs/research/` — pas même pour y noter l'ADR qu'il a
-  servi. Le lien va de l'ADR vers le rapport, jamais l'inverse : un rapport qui listerait
-  ses usages serait un fichier qui croît.
+- Tu **ne réécris jamais** un ADR accepté, même pour corriger une faute. Le hook te bloquerait ; la
+  règle existe avant lui.
+- Tu **n'écris aucun contrôle de CI** et ne touches pas à `docs/ci.md` ni à `.claude/guards.json`.
+  Un ADR vérifiable **se signale** ; c'est `/scd-sdd:guards` qui dérive le contrôle.
+- Tu **ne supprimes aucun brouillon** de `_candidates/`.
+- Tu **ne produis aucun autre document du socle**.
 
-## Consigne au journal
+<report>
 
-Charge le skill `journal` et ajoute **une ligne** dans `docs/journal/socle.md`,
-par `Edit` ciblé (crée le fichier s'il manque) :
+```
+## ADR — [N] écrits
 
-- **Phase** : `adr`
-- **Résultat** : la plage de numéros écrits · la confirmation du rétro-liage des deux colonnes.
-  Exemple : `0001..0006 · technique.md rétro-lié, deux colonnes`.
+| Fichier | Décision | Coût principal | Vérifiable ? |
+|---|---|---|---|
+| ADR-00NN | … | … | oui : [la trace] / non |
+
+### Candidats écartés
+[une ligne par candidat non retenu, avec son motif — ou « aucun »]
+
+### À faire à la main
+[brouillons promus à supprimer · ADR à passer en « Remplacé par » · renvoi vers guards
+ — ou « rien »]
+```
+
+</report>
 
 ## Skill active
 
-- `project-docs` — charge `references/adr.md`.
-- `exposition` — **régime *options***, chargé à l'étape 4, au premier ADR présenté. Aucune
-  `references/`.
-- `journal` — contrat de `docs/journal/*.md`.
+Skill `socle` — référence `references/adr.md`, chargée **intégralement**.
 
 ## À la fin
 
-Liste les ADR créés et confirme, candidat par candidat, que chacun a bien le sien — puis
-que la colonne « ADR » est complète dans les **deux** tables de `docs/technique.md`, « Choix
-retenus » et « Invariants ». Nomme enfin ceux qui laissent une **trace observable** (étape 7),
-s'il y en a : ce sont les invariants que la phase suivante ira chercher.
-
-Propose ensuite l'**audit**, optionnel : « Pour vérifier que `docs/adr/` est complet — un ADR par
-candidat, traçabilité bidirectionnelle, format et statut — : `/clear`, puis `/scd-sdd:audit adr`.
-L'audit confronte le répertoire entier à une grille et rend une **liste de travail** — il ne touche
-jamais aux ADR, qui sont immuables : ce qu'il remonte se referme par un candidat ou un supersede. Le
-`/clear` n'est pas cosmétique : juger ce qu'on vient d'écrire, c'est relire ses intentions au lieu
-du texte. Rien ne l'exige — sans audit, la suite est `/scd-sdd:livraison`. »
-
-Puis : « `/clear`, puis `/scd-sdd:livraison` — la phase terminale du socle, qui produit **deux**
-documents : `docs/ci.md`, où elle rend déterministe ce que `CLAUDE.md` ne pourra que conseiller
-— en dérivant de `docs/technique.md` et des ADR acceptés ce qu'ils imposent au code —, puis
-`CLAUDE.md` lui-même. »
+- Un ADR vérifiable a été écrit → *« ADR-00NN laisse une trace observable :
+  `/scd-sdd:guards` peut en dériver un contrôle. »*
+- Des brouillons ont été promus → *« [N] brouillons de `docs/adr/_candidates/` sont promus et
+  doivent être supprimés à la main — je n'ai pas l'outil pour le faire. »*
+- Sinon → *« Rien d'autre à figer. Reprends où tu en étais. »*

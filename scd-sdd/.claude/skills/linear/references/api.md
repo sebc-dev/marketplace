@@ -176,7 +176,7 @@ query($teamId: String!, $after: String) {
 Le matching se fait sur `name`, qui porte la clé `NNN-slug` en préfixe. **Aucun identifiant n'est
 conservé côté dépôt** : il est re-résolu à chaque push.
 
-### 4. Issues d'un périmètre — le matching des lots et des chantiers
+### 4. Issues d'un périmètre — le matching des tickets et des chantiers
 
 ```graphql
 query($teamId: String!, $after: String) {
@@ -256,7 +256,7 @@ mutation($id: String!, $input: ProjectUpdateInput!) {
 défauts. Le miroir ne pose **aucun état** sur un projet — Linear calcule son avancement depuis ses
 issues.
 
-### Issue d'un lot ou d'un chantier
+### Issue d'un ticket ou d'un chantier
 
 ```graphql
 mutation($input: IssueCreateInput!) {
@@ -280,7 +280,7 @@ mutation($input: IssueRelationCreateInput!) {
 }
 ```
 
-`dépend de : R1` dans `tasks.md` se pousse comme *R1 **bloque** R2* : `issueId` = l'issue de **R1**,
+`dépend de : R1` dans le ticket se pousse comme *R1 **bloque** R2* : `issueId` = l'issue de **R1**,
 `relatedIssueId` = celle de **R2**, `type: "blocks"`. Linear rend la relation inverse tout seul ; la
 créer dans les deux sens ferait un doublon. Une relation déjà présente ne se recrée pas — c'est
 l'objet de la sélection `relations` de la requête n° 4.
@@ -309,7 +309,7 @@ référence qui a vieilli : le rapporter, ne pas deviner un autre nom.
 §D31 : l'intégration GitHub crée l'attachement PR ↔ issue toute seule dès que la magic word les
 lie), et toute mutation de commentaire, de cycle ou de membre. Le miroir ne supprime rien,
 n'archive rien, et ne possède de l'initiative **que le rattachement** : sa description, ses
-updates, son sort appartiennent à l'humain — comme l'issue d'un lot disparu d'un `tasks.md`.
+updates, son sort appartiennent à l'humain — comme l'issue d'un ticket disparu d'un le ticket.
 
 </mutations_push>
 
@@ -337,7 +337,7 @@ On boucle tant que `pageInfo.hasNextPage`, en repassant `endCursor` en `after` ;
 `includeArchived` laissé au défaut, exactement la sémantique du plafond. Le comptage est
 **workspace** — pas de filtre d'équipe : le plafond est workspace, pas équipe.
 
-### La lecture d'hygiène — une seule requête, en lot
+### La lecture d'hygiène — une seule requête, en ticket
 
 Portée **workspace** comme le comptage, et **tout** en une lecture : les quatre contrôles et le
 rendu Now/Next/Later n'en demandent pas deux. La revue ne charge pas `<queries_miroir>` — elle ne
@@ -368,10 +368,10 @@ ici, seulement ce qui dépend du schéma.
 
 <accroche_pr>
 
-## Résoudre l'issue d'un lot — agent `pr-describer` seul (§D31)
+## Résoudre l'issue d'un ticket — agent `pr-describer` seul (§D31)
 
-Une seule chose à obtenir : l'**`identifier`** (`ENG-123`) de l'issue du lot, pour poser la magic
-word dans le **corps** de la PR. La résolution est l'issue au titre préfixé `Rn — ` dans le projet
+Une seule chose à obtenir : l'**`identifier`** (`ENG-123`) de l'issue du ticket, pour poser la magic
+word dans le **corps** de la PR. La résolution est l'issue au titre préfixé `NN — ` dans le projet
 `NNN-slug` :
 
 ```graphql
@@ -385,7 +385,7 @@ query($project: String!, $prefix: String!) {
 }
 ```
 
-`$project` = la clé de la feature (`001-auth`), `$prefix` = le préfixe du lot (`R2 — `).
+`$project` = la clé de la feature (`001-auth`), `$prefix` = le préfixe du ticket (`R2 — `).
 **Exactement un** résultat → c'est l'issue. **Zéro, ou plusieurs** → appariement ambigu : pas de
 magic word + une `note`, **jamais de question** — divergence délibérée avec la résolution
 titre → marqueur → question du push, écrite en §D31 : le flux implement tourne en arrière-plan et
@@ -396,7 +396,7 @@ ne casse jamais.
 | Base de la PR | Magic word | Pourquoi |
 |---|---|---|
 | la branche par défaut | `Fixes <identifier>` | mot **fermant** — l'issue passera Done au merge |
-| une branche de lot (PR **empilée**) | `Part of <identifier>` | mot **non-fermant** — un mot fermant fermerait l'issue au merge dans un cul-de-sac |
+| une branche de ticket (PR **empilée**) | `Part of <identifier>` | mot **non-fermant** — un mot fermant fermerait l'issue au merge dans un cul-de-sac |
 
 `Fixes` et `Part of` sont repris **verbatim** de la liste des magic words de la doc Linear —
 fermants `fix, fixes, fixed…`, non-fermants `part of, related to…`, relevés à la date en tête. La ligne
@@ -415,7 +415,7 @@ part** — comme le push re-résout tout.
 résultats par défaut** sans argument. On boucle tant que `pageInfo.hasNextPage`, en repassant
 `pageInfo.endCursor` en `after`.
 
-> Un miroir qui ne pagine pas rate silencieusement le 51ᵉ lot. C'est le défaut le plus coûteux du
+> Un miroir qui ne pagine pas rate silencieusement le 51ᵉ ticket. C'est le défaut le plus coûteux du
 > dispositif, parce qu'il **ressemble à un succès**.
 
 Elle ne vaut pas seulement pour les gros volumes du push : les lectures du **setup** — les équipes,
@@ -440,7 +440,7 @@ Complexité maximale d'une **seule** requête : **10 000 points**. En-têtes de 
 coince — `X-RateLimit-Requests-Remaining`, `X-RateLimit-Requests-Reset` (epoch ms UTC),
 `X-Complexity`, `X-RateLimit-Complexity-Remaining`.
 
-Conséquence directe sur le miroir : on **lit en lot** — une requête paginée par type d'objet — puis
+Conséquence directe sur le miroir : on **lit en ticket** — une requête paginée par type d'objet — puis
 on n'écrit qu'après avoir comparé. Une boucle qui interroge une issue à la fois brûle le quota pour
 rien.
 

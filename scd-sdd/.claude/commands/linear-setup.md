@@ -79,7 +79,7 @@ ambigus ; tu interroges l'API, tu proposes la correspondance et tu écris le fic
 - **État réel** : le nom que l'équipe a donné à un état de ce type — « Backlog », « In Progress »,
   « Terminé »… C'est ce que `docs/linear.md` fige, et c'est pour ça qu'il faut le lire.
 - **Label de chantier** : le seul label que le miroir possède. Il distingue une issue venue de
-  `docs/chantiers/` d'une issue de lot.
+  `docs/chantiers/` d'une issue de ticket.
 - **Initiative** : le conteneur produit au-dessus des projets Linear — optionnelle, activée par
   workspace. Son nom est une **configuration** arbitrée ici, une fois (§D31), jamais une
   dérivation ; le miroir n'en possède que le **rattachement** des projets, au push.
@@ -196,7 +196,7 @@ Vocabulaire — à lire une fois si tu viens de Jira
    Sous-tâche     → Sous-issue ou checklist
    « un projet Linear par feature » se lit donc, en Jira : une epic par feature.
 
-⚠  La description d'une issue de lot est RÉÉCRITE en entier à chaque push — checklist Tn
+⚠  La description d'une issue de ticket est RÉÉCRITE en entier à chaque push — checklist des critères
    + marqueur. Tout texte humain écrit là est perdu au push suivant. Les COMMENTAIRES ne
    sont jamais touchés : c'est là que ça se dit.
 
@@ -224,19 +224,6 @@ Vocabulaire — à lire une fois si tu viens de Jira
 - Tu ne contournes pas une erreur d'API en essayant un autre nom de champ : tu la rapportes. C'est
   d'abord le signal que la référence a vieilli.
 - Tu ne modifies aucun autre fichier du dépôt et tu ne commites rien d'autre que `docs/linear.md`.
-- Tu n'écris aucune ligne de journal (voir ci-dessous).
-
-## Consigne au journal
-
-**Aucune.** Tu ne joues aucune phase du cycle, et le fait que tu produis est **`docs/linear.md`
-lui-même** — écrit, commité, donc daté par git. L'inscrire aussi au journal mettrait la même
-information à deux endroits et ferait recroître un fichier partagé. C'est de nature, jamais un
-oubli : `DECISIONS.md` §D30, et la table des exceptions de la charte §1 — comme `lookup`, `research`
-et les trois commandes de chantier.
-
-Le miroir n'entre dans **aucune** table de dérivation, ne bloque **aucune** phase, et **aucun**
-`status` ne le réclame. Contrôle négatif qui prouve que la règle a tenu : après un setup,
-`docs/journal/socle.md` n'a **pas** grossi.
 
 ## Skill active
 
@@ -245,7 +232,7 @@ Le miroir n'entre dans **aucune** table de dérivation, ne bloque **aucune** pha
   `<pagination>`**, plus la date en tête, qui se lit avant tout appel — et
   `references/linear-md.md`, **intégralement** : le contrat des rubriques et son `<template>`.
 
-**Un seul skill, et c'est volontaire.** Tu ne lis ni `tasks.md`, ni une fiche de chantier : charger
+**Un seul skill, et c'est volontaire.** Tu ne lis ni le ticket, ni une fiche de chantier : charger
 `feature-specs` ou `chantier` ici n'aurait servi qu'à rendre tentant un push que cette commande n'a
 pas le droit de faire.
 

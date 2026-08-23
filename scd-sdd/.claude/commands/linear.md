@@ -1,5 +1,5 @@
 ---
-description: "Pousse le miroir Linear : les features deviennent des projets, les lots Rn des issues (tâches Tn en checklist, dépendances en relations), les fiches de chantier des issues labellisées. Idempotent, strictement unidirectionnel — n'écrit RIEN dans le dépôt et n'a aucun outil pour le faire. Exige docs/linear.md, écrit par /scd-sdd:linear-setup."
+description: "Pousse le miroir Linear : les features deviennent des projets, les tickets NN des issues (critères en checklist, dépendances en relations), les fiches de chantier des issues labellisées. Idempotent, strictement unidirectionnel — n'écrit RIEN dans le dépôt et n'a aucun outil pour le faire. Exige docs/linear.md, écrit par /scd-sdd:linear-setup."
 argument-hint: "[NNN | slug | chantiers | tout — optionnel, résolu sinon]"
 allowed-tools:
   - Read
@@ -12,8 +12,8 @@ allowed-tools:
 
 ## Contexte
 
-Tu pousses vers Linear ce que le dépôt sait **déjà** : les features de `specs/`, les lots `Rn` de
-leurs `tasks.md`, les fiches de `docs/chantiers/`. L'équipe y fait sa **priorisation** — priorité,
+Tu pousses vers Linear ce que le dépôt sait **déjà** : les features de `specs/`, les tickets `NN` de
+leurs le ticket, les fiches de `docs/chantiers/`. L'équipe y fait sa **priorisation** — priorité,
 estimation, assigné, cycle —, et ces faits-là ne redescendent **jamais** dans les fichiers : les y
 écrire recréerait le fichier d'état refusé depuis `DECISIONS.md` §D1 puis §D18.
 
@@ -31,7 +31,7 @@ compares et tu pousses).
 
 - **`docs/linear.md` absent → arrêt immédiat**, renvoi vers `/scd-sdd:linear-setup`. Ce fichier
   **est** l'opt-in : sans lui, il n'y a pas de miroir à pousser, et rien à deviner.
-- **Tu n'écris aucun fichier du dépôt.** Ni un document, ni une ligne de journal, ni un fichier
+- **Tu n'écris aucun fichier du dépôt.** Ni un document, ni un fichier
   temporaire. C'est mécanique, pas déclaratif — tu n'en as pas les outils.
 - **Aucun identifiant, aucune URL Linear ne ressort de cette commande vers un fichier.** Ils vivent
   le temps du push, en mémoire, et sont **re-résolus** au suivant. Un fichier de mapping se
@@ -58,7 +58,7 @@ compares et tu pousses).
 - **Le problème avant les options.** Tes questions portent sur un **workspace partagé**, pas sur un
   fichier local : dis d'abord ce qui est en jeu, puis donne à chaque option sa **conséquence
   concrète**. Sur un appariement (étape 6), l'enjeu est nommable en une phrase — reprendre l'issue
-  existante la met à jour ; en créer une neuve laisse **deux issues pour le même lot**, que le
+  existante la met à jour ; en créer une neuve laisse **deux issues pour le même ticket**, que le
   miroir ne retirera **jamais** (il ne touche que sa zone possédée) et que quelqu'un devra fermer à
   la main. Montre l'objet du dépôt et le candidat Linear côte à côte, jamais deux identifiants nus.
 - **Glose au premier emploi.** Le premier terme que tu adresses à l'humain — miroir, marqueur, zone
@@ -110,7 +110,7 @@ compares et tu pousses).
    n'as pas de bloc à ignorer. **Lis la date en tête** et compare-la au jour (`date +%F`) : plus de
    six mois → dis-le à l'humain **avant** de pousser.
 
-5. **Lis en lot, avant d'écrire quoi que ce soit** : les workflow states et les labels de l'équipe,
+5. **Lis en ticket, avant d'écrire quoi que ce soit** : les workflow states et les labels de l'équipe,
    les projets, les issues du périmètre — et, **seulement si `docs/linear.md` porte une rubrique
    `initiative` ≠ `aucune`**, les initiatives du workspace avec leurs projets liés (requête n° 5) —
    **paginés** tant que `pageInfo.hasNextPage`, selon le bloc `<pagination>` que tu viens de charger.
@@ -123,9 +123,9 @@ compares et tu pousses).
 6. **Apparie tout, et tranche les ambiguïtés maintenant.** Pour chaque objet du dépôt : match par
    **titre** (préfixe-clé), puis par **marqueur**, sinon `AskUserQuestion`. **Pose la question avec
    son enjeu, jamais en deux identifiants nus** : rappelle ce qu'est l'objet côté dépôt (la feature
-   ou le lot, avec son intitulé), montre le candidat Linear, puis les deux issues — « c'est la même
+   ou le ticket, avec son intitulé), montre le candidat Linear, puis les deux issues — « c'est la même
    chose, mets-la à jour » ou « c'en est une autre, crée-en une neuve ». Dis la conséquence de la
-   seconde : **deux issues pour le même lot**, que le miroir ne retirera jamais. Tu poses **toutes**
+   seconde : **deux issues pour le même ticket**, que le miroir ne retirera jamais. Tu poses **toutes**
    les questions ici, avant la première écriture :
    un push interrompu à mi-parcours par une question laisse un miroir à moitié fait. Un objet resté
    ambigu est **sauté**, jamais dupliqué, et il figure au rapport. Une issue Linear **sans
@@ -145,8 +145,8 @@ compares et tu pousses).
    (lus à l'étape 5) ; un lien déjà présent ne se **re-rattache jamais** — c'est là que se lit
    l'idempotence du rattachement.
 
-8. **Upsert des issues de lots.** Une par `Rn` de `tasks.md`, rattachée au projet de sa feature.
-   Titre : `Rn — <intitulé du lot>`, dont tu ne possèdes que le préfixe. Description **reconstruite
+8. **Upsert des issues de tickets.** Une par `NN` de le ticket, rattachée au projet de sa feature.
+   Titre : `NN — <intitulé du ticket>`, dont tu ne possèdes que le préfixe. Description **reconstruite
    en entier** : la checklist des `Tn` (cochées comme dans le fichier, intitulé seul — ni backref, ni
    `dépend de`, ni fichiers) puis le marqueur, et rien d'autre. État : dérivé des cases cochées selon
    la table « Les statuts par défaut » du skill, traduit en état **réel** par la table de
@@ -156,8 +156,8 @@ compares et tu pousses).
    Backlog est un défaut, pas une resynchronisation. Tu ne poses **ni** priorité, **ni** estimation,
    **ni** assigné, **ni** cycle.
 
-9. **Les relations.** Chaque `dépend de : Rk` de la ligne de métadonnées d'un lot se pousse comme
-   *Rk **bloque** Rn* — dans **un seul sens**, Linear rendant l'inverse tout seul. Une relation déjà
+9. **Les relations.** Chaque `dépend de : MM` de la ligne de métadonnées d'un ticket se pousse comme
+   *MM **bloque** NN* — dans **un seul sens**, Linear rendant l'inverse tout seul. Une relation déjà
    présente dans ce que tu as lu à l'étape 5 ne se recrée pas : c'est là que se fabriquent les
    doublons invisibles.
 
@@ -176,7 +176,7 @@ compares et tu pousses).
 
                         créés   màj   inchangés
    Projets                  1     0           0
-   Issues de lot            2     1           1
+   Issues de ticket            2     1           1
    Issues de chantier       0     1           2
    Relations                1     —           2
    Initiative — liens       1     —           0
@@ -198,49 +198,35 @@ Priorité chez Linear — lecture seule, rien de tout ça ne redescend
 
 → Aucun fichier du dépôt n'a été touché : cette commande n'a aucun outil d'écriture.
 → Rejoue maintenant : 0 créé attendu. Un créé de plus = matching cassé, dis-le.
-→ Priorisation dans Linear  ·  lot suivant : /scd-sdd:run R2
+→ Priorisation dans Linear  ·  ticket suivant : /scd-sdd:run R2
 ```
 </report>
 
 ## Ce que tu NE fais PAS
 
-- Tu n'écris **rien** dans le dépôt : ni fichier, ni ligne de journal, ni commit. Aucun fait venu de
+- Tu n'écris **rien** dans le dépôt : ni fichier, ni commit. Aucun fait venu de
   Linear — priorité, estimation, assigné, cycle, commentaire — ne descend dans un fichier.
 - Tu ne crées **ni** feature, **ni** chantier, **ni** tâche depuis une issue Linear. Une issue sans
   contrepartie fichier n'est **ni touchée, ni signalée**.
-- Tu ne **supprimes** et n'**archives** jamais rien côté Linear. Un lot disparu d'un `tasks.md`
+- Tu ne **supprimes** et n'**archives** jamais rien côté Linear. Un ticket disparu d'un le ticket
   laisse son issue en place : c'est l'humain qui décide de son sort.
 - Tu ne crées **aucun** label, et tu n'en poses aucun autre que celui de chantier.
 - Tu ne réécris **jamais** un titre en entier, ni la description d'un projet : tu rétablis le
   préfixe-clé, rien de plus.
-- Tu ne pousses **jamais** le contenu des documents — `spec.md`, `plan.md`, fiches de chantier.
+- Tu ne pousses **jamais** le contenu des documents — `SPEC.md`, les tickets, les fiches de chantier.
   Titres, checklists, états, relations : rien d'autre.
 - Tu ne contournes pas une erreur d'API en devinant un autre nom de champ : tu la rapportes. C'est
   d'abord le signal que la référence a vieilli.
 - Tu ne pousses rien hors du périmètre résolu, même si tu croises un objet qui « mériterait » de
   l'être.
-- Tu n'écris aucune ligne de journal (voir ci-dessous).
-
-## Consigne au journal
-
-**Aucune.** Tu ne joues aucune phase du cycle, et tu ne produis **aucun fait non dérivable** : le
-résultat du push est interrogeable chez Linear, et il est **idempotent** — le second run n'ajouterait
-rien au premier, la troisième ligne serait déjà du bruit. Journaliser ferait croître un fichier
-partagé au rythme d'une commande rejouable, ce que la charte §5 interdit.
-
-C'est de nature, jamais un oubli : `DECISIONS.md` §D30, et la table des exceptions de la charte §1 —
-comme `lookup`, `research` et les trois commandes de chantier. Le miroir n'entre dans **aucune** table
-de dérivation, ne bloque **aucune** phase, et **aucun** `status` ne le réclame. Contrôle négatif qui
-prouve que la règle a tenu : après un push, **aucun** fichier de `docs/journal/` n'a grossi — et de
-toute façon, tu n'as pas d'outil pour l'écrire.
 
 ## Skill active
 
 - `linear` — contrat du miroir : granularité, clé dérivée et résolution des renommages, propriété des
   champs, statuts par défaut, sens unique. Charge `references/api.md` **intégralement** — endpoint,
   requêtes, mutations, pagination, quotas, comptes à rendre — après en avoir lu la date en tête.
-- `feature-specs` — **uniquement** pour « Cibler une feature » et pour lire les lots `Rn` de
-  `tasks.md`. Tu ne joues aucune phase des specs et tu n'écris dans aucun de leurs documents.
+- `feature-specs` — **uniquement** pour « Cibler une feature » et pour lire les tickets `NN` de
+  le ticket. Tu ne joues aucune phase des specs et tu n'écris dans aucun de leurs documents.
 - `chantier` — **uniquement** pour « Cibler un chantier ». L'état d'une fiche est son **répertoire** ;
   tu ne l'ouvres, ne la déplaces et ne la modifies jamais.
 
@@ -250,7 +236,7 @@ Affiche le rapport, puis les trois suites, dans cet ordre :
 
 1. **La priorisation se fait dans Linear** — priorité, estimation, assigné, cycle. Le miroir ne les
    possède pas, ne les écrasera jamais, et rien de tout ça ne remontera dans le dépôt.
-2. **Le lot suivant s'implémente ici** — `/scd-sdd:run <lot>`. Ce sont les cases cochées de
-   `tasks.md` qui bougeront l'état côté Linear, au push suivant, et jamais l'inverse.
-3. **Rejoue `/scd-sdd:linear` quand les fichiers ont bougé** — un lot terminé, une fiche archivée, un
-   `tasks.md` redécoupé. Rejouer sans changement est sans effet : c'est ce que veut dire idempotent.
+2. **Le ticket suivant s'implémente ici** — `/scd-sdd:run <ticket>`. Ce sont les cases cochées de
+   le ticket qui bougeront l'état côté Linear, au push suivant, et jamais l'inverse.
+3. **Rejoue `/scd-sdd:linear` quand les fichiers ont bougé** — un ticket terminé, une fiche archivée, un
+   le ticket redécoupé. Rejouer sans changement est sans effet : c'est ce que veut dire idempotent.

@@ -2,10 +2,10 @@
 
 Chargée **bloc par bloc**, jamais en entier : `/scd-sdd:pause` (qui l'écrit et la contrôle) prend
 `<regle_maitresse>` `<classes>` `<controles>` ; `/scd-sdd:resume` (qui l'honore) prend `<classes>`
-`<lecture>` `<delegation>` ; `/scd-sdd:premortem` de cible `chantier` prend `<classes>` `<lecture>`
+`<lecture>` `<delegation>`
 pour honorer, les trois d'écriture pour écrire, et `<delegation>` s'il a une ligne `à déléguer` à
 résoudre.
-Ni `status`, ni `status-impl`, ni le hook n'en ont besoin : ils ne lisent que l'en-tête d'une fiche.
+Ni `status`, ni le hook n'en ont besoin : ils ne lisent que l'en-tête d'une fiche.
 
 Sans règle, un manifeste pointant `src/legacy/router.ts` (2 400 lignes) reproduirait exactement le
 problème que la fiche devait résoudre — on rechargerait tout, avec une étape de plus.
@@ -46,7 +46,7 @@ la raison pour laquelle il compte.
 à extraire  `src/legacy/router.ts` › `class RateLimiter` — 2400 l., seule cette classe compte
 à déléguer  `src/legacy/middleware.ts` — « dans quel ordre les handlers sont-ils résolus ? »
 à situer    `docs/adr/0003-sessions.md` — contraint le compteur, conclusion déjà dans Acquis
-à situer    PR #12 — le lot R1 mergé, ne pas relire
+à situer    PR #12 — le ticket 01 mergé, ne pas relire
 ```
 
 Le séparateur d'ancre est `›`. Une ancre est **vérifiable** : un titre de section, un nom de

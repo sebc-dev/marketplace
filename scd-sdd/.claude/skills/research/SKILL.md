@@ -9,7 +9,7 @@ description: |
   pendant /scd-sdd:lookup et /scd-sdd:research, et pendant elles seules : une phase
   qui doit sourcer un arbitrage — stack, adr, ci, plan — ROUTE vers ces deux
   commandes, elle ne charge pas ce skill. Porte UNIQUEMENT la méthode : ne joue
-  aucune phase, n'écrit aucune ligne de journal (skill journal), et ne modifie
+  aucune commande du cycle, et ne modifie
   jamais un document du socle — un rapport ne descend pas seul dans stack.md ni
   dans un ADR immuable, sous peine de citation laundering.
 ---
@@ -28,7 +28,7 @@ Quatre conséquences, toutes **de nature** et jamais discrétionnaires. Le ratio
 - **Une phase ne cherche pas elle-même, elle route.** Aucune commande de phase ne charge ce skill,
   et aucune n'a `WebSearch` ni `WebFetch` : elle renvoie vers `/scd-sdd:lookup` ou
   `/scd-sdd:research`, qui sont les **deux seuls** chargeurs.
-- **Aucune ligne de journal.** Ce que ces deux commandes produisent **est** le fait : le rapport
+- **Aucune trace ailleurs.** Ce que ces deux commandes produisent **est** le fait : le rapport
   lui-même. `lookup` ne produit même aucun fichier.
 - **Aucun état dérivé.** `docs/research/` n'apparaît dans aucune table d'état de `status`.
 - **Deux verbes, pas une commande à modes.** `lookup` répond en session et n'écrit rien ;
@@ -43,7 +43,7 @@ vérifie :
 > Produit → Technique → **ADR accepté, immuable** → spec → tests → code
 
 Un chiffre non vérifié entré au début ressort en décision que `CLAUDE.md` interdit de contredire, et
-que la gate `analyze` protège au lieu de la questionner. Le mécanisme n'est pas une hypothèse : la
+que le cycle protège au lieu de la questionner. Le mécanisme n'est pas une hypothèse : la
 prévalence des références fabriquées dans la littérature publiée est mesurée **en hausse d'une année
 sur l'autre**, par plusieurs protocoles indépendants *(niveau : rapporté)*.
 
@@ -181,7 +181,7 @@ plus**, et le fait qu'il ait été produit pour nous ne le rend pas plus vrai.
    `docs/technique.md` ou dans un ADR.
 
 Le contrôle négatif qui prouve que la règle a tenu : après l'import d'un rapport,
-`docs/journal/socle.md` n'a **pas** grossi, et aucun document du socle n'a été touché.
+aucun document du socle n'a été touché.
 
 ## Références
 

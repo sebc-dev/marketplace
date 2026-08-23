@@ -35,7 +35,7 @@ rends).
 - **Aucune mutation GraphQL, nulle part.** Tu n'envoies que des requêtes de lecture — c'est la
   règle que le `grep` négatif de la charte contrôle sur ce fichier. Côté dépôt, la non-écriture est
   **mécanique** : tu n'as ni `Write`, ni `Edit`, ni git, et ton `allowed-tools` est la preuve.
-- **Rien de ce que tu lis n'est persisté.** Ni fichier, ni ligne de journal, ni cache : la vue est
+- **Rien de ce que tu lis n'est persisté.** Ni fichier, ni cache : la vue est
   éphémère par nature, pas par oubli. Aucun identifiant, aucune URL Linear ne ressort de cette
   commande vers un fichier — les afficher **en session** est légal, la vue meurt avec elle.
 - **Les issues du miroir sans contrepartie fichier sont rapportées, jamais touchées.** Candidates à
@@ -96,7 +96,7 @@ rends).
    - **sans priorité** sur les non terminées ;
    - **`started` dormantes** — `updatedAt` au-delà d'un cycle de revue, mesuré contre `date +%F` ;
    - **contrepartie fichier disparue** — le seul contrôle qui croise le disque : pour chaque issue
-     **du miroir** (marqueur reconnu), vérifie par `Glob`/`Read` que la feature, le lot ou la fiche
+     **du miroir** (marqueur reconnu), vérifie par `Glob`/`Read` que la feature, le ticket ou la fiche
      que sa clé nomme existe encore sous `specs/` ou `docs/chantiers/`. C'est un contrôle
      d'**existence**, en lecture seule — tu ne charges ni `feature-specs`, ni `chantier` : il n'y a
      aucune cible à résoudre.
@@ -133,7 +133,7 @@ Hygiène — tout se traite dans Linear, rien ici
 
 ## Ce que tu NE fais PAS
 
-- Tu n'écris **rien** dans le dépôt : ni fichier, ni ligne de journal, ni commit. C'est mécanique —
+- Tu n'écris **rien** dans le dépôt : ni fichier, ni commit. C'est mécanique —
   tu n'en as pas les outils.
 - Tu n'écris **rien** chez Linear : aucune mutation, donc ni archiver, ni prioriser, ni
   transitionner, ni corriger un titre. Une candidate à l'archivage **reste une candidate**.
@@ -148,18 +148,6 @@ Hygiène — tout se traite dans Linear, rien ici
   t'attend.
 - Tu ne contournes pas une erreur d'API en devinant un autre nom de champ : tu la rapportes. C'est
   d'abord le signal que la référence a vieilli.
-- Tu n'écris aucune ligne de journal (voir ci-dessous).
-
-## Consigne au journal
-
-**Aucune.** Tu es en **lecture seule** et ta vue est **éphémère** : elle meurt avec la session,
-comme celle des trois `status` — c'est leur motif exact. Il est **distinct** de celui du couple
-setup/push (le miroir est idempotent et interrogeable chez Linear, §D30) : deux motifs, une même
-ligne de la table des exceptions de la charte §1, et les deux s'énoncent.
-
-C'est de nature, jamais un oubli. Contrôle négatif qui prouve que la règle a tenu : après une
-revue, **aucun** fichier de `docs/journal/` n'a grossi — et de toute façon, tu n'as pas d'outil
-pour l'écrire.
 
 ## Skill active
 
@@ -175,7 +163,7 @@ Affiche le rapport, puis les trois suites, dans cet ordre :
 
 1. **Archiver et re-prioriser se font dans Linear** — les candidates du rapport, le raccourci `P`,
    les dormantes à trancher. Rien de tout ça ne passe par le dépôt, et le miroir n'y touchera pas.
-2. **Rejoue `/scd-sdd:linear` quand les fichiers ont bougé** — un lot terminé, une fiche archivée :
+2. **Rejoue `/scd-sdd:linear` quand les fichiers ont bougé** — un ticket terminé, une fiche archivée :
    c'est le push qui remet le miroir au niveau, jamais cette revue.
-3. **Le travail s'implémente ici** — `/scd-sdd:run <lot>`. Ce sont les cases cochées de `tasks.md`
+3. **Le travail s'implémente ici** — `/scd-sdd:run <ticket>`. Ce sont les cases cochées de le ticket
    qui bougeront l'état côté Linear, au push suivant.

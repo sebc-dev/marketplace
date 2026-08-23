@@ -5,12 +5,11 @@ description: |
   l'ordre des couches, le mécanisme expliqué quand le choix en dépend, le raisonnement
   raconté en scène, la longueur réglée sur l'enjeu. DEUX RÉGIMES — options concurrentes
   (un sujet, plusieurs issues) et gate d'approbation (N items à trier) — qui changent
-  l'usage de l'ordre, jamais la méthode. Se charge pendant /scd-sdd:technique, adr,
-  livraison, research, resume, premortem, analyze, audit, revise-contract et migrate, à
+  l'usage de l'ordre, jamais la méthode. Se charge pendant /scd-sdd:init, adr,
+  init, spec, tickets, research, resume, guards et migrate, à
   l'étape qui restitue. Porte UNIQUEMENT l'exposition : les six règles de langage restent dans le
   ## Règles absolues de chaque commande (DECISIONS.md §D32) et tiennent sans lui ; le
-  contenu de l'arbitrage appartient au skill de son niveau ; la ligne de journal au
-  skill journal. Ne prescrit aucun gabarit : un plan-type en huit sections sur une
+  contenu de l'arbitrage appartient au skill de son niveau. Ne prescrit aucun gabarit : un plan-type en huit sections sur une
   question qui en demande deux est le même défaut par l'autre bout.
 ---
 
@@ -83,7 +82,7 @@ mesure sans provenance ne se vérifie pas et ne devrait pas peser.
 ### 5. Un ID porte ce que sa décision a fait
 
 §D32 demande l'intitulé. Dans une restitution, ça ne suffit pas : si l'argument **s'appuie** sur un
-`FR`, un ADR, un invariant, un constat d'audit, dis ce que la décision **a fait**.
+un ticket, un ADR, un invariant, dis ce que la décision **a fait**.
 
 « Cette option revient sur S-05 » ne pèse rien. « L'arbitrage S-05, hier, a retiré un secret de
 l'inventaire et l'a compté comme un gain — cette option l'y remet » pèse, et se conteste.
@@ -128,7 +127,7 @@ l'humain un travail que tu viens de faire.
 Quand une option est écartée d'avance par un fait établi plus haut, dis-le **là où le fait est
 posé** : ça évite quatre options dont deux sont mortes.
 
-### Régime gate — `premortem` · `analyze` · `audit` · `revise-contract` · `migrate`
+### Régime gate — `guards` · `migrate` · `init` en révision
 
 L'humain ne choisit pas entre des issues : il passe une liste. Le piège est symétrique, et les deux
 moitiés se ratent facilement — répéter le décor à chaque item produit trente préambules et noie le
@@ -149,11 +148,10 @@ longueur se règle sur le nombre d'items. Les **2**, **3**, **4**, **5** et **7*
 quels : un item dont le mécanisme n'est pas compris ne se juge pas plus qu'une option, un chiffre
 s'y donne dans l'unité de la décision, et un ID y porte ce que sa décision a fait.
 
-⚠️ **Les deux gates empruntent aussi le régime *options*, une fois.** Quand leur **budget de passes**
-est atteint — **2ᵉ** passe avec fiche encore ouverte (`DECISIONS.md` §D38, budget ramené à deux
-par §D39) —, `analyze` et `audit` ne
-font plus trier une liste : ils posent un **choix entre issues concurrentes**. C'est le régime
-*options* qui s'applique là, pas celui-ci, et les commandes le nomment à l'appel.
+⚠️ **Une commande peut basculer d'un régime à l'autre en cours de route.** `/scd-sdd:guards` trie
+une liste de chemins (régime *gate*), puis pose l'arbitrage des fichiers de test — un choix entre
+issues concurrentes, donc le régime *options*. Les commandes nomment leur régime **à l'appel** :
+suis ce qu'elles disent, ne le déduis pas de la commande.
 
 ⚠️ Le point **7** est le plus sollicité des cinq, parce qu'un gate produit des comptes. Le décor
 annonce « 2 Critical, 3 Major » ou « quatre problèmes » : un compte ne vaut que **énuméré**, et
