@@ -90,6 +90,11 @@ pas : on reste en `1.x` tant que le socle fusionné n'a pas servi en situation r
 |---|---|
 | `/scd-sdd:audit` | juge **un** document du socle — cinq dimensions : `produit` `technique` `adr` `ci` `claude-md` — contre une grille de conformité. Verdict `CONFORME` ou `À CORRIGER` au journal, corrections dans une fiche de chantier ; **le document jugé sort bit pour bit identique** |
 
+### Commit — **opt-in**
+| Commande | Effet |
+|---|---|
+| `/scd-sdd:signer` | prépare un commit sur un projet qui a la **soupape par signature** : trie l'index, **dérive** de `docs/ci.md` et des workflows réels si la signature humaine est exigée et pourquoi, compose le message aux scopes que les gardes imposent. Commite elle-même un commit **ordinaire**, sans `-S` ; pour un commit à signer, laisse index et message prêts et **rend la main**. Elle n'écrit ni ne lance jamais l'outillage de signature |
+
 ### Miroir Linear — **opt-in**
 | Commande | Effet |
 |---|---|
@@ -375,6 +380,35 @@ celle qui écrit tout le dépôt y compris les gardes et sa propre attestation ;
 vert trompeur que la phase existe pour supprimer. Et **le plugin n'exécute aucune
 cryptographie** : il écrit le workflow qui la vérifie, comme il rend la recette de
 protection de branche sans la jouer.
+
+### Le compagnon du geste — `/scd-sdd:signer`
+
+La soupape est une **porte humaine**, et le plugin **n'écrit pas l'outillage qui la
+produit** : c'est le seul endroit du dispositif où le concours de l'agent est un risque et
+non une aide — un outil qui produit des signatures et que l'agent pourrait modifier
+afficherait une chose et en signerait une autre. Le cycle savait donc **poser** la porte, et
+ne disait nulle part **quand la pousser**. C'est le même trou que `CLAUDE.md` assemblé sans
+entretien, et c'est ce que `/scd-sdd:signer` comble.
+
+Elle ne porte **aucune liste de motifs**, et c'est tout le point. Un projet élargit toujours
+la surface de signature au-delà de la recette : le plugin ne la prescrit que pour
+`verifier-guard`, un projet réel l'a étendue à trois contrôles, et l'outil local qui
+énumérait ses motifs en dur a fini par afficher *« aucune — un commit ordinaire n'a pas
+besoin d'être signé »* sur un commit que la CI refusait, parce qu'un garde était né 28
+commits après lui. Le mode de défaillance n'est pas *il manque un motif* : c'est qu'un outil
+**affirme une négative sur une liste qu'il ne sait pas incomplète**.
+
+La commande **dérive donc de deux sources croisées** — ce que `docs/ci.md` déclare, ce que
+les workflows portent réellement — et **compare**. Un garde présent dans la CI et absent de
+la synthèse ne la fait pas signer par précaution : il lui **retire le droit de conclure**
+« commit ordinaire ». Elle suspend son verdict, nomme le job, et renvoie le trou vers
+`/scd-sdd:livraison`. Fermeture par défaut, comme les contrôles eux-mêmes.
+
+Trois choses qu'elle ne fait jamais : **signer** (`-S` n'est écrit nulle part dans son
+corps), **écrire ou lancer** l'outillage de signature — elle le détecte et le nomme, ou rend
+la commande `git` nue —, et **faire signer pour rien** : sans motif, elle commite
+elle-même, parce que ce qui se signe trop souvent ne se relit plus, et que la relecture est
+la seule chose que la signature atteste.
 
 ### Ce que la moitié CI pose, et ce qu'elle laisse à l'humain
 

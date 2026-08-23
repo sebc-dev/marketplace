@@ -48,7 +48,7 @@ there: its deliverable is the corpus. The subject map carries the campaign's sta
 domain packs; `campaign` orchestrates and composes nothing itself.
 Human-in-the-loop by construction: no session can launch Research. 7 slash commands.
 
-### [scd-sdd](./scd-sdd/) `v1.19.0`
+### [scd-sdd](./scd-sdd/) `v1.20.0`
 
 Complete spec-driven development cycle, from empty repo to reviewable PR — one plugin, three
 chained levels. **Foundation** (once per project): four phases producing five documents —
@@ -69,6 +69,17 @@ a guard against silencing the type checker, the linter or the SAST line by line,
 hatch is a commit signature verified offline against a key registry versioned in the repo. The
 plugin runs no cryptography of its own: it writes the workflow that verifies it, and renders the
 branch-protection recipe without executing it.
+
+That escape hatch is a **human** door, and the plugin deliberately does not write the tool that
+opens it — a signing tool the agent could modify would display one thing and sign another. So the
+cycle knew how to *install* the door and never said *when to push it*. `/scd-sdd:signer` fills that
+gap, and it carries **no list of reasons**: a project always widens the signing surface beyond the
+recipe, and a hard-coded list eventually says "ordinary commit, no signature needed" about a commit
+CI will refuse. It derives instead, from two crossed sources — what `docs/ci.md` declares, what the
+workflows actually carry — and compares. A guard present in CI but missing from the summary does
+not make it sign as a precaution: it **removes its right to conclude**. It never signs, never
+writes or runs the signing tool, and never makes you sign for nothing — what gets signed too often
+stops being read, and being read is the only thing a signature attests.
 
 The `technique` phase gives that machinery its source. It picks the foundations — language,
 framework, database, auth, deployment, tests, each tied to an `FR`/`SC` of `docs/produit.md` — and
@@ -167,7 +178,7 @@ is reported **by name** as missed by the previous pass rather than dropped.
 Throughout, the plugin **explains its own vocabulary once**. Its terms — review lot `Rn`, gate,
 EARS, invariant, ADR — stay precise and greppable; what changed is that they are now defined where
 you meet them: a `## Légende` in five produced-document templates (including *why* EARS criteria
-stay in normed English), a glossed term in every command description and report, and — in the 20
+stay in normed English), a glossed term in every command description and report, and — in the 21
 commands that hold a dialogue — **the problem stated before the options**, each option carrying its
 consequence in project terms rather than jargon. Work-in-progress management is part of that:
 `/scd-sdd:resume` no longer just lists four possible follow-ups, it says what each one does — and
@@ -192,7 +203,7 @@ front and giving each entry only what is specific to it, plus what happens if yo
 it. It is not a template, and not blanket popularisation: what the choice depends on gets
 explained, the rest gets named.
 
-30 slash commands, including three dashboards — `/scd-sdd:status` (all three levels in one view,
+31 slash commands, including three dashboards — `/scd-sdd:status` (all three levels in one view,
 plus the next command to run), `/scd-sdd:status-specs`, `/scd-sdd:status-impl` (merge-safety of
 every lot PR) — and `/scd-sdd:migrate`, which picks up a project coming from the three former
 plugins **and converts a foundation written before the merge**: `brief` + `prd` become
