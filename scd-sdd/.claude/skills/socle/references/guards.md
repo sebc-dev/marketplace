@@ -33,11 +33,18 @@ détruit cette information.
 
 | # | Où | Teste | Sans `guards.json` | Avec |
 |---|---|---|---|---|
-| 1 | `PreToolUse` `Edit\|Write\|NotebookEdit\|MultiEdit` | le **chemin**, résolu en absolu | silence | **bloque** + trace |
-| 1b | `PreToolUse` `Bash` | un verbe d'écriture visant un chemin protégé | silence | **bloque** + trace |
+| 1 | `PreToolUse` `Edit\|Write\|NotebookEdit\|MultiEdit` | le **chemin**, sous la racine du projet | silence | **bloque** + trace |
+| 1b | `PreToolUse` `Bash` | un verbe d'écriture, ou une redirection, **visant** un chemin protégé | silence | **bloque** + trace |
 | 2 | `PreToolUse` `Edit\|Write` | le **contenu écrit**, et seulement ce qui est **introduit** | **avertit** + trace | **bloque** + trace |
+| 2b | `PreToolUse` `Bash` | un motif **déversé** dans un fichier du projet (redirection, heredoc) | **avertit** + trace | **bloque** + trace |
 | 3 | job CI | le **diff** de la PR | — | posé par `/scd-sdd:guards` |
 | — | `block-adr-edits.sh` | réécriture d'un ADR **existant** | **bloque** | **bloque** |
+
+**La couche 2b existe parce qu'un garde qui ne couvre qu'une surface DÉPLACE le geste au lieu de le
+réduire** — constat d'usage réel, pas hypothèse : bloqué en `Edit`, le réflexe suivant est
+`echo … >> src/a.ts`. Elle est volontairement étroite — seulement ce qui **déverse** du texte dans un
+fichier du projet —, pour qu'un `grep` qui cherche le motif et un `sed -i` qui le **retire** ne
+déclenchent rien.
 
 **La couche 2 est celle qui compte.** Elle vise un fichier que l'agent a parfaitement le **droit**
 d'éditer — son propre code —, ce qui la rend structurellement invisible à la couche 1. C'est le
@@ -71,6 +78,13 @@ une décision de projet : sans liste, la couche 1 se tait complètement.
       // Une dérogation SANS `raison` est ignorée par le hook. Ce n'est pas un contrôle
       // de forme : sans motif écrit, personne n'a eu à défendre pourquoi.
       {"motif": "as-any", "chemin": "src/legacy/**", "raison": "portage, ADR-0007"}
+    ],
+    "exclude": [
+      // Des CHEMINS que la couche 2 ne juge pas du tout — pour du contenu qui CITE les
+      // motifs sans les appliquer. `*.md`, `*.txt`, `*.rst` et `docs/**` le sont déjà
+      // d'office, comme `verifier-guard` les exclut en CI, et pour la même raison : un
+      // document qui décrit un garde le cite forcément. Même exigence de `raison`.
+      {"chemin": "tools/lint-rules/**", "raison": "règles qui citent les motifs traqués"}
     ]
   },
   "log": ".claude/guard-log.jsonl"
@@ -182,6 +196,42 @@ cryptographie** : il écrit le workflow qui la vérifie.
 checks requis, bypass interdit, force-push et suppression interdits. `/scd-sdd:guards` **rend la
 commande, elle ne la joue pas** — c'est le dépôt de l'humain.
 
+La recette, pour GitHub (forge par défaut) — **un ruleset porte les quatre garanties d'un coup** :
+checks requis (`required_status_checks`), suppression et force-push interdits (`deletion`,
+`non_fast_forward`), bypass interdit (aucun `bypass_actors`). À rendre prête à coller, en
+remplaçant `<o>/<r>` et en listant **les noms de jobs requis à l'identique** de `<ci-md>` :
+
+```bash
+gh api --method POST repos/<o>/<r>/rulesets -H "Accept: application/vnd.github+json" --input - <<'JSON'
+{
+  "name": "défaut — checks requis",
+  "target": "branch",
+  "enforcement": "active",
+  "conditions": { "ref_name": { "include": ["~DEFAULT_BRANCH"], "exclude": [] } },
+  "rules": [
+    { "type": "deletion" },
+    { "type": "non_fast_forward" },
+    { "type": "required_status_checks", "parameters": {
+      "strict_required_status_checks_policy": true,
+      "required_status_checks": [
+        { "context": "build" }, { "context": "test" }, { "context": "sca" },
+        { "context": "secrets" }, { "context": "sast" }, { "context": "test-integrity" },
+        { "context": "quality-config-guard" }, { "context": "verifier-guard" },
+        { "context": "workflow-integrity" }, { "context": "dependency-review" }
+      ] } }
+  ]
+}
+JSON
+```
+
+⚠️ **Le corps passe en JSON par `--input -`, jamais en `-F 'rules[][…]'` répétés.** `gh api`
+**n'agrège pas** ces `-F` dans un même objet de règle : il crée une règle orpheline par ligne, et
+GitHub répond **422 — `data matches no possible input`** sur chaque contexte. Le faux positif est
+qu'un agent qui compose la commande lui-même retombe naturellement sur cette forme cassée.
+Corollaire : l'API `rulesets` accepte les contextes **par leur nom**, sans run préalable — la note
+« laisser le workflow tourner sur `pull_request` d'abord » ne vaut que pour le menu déroulant de
+l'**interface**, pas pour cette commande.
+
 </ci>
 
 <ci-md>
@@ -274,9 +324,16 @@ déjà connu, ce qui manque est son instance ici.]
 - **`python3` absent = aucune protection locale, et sans message.** Les hooks ne peuvent pas
   s'annoncer s'ils ne démarrent pas. `/scd-sdd:guards` le contrôle explicitement ; la couche 3 est
   le rattrapage.
-- **La couche 1b est best-effort.** Elle reconnaît des verbes d'écriture (`sed -i`, `rm`, `mv`,
-  `tee`, une redirection) et des chemins littéraux. Une variable, un `xargs`, un heredoc lui
-  échappent.
+- **La couche 1b est best-effort.** Elle découpe la ligne comme un shell (`shlex`), relie une
+  redirection à SA cible et un verbe aux opérandes de SON segment (une copie à sa seule
+  destination), et inspecte la charge utile d'un `-c`. Une variable, un `xargs`, un nom construit à
+  l'exécution lui échappent toujours.
+- **La couche 2b est plus étroite encore.** Elle ne s'arme que sur un **déversement** — redirection
+  ou heredoc. Un `sed -i` qui INSÈRE un neutralisant n'est pas couvert, et c'est délibéré : la même
+  forme sert à en RETIRER un, et la bloquer interdirait le nettoyage.
+- **Une exclusion `weakening.exclude` est un trou déclaré.** Elle porte sa `raison`, elle se relit,
+  et elle vaut mieux qu'un faux positif qui apprend à l'agent que le garde se trompe — mais elle
+  reste un trou, et rien ne la rappelle à la relecture d'une PR.
 - **Un `guards.json` illisible n'ouvre pas les gardes** : les trois chemins protégés en dur tiennent
   et le hook avertit. Un JSON cassé serait sinon le contournement le plus simple du dispositif.
 - **Rien de tout ceci ne remplace la relecture.** La couche 2 attrape le geste grossier ; elle ne

@@ -224,6 +224,15 @@ une clé à phrase jamais chargée d'une clé nue.
 La discipline qui la rend tenable tient en une phrase : **la clé de signature ne sert qu'à signer**,
 jamais à s'authentifier auprès de la forge. Il n'y a alors aucune occasion légitime de la charger.
 
+**Conséquence opérationnelle, relevée en usage réel : `commit.gpgsign` reste `false`.** La soupape
+n'exige une signature que sur les **rares** commits qui ajoutent un motif ou touchent le registre ;
+et la clé, par la discipline ci-dessus, n'est **jamais chargée dans l'agent**. Poser
+`commit.gpgsign true` globalement fait donc déclencher à **chaque** commit ordinaire une invite de
+phrase de passe qui, sans terminal, **pend jusqu'au timeout** — un commit avorté après deux
+minutes, et le travail bloqué. On signe **au coup par coup** — `git commit -S`, ce que
+`/scd-sdd:signer` fait déjà — et un commit qui n'a pas à l'être se fait tel quel (ou
+`--no-gpg-sign` si `gpgsign` est globalement actif) : `verifier-guard` n'exige rien sur lui.
+
 Deux résiduels s'ajoutent, et ils vont dans `docs/ci.md`, dans le corps et jamais en note :
 
 1. le fichier de clé reste **lisible donc exfiltrable** par tout processus de l'utilisateur — c'est

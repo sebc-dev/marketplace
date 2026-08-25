@@ -112,7 +112,9 @@ Ratio : 40% humain / 60% AI (l'humain arbitre le périmètre, tu constates et tu
    toutes les PR.
 
 8. **Rends la protection de branche**, prête à copier, et **ne la joue pas**. Dis en une phrase ce
-   qu'elle change : sans elle, tout ce qui précède est **informatif**.
+   qu'elle change : sans elle, tout ce qui précède est **informatif**. Sur GitHub, **rends la
+   recette `gh api … rulesets --input -` du bloc `<ci>`** telle quelle, avec les noms de jobs
+   requis — **ne la recompose pas** avec des `-F 'rules[][…]'` répétés, qui font répondre 422.
 
 9. **Rafraîchis `docs/ci.md`** — la seule section `## Gardes de session`, sur le gabarit du bloc
    `<ci-md>`. Elle **pointe** vers `.claude/guards.json` et ne le recopie pas : deux sources pour un
