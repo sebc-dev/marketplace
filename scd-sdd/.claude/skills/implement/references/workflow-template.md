@@ -29,8 +29,27 @@ Préambule et final sont **invariants** ; le segment du milieu dépend de `brief
 | Validate | `scd-sdd:test-validator` | opus | `TEST_VERDICT` | test |
 | Green | `scd-sdd:implementer` | sonnet | `GREEN` | tous |
 | Verify | `scd-sdd:verifier` | opus | `VERIFY` | observé |
-| Review | `scd-sdd:code-reviewer` | opus | `FINDINGS` | tous |
+| Context | `scd-sdd:review-context` | sonnet | `REVIEW_CONTEXT` | tous |
+| Review | 6 reviewers **en parallèle** (voir ci-dessous) | opus ×4 + sonnet ×2 | `FINDINGS` (fusionnés) | tous |
 | Triage | `scd-sdd:review-validator` | opus | `TRIAGE` | tous |
+
+**Le fan-out de Review** (phase unique, `parallel()`), un reviewer par dimension :
+
+| Reviewer | Dimension | Modèle |
+|---|---|---|
+| `scd-sdd:architecture-reviewer` | architecture | opus |
+| `scd-sdd:coverage-reviewer` | couverture | opus |
+| `scd-sdd:security-reviewer` | sécurité | opus |
+| `scd-sdd:error-handling-reviewer` | error-handling | opus |
+| `scd-sdd:cleanliness-reviewer` | propreté | sonnet |
+| `scd-sdd:conventions-reviewer` | conventions | sonnet |
+
+`review-context` (sonnet) résout **une fois** le dossier (`REVIEW_CONTEXT` : invariants ADR, décisions
+et hors-périmètre de spec, contrats) que les six reviewers reçoivent — évite six lectures redondantes
+de `docs/adr/`/`SPEC.md`. Les six `FINDINGS` sont fusionnés dans l'orchestrateur, **IDs préfixés par
+dimension** (`securite-F1`) pour éviter les collisions, et passés tels quels à `review-validator`, qui
+dédoublonne. Les deux dimensions de style (propreté, conventions) sont en **sonnet** — levier de coût
+du fan-out ; les quatre dimensions à raisonnement dur restent opus.
 | Apply | `scd-sdd:fix-applier` | sonnet | `GREEN` | tous (re-vérifie selon le mode) |
 | Record | `scd-sdd:progress-recorder` | haiku | `RECORD` | tous |
 | Describe | `scd-sdd:pr-describer` | opus | `PR_BODY` | tous (sautable) |
@@ -138,5 +157,5 @@ Le workflow cible les agents par `agentType: 'scd-sdd:<name>'`, résolus depuis 
 
 ## Coût
 
-Un dynamic workflow consomme « substantiellement plus » de tokens. Le périmètre « un ticket par lancement » borne la dépense ; le routage opus/sonnet/haiku l'optimise. Piloter un premier run sur un petit ticket (1-2 critère) avant de généraliser.
+Un dynamic workflow consomme « substantiellement plus » de tokens. Le périmètre « un ticket par lancement » borne la dépense ; le routage opus/sonnet/haiku l'optimise. **La phase Review est désormais la plus lourde** : six reviewers (quatre opus, deux sonnet) en parallèle, précédés du dossier `review-context` (sonnet). C'est le prix assumé de la profondeur par dimension — pour l'abaisser, le premier levier est de passer une dimension d'opus à sonnet dans `REVIEWERS`, jamais de retirer un reviewer (une dimension perdue est un angle mort). Piloter un premier run sur un petit ticket (1-2 critère) avant de généraliser.
 </run>

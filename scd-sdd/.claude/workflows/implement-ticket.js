@@ -10,7 +10,8 @@ export const meta = {
     { title: 'Validate', detail: 'test-validator : (mode test) 1 critère = 1 test, cas limites, conventions' },
     { title: 'Green', detail: 'implementer : implémente ; en mode test jusqu\'au vert tests intacts, en observé jusqu\'à la preuve' },
     { title: 'Verify', detail: 'verifier : (mode observé) vérif observable en contexte frais — capture la preuve ou remonte un humanCheckRequired' },
-    { title: 'Review', detail: 'code-reviewer : 6 dimensions (tous modes)' },
+    { title: 'Context', detail: 'review-context : dossier de contexte (invariants ADR, décisions/hors-périmètre de spec) résolu une fois pour les six reviewers (contexte frais)' },
+    { title: 'Review', detail: 'six reviewers en parallèle, un par dimension : architecture, propreté, conventions, couverture, sécurité, error-handling (contexte frais, tous modes)' },
     { title: 'Triage', detail: 'review-validator : triage sceptique adversarial' },
     { title: 'Apply', detail: 'fix-applier : applique les findings retenus, re-vérifie selon le mode' },
     { title: 'Record', detail: 'progress-recorder : coche les critères du ticket, commit sur la branche dédiée' },
@@ -182,6 +183,43 @@ const VERIFY = {
       description: 'Items qu\'un agent ne peut pas constater (mise en page visuelle, effet externe) — remontés en checklist dans la PR pour le reviewer humain',
     },
     note: { type: 'string' },
+  },
+}
+
+// Dossier de contexte résolu UNE fois par review-context et servi aux six reviewers.
+// Aucune I/O de review dans l'orchestrateur : l'agent lit docs/adr/ et SPEC.md.
+const REVIEW_CONTEXT = {
+  type: 'object',
+  properties: {
+    invariants: {
+      type: 'array',
+      description: 'Table des invariants de docs/adr/ — référent de la dimension architecture ; vide si la table est absente',
+      items: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', description: 'ex. I3' },
+          rule: { type: 'string' },
+          source: { type: 'string', description: 'fichier ADR qui porte l\'invariant' },
+        },
+      },
+    },
+    adrs: {
+      type: 'array',
+      description: 'ADR contraignant ce ticket, résumés (jamais recopiés en entier)',
+      items: {
+        type: 'object',
+        properties: {
+          id: { type: 'string' },
+          title: { type: 'string' },
+          decision: { type: 'string' },
+          consequences: { type: 'string' },
+        },
+      },
+    },
+    decisions: { type: 'array', items: { type: 'string' }, description: 'SPEC.md ## Décisions qui contraignent le diff' },
+    outOfScope: { type: 'array', items: { type: 'string' }, description: 'SPEC.md ## Hors-périmètre pertinent — ce qu\'aucun reviewer ne doit réclamer' },
+    contracts: { type: 'string', description: 'Contrats d\'interface du ticket (signatures, endpoints, codes d\'erreur), si écrits' },
+    note: { type: 'string', description: 'Ce qui n\'a pas pu être résolu (socle absent, ADR illisible)' },
   },
 }
 
@@ -512,18 +550,66 @@ if (usesTests) {
   log(`Vérif ${mode} : ${verify.observableProof ? 'preuve observable capturée' : 'aucune preuve auto'}${hc.length ? ` · ${hc.length} point(s) à vérifier par un humain` : ''}`)
 }
 
-phase('Review')
-const review = await agent(
-  `Review l'implémentation du ticket ${ticket} (contexte frais, tu n'as pas écrit ce code). ` +
-  `Diff sur ${JSON.stringify(green.diffFiles)} (récupère-le via \`${gitPrefix} diff …\`). Six dimensions : architecture, propreté, conventions, ` +
-  `couverture, sécurité, gestion d'erreur. Mode de vérif du ticket : ${mode}` +
-  (usesTests ? `` : ` — PAS de test automatisé attendu (c'est le contrat) : ne remonte jamais « absence de test » sur ce ticket, juge la couverture par la vérif observable.`) +
-  `. Classe bloquant/suggestion, propose un correction_prompt autonome.\n` +
-  `Brief:\n${JSON.stringify(brief)}` + iso,
-  { agentType: 'scd-sdd:code-reviewer', schema: FINDINGS, model: 'opus' },
+// Contexte de review résolu UNE fois (les six reviewers jugent le même diff : leur faire
+// relire docs/adr/ et SPEC.md serait six lectures redondantes et divergentes). review-context
+// ne juge pas — il cite. Repli sûr si l'agent est sauté : dossier vide, les reviewers ont
+// chacun leur mode dégradé (architecture retombe sur l'existant, etc.).
+phase('Context')
+const dossier = await agent(
+  `Collecte le DOSSIER DE CONTEXTE de review du ticket ${ticket} de ${featureDir}, en contexte frais, ` +
+  `pour que six reviewers n'aient pas à relire les mêmes documents. Résous : la table des invariants de ` +
+  `\`docs/adr/\` (invariants[], référent de la dimension architecture — vide si absente), le corps des ADR ` +
+  `contraignant ce ticket (adrs[], résumés), les décisions d'impl de \`SPEC.md\` qui contraignent le diff (decisions[]), ` +
+  `le hors-périmètre pertinent (outOfScope[]), les contrats d'interface (contracts). Cite (id + source), NE JUGE PAS ` +
+  `(aucune sévérité, aucun finding), n'invente aucun champ.\n` +
+  `Fichiers modifiés : ${JSON.stringify(green.diffFiles)}.\nBrief:\n${JSON.stringify(brief)}` + iso,
+  { agentType: 'scd-sdd:review-context', schema: REVIEW_CONTEXT, model: 'sonnet' },
 )
-const findings = (review && review.findings ? review.findings : []).filter(Boolean)
-log(`Review : ${findings.length} finding(s)`)
+const context = dossier || {}
+const reviewCtx = {
+  invariants: context.invariants || [],
+  adrs: context.adrs || [],
+  decisions: context.decisions || [],
+  outOfScope: context.outOfScope || [],
+  contracts: context.contracts || '',
+}
+log(`Dossier de contexte : ${reviewCtx.invariants.length} invariant(s) · ${reviewCtx.adrs.length} ADR${dossier ? '' : ' (agent sauté — dossier vide, replis dégradés)'}`)
+
+// Fan-out : un reviewer par dimension, en PARALLÈLE, contexte frais (producteur ≠ vérificateur).
+// Raisonnement dur en opus ; les deux dimensions de style en sonnet (levier de coût du fan-out).
+phase('Review')
+const REVIEWERS = [
+  { dim: 'architecture',   agent: 'architecture-reviewer',   model: 'opus'   },
+  { dim: 'couverture',     agent: 'coverage-reviewer',       model: 'opus'   },
+  { dim: 'securite',       agent: 'security-reviewer',       model: 'opus'   },
+  { dim: 'error-handling', agent: 'error-handling-reviewer', model: 'opus'   },
+  { dim: 'proprete',       agent: 'cleanliness-reviewer',    model: 'sonnet' },
+  { dim: 'conventions',    agent: 'conventions-reviewer',    model: 'sonnet' },
+]
+const reviewResults = await parallel(REVIEWERS.map((r) => () =>
+  agent(
+    `Review la dimension ${r.dim} de l'implémentation du ticket ${ticket} (contexte frais, tu n'as pas écrit ce code). ` +
+    `Diff sur ${JSON.stringify(green.diffFiles)} (récupère-le via \`${gitPrefix} diff …\`). Mode de vérif du ticket : ${mode}` +
+    (usesTests ? `` : ` — PAS de test automatisé attendu (c'est le contrat) : ne remonte jamais « absence de test », juge par la vérif observable.`) +
+    `. Charge SEULEMENT ta dimension, classe bloquant/suggestion, propose un correction_prompt autonome.\n` +
+    `Dossier de contexte:\n${JSON.stringify(reviewCtx)}\nBrief:\n${JSON.stringify(brief)}` + iso,
+    { agentType: `scd-sdd:${r.agent}`, schema: FINDINGS, model: r.model, phase: 'Review', label: `review:${r.dim}` },
+  ).then((res) => ({ r, res })),
+))
+// Fusion : IDs préfixés par dimension pour éviter les collisions F1/F1 entre reviewers ;
+// dimension forcée à celle du reviewer. Un reviewer sauté/échoué (null) est simplement absent.
+const okReviews = reviewResults.filter(Boolean)
+const findings = okReviews.flatMap(({ r, res }) =>
+  ((res && res.findings) ? res.findings : []).filter(Boolean).map((f, i) => ({
+    ...f,
+    id: `${r.dim}-${f.id || ('F' + (i + 1))}`,
+    dimension: r.dim,
+  })),
+)
+if (okReviews.length < REVIEWERS.length) {
+  log(`⚠ ${REVIEWERS.length - okReviews.length} reviewer(s) sauté(s)/échoué(s) — dimensions manquantes possibles`)
+}
+log(`Review : ${findings.length} finding(s) sur ${okReviews.length}/${REVIEWERS.length} dimensions`)
 
 let triaged = { apply: [], skipped: [] }
 if (findings.length) {

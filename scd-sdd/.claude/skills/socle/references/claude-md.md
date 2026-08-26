@@ -3,8 +3,8 @@
 <role>
 `CLAUDE.md` est le **contrat opérationnel** : chargé à chaque session, il **pointe** vers les ADR,
 `docs/ci.md` et `.claude/guards.json` sans les recopier, **lit** les commandes du projet dans
-`docs/ci.md`, et porte le **glossaire de domaine** que `/scd-sdd:spec`, `/scd-sdd:tickets` et le
-`code-reviewer` réemploieront. Advisory, pas exécutif.
+`docs/ci.md`, et porte le **glossaire de domaine** que `/scd-sdd:spec`, `/scd-sdd:tickets` et les
+reviewers réemploieront. Advisory, pas exécutif.
 
 **Il est chargé en entier, quelle que soit sa longueur** — la concision est une contrainte de coût,
 pas de style. Plafond **200 lignes** (« Keep CLAUDE.md under 200 lines, give it an owner, and review
@@ -90,7 +90,7 @@ pourquoi.
   réduisent pas** le coût en tokens : n'importer que le stable et universel. Backticker le chemin
   pour le mentionner sans l'importer.
 - **Le glossaire est du métier, pas de la technique.** Il existe parce que trois consommateurs en
-  ont besoin — `spec`, `tickets`, le `code-reviewer` — et qu'un fichier séparé serait un document de
+  ont besoin — `spec`, `tickets`, les reviewers — et qu'un fichier séparé serait un document de
   plus que personne ne relit. Un terme dont la définition est évidente pour qui lit le code n'y
   entre pas. **Quinze lignes est déjà beaucoup** ; au-delà, c'est un document, et il change de
   nature.

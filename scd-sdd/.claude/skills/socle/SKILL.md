@@ -21,7 +21,7 @@ gate**. Ils existent parce que quelque chose en aval les lit — pas pour attest
 
 | Document | Ce qu'il porte | Qui le lit ensuite |
 |---|---|---|
-| `docs/adr/NNNN-*.md` | une décision structurante, son contexte, ses conséquences | `/scd-sdd:spec`, `/scd-sdd:tickets`, le `code-reviewer` |
+| `docs/adr/NNNN-*.md` | une décision structurante, son contexte, ses conséquences | `/scd-sdd:spec`, `/scd-sdd:tickets`, la review (`review-context` → `architecture-reviewer`) |
 | `docs/ci.md` | les commandes du projet, les contrôles qui bloquent, ce qu'ils **ne** couvrent pas | `CLAUDE.md`, `/scd-sdd:guards`, `/scd-sdd:signer` |
 | `CLAUDE.md` | conventions, commandes, Definition of Done, **glossaire de domaine** | toute session, chargé en entier |
 
@@ -42,7 +42,7 @@ partout ; le projet porte la **liste**, qu'il possède et que le plugin ne devin
 
 ## Le glossaire vit dans `CLAUDE.md`, et c'est un choix
 
-Le vocabulaire du domaine — les mots que `spec`, `tickets` et le `code-reviewer` doivent employer —
+Le vocabulaire du domaine — les mots que `spec`, `tickets` et les reviewers doivent employer —
 tient en une quinzaine de lignes et se paie **une fois**, dans un fichier de toute façon chargé en
 entier. Un fichier séparé serait un document de plus que personne ne relit : le mode de défaillance
 que §D29 nomme.

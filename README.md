@@ -48,7 +48,7 @@ there: its deliverable is the corpus. The subject map carries the campaign's sta
 domain packs; `campaign` orchestrates and composes nothing itself.
 Human-in-the-loop by construction: no session can launch Research. 7 slash commands.
 
-### [scd-sdd](./scd-sdd/) `v2.1.2`
+### [scd-sdd](./scd-sdd/) `v2.2.0`
 
 Lean spec-driven cycle, from empty repo to reviewable PR — and the **guards** that stop the agent
 from rewriting whatever verifies its own work.

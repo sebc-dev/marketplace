@@ -30,7 +30,7 @@ chaîne de traçabilité — **vérification** et **code** — et coche le fichi
 ## Le cycle, par ticket
 
 Un lancement `/scd-sdd:run NNN NN` exécute le workflow sur **un seul** ticket. Le préambule (1-3)
-et le final (4-9) sont **invariants** ; le **segment de vérification** dépend du `_vérif :_` :
+et le final (4-10) sont **invariants** ; le **segment de vérification** dépend du `_vérif :_` :
 
 1. **Branch** (`branch-setup`) — crée **toujours** la branche dédiée `impl/<slug>-<NN>` depuis
    la base à jour (`git fetch`), **avant tout le reste**. Arbre propre exigé, sinon STOP.
@@ -46,13 +46,19 @@ et le final (4-9) sont **invariants** ; le **segment de vérification** dépend 
    `references/verification-modes.md` (`<modes>`) et nulle part ailleurs** — c'est le fait qui
    divergerait le premier s'il était recopié ici.
 
-4. **Review** (`code-reviewer`) — six dimensions, en contexte frais (**tous les modes**).
-5. **Triage** (`review-validator`) — sceptique adversarial, apply/skip.
-6. **Apply** (`fix-applier`) — corrections retenues, **re-vérifie selon le mode**.
-7. **Record** (`progress-recorder`) — coche le fichier du ticket, commit **sur la branche dédiée**.
-8. **Describe** (`pr-describer`) — compose la description de review. Non bloquant.
-9. **PR** (`pr-author`) — pousse la branche, ouvre la PR/MR **ready for review** en **publiant**
-   cette description telle quelle.
+4. **Context** (`review-context`) — résout **une fois** le dossier de contexte (invariants de
+   `docs/adr/`, décisions et hors-périmètre de `SPEC.md`, contrats) que les six reviewers
+   consomment ; il **cite, ne juge pas**. Contexte frais.
+5. **Review** (**six reviewers en parallèle**, un par dimension : `architecture-reviewer`,
+   `cleanliness-reviewer`, `conventions-reviewer`, `coverage-reviewer`, `security-reviewer`,
+   `error-handling-reviewer`) — chacun **sa seule** dimension, en contexte frais (**tous les
+   modes**). Les findings sont fusionnés (IDs préfixés par dimension).
+6. **Triage** (`review-validator`) — sceptique adversarial, apply/skip, dédoublonne entre reviewers.
+7. **Apply** (`fix-applier`) — corrections retenues, **re-vérifie selon le mode**.
+8. **Record** (`progress-recorder`) — coche le fichier du ticket, commit **sur la branche dédiée**.
+9. **Describe** (`pr-describer`) — compose la description de review. Non bloquant.
+10. **PR** (`pr-author`) — pousse la branche, ouvre la PR/MR **ready for review** en **publiant**
+    cette description telle quelle.
 
 **Un ticket = une PR** (`impl/<slug>-<NN>` → base) : le niveau specs dimensionne la slice pour
 qu'un humain la review, ce niveau-ci la livre effectivement en PR. Détails d'orchestration :
@@ -75,12 +81,15 @@ qu'un humain la review, ce niveau-ci la livre effectivement en PR. Détails d'or
   `0 failed` ; `verified` (observé) exige un `observableProof` capturé — jamais « looks
   done ». Ce qu'un agent ne peut constater part en `humanCheckRequired`, jamais faussement
   attesté.
-- **Producteur ≠ vérificateur.** Ni `code-reviewer` (tous modes) ni `verifier` (observé)
-  n'ont écrit le code : le second regard en contexte frais tue le self-preferential bias.
-- **Sceptique mais sobre.** Le triage reproduit chaque finding avant de le retenir et ne
-  corrige que **correction et exigences**. La grille est dans `references/review-dimensions.md`,
-  qu'aucune commande ne charge : les agents `code-reviewer` et `review-validator` s'en chargent
-  eux-mêmes, chacun ses blocs.
+- **Producteur ≠ vérificateur.** Ni les **six reviewers** (tous modes), ni `review-context`, ni
+  `verifier` (observé) n'ont écrit le code : le second regard en contexte frais tue le
+  self-preferential bias. La **multiplicité** des reviewers ne le renforce ni ne le menace — chacun
+  reste frais et non-auteur ; ce qu'elle achète est la **profondeur** par dimension.
+- **Sceptique mais sobre.** Le triage reproduit chaque finding avant de le retenir, ne corrige que
+  **correction et exigences**, et **dédoublonne** entre reviewers. La grille est dans
+  `references/review-dimensions.md`, qu'aucune commande ne charge : `review-context` (`<dossier>`),
+  les six reviewers (chacun **son** `<dim-…>` + `<severity>`) et `review-validator` (`<triage>`)
+  s'en chargent eux-mêmes, chacun ses blocs.
 
 ## Cibler feature et ticket (résolution)
 
@@ -202,5 +211,5 @@ chargent, chacun ses blocs.
 | `tickets-parsing.md` | Format du ticket, `**Vérif :**`, `**Bloqué par :**`, `**Fichiers :**`, critères ; états dérivés ; résolution du ticket ; **co-parallélisabilité** | 5 commandes : `run`, `run-parallel` (seule à charger `<co-parallelisme>`), `sync`, `reland`, `status`. **Aucun agent** | `role` `parsing` `etats` `resolution` `co-parallelisme` |
 | `verification-modes.md` | Les 4 modes et **la table mode→segment**, EARS→test, vérif observable, check « tests intacts », porte de vérif par preuve | `run`, `run-parallel`. **Aucun agent** : chaque agent du segment porte la discipline de **son** mode dans son corps | `role` `modes` `tdd` `observable` `enforcement` `pitfalls` |
 | `testing-rubric.md` | Rubric de test (FIRST, AAA, EP+BVA, doubles, anti-patterns) | **Deux agents** : `test-writer` (`principles` `selection` `doubles`) et `test-validator` (`principles` `anti-patterns` `checklists`). Aucune commande | `principles` `selection` `doubles` `anti-patterns` `checklists` |
-| `review-dimensions.md` | Les six dimensions et leur référent, le modèle de sévérité, le triage sceptique | **Deux agents** : `code-reviewer` (`dimensions` `severity`) et `review-validator` (`triage`). Aucune commande | `dimensions` `severity` `triage` |
+| `review-dimensions.md` | Le dossier de contexte, les six dimensions (une par reviewer) et leur référent, le modèle de sévérité, le triage sceptique | **Huit agents** : `review-context` (`dossier`), les six reviewers (chacun son `dim-…` + `severity`) et `review-validator` (`triage`). Aucune commande | `dossier` `dim-architecture` `dim-cleanliness` `dim-conventions` `dim-coverage` `dim-security` `dim-error-handling` `severity` `triage` |
 | `workflow-template.md` | `implement-ticket.js` expliqué : phases et **affectation phase→modèle**, schémas, boucles gardées, statuts, branche/rebase/PR, adaptation, fallback inline ; **mode worktree** et orchestrateur parallèle | **Sur renvoi, sans point de chargement déclaré** — `run`/`run-parallel` n'en ont pas besoin pour lancer (la recette de lancement vit dans leur `## Processus`) ; elle se lit quand on adapte ou qu'on débogue le script | `role` `structure` `worktree` `parallel` `adaptation` `run` |

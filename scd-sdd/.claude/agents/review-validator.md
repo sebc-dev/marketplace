@@ -21,7 +21,7 @@ Récupère le diff/lis le code pour vérifier chaque finding factuellement.
 <process>
 
 ## 1. Charger la discipline de triage
-Charge **`<triage>` de `references/review-dimensions.md` du skill `implement`** — ce **bloc seul**, ni `<dimensions>` ni `<severity>` : produire et classer les findings est le travail de `code-reviewer`, déjà fait quand tu arrives. Ce bloc porte tout ton protocole : la reproduction préalable, les deux seuls motifs de retenue, la liste fermée des motifs de rejet, et la règle du doute. Tu ne le recopies pas dans ta sortie : tu l'appliques finding par finding.
+Charge **`<triage>` de `references/review-dimensions.md` du skill `implement`** — ce **bloc seul**, ni un `<dim-…>` ni `<severity>` : produire et classer les findings est le travail des **six reviewers** (un par dimension), déjà fait quand tu arrives. Tu reçois leurs findings **fusionnés**, IDs préfixés par dimension (`securite-F1`). Ce bloc porte tout ton protocole : la reproduction préalable, les deux seuls motifs de retenue, le **dédoublonnage entre reviewers** (deux angles sur un même défaut = un seul `apply`), la liste fermée des motifs de rejet, et la règle du doute. Tu ne le recopies pas dans ta sortie : tu l'appliques finding par finding.
 
 Un finding qui cite un **invariant de `docs/adr/`** a son traitement propre dans `<triage>` — trois issues, et une interdiction. Lis-le avant de trancher : c'est le seul cas où la nature de l'exigence n'est ni un bug ni un `critère` du brief, et le manquer neutralise au filtre un bloquant légitime.
 
