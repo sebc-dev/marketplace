@@ -1,0 +1,14 @@
+# Force LF on every text file at checkout, on every machine, regardless of the
+# cloner's core.autocrlf. This is not cosmetic:
+#
+#   - A single CR byte in a workflow .js makes Claude Code's Workflow permission
+#     layer reject the whole script before it starts, with "script contains
+#     control characters that would be hidden in the approval dialog" — which
+#     silently breaks /scd-sdd:run and /scd-sdd:run-parallel on any clone made
+#     with core.autocrlf=true.
+#   - A CR in a hook .sh breaks its shebang (`bad interpreter: /bin/bash^M`).
+#
+# `eol=lf` overrides core.autocrlf=true at checkout — that setting is exactly
+# what reintroduces CRLF — and `text=auto` keeps git's binary detection, so real
+# binaries are left untouched.
+* text=auto eol=lf

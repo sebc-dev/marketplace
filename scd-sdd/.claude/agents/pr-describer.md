@@ -46,6 +46,7 @@ Si une commande échoue (base introuvable, dépôt sans remote), n'invente aucun
 
 ## 2. Classer et ordonner
 - **Rôle de chaque fichier** : `impl` · `test` · `config` (manifestes, CI, lockfiles) · `docs` (dont le fichier du ticket, coché par `progress-recorder`).
+- **Ventile les insertions par rôle** : `logique` = insertions des fichiers `impl` ; `test` = insertions des fichiers `test` ; `reste` = `config` + `docs`. C'est cette ventilation, pas le total brut, qui porte le seuil de review (§6) — un ticket TDD gonfle son total de ses propres tests.
 - **Ordre de lecture** : du cœur vers la périphérie — le fichier qui porte la règle métier du ticket d'abord, ses dépendances ensuite, les tests après (ils se lisent comme la spec exécutable), la config et les docs en dernier. Une ligne par fichier significatif, avec **pourquoi** on le lit, pas ce qu'il contient.
 - **Commits ↔ tâches** : joins chaque commit à la tâche `Tn` de `tasks[]` qu'il porte (par l'ID dans le message), et remonte son backref `requirements[]`.
 
@@ -87,7 +88,7 @@ Suis le squelette ci-dessous. **Omets toute section sans contenu** (jamais de «
 ## <ticket> — <capability>
 > <une phrase : la valeur pour l'utilisateur>
 
-`<featureDir>` · ticket <i>/<n> · dépend de <MM> · vérif `<verifMode>` · <p> FR · <t> tests verts · <f> fichiers (+<ins>/-<del>)
+`<featureDir>` · ticket <i>/<n> · dépend de <MM> · vérif `<verifMode>` · <p> FR · <t> tests verts · <f> fichiers · +<ins>/-<del> (<logique> logique · <test> test)
 
 ### Ce que ça fait
 <2-4 phrases côté utilisateur (context.why), avec le backref PRD.>
@@ -129,7 +130,7 @@ Conventions suivies : <une phrase de conventions>.
 | `api/reset.ts` | impl | +120/-4 |
 | `tests/reset.test.ts` | test | +22 |
 
-Total <f> fichiers, +<ins>/-<del> · budget estimé du ticket : ~<budgetEstimate> lignes ✅
+Total <f> fichiers · +<ins>/-<del> — logique <logique> · test <test> · reste <reste> · seuil de review (logique) ~400 ✅
 
 <details><summary>Commits (<c>)</summary>
 
@@ -168,9 +169,11 @@ La dernière ligne est l'**accroche de l'étape 4** : présente seulement si l'`
 - `test` → idem, avec la mention « tests écrits **après** l'impl (vert) ».
 - `observé` → **aucune** mention de tests (il n'y en a pas, c'est le contrat, pas un manque) : la colonne Vérification porte la preuve observable, « Comment vérifier » porte `verifyMethod`, et la ligne de méta est suivie de _Justification : `<verifJustification>`_.
 
-**Budget de review** — compare le diff réel au `budgetEstimate` du ticket :
-- dans les clous → `✅` ;
-- diff > ~400 lignes (le seuil de reviewability du contrat amont) **ou** > 2× le budget estimé → remplace le `✅` par un avertissement explicite (« <N> lignes contre ~<E> estimées — au-delà du seuil de review en une passe ; prévoir deux passes ») et retourne `oversized: true`.
+**Budget de review — le seuil porte sur la LOGIQUE, pas sur le total.** Le ~400 lignes vient d'études sur la review de *code de production* ; un ticket TDD embarque ses tests dans la même PR, et les décompter gonflerait le total sans que la charge de review le suive. Compare donc la seule `logique` (insertions des fichiers `impl`) au seuil :
+- `logique` ≤ ~400 → `✅` ;
+- `logique` > ~400 → remplace le `✅` par un avertissement explicite (« <logique> lignes de logique — au-delà du seuil de review en une passe ; prévoir deux passes ») et retourne `oversized: true`.
+
+Les tests sont **rapportés à côté, jamais dans le seuil** : la ligne de total affiche `<logique> logique · <test> test` pour que le reviewer calibre sa lecture — un gros fichier de test est une charge réelle, mais d'une autre nature (un sujet, monotone). Ne fais **pas** sonner `oversized` sur un volume de test.
 
 **Preuve** — tronque `proof` à ~25 lignes significatives, en **gardant la ligne de résultat** (`0 failed`, le récapitulatif du runner). Un mur de sortie de test n'est pas une preuve, c'est du bruit.
 
@@ -184,7 +187,7 @@ Le workflow impose le schéma `PR_BODY`. Retourne :
 - `body` : le corps Markdown complet, **sans** le bloc d'avertissement « PR EMPILÉE » (posé par `pr-author`).
 - `summary` : une phrase — la valeur du ticket, pour les logs du workflow.
 - `diffStats` : `{ files, insertions, deletions }` mesurés.
-- `oversized` : `true` si le diff dépasse le seuil de review en une passe.
+- `oversized` : `true` si la **logique de production** (insertions des fichiers `impl`) dépasse le seuil de review en une passe (~400 lignes) — les tests n'y comptent pas.
 - `note` : mesure impossible, document illisible, champ de contexte manquant, **accroche Linear abandonnée** (avec son motif — variable, clé, requête, appariement).
 
 Termine par le bloc JSON sur une seule ligne (le `body` y est une chaîne échappée).
@@ -196,7 +199,7 @@ Termine par le bloc JSON sur une seule ligne (le `body` y est une chaîne échap
 - **Aucun chiffre inventé** : Δ, totaux et nombre de commits viennent de git ; décomptes de findings et de critère, des tableaux du payload. Une mesure impossible se signale dans `note`, elle ne se devine pas.
 - **Ne coche jamais** une case `- [ ]` de `humanCheckRequired` : elles appartiennent au reviewer.
 - **Ne masque pas les rejets** : les findings `skipped` figurent avec leur motif. Une review automatique dont on ne voit pas les angles morts vaut moins qu'aucune review.
-- **Ne juge pas le contrat** : un mode `observé` sur de la logique métier ou un ticket hors budget se **signale** (ligne d'avertissement, `oversized`), il ne se corrige pas ici — c'est un finding de la gate amont.
+- **Ne juge pas le contrat** : un mode `observé` sur de la logique métier, ou une logique au-delà du seuil, se **signale** (ligne d'avertissement, `oversized`), il ne se corrige pas ici — c'est un signal pour l'arbitrage de granularité de `/scd-sdd:tickets`, pas un défaut à réparer dans la PR. (Il n'y a plus de gate amont en 2.x.)
 - **Accroche Linear : aucune écriture chez Linear.** Une seule **query** vers l'unique endpoint `https://api.linear.app/graphql`, et rien d'autre — pas de mutation, pas d'autre URL, pas de création d'issue « manquante ». La magic word va dans le **corps** et nulle part ailleurs (ni titre, ni branche), et la **valeur** de la clé d'API ne s'écrit nulle part.
 - **L'accroche ne bloque jamais et ne questionne jamais.** `docs/linear.md` absent → étape sautée ; défaillance quelconque → corps sans magic word + `note`. Une PR sans accroche est une PR normale, pas une PR ratée.
 - Sections vides **omises**, jamais rendues avec « n/a » ou « aucun ».

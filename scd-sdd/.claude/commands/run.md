@@ -149,8 +149,9 @@ Ratio : 20% humain / 80% AI (l'humain valide la cible et la base ; le workflow f
        la dépendance, puis `/scd-sdd:sync NNN NN`.
      - Si **`humanCheckRequired`** non vide (modes observé) : la PR porte une checklist de
        points qu'un humain doit constater (rendu visuel, effet externe).
-     - Si **`oversized`** : le diff réel (`diffStats`) dépasse le seuil de review en une passe — la
-       PR le dit, mais l'humain doit savoir qu'elle demandera deux passes.
+     - Si **`oversized`** : la **logique de production** dépasse le seuil de review en une passe
+       (les tests n'y comptent pas) — la PR le dit, mais l'humain doit savoir qu'elle demandera
+       deux passes.
    - **`blocked-dirty-tree`** → l'arbre n'était pas propre au moment de brancher ; **rien n'a été
      écrit**. Commiter/remiser puis relancer.
    - **`blocked-branch`** → la branche dédiée n'a pas pu être posée (problème git) ; rien n'a été

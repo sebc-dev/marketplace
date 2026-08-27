@@ -82,6 +82,11 @@ Ratio : 40% humain / 60% AI (tu composes depuis la session ; l'humain valide ava
 3. **Prends l'ancre** : `git rev-parse --abbrev-ref HEAD` et `git rev-parse --short HEAD`, plus la
    date du jour. Le champ `branche` sert **d'ancre de fraîcheur et de clé de sélection par
    worktree** — ne l'omets jamais.
+   - **Si cette branche est une branche de ticket** (`impl/…`, posée par `branch-setup`), retiens-le :
+     le commit de fiche de l'étape 8 s'y grave, et **suivra dans la PR de ce ticket** — une fiche est
+     de l'échafaudage de session, pas du contenu de la feature. Tu l'annonces à l'humain (étape 7) et
+     dans le rapport. Tu ne changes **pas** de branche pour autant (invariant ci-dessous) : le remède
+     est de pauser depuis la branche par défaut, et c'est à l'humain de le décider.
 
 4. **Charge `references/fiche.md`** du skill `chantier` — **intégralement**, c'est elle qui porte le
    template, les interdits et l'élagage. **Si tu actualises une fiche existante, élague d'abord**,
@@ -113,6 +118,9 @@ Ratio : 40% humain / 60% AI (tu composes depuis la session ; l'humain valide ava
    est inféré de la session, donc c'est le récit, pas l'orthographe, qui est en jeu — et ce que
    chaque réponse entraîne : valider écrit le fichier et le commite ; refuser n'écrit **rien**,
    définitivement, et le contexte de cette session est perdu au `/clear`.
+   - **Branche de ticket (étape 3) → une ligne de plus dans ce que tu fais valider** :
+     « ⚠ cette fiche sera committée sur `<branche>` et entrera donc dans la PR de ce ticket ;
+     si tu ne le veux pas, pause plutôt depuis la branche par défaut. »
 
 8. **Écris**, puis `git add <la fiche>` et `git commit`. Message :
    `chore(chantier): <titre>` — ou `chore(chantier): actualise <titre>`.
@@ -134,6 +142,9 @@ La ligne `À recharger au retour` **dit ce que chaque classe fera**, elle ne ré
 étiquettes de la fiche : `à lire` → « à lire », `à extraire` → « extrait ciblé », `à déléguer` →
 « question déléguée », `à situer` → « signalés, non rechargés ». C'est le seul endroit où ces
 quatre classes atteignent l'humain, et `/scd-sdd:resume` rend le même compte au retour.
+
+Sur une **branche de ticket** (étape 3), le rapport porte en tête la même ⚠ que la validation :
+`⚠ fiche committée sur <branche> — entrera dans la PR du ticket`.
 </report>
 
 ## Ce que tu NE fais PAS

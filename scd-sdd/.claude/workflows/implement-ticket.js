@@ -101,7 +101,6 @@ const BRIEF = {
         ticketIndex: { type: 'integer', description: 'Rang du ticket dans la feature (1-based)' },
         ticketCount: { type: 'integer', description: 'Nombre total de tickets de la feature' },
         dependsOn: { type: 'array', items: { type: 'string' }, description: 'Lots dont celui-ci dépend (dépend de : NN)' },
-        budgetEstimate: { type: 'integer', description: 'Budget estimé du ticket en lignes (_~N lignes est._)' },
         why: { type: 'string', description: 'La valeur côté utilisateur : Résumé / user story de spec.md, en 2-4 phrases' },
         prdRefs: { type: 'array', items: { type: 'string' }, description: 'FR/SC du PRD dont descendent les FR du ticket' },
         decisions: { type: 'array', items: { type: 'string' }, description: 'SPEC.md ## Décisions d\'implémentation qui contraignent ce ticket' },
@@ -303,7 +302,7 @@ const PR_BODY = {
         deletions: { type: 'integer' },
       },
     },
-    oversized: { type: 'boolean', description: 'true si le diff dépasse le seuil de review en une passe (~400 lignes, ou 2× le budget estimé du ticket)' },
+    oversized: { type: 'boolean', description: 'true si la logique de production (insertions des fichiers impl, tests exclus) dépasse le seuil de review en une passe (~400 lignes)' },
     note: { type: 'string', description: 'Mesure impossible, contexte manquant' },
   },
 }
@@ -431,7 +430,7 @@ const brief = await agent(
   `${featureDir}/SPEC.md (## Hors-périmètre et ## Décisions de test, seules sections qui comptent ici) ` +
   `(contrats + étape de vérif), et tout ${featureDir}/acceptance/*.feature du ticket. ` +
   `Détecte le mode de vérification (_vérif :_), la commande de test et les conventions du projet. ` +
-  `Remplis aussi \`context\` (le matériau de la future description de PR : capability, rang du ticket, dépendances, budget estimé, ` +
+  `Remplis aussi \`context\` (le matériau de la future description de PR : capability, rang du ticket, dépendances, ` +
   `valeur côté utilisateur, backref PRD, approche du plan, ADR contraignants, contrats, scope EXCLU, tickets suivants) — ` +
   `tu es le seul agent qui lit les trois documents, l'extraction est quasi gratuite ici. Retourne le brief structuré.` + iso,
   { agentType: 'scd-sdd:ticket-briefer', schema: BRIEF, model: 'sonnet' },
@@ -734,7 +733,7 @@ if (!canDescribe) {
   const d = (described.diffStats || {})
   log(`Description : ${d.files ?? finalGreen.diffFiles.length} fichier(s)` +
       (d.insertions != null ? `, +${d.insertions}/-${d.deletions ?? 0}` : ``) +
-      (described.oversized ? ' ⚠ au-delà du budget de review en une passe' : ''))
+      (described.oversized ? ' ⚠ logique au-delà du seuil de review en une passe' : ''))
 } else {
   log('Description non produite (pr-describer indisponible ou corps vide) — corps de repli.')
 }
