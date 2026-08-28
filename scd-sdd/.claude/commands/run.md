@@ -130,10 +130,24 @@ Ratio : 20% humain / 80% AI (l'humain valide la cible et la base ; le workflow f
    `find "$HOME/.claude/plugins" -path '*scd-sdd*/implement-ticket.js' 2>/dev/null | sort -V | tail -1`,
    puis en dernier recours demande le chemin à l'utilisateur.
 
-   **b. Lance** avec ce chemin et les arguments résolus :
+   **a-bis. Normalise en LF avant de lancer.** Un seul octet `CR` dans le script fait rejeter tout
+   le workflow par la couche de permission (« script contains control characters that would be
+   hidden in the approval dialog »), **avant** qu'il ne démarre. Le `.gitattributes` du plugin force
+   le LF au checkout, mais un cache installé sous `core.autocrlf=true` **avant** ce correctif garde
+   ses CRLF — c'est un fait d'install, pas de source, donc tu ne peux pas le supposer propre. Copie
+   le script en LF dans un fichier temporaire et passe **ce** chemin à `scriptPath` (le workflow est
+   auto-contenu — aucun `require`, aucun chemin relatif — donc le lancer depuis une copie est sûr) :
+
+   ```bash
+   SRC="<chemin résolu en a>"
+   NORM="${TMPDIR:-/tmp}/implement-ticket.$$.js"
+   tr -d '\r' < "$SRC" > "$NORM" && echo "$NORM"
+   ```
+
+   **b. Lance** avec le chemin **normalisé** (`$NORM`) et les arguments résolus :
 
    ```
-   Workflow(scriptPath: "<chemin absolu résolu en a>", args: { featureDir: "specs/NNN-feature", ticket: "NN", base: "<branche ou omis>", oldBase: "<impl/<slug>-Rk ou omis>" })
+   Workflow(scriptPath: "<chemin normalisé en a-bis>", args: { featureDir: "specs/NNN-feature", ticket: "NN", base: "<branche ou omis>", oldBase: "<impl/<slug>-Rk ou omis>" })
    ```
 
    > C'est un **template** — adapte-le si la feature l'exige (framework de test particulier), sans

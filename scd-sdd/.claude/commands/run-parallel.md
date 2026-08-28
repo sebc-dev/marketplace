@@ -128,12 +128,22 @@ Ratio : 30% humain / 70% AI (l'humain valide le plan de chaînes avant le fan-ou
      ```
      (Repli sur `"$HOME/.claude/plugins"` si le cache ne renvoie rien ; en dernier recours, demande
      le chemin.)
+   - **Normalise les DEUX scripts en LF avant de lancer.** Un seul octet `CR` fait rejeter le
+     workflow par la couche de permission avant démarrage ; un cache installé sous
+     `core.autocrlf=true` avant le correctif `.gitattributes` garde ses CRLF. Les deux scripts sont
+     concernés : `implement-parallel.js` est le `scriptPath`, et `implement-ticket.js` est
+     ré-exécuté par l'orchestrateur via `workflow({scriptPath})` — il traverse donc la même couche.
+     Copie chacun en LF et passe **ces** chemins (scripts auto-contenus, sûrs depuis une copie) :
+     ```bash
+     tr -d '\r' < "<implement-parallel.js résolu>" > "${TMPDIR:-/tmp}/implement-parallel.$$.js"
+     tr -d '\r' < "<implement-ticket.js résolu>"   > "${TMPDIR:-/tmp}/implement-ticket.$$.js"
+     ```
    - **Lance** l'orchestrateur en lui passant le plan calculé et le chemin de `implement-ticket.js`
      (qu'il exécute via `workflow({scriptPath})`, imbrication d'un seul niveau) :
      ```
-     Workflow(scriptPath: "<implement-parallel.js résolu>", args: {
+     Workflow(scriptPath: "<implement-parallel.js NORMALISÉ>", args: {
        featureDir: "specs/NNN-feature",
-       implPath: "<implement-ticket.js résolu>",
+       implPath: "<implement-ticket.js NORMALISÉ>",
        chains: [
          { id: "R2",     tickets: [ { ticket: "R2" } ] },
          { id: "R3->R4", tickets: [ { ticket: "R3" }, { ticket: "R4", base: "impl/<slug>-R3", oldBase: "impl/<slug>-R3" } ] }
