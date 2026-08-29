@@ -34,6 +34,7 @@ export const meta = {
 
 const featureDir = args && args.featureDir
 const implPath = args && args.implPath
+const refsDir = args && args.refsDir ? args.refsDir : undefined // forwardé à chaque implement-ticket
 const chains = args && Array.isArray(args.chains) ? args.chains : null
 if (!featureDir || !implPath || !chains || !chains.length) {
   throw new Error('args requis : { featureDir, implPath, chains: [{ id, tickets: [{ ticket, base?, oldBase? }] }] }')
@@ -58,6 +59,7 @@ const perChain = await parallel(
           ticket: step.ticket,
           base: step.base || undefined,
           oldBase: step.oldBase || undefined,
+          refsDir, // chemin absolu des références du skill (évite le find / des agents de review)
           worktree: true,
           prefetched: true, // le remote a été fetché une fois avant le fan-out (pas de fetch concurrents)
         },

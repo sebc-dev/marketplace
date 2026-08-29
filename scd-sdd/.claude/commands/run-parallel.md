@@ -138,12 +138,20 @@ Ratio : 30% humain / 70% AI (l'humain valide le plan de chaînes avant le fan-ou
      tr -d '\r' < "<implement-parallel.js résolu>" > "${TMPDIR:-/tmp}/implement-parallel.$$.js"
      tr -d '\r' < "<implement-ticket.js résolu>"   > "${TMPDIR:-/tmp}/implement-ticket.$$.js"
      ```
-   - **Lance** l'orchestrateur en lui passant le plan calculé et le chemin de `implement-ticket.js`
-     (qu'il exécute via `workflow({scriptPath})`, imbrication d'un seul niveau) :
+   - **Résous le répertoire des références du skill** (comme `/scd-sdd:run`, étape *a-ter*) : sans
+     lui, les agents de review chargent `references/*.md` par un `find /` → prompt → refus → run
+     bloqué. Frère déterministe du script d'**origine** (pas du temporaire) :
+     ```bash
+     REFS="$(cd "$(dirname "<implement-ticket.js résolu>")/../skills/implement/references" && pwd)"
+     ```
+   - **Lance** l'orchestrateur en lui passant le plan, le chemin de `implement-ticket.js` (qu'il
+     exécute via `workflow({scriptPath})`, imbrication d'un seul niveau) et `refsDir` (qu'il forwarde
+     à chaque ticket) :
      ```
      Workflow(scriptPath: "<implement-parallel.js NORMALISÉ>", args: {
        featureDir: "specs/NNN-feature",
        implPath: "<implement-ticket.js NORMALISÉ>",
+       refsDir: "<REFS résolu>",
        chains: [
          { id: "R2",     tickets: [ { ticket: "R2" } ] },
          { id: "R3->R4", tickets: [ { ticket: "R3" }, { ticket: "R4", base: "impl/<slug>-R3", oldBase: "impl/<slug>-R3" } ] }

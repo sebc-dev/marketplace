@@ -144,10 +144,22 @@ Ratio : 20% humain / 80% AI (l'humain valide la cible et la base ; le workflow f
    tr -d '\r' < "$SRC" > "$NORM" && echo "$NORM"
    ```
 
-   **b. Lance** avec le chemin **normalisé** (`$NORM`) et les arguments résolus :
+   **a-ter. Résous le répertoire des références du skill.** Les agents `test-writer`,
+   `test-validator`, `review-context`, les six reviewers et `review-validator` chargent
+   `references/testing-rubric.md` ou `references/review-dimensions.md` — un chemin **relatif sans
+   base**. Sans le répertoire absolu, l'agent tente un `find /` (scan disque complet) → prompt de
+   permission → refus → **run bloqué en pleine phase** (retour de terrain). Ce répertoire est un
+   frère déterministe du script (`.claude/skills/implement/references`), résolu depuis `$SRC` — le
+   chemin **d'origine** (`$SRC`, PAS `$NORM` qui est un temporaire hors du plugin) :
+
+   ```bash
+   REFS="$(cd "$(dirname "$SRC")/../skills/implement/references" && pwd)"; echo "$REFS"
+   ```
+
+   **b. Lance** avec le chemin **normalisé** (`$NORM`), le `refsDir` résolu, et les arguments :
 
    ```
-   Workflow(scriptPath: "<chemin normalisé en a-bis>", args: { featureDir: "specs/NNN-feature", ticket: "NN", base: "<branche ou omis>", oldBase: "<impl/<slug>-Rk ou omis>" })
+   Workflow(scriptPath: "<chemin normalisé en a-bis>", args: { featureDir: "specs/NNN-feature", ticket: "NN", base: "<branche ou omis>", oldBase: "<impl/<slug>-Rk ou omis>", refsDir: "<REFS résolu en a-ter>" })
    ```
 
    > C'est un **template** — adapte-le si la feature l'exige (framework de test particulier), sans

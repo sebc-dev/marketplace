@@ -101,6 +101,7 @@ const BRIEF = {
         ticketIndex: { type: 'integer', description: 'Rang du ticket dans la feature (1-based)' },
         ticketCount: { type: 'integer', description: 'Nombre total de tickets de la feature' },
         dependsOn: { type: 'array', items: { type: 'string' }, description: 'Lots dont celui-ci dépend (dépend de : NN)' },
+        budgetEstimate: { type: 'integer', description: 'Budget estimé du ticket en lignes (_~N lignes est._)' },
         why: { type: 'string', description: 'La valeur côté utilisateur : Résumé / user story de spec.md, en 2-4 phrases' },
         prdRefs: { type: 'array', items: { type: 'string' }, description: 'FR/SC du PRD dont descendent les FR du ticket' },
         decisions: { type: 'array', items: { type: 'string' }, description: 'SPEC.md ## Décisions d\'implémentation qui contraignent ce ticket' },
@@ -302,7 +303,7 @@ const PR_BODY = {
         deletions: { type: 'integer' },
       },
     },
-    oversized: { type: 'boolean', description: 'true si la logique de production (insertions des fichiers impl, tests exclus) dépasse le seuil de review en une passe (~400 lignes)' },
+    oversized: { type: 'boolean', description: 'true si le diff dépasse le seuil de review en une passe (~400 lignes, ou 2× le budget estimé du ticket)' },
     note: { type: 'string', description: 'Mesure impossible, contexte manquant' },
   },
 }
@@ -400,7 +401,26 @@ const iso = wtDir
     `Commande de test : exécutée avec le worktree comme cwd (\`cd "${wtDir}" && <cmd>\`, ou l'option répertoire du gestionnaire de paquets — \`pnpm -C "${wtDir}" …\`, \`npm --prefix "${wtDir}" …\`, \`cargo …\` avec \`--manifest-path\`). ` +
     `Ne touche JAMAIS au checkout principal ni au worktree d'un autre ticket.`
   : ``
-log(`Branche ${branchInfo.branch} depuis ${branchInfo.base || 'défaut'}${branchInfo.baseUpToDate === false ? ' (base locale, remote absent)' : ' (à jour)'}${wtDir ? ` · worktree ${wtDir}` : ''}`)
+// Chemin ABSOLU des références du skill `implement`, injecté dans les prompts des agents qui les
+// chargent (test-writer, test-validator, review-context, les six reviewers, review-validator).
+// SANS lui, un agent instruit de charger `references/testing-rubric.md` ou `review-dimensions.md`
+// n'a AUCUNE base pour résoudre le relatif : il tente un `find /` (scan disque complet) → prompt de
+// permission → refus → agent interrompu → run bloqué (retour de terrain uphony, phase Validate).
+// Le répertoire est résolu par la commande (`/scd-sdd:run` connaît le chemin du script, dont
+// `references/` est un frère déterministe) et passé en `args.refsDir` ; repli sur
+// `CLAUDE_PLUGIN_ROOT` si l'env l'expose ; sinon vide (les agents gardent leur instruction relative,
+// comportement d'avant le correctif). On NE code EN DUR aucun chemin : il dépend de l'utilisateur et
+// de la version installée.
+const refsDir = (args && args.refsDir)
+  ? String(args.refsDir).replace(/\/+$/, '')
+  : (process.env.CLAUDE_PLUGIN_ROOT ? `${process.env.CLAUDE_PLUGIN_ROOT}/.claude/skills/implement/references` : null)
+const refs = refsDir
+  ? `\n\nRÉFÉRENCES (chemins ABSOLUS, déjà résolus — ne lance JAMAIS de \`find\` pour les chercher) :\n` +
+    `- testing-rubric.md    : ${refsDir}/testing-rubric.md\n` +
+    `- review-dimensions.md : ${refsDir}/review-dimensions.md\n` +
+    `Lis-les directement (Read) sur ces chemins, et SEULEMENT les blocs que ton rôle t'assigne.`
+  : ``
+log(`Branche ${branchInfo.branch} depuis ${branchInfo.base || 'défaut'}${branchInfo.baseUpToDate === false ? ' (base locale, remote absent)' : ' (à jour)'}${wtDir ? ` · worktree ${wtDir}` : ''}${refsDir ? '' : ' · ⚠ refsDir non résolu (agents en chemin relatif)'}`)
 
 // Préventif : sur une branche fraîche c'est un no-op (idempotent), mais sur une REPRISE
 // de run où la base a bougé entre-temps, on repose la branche sur la base à jour AVANT
@@ -430,7 +450,7 @@ const brief = await agent(
   `${featureDir}/SPEC.md (## Hors-périmètre et ## Décisions de test, seules sections qui comptent ici) ` +
   `(contrats + étape de vérif), et tout ${featureDir}/acceptance/*.feature du ticket. ` +
   `Détecte le mode de vérification (_vérif :_), la commande de test et les conventions du projet. ` +
-  `Remplis aussi \`context\` (le matériau de la future description de PR : capability, rang du ticket, dépendances, ` +
+  `Remplis aussi \`context\` (le matériau de la future description de PR : capability, rang du ticket, dépendances, budget estimé, ` +
   `valeur côté utilisateur, backref PRD, approche du plan, ADR contraignants, contrats, scope EXCLU, tickets suivants) — ` +
   `tu es le seul agent qui lit les trois documents, l'extraction est quasi gratuite ici. Retourne le brief structuré.` + iso,
   { agentType: 'scd-sdd:ticket-briefer', schema: BRIEF, model: 'sonnet' },
@@ -458,7 +478,7 @@ if (usesTests) {
   tests = await agent(
     `Mode TEST. Écris les tests du ticket ${ticket} — un test nommé par critère — puis exécute \`${brief.testCommand}\` ` +
     `et CONFIRME le ROUGE (échec pour la bonne raison, pas une erreur de compilation triviale). red=true.` +
-    `\nBrief:\n${JSON.stringify(brief)}` + iso,
+    `\nBrief:\n${JSON.stringify(brief)}` + iso + refs,
     { agentType: 'scd-sdd:test-writer', schema: TESTS, model: 'sonnet' },
   )
   if (!tests) throw new Error('test-writer : aucun test produit')
@@ -471,7 +491,7 @@ if (usesTests) {
       `Valide ces tests contre le brief et le rubric (1 critère = 1 test nommé ; cas limites If…then…shall… présents ; ` +
       `FIRST/AAA/nommage comportemental ; anti-patterns tautologie/sur-mock/couplage à l'implémentation ; ` +
       `état d'exécution attendu : ROUGE — rien n'est implémenté encore).\n` +
-      `Brief:\n${JSON.stringify(brief)}\nTests:\n${JSON.stringify(tests)}` + iso,
+      `Brief:\n${JSON.stringify(brief)}\nTests:\n${JSON.stringify(tests)}` + iso + refs,
       { agentType: 'scd-sdd:test-validator', schema: TEST_VERDICT, model: 'opus' },
     )
     if (!verdict || verdict.ok) break
@@ -479,7 +499,7 @@ if (usesTests) {
     tests = await agent(
       `Corrige les tests du ticket ${ticket} selon ces gaps, ré-exécute \`${brief.testCommand}\`, ` +
       `reconfirme le ROUGE.\n` +
-      `Gaps:\n${JSON.stringify(verdict.gaps)}\nTests actuels:\n${JSON.stringify(tests)}\nBrief:\n${JSON.stringify(brief)}` + iso,
+      `Gaps:\n${JSON.stringify(verdict.gaps)}\nTests actuels:\n${JSON.stringify(tests)}\nBrief:\n${JSON.stringify(brief)}` + iso + refs,
       { agentType: 'scd-sdd:test-writer', schema: TESTS, model: 'sonnet' },
     )
     if (!tests) throw new Error('test-writer : correction des tests échouée')
@@ -561,7 +581,7 @@ const dossier = await agent(
   `contraignant ce ticket (adrs[], résumés), les décisions d'impl de \`SPEC.md\` qui contraignent le diff (decisions[]), ` +
   `le hors-périmètre pertinent (outOfScope[]), les contrats d'interface (contracts). Cite (id + source), NE JUGE PAS ` +
   `(aucune sévérité, aucun finding), n'invente aucun champ.\n` +
-  `Fichiers modifiés : ${JSON.stringify(green.diffFiles)}.\nBrief:\n${JSON.stringify(brief)}` + iso,
+  `Fichiers modifiés : ${JSON.stringify(green.diffFiles)}.\nBrief:\n${JSON.stringify(brief)}` + iso + refs,
   { agentType: 'scd-sdd:review-context', schema: REVIEW_CONTEXT, model: 'sonnet' },
 )
 const context = dossier || {}
@@ -591,7 +611,7 @@ const reviewResults = await parallel(REVIEWERS.map((r) => () =>
     `Diff sur ${JSON.stringify(green.diffFiles)} (récupère-le via \`${gitPrefix} diff …\`). Mode de vérif du ticket : ${mode}` +
     (usesTests ? `` : ` — PAS de test automatisé attendu (c'est le contrat) : ne remonte jamais « absence de test », juge par la vérif observable.`) +
     `. Charge SEULEMENT ta dimension, classe bloquant/suggestion, propose un correction_prompt autonome.\n` +
-    `Dossier de contexte:\n${JSON.stringify(reviewCtx)}\nBrief:\n${JSON.stringify(brief)}` + iso,
+    `Dossier de contexte:\n${JSON.stringify(reviewCtx)}\nBrief:\n${JSON.stringify(brief)}` + iso + refs,
     { agentType: `scd-sdd:${r.agent}`, schema: FINDINGS, model: r.model, phase: 'Review', label: `review:${r.dim}` },
   ).then((res) => ({ r, res })),
 ))
@@ -617,7 +637,7 @@ if (findings.length) {
     `Triage sceptique et adversarial de ces findings. Pour chacun : reproduis-le dans le code, ` +
     `garde-le UNIQUEMENT s'il touche la correction ou une exigence (FR/SC du brief) ; rejette style, ` +
     `spéculation, sur-engineering, hors-scope. En cas de doute → skip.\n` +
-    `Findings:\n${JSON.stringify(findings)}\nBrief:\n${JSON.stringify(brief)}\nFichiers d'impl:\n${JSON.stringify(green.diffFiles)}` + iso,
+    `Findings:\n${JSON.stringify(findings)}\nBrief:\n${JSON.stringify(brief)}\nFichiers d'impl:\n${JSON.stringify(green.diffFiles)}` + iso + refs,
     { agentType: 'scd-sdd:review-validator', schema: TRIAGE, model: 'opus' },
   )
   if (t) triaged = t
@@ -733,7 +753,7 @@ if (!canDescribe) {
   const d = (described.diffStats || {})
   log(`Description : ${d.files ?? finalGreen.diffFiles.length} fichier(s)` +
       (d.insertions != null ? `, +${d.insertions}/-${d.deletions ?? 0}` : ``) +
-      (described.oversized ? ' ⚠ logique au-delà du seuil de review en une passe' : ''))
+      (described.oversized ? ' ⚠ au-delà du budget de review en une passe' : ''))
 } else {
   log('Description non produite (pr-describer indisponible ou corps vide) — corps de repli.')
 }
