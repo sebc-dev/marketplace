@@ -74,9 +74,19 @@
         "name": "sebc.dev"
       },
       "category": "development"
+    },
+    {
+      "name": "scd-rust",
+      "version": "0.2.0",
+      "source": "./scd-rust",
+      "description": "Rust idiomatique et sain (edition 2024), en sept skills aux portees de declenchement disjointes : une question posee par un developpeur ne doit en charger qu'un seul. rust-idioms ecrit le corps du code : ownership et emprunt, borrow vs clone, iterateurs zero-cout, flux Option/Result, pattern matching, et le reflexe de ne pas allouer sans raison. rust-ownership-tools fournit les mecanismes au-dela d'un simple emprunt : possession partagee Rc/Arc, mutabilite interieure Cell/RefCell, initialisation unique OnceLock/LazyLock, gardes Drop/RAII, closures Fn/FnMut/FnOnce (capture et stockage) - connaissance du modele la ou les trois guides se taisent. rust-api-design concoit la signature que d'autres appellent : nommage, traits et interop, generique vs dyn, type-state, builders, macros declaratives et procedurales. rust-errors gere l'echec : Result vs panic, discipline unwrap/expect, thiserror pour une lib vs anyhow pour un binaire, propagation ?, style des messages, test des chemins d'erreur. rust-unsafe franchit la frontiere de surete : unsafe, soundness, pointeurs bruts, bord C/FFI (ABI, repr, bindgen/cbindgen), impl Send/Sync a la main. rust-concurrency execute en parallele : async/await, runtime tokio, piege du blocage-en-async, Arc/Mutex, canaux, concurrence structuree, bornes Send/Sync en async - trou des trois sources, entierement connaissance du modele. rust-project prouve et organise : tests unit/integration/doc/snapshot, clippy et lints, rustfmt, profiling, structure cargo et workspace, ordre des imports et items, docs, choix des dependances. Distille des guides Microsoft (Pragmatic Rust Guidelines), Canonical et Apollo, chaque affirmation etiquetee par sa source, les zones sans source nommees plutot que comblees par inference.",
+      "author": {
+        "name": "sebc.dev"
+      },
+      "category": "development"
     }
   ],
   "metadata": {
-    "version": "0.14.1"
+    "version": "0.15.0"
   }
 }

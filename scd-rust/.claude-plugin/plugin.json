@@ -1,0 +1,25 @@
+{
+  "name": "scd-rust",
+  "version": "0.2.0",
+  "description": "Idiomatic, sound Rust (edition 2024), in seven skills with disjoint activation scopes: one developer question should load exactly one of them. rust-idioms (writing the body: ownership and borrowing, borrow vs clone, zero-cost iterators, Option/Result flow, pattern matching, the allocation-and-stack-vs-heap perf mindset), rust-ownership-tools (the mechanisms beyond a plain borrow: shared ownership with Rc/Arc, interior mutability with Cell/RefCell, one-time init with OnceLock/LazyLock, Drop/RAII guards, and closures Fn/FnMut/FnOnce with capture and storage — model knowledge where the three guides are silent), rust-api-design (the signature others call: naming, traits and interop, generics vs dyn dispatch, type-state, builders, declarative and procedural macros), rust-errors (handling failure: Result vs panic, unwrap/expect discipline, thiserror for libraries vs anyhow for binaries, ? propagation, testing error paths), rust-unsafe (crossing the safety boundary: unsafe, soundness invariants, raw pointers, the C/FFI boundary and ABI, implementing Send/Sync), rust-concurrency (running in parallel: async/await, tokio runtime choice, blocking-in-async, Arc/Mutex, channels, structured concurrency, satisfying Send/Sync bounds in async code), rust-project (proving and organising: unit/integration/doc/snapshot tests, clippy and lint discipline, rustfmt, profiling, cargo workspace and module structure, import and item ordering, docs, dependency choice). Distilled from the Microsoft Pragmatic Rust Guidelines, the Canonical and Apollo Rust best-practice guides, and model knowledge where the three sources are silent, each claim labelled by source and undocumented areas named rather than filled by inference.",
+  "author": {
+    "name": "sebc.dev"
+  },
+  "license": "MIT",
+  "keywords": [
+    "rust",
+    "cargo",
+    "clippy",
+    "tokio",
+    "async",
+    "unsafe",
+    "ffi",
+    "thiserror",
+    "anyhow",
+    "traits",
+    "edition-2024",
+    "macros"
+  ],
+  "skills": "./.claude/skills/",
+  "repository": "https://github.com/sebc-dev/marketplace"
+}

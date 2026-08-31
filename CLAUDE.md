@@ -13,6 +13,7 @@ scd-tauri/                         # Tauri v2 desktop + mobile plugin
 scd-flutter/                       # Dart 3.x + Flutter 3.44+ (7 disjoint skills)
 scd-sdd/                           # Unified spec-driven cycle (foundation → specs → impl)
 scd-atlas/                         # Techno-plugin authoring by Research campaigns
+scd-rust/                          # Idiomatic, sound Rust (edition 2024) in 7 disjoint skills
 ```
 
 ## Conventions

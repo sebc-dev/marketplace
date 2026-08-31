@@ -117,3 +117,26 @@ its directory. 20 slash commands, 15 subagents, 7 skills.
 refonte: does the lean cycle produce specs good enough for `/scd-sdd:run` to hold, without the gate
 that used to guarantee it?
 
+### [scd-rust](./scd-rust/) `v0.2.0`
+
+Idiomatic, sound Rust (edition 2024), in **seven skills with disjoint trigger scopes** — a developer
+question should load exactly one. `rust-idioms` writes the body: ownership and borrowing, borrow vs
+clone, zero-cost iterators, the `Option`/`Result` flow, and the perf mindset of not allocating by
+reflex. `rust-ownership-tools` reaches beyond a plain borrow: shared ownership (`Rc`/`Arc`), interior
+mutability (`Cell`/`RefCell`), one-time init (`OnceLock`/`LazyLock`), `Drop`/RAII guards, and closures
+(`Fn`/`FnMut`/`FnOnce`, capture and storage). `rust-api-design` designs the signature others call: naming, traits and interop, generics vs
+`dyn`, type-state, builders, and authoring macros. `rust-errors` handles failure: `Result` vs panic,
+the `unwrap`/`expect` discipline, `thiserror` for a library vs `anyhow` for a binary, `?` conversion,
+message style, testing the error paths. `rust-unsafe` crosses the safety boundary: `unsafe`,
+soundness, raw pointers, the C/FFI boundary (`repr`, ABI, `bindgen`/`cbindgen`), implementing
+`Send`/`Sync` by hand. `rust-concurrency` runs in parallel: async/await, tokio, the blocking-in-async
+trap, `Arc`/`Mutex`, channels, structured concurrency, `Send`/`Sync` bounds — **not covered by any of
+the three source guides**, so entirely model knowledge, pinned to tokio 1.x and said so.
+`rust-project` proves and organises: unit/integration/doc/snapshot tests, clippy and lints, `rustfmt`,
+profiling, cargo workspace and module structure, import and item ordering, docs, dependencies.
+
+Distilled from the Microsoft *Pragmatic Rust Guidelines*, the Canonical and Apollo *Rust Best
+Practices*, and model knowledge where those three are silent. Every claim carries its source —
+`[MS]`/`[CANONICAL]`/`[APOLLO]`/`[MODEL]` — and undocumented areas are named rather than filled by
+inference.
+
