@@ -20,6 +20,8 @@ producteur qui a raison.
 ```
 specs/NNN-slug/
 ├── SPEC.md        le contexte : problème, décisions, coutures de test, HORS-PÉRIMÈTRE
+├── maquette.md    optionnelle, intention d'interface (écrite par /scd-sdd:spec ;
+│                  l'implémentation ne la lit que via le brief)
 ├── 01-slug.md     un ticket
 └── 02-slug.md
 ```

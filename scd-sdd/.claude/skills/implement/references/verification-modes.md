@@ -93,6 +93,11 @@ toucher ; `pr-author` **seulement sur son chemin de repli**, quand aucun corps n
 qu'il compose un corps minimal. Dans les deux cas, **aucun agent ne coche jamais une case** : elles
 appartiennent au reviewer. `verified: true` est licite s'il ne reste que des `humanCheckRequired`
 documentés ; `verified: false` est réservé à une vérif qui **échoue**.
+
+Quand `specs/NNN-slug/maquette.md` existe, le brief embarque l'extrait verbatim des blocs
+`## Écran :` que le ticket livre, et le `humanCheckRequired` de mise en page devient
+**comparatif** : il cite l'écran à comparer, au lieu de renvoyer l'humain à ce qu'il imagine. La
+maquette reste **advisory** — ni gate ni verdict de conformité.
 </observable>
 
 <enforcement>

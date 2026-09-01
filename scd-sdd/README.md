@@ -72,7 +72,9 @@ il n'y a rien à synthétiser ; sinon il révise ou compile depuis la conversati
 
 `SPEC.md` fait **~40 lignes** — Problème · Solution · Ce que ça change · Décisions d'implémentation ·
 Décisions de test · Hors-périmètre — et **synthétise la conversation en cours** plutôt que de la
-provoquer.
+provoquer. Quand la feature touche une interface, `/scd-sdd:spec` propose en plus une
+`maquette.md` **optionnelle** — wireframes textuels aux écrans nommés, que les critères des tickets
+citent et que la vérif de mise en page compare.
 
 Un **ticket** livre un comportement bout en bout et déclare ce qui le bloque :
 
@@ -191,7 +193,7 @@ est réellement co-parallélisable (fichiers disjoints **et** aucun blocage mutu
 ### Feature
 | Commande | Produit |
 |---|---|
-| `/scd-sdd:spec` | `specs/NNN-slug/SPEC.md` |
+| `/scd-sdd:spec` | `specs/NNN-slug/SPEC.md` (+ `maquette.md`, optionnelle) |
 | `/scd-sdd:tickets` | `specs/NNN-slug/NN-slug.md` |
 
 ### Implémentation

@@ -16,7 +16,7 @@ Répondre à une seule question, pour un ticket en mode `observé` : **le ticket
 <input_protocol>
 Le prompt fournit :
 - le **mode** (`check` ou `observé`) ;
-- le **brief** (`criteres[]`, `files`, `verifJustification`, `testCommand` éventuel) — `verifJustification` décrit **la preuve attendue** telle que le contrat l'a posée (la commande à lancer, l'observation à faire) ;
+- le **brief** (`criteres[]`, `files`, `verifJustification`, `testCommand` éventuel, `maquette` éventuel — l'extrait verbatim des blocs `## Écran :` que le ticket livre) — `verifJustification` décrit **la preuve attendue** telle que le contrat l'a posée (la commande à lancer, l'observation à faire) ;
 - les **fichiers d'impl** modifiés (`diffFiles`).
 
 **Mode worktree (si le prompt fournit un `worktreeDir`)** : lis les fichiers sous ce répertoire (chemins **absolus** `<worktreeDir>/…`), lance toute commande de vérification avec le worktree comme **cwd** (`cd "<worktreeDir>" && <cmd>`, ou l'option répertoire du gestionnaire de paquets), git via `git -C "<worktreeDir>"`. N'inspecte jamais le checkout de session ni le worktree d'un autre ticket.
@@ -36,6 +36,8 @@ Si plusieurs critère, vérifie-les toutes : une preuve partielle laisse un crit
 
 ## 3. Ce qui échappe à l'exécution → humanCheckRequired
 Certaines vérifs ne sont **pas** constatables par un agent : rendu visuel d'une mise en page, ergonomie, effet sur un système externe non accessible, résultat qui n'apparaît qu'en CI post-merge. Pour chacune, **n'invente pas** de preuve : ajoute un item **actionnable** à `humanCheckRequired` (« Ouvrir /dashboard et vérifier que la grille passe à 1 colonne sous 640px »). La PR le remontera en checklist au reviewer humain.
+
+Si le brief porte `maquette`, le `humanCheckRequired` de mise en page devient **comparatif** et cite l'écran : « comparer à l'`Écran : X` de `specs/NNN-slug/maquette.md` — zones et structure, pas le pixel ». **Aucun verdict de conformité** : un écart constaté se signale (retour amont), il ne se note pas.
 
 ## 4. Statuer
 - `verified: true` si **soit** tu as une preuve observable pour tout ce qui est constatable, **soit** il ne reste que des `humanCheckRequired` documentés (rien n'est faussement attesté).

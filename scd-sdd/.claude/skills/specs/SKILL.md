@@ -15,11 +15,12 @@ description: |
 
 # Une spec courte, des tickets verticaux
 
-Deux artefacts par feature, et c'est tout.
+Deux artefacts par feature — et un troisième, **optionnel**, quand la feature a une interface.
 
 ```
 specs/NNN-slug/
 ├── SPEC.md        ~40 lignes, écrite une fois, relue par l'humain
+├── maquette.md    optionnelle — l'intention d'interface, écrans nommés
 ├── 01-slug.md     un ticket = une tranche verticale
 ├── 02-slug.md
 └── …
@@ -40,6 +41,16 @@ rigueur est parti dans les **gardes de session**.
 
 Il n'y a pas de troisième geste. Pas de gate, pas de verdict, pas de fiche de corrections.
 
+## La maquette, optionnelle
+
+Écrite par `/scd-sdd:spec` quand la feature touche une interface — proposée, jamais imposée.
+Détectée **sur le disque** : le répertoire commun est le seul lien, `SPEC.md` ne la nomme jamais.
+Elle porte l'**intention** d'interface (écrans nommés, zones, états), jamais l'avancement. Quatre
+lecteurs : l'humain, `/scd-sdd:tickets` (les critères citent les écrans par leur nom),
+`ticket-briefer` (extrait verbatim au brief), le `verifier` en `observé (mise en page)` (check
+comparatif). La matière vit dans `references/maquette.md`, chargée **intégralement par
+`/scd-sdd:spec` seulement**, quand la feature touche une interface.
+
 ## Cibler une feature (résolution)
 
 `/clear` efface le contexte : une commande ne peut pas *supposer* sa cible. **Règle de résolution,
@@ -59,6 +70,9 @@ identique partout** :
 | `SPEC.md` seul | à découper | `tickets` |
 | tickets présents, critères non tous cochés | en implémentation | `run` |
 | tous les critères de tous les tickets cochés | terminée | — |
+
+`maquette.md` ne compte pas dans cette dérivation : « `SPEC.md` seul » = sans tickets, maquette ou
+pas.
 
 Les `NNN` sont **stables et jamais réattribués** (`max(NNN) + 1`). Un ticket est **fait** quand
 tous ses critères sont cochés : rien d'autre ne l'atteste, et rien d'autre n'a besoin de l'attester.

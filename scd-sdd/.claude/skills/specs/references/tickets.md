@@ -48,6 +48,11 @@ prochain numéro libre et déclare ses bloqueurs.
 
 `observé` sur de la logique métier est un défaut de découpage, pas un raccourci. Si tu l'écris,
 dis **pourquoi** aucun test n'est possible ; si tu ne peux pas, le mode est `test`.
+
+**La maquette, si elle existe.** Quand `specs/NNN-slug/maquette.md` est sur le disque, un critère
+qui livre un écran le cite **par son nom** — « l'`Écran : Tableau de bord` affiche… » — et un
+`observé` de mise en page nomme l'écran dans son motif : `observé (mise en page — Écran : Tableau
+de bord)`. Un critère constate un **comportement** ; il ne note jamais la conformité au dessin.
 </format>
 
 <criteria>

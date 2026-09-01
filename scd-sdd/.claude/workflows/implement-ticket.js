@@ -90,6 +90,7 @@ const BRIEF = {
       },
     },
     gherkin: { type: 'array', items: { type: 'string' }, description: 'Chemins des .feature du ticket, si présents' },
+    maquette: { type: 'string', description: 'Extrait verbatim des blocs ## Écran : de specs/NNN-slug/maquette.md que le ticket livre — omis sinon' },
     // Contexte de REVIEW (optionnel, rétro-compatible) : ce qu'un humain doit savoir pour juger
     // le ticket, extrait du contrat par le seul agent qui lit déjà spec/plan/tasks. Consommé par
     // pr-describer ; son absence ne casse aucun agent existant.
@@ -482,6 +483,7 @@ const brief = await agent(
   `${featureDir}/SPEC.md (## Hors-périmètre et ## Décisions de test, seules sections qui comptent ici) ` +
   `(contrats + étape de vérif), et tout ${featureDir}/acceptance/*.feature du ticket. ` +
   `Détecte le mode de vérification (_vérif :_), la commande de test et les conventions du projet. ` +
+  `S'il existe, lis ${featureDir}/maquette.md et extrais dans \`maquette\` le(s) bloc(s) ## Écran : que le ticket cite (verbatim ; omis sinon). ` +
   `Remplis aussi \`context\` (le matériau de la future description de PR : capability, rang du ticket, dépendances, budget estimé, ` +
   `valeur côté utilisateur, backref PRD, approche du plan, ADR contraignants, contrats, scope EXCLU, tickets suivants) — ` +
   `tu es le seul agent qui lit les trois documents, l'extraction est quasi gratuite ici. Retourne le brief structuré.` + iso,
@@ -591,6 +593,7 @@ if (usesTests) {
     `Ce que tu ne PEUX PAS constater par exécution (mise en page visuelle, effet externe) → liste-le dans humanCheckRequired (ne prétends JAMAIS l'avoir vérifié). ` +
     `verified=true si tu as une preuve observable OU s'il ne reste que des humanCheckRequired documentés. method = la commande/observation utilisée (ré-exécutable après un correctif).\n` +
     `Preuve attendue (du contrat) : ${brief.verifJustification || '(voir le critère d\'acceptation des tâches du ticket)'}\n` +
+    (brief.maquette ? `Maquette (oracle de mise en page — les humanCheckRequired de layout CITENT l'écran, comparatif) :\n${brief.maquette}\n` : '') +
     `Fichiers d'impl : ${JSON.stringify(green.diffFiles)}\nBrief:\n${JSON.stringify(brief)}` + iso,
     { agentType: 'scd-sdd:verifier', schema: VERIFY, model: 'opus' },
   )

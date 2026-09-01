@@ -64,8 +64,10 @@ Ratio : 40% humain / 60% AI (tu proposes le découpage ; l'humain le corrige jus
    un `SPEC.md` et pas encore de tickets. Charge `references/tickets.md` **intégralement**.
    Communique en français.
 
-2. **Lis `SPEC.md` en entier**, plus les ADR acceptés et le glossaire de `CLAUDE.md`. Les titres et
-   les critères emploient le vocabulaire du domaine, pas le tien.
+2. **Lis `SPEC.md` en entier**, plus les ADR acceptés et le glossaire de `CLAUDE.md` — et
+   `maquette.md` si elle existe : la règle de citation des écrans vit dans le bloc `<format>` de
+   `references/tickets.md`. Les titres et les critères emploient le vocabulaire du domaine, pas le
+   tien.
 
 3. **Explore le dépôt** si ce n'est pas déjà fait : l'état réel du code que la feature touche.
    Cherche les occasions de **préfactoring** — *make the change easy, then make the easy change*.
@@ -99,8 +101,8 @@ Ratio : 40% humain / 60% AI (tu proposes le découpage ; l'humain le corrige jus
 
 ## Ce que tu NE fais PAS
 
-- Tu **ne modifies pas `SPEC.md`.** Si le découpage révèle un défaut de la spec, **signale-le** pour
-  un retour à `/scd-sdd:spec` — ne le corrige pas en passant.
+- Tu **ne modifies ni `SPEC.md` ni `maquette.md`.** Si le découpage révèle un défaut de la spec,
+  **signale-le** pour un retour à `/scd-sdd:spec` — ne le corrige pas en passant.
 - Tu **n'écris aucun ADR** ni aucun document du socle.
 - Tu **n'écris aucun code** et n'exécutes aucun test.
 - Tu **ne lances aucune implémentation** — c'est `/scd-sdd:run`, et il prend un ticket à la fois.

@@ -48,7 +48,7 @@ there: its deliverable is the corpus. The subject map carries the campaign's sta
 domain packs; `campaign` orchestrates and composes nothing itself.
 Human-in-the-loop by construction: no session can launch Research. 7 slash commands.
 
-### [scd-sdd](./scd-sdd/) `v2.5.0`
+### [scd-sdd](./scd-sdd/) `v2.6.0`
 
 Lean spec-driven cycle, from empty repo to reviewable PR — and the **guards** that stop the agent
 from rewriting whatever verifies its own work.
@@ -82,7 +82,9 @@ ADR that cites them, which is what keeps this file from rebuilding the 1.x `arch
 **Per feature**: `/scd-sdd:spec` writes a ~40-line spec by synthesising the conversation already
 had; `/scd-sdd:tickets` cuts it into **vertical slices**, each carrying its observable criteria and
 the tickets that block it. Zero gate, zero verdict, zero normed notation. Validation is two human
-gestures and no third: read the spec, arbitrate ticket granularity. A wide refactor is the one
+gestures and no third: read the spec, arbitrate ticket granularity. When the feature touches an
+interface, `/scd-sdd:spec` offers an optional `maquette.md` — text wireframes with named screens
+that tickets cite and layout checks compare against. A wide refactor is the one
 exception to vertical slicing and sequences as expand → migrate in batches → contract.
 
 **Implementation**: `/scd-sdd:run` drives a dynamic workflow of dedicated subagents per ticket —

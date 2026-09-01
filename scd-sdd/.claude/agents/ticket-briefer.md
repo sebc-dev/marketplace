@@ -20,6 +20,7 @@ Fichiers à lire dans `featureDir` :
 - **`NN-*.md`** — le ticket lui-même. Il est **autoportant** : `**Bloqué par :**`, `**Vérif :**`, `**Fichiers :**`, `## Ce que ça livre`, `## Critères` (cases à cocher). Tout ce qu'il faut pour implémenter est là.
 - **`SPEC.md`** — le contexte, et **deux sections seulement** comptent vraiment : `## Hors-périmètre` (ce qu'un reviewer ne doit pas réclamer) et `## Décisions de test` (où sont les coutures). Le reste alimente la description de PR.
 - **les autres `NN-*.md`** — uniquement leurs titres et leurs `Bloqué par`, pour situer le ticket dans la séquence.
+- **`maquette.md`** — *s'il existe*, et seulement si le ticket livre un écran : le(s) bloc(s) `## Écran : <nom>` que le ticket cite, **jamais le fichier entier**.
 
 ⚠️ **Il n'y a rien d'autre à aller chercher.** Le cycle `1.x` faisait remonter des énoncés `SHALL` depuis `spec.md` pour chaque `FR` d'un lot de `tasks.md` : ces trois fichiers n'existent plus. Un brief qui les cherche a mal lu son entrée.
 
@@ -69,6 +70,9 @@ Depuis **`SPEC.md`** : `why` — 2-4 phrases **côté utilisateur**, tirées de 
 
 Un champ introuvable reste **vide** : ne l'invente pas. `context` entier est optionnel — son absence n'empêche pas l'implémentation, elle appauvrit seulement la description de PR.
 
+## 7. Extrait de maquette (si le fichier existe)
+Si `featureDir/maquette.md` existe **et** qu'un critère ou le mode du ticket cite un écran par son nom (`Écran : <nom>`), copie **verbatim** le(s) bloc(s) `## Écran : <nom>` concernés dans le champ `maquette` du brief. Fichier absent, ou aucun écran cité par le ticket → champ omis.
+
 </process>
 
 <output_format>
@@ -81,6 +85,7 @@ Le workflow impose le schéma `BRIEF`. Retourne un objet JSON conforme :
 - `blockedBy[]` : les numéros de tickets bloqueurs
 - `notes[]` : les défauts du ticket repérés au passage (critère non vérifiable, mode douteux)
 - `context` : le contexte de review (étape 6) — `capability`, `ticketIndex`, `ticketCount`, `blockedBy[]`, `why`, `decisions[]`, `adrs[]`, `outOfScope[]`, `nextTickets[]`. Champs introuvables : omis, jamais inventés.
+- `maquette` : l'extrait **verbatim** des blocs `## Écran :` que le ticket livre (étape 7) — omis si sans objet.
 
 Termine ta réponse par le bloc JSON sur une seule ligne, valide et complet.
 </output_format>
@@ -92,4 +97,5 @@ Termine ta réponse par le bloc JSON sur une seule ligne, valide et complet.
 - **Ne coche aucune case.** Les critères de `## Critères` appartiennent à `progress-recorder`, et à lui seul.
 - Ne recopie pas le socle (`docs/…`) : extrais seulement ce que le ticket nécessite.
 - `context` (étape 6) se **cite**, il ne se rédige pas : `why`, `decisions`, `outOfScope` reformulent au plus court ce que les documents disent déjà. Un champ absent reste vide — une valeur inventée finirait telle quelle dans une description de PR lue par un humain.
+- L'extrait de `maquette` se cite **verbatim** : il ne se redessine ni ne se résume.
 </constraints>

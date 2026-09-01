@@ -1,5 +1,5 @@
 ---
-description: "Cadre une feature en UNE spec courte : écrit specs/NNN-slug/SPEC.md (~40 lignes) — le problème, la solution, les comportements observables, les décisions d'implémentation et de test, le hors-périmètre. Elle SYNTHÉTISE la conversation en cours et n'interviewe pas : ce qui a été dit s'écrit, seul ce qui manque vraiment se demande. Relue par l'humain, et c'est sa seule validation — aucune gate, aucun verdict, aucun critère normé. Attribue le NNN et scaffolde le répertoire de la feature."
+description: "Cadre une feature en UNE spec courte : écrit specs/NNN-slug/SPEC.md (~40 lignes) — le problème, la solution, les comportements observables, les décisions d'implémentation et de test, le hors-périmètre. Elle SYNTHÉTISE la conversation en cours et n'interviewe pas : ce qui a été dit s'écrit, seul ce qui manque vraiment se demande. Relue par l'humain, et c'est sa seule validation — aucune gate, aucun verdict, aucun critère normé. Attribue le NNN et scaffolde le répertoire de la feature. Quand la feature touche une interface, propose et écrit specs/NNN-slug/maquette.md — wireframes textuels, optionnels, rejouables."
 argument-hint: "[l'idée de la feature — optionnel si la conversation la porte déjà]"
 allowed-tools:
   - Read
@@ -73,7 +73,7 @@ Ratio : 30% humain / 70% AI (tu compiles et tu proposes ; l'humain relit et corr
    et renvoie vers `/scd-sdd:init`, puis **demande si on continue quand même**. Une spec écrite sans
    glossaire ni ADR est possible ; elle est juste moins bonne, et l'humain doit le savoir. Note aussi
    si `docs/vision.md` existe : présent, il porte les `FR`/`SC` et les epics auxquels ancrer la
-   feature (étape 7). Absent, rien ne change.
+   feature (étape 8). Absent, rien ne change.
 
 3. **Explore le dépôt** si tu ne l'as pas déjà fait dans cette conversation : ce qui existe déjà et
    que la feature touche, les modules concernés, les tests comparables. C'est ce qui remplace
@@ -92,17 +92,24 @@ Ratio : 30% humain / 70% AI (tu compiles et tu proposes ; l'humain relit et corr
    d'implémentation**, avec son *pourquoi*. Ce qui a été écarté va au **hors-périmètre**, avec son
    motif.
 
-7. **Ancre la feature dans `docs/vision.md`, s'il existe.** Lis-le : quel(s) `FR`/`SC` cette feature
+7. **Propose la maquette, si la conversation a touché une interface** — écrans, formulaire,
+   navigation. Proposée, jamais imposée : « non » est une réponse complète, et rien n'est écrit.
+   Acceptée → charge la référence `references/maquette.md` **à ce moment seulement** et écris
+   `specs/NNN-slug/maquette.md` sur son `<template>`. Rejouée sur un fichier existant → révision
+   **écran par écran**, jamais de ré-assemblage. Le `SPEC.md` ne la nomme pas : le répertoire
+   commun est le seul lien.
+
+8. **Ancre la feature dans `docs/vision.md`, s'il existe.** Lis-le : quel(s) `FR`/`SC` cette feature
    sert, sous quel epic elle tombe. Reporte ce renvoi dans les décisions d'implémentation du
    `SPEC.md` (« décline FR-2 (export CSV) »), et **propose d'ajouter la ligne `NNN — titre` sous
    l'epic choisi**
    (un `Edit` ciblé, confirmé par l'humain). Absent → saute cette étape, sans bruit ; tu ne le crées
    pas ici, c'est `/scd-sdd:vision`.
 
-8. **Dépose les décisions structurantes rencontrées** en brouillon dans `docs/adr/_candidates/`, et
+9. **Dépose les décisions structurantes rencontrées** en brouillon dans `docs/adr/_candidates/`, et
    **nomme-les** dans le rapport. Tu ne les figes pas.
 
-9. **Rends la spec à relire.** C'est le premier des deux gestes de validation du niveau feature, et
+10. **Rends la spec à relire.** C'est le premier des deux gestes de validation du niveau feature, et
    il n'y en a pas de troisième : dis-le, plutôt que de laisser croire qu'une gate suivra.
 
 ## Ce que tu NE fais PAS
@@ -112,7 +119,7 @@ Ratio : 30% humain / 70% AI (tu compiles et tu proposes ; l'humain relit et corr
 - Tu **n'écris aucun ADR** ni ne touches à `docs/adr/NNNN-*.md`.
 - Tu **ne touches à aucun document du socle** — `CLAUDE.md`, `docs/ci.md`, `.claude/guards.json`.
   Seule exception, confirmée par l'humain : ajouter la ligne `NNN — titre` de la feature sous son
-  epic dans `docs/vision.md` (étape 7). Tu n'y écris **rien d'autre**, et tu ne le crées pas.
+  epic dans `docs/vision.md` (étape 8). Tu n'y écris **rien d'autre**, et tu ne le crées pas.
 - Tu **n'écris aucun code** et n'exécutes aucun test.
 - Tu **ne rends aucun verdict**. Il n'y a plus de gate, et prétendre en jouer une serait rétablir ce
   que la refonte a retiré.
@@ -123,6 +130,7 @@ Ratio : 30% humain / 70% AI (tu compiles et tu proposes ; l'humain relit et corr
 ## Spec — specs/NNN-slug/SPEC.md
 
 [N] lignes · [N] comportements · [N] décisions d'implémentation · [N] écartés
+Maquette : [N] écran(s) — specs/NNN-slug/maquette.md | aucune ([pas d'interface | refusée])
 
 ### Ce qu'il faut relire en priorité
 [Les deux ou trois points où tu as tranché sans que l'humain l'ait dit explicitement.
@@ -139,12 +147,15 @@ Ratio : 30% humain / 70% AI (tu compiles et tu proposes ; l'humain relit et corr
 
 ## Skill active
 
-Skill `specs` — référence `references/spec.md`, chargée **intégralement**.
+Skill `specs` — référence `references/spec.md`, chargée **intégralement** ; référence
+`references/maquette.md`, chargée **intégralement, seulement si** la feature touche une interface
+(étape 7).
 
 ## À la fin
 
-*« Relis `specs/NNN-slug/SPEC.md` — c'est la seule validation de ce document, il n'y a pas de gate
-derrière. Quand elle te convient : `/scd-sdd:tickets NNN` pour la découper. »*
+*« Relis `specs/NNN-slug/SPEC.md` — et `maquette.md` si elle a été écrite — c'est la seule
+validation de ces documents, il n'y a pas de gate derrière. Quand elle te convient :
+`/scd-sdd:tickets NNN` pour la découper. »*
 
 - Des candidats ADR ont été déposés → **dis-le séparément** : *« [N] décisions structurantes
   attendent d'être figées : `/scd-sdd:adr`. »*
