@@ -8,7 +8,8 @@ description: |
   par preuve et jamais par affirmation, producteur ≠ vérificateur, triage adversarial des
   findings, description de PR comme artefact de review, anti-orphelinage des PR empilées,
   isolation par worktree pour le parallélisme réel. Se charge pendant /scd-sdd:run,
-  run-parallel, sync, reland et status. Porte UNIQUEMENT l'exécution du ticket — ni le
+  run-parallel, sync, reland, status et review-setup (qui pose la liste review du
+  projet). Porte UNIQUEMENT l'exécution du ticket — ni le
   socle (skill socle), ni l'écriture des specs (skill specs), ni le contrat du
   travail hors cycle (skill chantier).
 ---
@@ -212,5 +213,5 @@ chargent, chacun ses blocs.
 | `tickets-parsing.md` | Format du ticket, `**Vérif :**`, `**Bloqué par :**`, `**Fichiers :**`, critères ; états dérivés ; résolution du ticket ; **co-parallélisabilité** | 5 commandes : `run`, `run-parallel` (seule à charger `<co-parallelisme>`), `sync`, `reland`, `status`. **Aucun agent** | `role` `parsing` `etats` `resolution` `co-parallelisme` |
 | `verification-modes.md` | Les 4 modes et **la table mode→segment**, EARS→test, vérif observable, check « tests intacts », porte de vérif par preuve | `run`, `run-parallel`. **Aucun agent** : chaque agent du segment porte la discipline de **son** mode dans son corps | `role` `modes` `tdd` `observable` `enforcement` `pitfalls` |
 | `testing-rubric.md` | Rubric de test (FIRST, AAA, EP+BVA, doubles, anti-patterns) | **Deux agents** : `test-writer` (`principles` `selection` `doubles`) et `test-validator` (`principles` `anti-patterns` `checklists`). Aucune commande | `principles` `selection` `doubles` `anti-patterns` `checklists` |
-| `review-dimensions.md` | Le dossier de contexte, les six dimensions (une par reviewer) et leur référent, le modèle de sévérité, le triage sceptique | **Huit agents** : `review-context` (`dossier`), les six reviewers (chacun son `dim-…` + `severity`) et `review-validator` (`triage`). Aucune commande | `dossier` `dim-architecture` `dim-cleanliness` `dim-conventions` `dim-coverage` `dim-security` `dim-error-handling` `severity` `triage` |
+| `review-dimensions.md` | Le dossier de contexte, les six dimensions (une par reviewer) et leur référent, le modèle de sévérité, le triage sceptique | **Huit agents** : `review-context` (`dossier`), les six reviewers (chacun son `dim-…` + `severity`) et `review-validator` (`triage`). **Une commande** : `review-setup` (`dossier` seul — le schéma d'`aids`) | `dossier` `dim-architecture` `dim-cleanliness` `dim-conventions` `dim-coverage` `dim-security` `dim-error-handling` `severity` `triage` |
 | `workflow-template.md` | `implement-ticket.js` expliqué : phases et **affectation phase→modèle**, schémas, boucles gardées, statuts, branche/rebase/PR, adaptation, fallback inline ; **mode worktree** et orchestrateur parallèle | **Sur renvoi, sans point de chargement déclaré** — `run`/`run-parallel` n'en ont pas besoin pour lancer (la recette de lancement vit dans leur `## Processus`) ; elle se lit quand on adapte ou qu'on débogue le script | `role` `structure` `worktree` `parallel` `adaptation` `run` |
