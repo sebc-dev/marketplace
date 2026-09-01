@@ -5,7 +5,7 @@ description: |
   autre chose que des conseils. `docs/adr/NNNN-*.md` (décisions structurantes, immuables),
   `docs/ci.md` (ce qui décide qu'une PR passe) et `CLAUDE.md` (conventions, commandes,
   Definition of Done, glossaire de domaine) ; et, OPTIONNEL, au-dessus des features,
-  `docs/vision.md` (vision produit, exigences FR/SC, préoccupations par domaine base des ADR, epics).
+  `docs/vision.md` (vision produit, exigences FR/SC, stack constatée, préoccupations par domaine base des ADR, epics).
   Porte la frontière advisory / déterministe et
   la façon dont le plugin la franchit : un texte que l'agent lit ne le contraint pas, donc
   la défense vient de l'extérieur de l'agent — hooks de session livrés par le plugin,
@@ -54,8 +54,9 @@ que §D29 nomme.
 Les trois artefacts ci-dessus sont **obligatoires**, et se dérivent en partie du dépôt. La vision
 produit est d'une autre nature : **optionnelle** et **non dérivable** — elle porte l'intention
 produit qu'aucun fichier ne contient. Elle vit un cran **au-dessus de la feature** : le north star,
-les exigences `FR`, les critères de succès `SC`, les préoccupations par domaine qui **nourrissent
-les ADR**, et un découpage `epic → feature`. Un projet sans elle fonctionne à l'identique — `spec`,
+les exigences `FR`, les critères de succès `SC`, la stack sur laquelle le produit est bâti
+(**constatée** — le *pourquoi* d'un choix structurant reste un ADR), les préoccupations par domaine
+qui **nourrissent les ADR**, et un découpage `epic → feature`. Un projet sans elle fonctionne à l'identique — `spec`,
 `tickets`, `run`, `status` n'en dépendent pas.
 
 Deux traits la distinguent du reste du socle. Elle est le **seul artefact qui peut interviewer** :
@@ -83,7 +84,7 @@ inconnue est présumée légitime**.
 | `references/guards.md` | les trois couches de gardes, `.claude/guards.json`, le job CI, le gabarit de `docs/ci.md`, les limites déclarées | `/scd-sdd:guards` (intégrale) · `/scd-sdd:init` (bloc `<ci-md>` seul) |
 | `references/claude-md.md` | le contrat : gabarit, doctrine, table de promotion, checklist d'entretien | `/scd-sdd:init` — **tout sauf `<revision>`** en assemblage, **`<guidance>` + `<revision>` seuls** en révision |
 | `references/adr.md` | le format Nygard, les trois sources de candidats, le critère `Vérifiable ?` | `/scd-sdd:adr` (intégrale) |
-| `references/vision.md` | le gabarit de `docs/vision.md`, les deux gestes (synthèse/révision · interview), la règle préoccupation ≠ décision | `/scd-sdd:vision` (intégrale) |
+| `references/vision.md` | le gabarit de `docs/vision.md`, les deux gestes (synthèse/révision · interview), les règles préoccupation ≠ décision et stack constatée ≠ décidée | `/scd-sdd:vision` (intégrale) |
 | `references/signature.md` | la soupape de `verifier-guard` : registre de clés, vérification hors ligne, modèle de menace | `/scd-sdd:guards`, **étape 7 et conditionnelle** — seulement si le garde est retenu |
 
 ⚠️ **`/scd-sdd:signer` ne charge aucune référence**, et c'est délibéré (§D40, écarté n° 3) : ce dont

@@ -1,5 +1,5 @@
 ---
-description: "Pose ou entretient la vision produit — docs/vision.md, l'artefact OPTIONNEL au-dessus des features : le north star, les exigences FR, les critères de succès SC, les préoccupations par domaine (architecture, sécurité, UX/UI…) qui servent de base aux ADR, et un découpage epic → feature où chaque epic nomme ses features par NNN. Deux gestes qui s'excluent : elle SYNTHÉTISE ou RÉVISE quand il y a de la matière (un docs/vision.md existant, une archive docs/1.x/, ou la conversation), et elle INTERVIEWE quand il n'y en a aucune — le seul endroit du cycle où l'interview revient, parce qu'une vision écrite de zéro n'a rien à compiler. Aucune gate, relue par l'humain. Rejouable."
+description: "Pose ou entretient la vision produit — docs/vision.md, l'artefact OPTIONNEL au-dessus des features : le north star, les exigences FR, les critères de succès SC, la stack sur laquelle le produit est bâti (CONSTATÉE — le pourquoi d'un choix structurant reste un ADR), les préoccupations par domaine (architecture, sécurité, UX/UI…) qui servent de base aux ADR, et un découpage epic → feature où chaque epic nomme ses features par NNN. Deux gestes qui s'excluent : elle SYNTHÉTISE ou RÉVISE quand il y a de la matière (un docs/vision.md existant, une archive docs/1.x/, ou la conversation), et elle INTERVIEWE quand il n'y en a aucune — le seul endroit du cycle où l'interview revient, parce qu'une vision écrite de zéro n'a rien à compiler. Aucune gate, relue par l'humain. Rejouable."
 argument-hint: "[l'idée du produit — optionnel si la conversation ou une archive la porte déjà]"
 allowed-tools:
   - Read
@@ -15,8 +15,9 @@ allowed-tools:
 
 Tu poses la **vision produit** : un artefact **optionnel**, un cran **au-dessus de la feature**,
 que rien d'autre ne porte. Le `SPEC.md` d'une feature dit son pourquoi **local** ; `docs/vision.md`
-dit le pourquoi du **produit entier**, ses exigences (`FR`), ses critères de succès (`SC`), les
-préoccupations durables par domaine qui **nourrissent les ADR**, et un découpage `epic → feature`.
+dit le pourquoi du **produit entier**, ses exigences (`FR`), ses critères de succès (`SC`), la
+stack sur laquelle il est bâti (**constatée**, jamais argumentée), les préoccupations durables par
+domaine qui **nourrissent les ADR**, et un découpage `epic → feature`.
 
 **Tu as deux gestes, et ils s'excluent — comme `/scd-sdd:init` assemble ou révise.** Lequel se
 décide en **constatant la matière disponible**, jamais en demandant :
@@ -25,7 +26,7 @@ décide en **constatant la matière disponible**, jamais en demandant :
   une ligne que le gabarit ne prévoit pas est **présumée légitime**, elle subit le test de
   suppression comme les autres — pas « hors gabarit donc à retirer ». Ré-assembler écraserait tout
   ajout humain (le mode de défaillance de §D29).
-- **Une archive `docs/1.x/{brief,prd,produit}.md` est présente** (projet repris par
+- **Une archive `docs/1.x/{brief,prd,produit,stack,technique}.md` est présente** (projet repris par
   `/scd-sdd:migrate`) → tu **synthétises depuis l'archive comme matière première**, exactement comme
   `/init`, `/spec` et `/tickets` réécrivent le `2.0.0` depuis `docs/1.x/`. Tu confirmes avec
   l'humain avant d'écrire.
@@ -52,6 +53,9 @@ et arbitre).
 - **`FR`/`SC` vivent ici, et le `SPEC.md` y renvoie sans les recopier.**
 - **Un domaine porte des préoccupations, jamais des décisions.** Tu n'écris ici **aucun invariant,
   aucun chemin de fichier, aucune décision**.
+- **La stack se constate, elle ne s'argumente pas.** Une ligne par élément — le rôle, jamais la
+  version exacte (les manifestes du dépôt la portent) ; le *pourquoi* d'un choix structurant est un
+  ADR que la ligne cite. Rien de choisi → la section s'omet, et un choix en cours part en candidat.
 - **L'horizon est au niveau epic (Now/Next/Later), jamais feature.** Tu ne coches **aucun**
   avancement de feature.
 - **Lien descendant seul.** L'epic nomme ses features par `NNN`. Tu ne touches à **aucun** `SPEC.md`.
@@ -74,9 +78,11 @@ et arbitre).
 
 1. **Charge la référence `vision.md`** (voir `## Skill active`). Communique en français.
 
-2. **Constate la matière, avant tout.** `docs/vision.md` existe-t-il ? `docs/1.x/{brief,prd,produit}.md`
-   existe-t-il (projet repris) ? La conversation porte-t-elle déjà le produit ? Et `specs/*/` : quelles
-   features sont déjà sur le disque, qu'un découpage devra ranger ? **Annonce ce que tu as trouvé et le
+2. **Constate la matière, avant tout.** `docs/vision.md` existe-t-il ?
+   `docs/1.x/{brief,prd,produit,stack,technique}.md` existe-t-il (projet repris) ? La conversation
+   porte-t-elle déjà le produit ? Et `specs/*/` : quelles features sont déjà sur le disque, qu'un
+   découpage devra ranger ? La **stack**, elle, se lit d'abord dans le dépôt — manifestes,
+   lockfiles, configs : tu la constates avant de la demander. **Annonce ce que tu as trouvé et le
    geste que tu en tires** avant d'écrire — c'est ce qui rend la suite crédible.
 
 3. **Branche sur la matière.**
@@ -86,7 +92,8 @@ et arbitre).
    - archive `docs/1.x/` présente **ou** conversation porteuse → **synthèse** : compile la matière,
      propose, fais corriger.
    - rien → **interview bornée** : dis que tu interviewes et pourquoi, puis élicite dans cet ordre —
-     la **vision** (une question ouverte), les **`FR`**, les **`SC`**, les **préoccupations par
+     la **vision** (une question ouverte), les **`FR`**, les **`SC`**, la **stack** (une question de
+     constat — rien de choisi est une réponse complète, la section s'omet), les **préoccupations par
      domaine**, les **epics** initiaux. Une question à la fois si l'humain hésite ; tu t'arrêtes dès
      que le squelette tient, pas quand il est parfait.
 
@@ -123,6 +130,7 @@ et arbitre).
 
 Matière     : [aucune → interview | archive docs/1.x/ | conversation | fichier existant]
 FR · SC     : [N] exigences · [M] critères de succès
+Stack       : [N] éléments, [constatée du dépôt | dite par l'humain] — ou « omise (rien de choisi) »
 Domaines    : [N] préoccupations sur [architecture, sécurité, UX/UI, …]
 Epics       : [N] · features rangées : [M]/[total sur disque]
 

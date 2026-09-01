@@ -62,7 +62,9 @@ non-standard. Elle est **rejouable** : sur un `CLAUDE.md` existant elle **révis
 section, et ne ré-assemble jamais.
 
 Un **quatrième artefact, optionnel**, se pose un cran au-dessus des features : `/scd-sdd:vision`
-écrit `docs/vision.md` — le north star, les exigences `FR`/`SC`, les préoccupations par domaine
+écrit `docs/vision.md` — le north star, les exigences `FR`/`SC`, la stack sur laquelle le produit
+est bâti (**constatée** : une ligne par élément, jamais de version exacte — le *pourquoi* d'un
+choix structurant reste un ADR), les préoccupations par domaine
 (architecture, sécurité, UX/UI) qui **nourrissent les ADR**, et un découpage `epic → feature`. Rien
 du cycle n'en dépend. C'est le **seul artefact qui interviewe** — mais seulement au dépôt vide, quand
 il n'y a rien à synthétiser ; sinon il révise ou compile depuis la conversation ou une archive
@@ -187,7 +189,7 @@ est réellement co-parallélisable (fichiers disjoints **et** aucun blocage mutu
 |---|---|
 | `/scd-sdd:init` | `docs/adr/`, `docs/ci.md`, `CLAUDE.md` — ou **révise** un `CLAUDE.md` existant |
 | `/scd-sdd:adr` | `docs/adr/NNNN-*.md`, immuables |
-| `/scd-sdd:vision` | `docs/vision.md` — **optionnel**, au-dessus des features (vision, `FR`/`SC`, domaines, epics) |
+| `/scd-sdd:vision` | `docs/vision.md` — **optionnel**, au-dessus des features (vision, `FR`/`SC`, stack, domaines, epics) |
 | `/scd-sdd:guards` | `.claude/guards.json`, le job CI, et **déroule la trace** |
 
 ### Feature

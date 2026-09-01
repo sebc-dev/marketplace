@@ -44,6 +44,14 @@ notation à résoudre. Écrit une fois, révisé rarement.
  Distinct des FR : le FR est ce qu'on fait, le SC est ce qui prouve que ça valait le coup.]
 - **SC-1** — [critère]
 
+## Stack
+[Sur quoi le produit est bâti — un CONSTAT scannable, pas un registre de décisions : une ligne par
+ élément (langage, framework, données, hébergement, services externes), son rôle en quelques mots.
+ Aucune version exacte — les manifestes du dépôt les portent, une copie dériverait ici. Le POURQUOI
+ d'un choix structurant est un ADR, que la ligne cite. Rien de choisi → la section s'omet.]
+- [élément] — [son rôle en quelques mots]
+- [élément] — [son rôle] (pourquoi : ADR-NNNN)
+
 ## Domaines transverses (base des ADR)
 [Les préoccupations durables par domaine que les ADR devront trancher — le QUOI qu'on doit réussir,
  pas le COMMENT. Une préoccupation numérotée = une ligne. La DÉCISION reste un ADR, qui cite la
@@ -82,6 +90,12 @@ Features :
   pourquoi la règle « aucun `FR-xxx` dans un `SPEC.md` » de `/scd-sdd:spec` **tient toujours** : la
   notation avait disparu faute de lecteur (§D41) ; elle revient **au seul niveau qui en a un**, le
   produit.
+- **La stack se constate ici, elle ne se décide pas ici.** Une ligne nomme l'élément et son rôle ;
+  le *pourquoi* d'un choix structurant est un **ADR** que la ligne cite — et un choix encore en
+  instruction est un **candidat** (`docs/adr/_candidates/`), pas une ligne d'ici. Aucune version
+  exacte : les manifestes et lockfiles du dépôt les portent, `docs/ci.md` porte les commandes — une
+  copie dériverait au premier bump. Sans ces deux règles, on rebâtit le `stack.md` du `1.x` que
+  §D41 a dissous dans les ADR.
 - **Domaines = préoccupations, jamais décisions.** `ARCH-*`/`SEC-*`/`UX-*` disent le *quoi* durable ;
   le *comment* est un **ADR** qui cite la préoccupation. On n'inscrit ici **aucun invariant, aucun
   chemin de fichier, aucune décision** : la table d'invariants *enforced* reste `docs/adr/`, celle
@@ -92,8 +106,8 @@ Features :
 - **Horizon au niveau epic.** Now / Next / Later décrit un epic, pas une feature. L'avancement réel
   d'une feature se lit sur le disque via `/scd-sdd:status` — ne pas cocher de cases de features ici,
   ce serait un fichier d'état, et c'est interdit.
-- **Discipline de poids.** Le fichier porte déjà vision + `FR` + `SC` + domaines + epics : le risque
-  est de rebâtir `prd.md` **et** `archi.md`. Chaque domaine tient en une poignée de puces ; une
+- **Discipline de poids.** Le fichier porte déjà vision + `FR` + `SC` + stack + domaines + epics : le
+  risque est de rebâtir `prd.md` **et** `archi.md`. Chaque domaine tient en une poignée de puces ; une
   feature n'apparaît que par son `NNN` et son titre. Ce qui déborde en profondeur est un ADR ou une
   spec, pas une rallonge d'ici.
 - **La frontière advisory/déterministe tient.** Une préoccupation, un `FR`, un `SC` n'imposent rien —
@@ -105,6 +119,8 @@ Features :
 `docs/vision.md` est terminé quand :
 - [ ] La **Vision** dit le pourquoi du produit **entier** et pour qui — pas le pourquoi d'une feature.
 - [ ] Les **`FR`** sont atomiques et numérotés ; les **`SC`** sont distincts des `FR` (preuve, pas action).
+- [ ] La **Stack** tient en une ligne par élément — le rôle, jamais la version exacte ; le pourquoi
+      structurant est un ADR **cité**, pas argumenté ici — ou la section est **omise**, rien n'étant choisi.
 - [ ] Chaque **domaine** ne porte que des **préoccupations** (`ARCH-*`/`SEC-*`/`UX-*`) — aucune décision,
       aucun invariant, aucun chemin de fichier : ceux-là sont des ADR.
 - [ ] Chaque **epic** porte un horizon (Now/Next/Later), une intention, 2-3 résultats-clés, et **nomme

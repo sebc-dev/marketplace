@@ -48,7 +48,7 @@ there: its deliverable is the corpus. The subject map carries the campaign's sta
 domain packs; `campaign` orchestrates and composes nothing itself.
 Human-in-the-loop by construction: no session can launch Research. 7 slash commands.
 
-### [scd-sdd](./scd-sdd/) `v2.6.0`
+### [scd-sdd](./scd-sdd/) `v2.7.0`
 
 Lean spec-driven cycle, from empty repo to reviewable PR — and the **guards** that stop the agent
 from rewriting whatever verifies its own work.
@@ -72,7 +72,9 @@ does not interview — it *reads the repo* and asks only what the repo cannot an
 replayable: on an existing `CLAUDE.md` it **revises** section by section and never re-assembles.
 
 **Optional, one level above features**: `/scd-sdd:vision` writes `docs/vision.md` — the product
-north star, `FR`/`SC` requirements, per-domain concerns (architecture, security, UX/UI) that seed
+north star, `FR`/`SC` requirements, the stack the product is built on (*stated*, one line per
+element with no exact versions — the *why* of a structural choice stays an ADR the line cites),
+per-domain concerns (architecture, security, UX/UI) that seed
 the ADRs, and an `epic → feature` breakdown. Nothing in the cycle depends on it. It is the one
 artefact that *interviews* — but only when there is no prior material to synthesise (a greenfield
 product); given an existing file, a migrated `docs/1.x/` archive, or a conversation that already
