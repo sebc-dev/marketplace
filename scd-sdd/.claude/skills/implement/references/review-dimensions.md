@@ -47,6 +47,11 @@ fichiers modifiés :
   ne doit réclamer.
 - **`contracts`** — les contrats d'interface du ticket (signatures, endpoints, codes d'erreur), s'ils
   sont écrits.
+- **`aids`** — les skills et serveurs MCP **pertinents pour la review**, `{ skills[], mcp[] }`. La liste
+  `.claude/review.json` du projet **fait autorité** (`source: projet`) ; l'auto-détection complète
+  (`source: auto`). Un **skill** local est **distillé** en `guidance` ; un **MCP** est un **pointeur**
+  (`authoritativeFor`, `autofixer`) — `review-context` a `Read/Grep/Glob`, pas les outils MCP : il ne
+  l'interroge pas. Chaque reviewer consulte ce dont `relevantTo` inclut sa dimension. Absent → auto seul.
 
 **Il ne juge pas** : ni sévérité, ni finding, ni correction. Il **cite** (avec l'ID et la source), et
 un champ introuvable reste **vide** — jamais inventé, puisqu'il finirait dans le raisonnement d'un

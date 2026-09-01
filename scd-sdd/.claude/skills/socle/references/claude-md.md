@@ -79,7 +79,9 @@ pourquoi.
 
 <!-- À NE PAS mettre ici : garde-fou dur (→ .claude/guards.json / hook / permissions.deny) ·
      procédure (→ skill) · contrainte de sous-arbre (→ .claude/rules/ path-scopé) ·
-     préférence perso (→ ~/.claude/CLAUDE.md) · style formaté par un outil (→ linter). -->
+     préférence perso (→ ~/.claude/CLAUDE.md) · style formaté par un outil (→ linter) ·
+     liste des skills/MCP pertinents pour la REVIEW (→ .claude/review.json, lu par review-context —
+     hors du CLAUDE.md chargé à chaque session). -->
 ```
 </template>
 
@@ -138,6 +140,7 @@ doctrine « moins de règles » en dépend, et une règle utile à l'ancien peut
 | glossaire du domaine (≤ 15 lignes) | dictionnaire technique | supprimer — Claude lit le code |
 | brève description du dépôt | arborescence, liste de dépendances | supprimer — Claude les lit |
 | renvois (`@`, noms de skills) | contrainte propre à `src/api/**` | **`.claude/rules/` path-scopé** — charge sur match |
+| — | liste des skills/MCP pertinents pour la **review** | **`.claude/review.json`** — lu par review-context, hors du CLAUDE.md chargé à chaque session |
 | règles vraies pour toute l'équipe | préférence personnelle | **`~/.claude/CLAUDE.md`** ou local gitignoré |
 
 ## La frontière skills / hooks / rules — trois axes, et un seul ne suffit jamais

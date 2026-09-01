@@ -219,6 +219,38 @@ const REVIEW_CONTEXT = {
     decisions: { type: 'array', items: { type: 'string' }, description: 'SPEC.md ## Décisions qui contraignent le diff' },
     outOfScope: { type: 'array', items: { type: 'string' }, description: 'SPEC.md ## Hors-périmètre pertinent — ce qu\'aucun reviewer ne doit réclamer' },
     contracts: { type: 'string', description: 'Contrats d\'interface du ticket (signatures, endpoints, codes d\'erreur), si écrits' },
+    aids: {
+      type: 'object',
+      description: 'Skills et serveurs MCP pertinents pour la review, résolus une fois. La liste projet `.claude/review.json` fait autorité (source: projet) ; l\'auto-détection complète (source: auto). Un skill local est DISTILLÉ (guidance) ; un MCP ne peut PAS être interrogé (review-context n\'a pas les outils MCP) — il est cité en POINTEUR.',
+      properties: {
+        skills: {
+          type: 'array',
+          description: 'Skills pertinents : un SKILL.md local distillé en guidance courte',
+          items: {
+            type: 'object',
+            properties: {
+              name: { type: 'string' },
+              relevantTo: { type: 'array', items: { type: 'string' }, description: 'sous-ensemble des six dimensions ; vide = toutes' },
+              guidance: { type: 'string', description: 'distillé du SKILL.md, jamais recopié en entier' },
+              source: { type: 'string', description: 'projet (review.json, fait autorité) | auto (auto-détecté, non confirmé)' },
+            },
+          },
+        },
+        mcp: {
+          type: 'array',
+          description: 'Serveurs MCP pertinents — POINTEUR seul, jamais interrogé',
+          items: {
+            type: 'object',
+            properties: {
+              server: { type: 'string' },
+              authoritativeFor: { type: 'string', description: 'de quoi le serveur fait autorité' },
+              autofixer: { type: 'string', description: 'outil d\'autofix du serveur, si déclaré' },
+              source: { type: 'string', description: 'projet | auto' },
+            },
+          },
+        },
+      },
+    },
     note: { type: 'string', description: 'Ce qui n\'a pas pu être résolu (socle absent, ADR illisible)' },
   },
 }
@@ -579,7 +611,9 @@ const dossier = await agent(
   `pour que six reviewers n'aient pas à relire les mêmes documents. Résous : la table des invariants de ` +
   `\`docs/adr/\` (invariants[], référent de la dimension architecture — vide si absente), le corps des ADR ` +
   `contraignant ce ticket (adrs[], résumés), les décisions d'impl de \`SPEC.md\` qui contraignent le diff (decisions[]), ` +
-  `le hors-périmètre pertinent (outOfScope[]), les contrats d'interface (contracts). Cite (id + source), NE JUGE PAS ` +
+  `le hors-périmètre pertinent (outOfScope[]), les contrats d'interface (contracts), et les aides à la review ` +
+  `(aids : skills locaux DISTILLÉS en guidance + serveurs MCP en POINTEUR ; \`.claude/review.json\` fait autorité, ` +
+  `l'auto-détection complète en source:auto). Cite (id + source), NE JUGE PAS ` +
   `(aucune sévérité, aucun finding), n'invente aucun champ.\n` +
   `Fichiers modifiés : ${JSON.stringify(green.diffFiles)}.\nBrief:\n${JSON.stringify(brief)}` + iso + refs,
   { agentType: 'scd-sdd:review-context', schema: REVIEW_CONTEXT, model: 'sonnet' },
@@ -591,8 +625,10 @@ const reviewCtx = {
   decisions: context.decisions || [],
   outOfScope: context.outOfScope || [],
   contracts: context.contracts || '',
+  aids: context.aids || { skills: [], mcp: [] },
 }
-log(`Dossier de contexte : ${reviewCtx.invariants.length} invariant(s) · ${reviewCtx.adrs.length} ADR${dossier ? '' : ' (agent sauté — dossier vide, replis dégradés)'}`)
+const aids = reviewCtx.aids
+log(`Dossier de contexte : ${reviewCtx.invariants.length} invariant(s) · ${reviewCtx.adrs.length} ADR · ${(aids.skills || []).length} skill(s)/${(aids.mcp || []).length} MCP${dossier ? '' : ' (agent sauté — dossier vide, replis dégradés)'}`)
 
 // Fan-out : un reviewer par dimension, en PARALLÈLE, contexte frais (producteur ≠ vérificateur).
 // Raisonnement dur en opus ; les deux dimensions de style en sonnet (levier de coût du fan-out).
@@ -611,6 +647,7 @@ const reviewResults = await parallel(REVIEWERS.map((r) => () =>
     `Diff sur ${JSON.stringify(green.diffFiles)} (récupère-le via \`${gitPrefix} diff …\`). Mode de vérif du ticket : ${mode}` +
     (usesTests ? `` : ` — PAS de test automatisé attendu (c'est le contrat) : ne remonte jamais « absence de test », juge par la vérif observable.`) +
     `. Charge SEULEMENT ta dimension, classe bloquant/suggestion, propose un correction_prompt autonome.\n` +
+    `Le dossier porte \`aids\` (skills/MCP pertinents) : consulte ceux dont \`relevantTo\` inclut ta dimension — un skill fournit une guidance distillée, un MCP est un pointeur (autorité citée, jamais interrogé).\n` +
     `Dossier de contexte:\n${JSON.stringify(reviewCtx)}\nBrief:\n${JSON.stringify(brief)}` + iso + refs,
     { agentType: `scd-sdd:${r.agent}`, schema: FINDINGS, model: r.model, phase: 'Review', label: `review:${r.dim}` },
   ).then((res) => ({ r, res })),

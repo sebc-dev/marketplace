@@ -47,7 +47,8 @@ et le final (4-10) sont **invariants** ; le **segment de vérification** dépend
    divergerait le premier s'il était recopié ici.
 
 4. **Context** (`review-context`) — résout **une fois** le dossier de contexte (invariants de
-   `docs/adr/`, décisions et hors-périmètre de `SPEC.md`, contrats) que les six reviewers
+   `docs/adr/`, décisions et hors-périmètre de `SPEC.md`, contrats, et `aids` — skills/MCP
+   pertinents pour la review, `.claude/review.json` faisant autorité) que les six reviewers
    consomment ; il **cite, ne juge pas**. Contexte frais.
 5. **Review** (**six reviewers en parallèle**, un par dimension : `architecture-reviewer`,
    `cleanliness-reviewer`, `conventions-reviewer`, `coverage-reviewer`, `security-reviewer`,

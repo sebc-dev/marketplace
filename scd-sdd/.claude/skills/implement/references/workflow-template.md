@@ -45,8 +45,8 @@ Préambule et final sont **invariants** ; le segment du milieu dépend de `brief
 | `scd-sdd:conventions-reviewer` | conventions | sonnet |
 
 `review-context` (sonnet) résout **une fois** le dossier (`REVIEW_CONTEXT` : invariants ADR, décisions
-et hors-périmètre de spec, contrats) que les six reviewers reçoivent — évite six lectures redondantes
-de `docs/adr/`/`SPEC.md`. Les six `FINDINGS` sont fusionnés dans l'orchestrateur, **IDs préfixés par
+et hors-périmètre de spec, contrats, et `aids` — skills/MCP pertinents pour la review) que les six
+reviewers reçoivent — évite six lectures redondantes de `docs/adr/`/`SPEC.md`. Les six `FINDINGS` sont fusionnés dans l'orchestrateur, **IDs préfixés par
 dimension** (`securite-F1`) pour éviter les collisions, et passés tels quels à `review-validator`, qui
 dédoublonne. Les deux dimensions de style (propreté, conventions) sont en **sonnet** — levier de coût
 du fan-out ; les quatre dimensions à raisonnement dur restent opus.

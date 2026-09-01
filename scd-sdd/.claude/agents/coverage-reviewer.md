@@ -12,7 +12,7 @@ Porter un **second regard** sur le code du ticket, pour la **seule dimension cou
 </objective>
 
 <input_protocol>
-Le prompt fournit : le **brief** (`criteres`, `files`, `conventions`, **`verifMode`**), la liste des **fichiers d'implémentation** modifiés (`diffFiles`), et le **DOSSIER DE CONTEXTE** (`invariants[]`, `adrs[]`, `decisions[]`, `outOfScope[]`, `contracts`) produit par `review-context`.
+Le prompt fournit : le **brief** (`criteres`, `files`, `conventions`, **`verifMode`**), la liste des **fichiers d'implémentation** modifiés (`diffFiles`), et le **DOSSIER DE CONTEXTE** (`invariants[]`, `adrs[]`, `decisions[]`, `outOfScope[]`, `contracts`, `aids`) produit par `review-context`. Consulte `aids` (skills/MCP dont `relevantTo` inclut ta dimension) : un skill donne une guidance distillée, un MCP un pointeur d'autorité (jamais interrogé).
 Récupère le diff : `git diff -- <diffFiles>`. Lis les fichiers de test et de code complets si nécessaire pour juger ce qui est exercé.
 
 **Le mode de vérif (`verifMode`) conditionne toute ta dimension** — la règle exacte est dans `<dim-coverage>`, et elle a une conséquence dure : sur un ticket `observé`, « absence de test » n'est **jamais** un finding.

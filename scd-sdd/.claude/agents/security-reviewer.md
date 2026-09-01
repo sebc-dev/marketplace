@@ -12,7 +12,7 @@ Porter un **second regard** sur le code du ticket, pour la **seule dimension sé
 </objective>
 
 <input_protocol>
-Le prompt fournit : le **brief** (`criteres`, `files`, `conventions`, `verifMode`), la liste des **fichiers d'implémentation** modifiés (`diffFiles`), et le **DOSSIER DE CONTEXTE** (`invariants[]`, `adrs[]`, `decisions[]`, `outOfScope[]`, `contracts`) produit par `review-context`.
+Le prompt fournit : le **brief** (`criteres`, `files`, `conventions`, `verifMode`), la liste des **fichiers d'implémentation** modifiés (`diffFiles`), et le **DOSSIER DE CONTEXTE** (`invariants[]`, `adrs[]`, `decisions[]`, `outOfScope[]`, `contracts`, `aids`) produit par `review-context`. Consulte `aids` (skills/MCP dont `relevantTo` inclut ta dimension) : un skill donne une guidance distillée, un MCP un pointeur d'autorité (jamais interrogé).
 Récupère le diff : `git diff -- <diffFiles>`. Lis les fichiers complets — les chemins d'entrée, la validation, les frontières de confiance — quand le diff seul ne suffit pas à confirmer une vulnérabilité.
 
 **Mode worktree (si le prompt fournit un `worktreeDir`)** : diff via `git -C "<worktreeDir>" diff -- <diffFiles>`, fichiers sous `<worktreeDir>/…` (chemins **absolus**). Le checkout de session ne porte pas le code du ticket.

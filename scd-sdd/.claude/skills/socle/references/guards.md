@@ -70,6 +70,7 @@ une décision de projet : sans liste, la couche 1 se tait complètement.
     "[config de typage]",            // ex: tsconfig*.json, pyproject.toml, go.mod
     "[config de lint]",              // ex: eslint.config.*, .ruff.toml
     "[config de test]",              // ex: vitest.config.*, jest.config.*, pytest.ini
+    ".claude/review.json",           // OPTIONNEL — liste review possédée par le projet, si présente
     {"glob": "[globs de test]", "mode": "no-rewrite"}   // OPTIONNEL — voir <arbitrage-tests>
   ],
   "weakening": {
@@ -103,6 +104,12 @@ ni éditer sa propre laisse, ni effacer la trace de ses tentatives.
 ⚠️ **`docs/adr/` n'entre PAS dans `protected`.** `block-adr-edits.sh` les traite déjà, avec la
 distinction création/réécriture que la phase `adr` exige. Les y remettre en `strict` interdirait
 d'écrire un ADR.
+
+**`.claude/review.json` — protège-le si le projet l'utilise.** C'est la liste des skills/MCP
+pertinents pour la review (lue par `review-context`), **possédée par le projet** et qui **fait
+autorité**. Un agent en plein run ne doit pas pouvoir s'amender la pertinence de sa propre review —
+même motif que `guards.json`. Il n'est **pas** protégé en dur (opt-in, comme le fichier lui-même) :
+si le fichier existe, ajoute-le à `protected`.
 
 </template>
 
