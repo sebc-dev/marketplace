@@ -166,3 +166,6 @@ Skill `socle` :
   feature. »*
 - Décisions déposées en `_candidates/` → **dis-le séparément** : *« [N] décisions attendent d'être
   figées : `/scd-sdd:adr`. »*
+- Projet destiné à durer → **mentionne l'option, sans l'imposer** : *« Optionnel : `/scd-sdd:vision`
+  pose une base produit long-terme — vision, exigences `FR`/`SC`, préoccupations par domaine, epics —
+  au-dessus des features. Rien du cycle n'en dépend. »* Tu ne la joues pas et ne l'écris pas ici.

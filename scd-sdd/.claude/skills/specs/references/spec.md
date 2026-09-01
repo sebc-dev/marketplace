@@ -71,6 +71,10 @@ conversation, à ce moment-là.
   parce qu'un agent vérificateur les relisait. Cet agent n'existe plus : une notation sans lecteur
   est une contrainte de rédaction que rien ne récompense (§D41). Les critères **observables** vivent
   dans les tickets, en français, et c'est l'implémentation qui les paie.
+- **Les `FR`/`SC` sont du niveau produit.** S'il existe un `docs/vision.md`, il porte les exigences
+  (`FR`) et les critères de succès (`SC`) ; le `SPEC.md` y **renvoie** — « décline FR-2 (export CSV) »
+  — dans ses décisions d'implémentation, il ne les recopie jamais : `docs/vision.md` a un lecteur, le
+  `SPEC.md` non. Absent, rien à faire.
 - **Pas de chemins de fichiers.** Ils périment plus vite que le document. Nommer les **modules**,
   pas les fichiers.
 

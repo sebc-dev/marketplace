@@ -41,6 +41,7 @@ ne le pouvait.
 /scd-sdd:init          →  docs/adr/ · docs/ci.md · CLAUDE.md      (une fois)
 /scd-sdd:guards        →  .claude/guards.json + le job CI          (une fois, rejouable)
 /scd-sdd:adr           →  docs/adr/NNNN-*.md                       (à tout moment)
+/scd-sdd:vision        →  docs/vision.md    (optionnel, au-dessus des features)
 
 /scd-sdd:spec  <idée>  →  specs/NNN-slug/SPEC.md      (~40 lignes)
 /scd-sdd:tickets NNN   →  specs/NNN-slug/NN-slug.md   (tranches verticales)
@@ -59,6 +60,13 @@ ne le pouvait.
 — et ne demande que ce qui ne s'y lit pas : le domaine, et le *pourquoi* des conventions
 non-standard. Elle est **rejouable** : sur un `CLAUDE.md` existant elle **révise** section par
 section, et ne ré-assemble jamais.
+
+Un **quatrième artefact, optionnel**, se pose un cran au-dessus des features : `/scd-sdd:vision`
+écrit `docs/vision.md` — le north star, les exigences `FR`/`SC`, les préoccupations par domaine
+(architecture, sécurité, UX/UI) qui **nourrissent les ADR**, et un découpage `epic → feature`. Rien
+du cycle n'en dépend. C'est le **seul artefact qui interviewe** — mais seulement au dépôt vide, quand
+il n'y a rien à synthétiser ; sinon il révise ou compile depuis la conversation ou une archive
+`docs/1.x/`. Un domaine porte des **préoccupations** ; la **décision** reste un ADR qui les cite.
 
 ### Par feature : une spec courte, des tickets verticaux
 
@@ -170,13 +178,14 @@ est réellement co-parallélisable (fichiers disjoints **et** aucun blocage mutu
 
 ---
 
-## Les 20 commandes
+## Les 22 commandes
 
 ### Socle
 | Commande | Produit |
 |---|---|
 | `/scd-sdd:init` | `docs/adr/`, `docs/ci.md`, `CLAUDE.md` — ou **révise** un `CLAUDE.md` existant |
 | `/scd-sdd:adr` | `docs/adr/NNNN-*.md`, immuables |
+| `/scd-sdd:vision` | `docs/vision.md` — **optionnel**, au-dessus des features (vision, `FR`/`SC`, domaines, epics) |
 | `/scd-sdd:guards` | `.claude/guards.json`, le job CI, et **déroule la trace** |
 
 ### Feature
@@ -205,9 +214,12 @@ est réellement co-parallélisable (fichiers disjoints **et** aucun blocage mutu
 |---|---|
 | `/scd-sdd:status` | l'état complet, dérivé — socle, features, PR, chantiers, trace des gardes |
 | `/scd-sdd:signer` | décide si un commit doit être signé, prépare l'index et le message |
+| `/scd-sdd:review-setup` | `.claude/review.json` — skills et MCP pertinents pour la review d'implémentation |
 | `/scd-sdd:lookup` | une réponse sourcée en session, sans rien écrire |
 | `/scd-sdd:research` | compose un prompt Claude Research, puis classe le rapport revenu |
-| `/scd-sdd:linear` · `linear-setup` · `linear-review` | miroir Linear **poussé**, opt-in, strictement unidirectionnel |
+| `/scd-sdd:linear-setup` | `docs/linear.md` — l'opt-in du miroir Linear, une seule fois |
+| `/scd-sdd:linear` | miroir Linear **poussé**, opt-in, strictement unidirectionnel |
+| `/scd-sdd:linear-review` | pilotage du miroir Linear en session — Now/Next/Later, hygiène de backlog, rien n'est écrit |
 | `/scd-sdd:migrate` | archive l'arbre `1.x` dans `docs/1.x/`, répare ce qui le nomme, rend la séquence de réécriture |
 
 ---

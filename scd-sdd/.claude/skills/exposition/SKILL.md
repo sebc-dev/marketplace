@@ -6,7 +6,7 @@ description: |
   raconté en scène, la longueur réglée sur l'enjeu. DEUX RÉGIMES — options concurrentes
   (un sujet, plusieurs issues) et gate d'approbation (N items à trier) — qui changent
   l'usage de l'ordre, jamais la méthode. Se charge pendant /scd-sdd:init, adr,
-  init, spec, tickets, research, resume, guards et migrate, à
+  vision, spec, tickets, research, resume, guards et migrate, à
   l'étape qui restitue. Porte UNIQUEMENT l'exposition : les six règles de langage restent dans le
   ## Règles absolues de chaque commande (DECISIONS.md §D32) et tiennent sans lui ; le
   contenu de l'arbitrage appartient au skill de son niveau. Ne prescrit aucun gabarit : un plan-type en huit sections sur une

@@ -206,7 +206,11 @@ ensuite avec le workflow).
 
 10. **Rends le point de reprise** — une prochaine commande, et une seule. C'est `/scd-sdd:init` :
     le socle avant tout le reste, puisque `/scd-sdd:adr` promeut sous un `docs/ci.md` et un
-    `CLAUDE.md` à jour, et que `/scd-sdd:spec` lit le glossaire.
+    `CLAUDE.md` à jour, et que `/scd-sdd:spec` lit le glossaire. Si le projet portait un
+    `brief`/`prd`/`produit`, **signale l'option** — sans l'imposer — de reconstruire sa vision
+    produit avec `/scd-sdd:vision`, qui synthétise `docs/1.x/{brief,prd,produit}.md` comme matière
+    première : vision, `FR`/`SC` et epics reviennent alors au niveau produit, `docs/vision.md` étant
+    optionnel.
 
 ## Ce que tu NE fais PAS
 
@@ -262,7 +266,8 @@ ensuite avec le workflow).
 1. /scd-sdd:init — socle
 2. /scd-sdd:adr — promouvoir les [N] candidats
 3. /scd-sdd:guards
-4. par feature : [NNN-slug — /scd-sdd:spec seul | spec + tickets], source docs/1.x/specs/NNN-slug/
+4. (optionnel) /scd-sdd:vision — reconstruire la vision produit depuis docs/1.x/{brief,prd,produit}.md
+5. par feature : [NNN-slug — /scd-sdd:spec seul | spec + tickets], source docs/1.x/specs/NNN-slug/
 
 ### Ce que je n'ai pas pu reprendre
 [une ligne par trou, avec ce qu'il faudra écrire — ou « rien »]

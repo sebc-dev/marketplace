@@ -1,5 +1,5 @@
 ---
-description: "Où en est le projet, en une lecture : le socle (les trois artefacts et l'état des gardes), les features et leurs tickets, les PR ouvertes avec leur SÛRETÉ DE MERGE (OK, DANGEREUX, EMPILÉ EN ATTENTE, ORPHELIN), les chantiers ouverts, et le compte des tentatives bloquées par les gardes. Tout est DÉRIVÉ des fichiers et de la forge — aucun fichier d'état, aucun journal. Donne UNE prochaine commande. Lecture seule : n'écrit rien, et n'a aucun outil pour le faire."
+description: "Où en est le projet, en une lecture : le socle (les trois artefacts, la vision si elle existe, et l'état des gardes), les features et leurs tickets, les PR ouvertes avec leur SÛRETÉ DE MERGE (OK, DANGEREUX, EMPILÉ EN ATTENTE, ORPHELIN), les chantiers ouverts, et le compte des tentatives bloquées par les gardes. Tout est DÉRIVÉ des fichiers et de la forge — aucun fichier d'état, aucun journal. Donne UNE prochaine commande. Lecture seule : n'écrit rien, et n'a aucun outil pour le faire."
 argument-hint: "[NNN|slug — optionnel, sinon tout le projet]"
 allowed-tools:
   - Read
@@ -62,9 +62,11 @@ Ratio : 10% humain / 90% AI (lecture mécanique ; l'humain choisit la suite).
    Communique en français.
 
 2. **Le socle** — présence de `docs/adr/` *(et le compte d'ADR)*, `docs/ci.md`, `CLAUDE.md`. Puis
-   les **gardes** : `.claude/guards.json` existe-t-il, combien de chemins protège-t-il, et
-   `.claude/guard-log.jsonl` porte combien de lignes ? **Un socle incomplet se dit avant tout le
-   reste** : il change la valeur de tout ce qui suit.
+   `docs/vision.md`, **optionnel** *(présent, on le constate — et on peut compter ses epics — absent,
+   ce n'est pas un manque : aucune alarme, aucun renvoi)*. Puis les **gardes** :
+   `.claude/guards.json` existe-t-il, combien de chemins protège-t-il, et `.claude/guard-log.jsonl`
+   porte combien de lignes ? **Un socle incomplet se dit avant tout le reste** : il change la valeur
+   de tout ce qui suit.
 
 3. **Les features.** `specs/*/` ; pour chacune, l'état selon la table du skill `specs`, puis, si
    elle a des tickets : combien de faits, combien démarrables, lesquels bloqués et par quoi.
@@ -110,7 +112,7 @@ Ratio : 10% humain / 90% AI (lecture mécanique ; l'humain choisit la suite).
 # [Projet] — [date]
 
 ## Socle
-ADR        : [N] · docs/ci.md : [oui|MANQUANT] · CLAUDE.md : [oui|MANQUANT]
+ADR        : [N] · docs/ci.md : [oui|MANQUANT] · CLAUDE.md : [oui|MANQUANT] · docs/vision.md : [oui|absent] (optionnel)
 Gardes     : [N chemins protégés | ABSENTS] · trace : [N] tentatives [depuis date]
 
 ## Features

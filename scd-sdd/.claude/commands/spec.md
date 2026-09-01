@@ -6,6 +6,7 @@ allowed-tools:
   - Glob
   - Grep
   - Write
+  - Edit
   - AskUserQuestion
   - Bash(git log *)
 ---
@@ -31,9 +32,13 @@ Ratio : 30% humain / 70% AI (tu compiles et tu proposes ; l'humain relit et corr
   est une question de trop.
 - **Le document tient en ~40 lignes**, plafond 80. Il sera relu ; un document de 200 lignes ne l'est
   pas, et une spec non relue n'a aucune validation.
-- **Aucun critère normé.** Pas d'EARS, pas de `SHALL`, pas de `FR-xxx`. La notation existait pour un
-  agent vérificateur qui n'existe plus : sans lecteur, elle est une contrainte de rédaction que rien
-  ne récompense. Les critères **observables** vivent dans les tickets, en français.
+- **Aucun critère normé défini ici.** Pas d'EARS, pas de `SHALL`, aucun `FR-xxx` qui **naisse** dans
+  un `SPEC.md` — un renvoi vers un `FR` de `docs/vision.md` n'en définit pas un. La notation existait
+  pour un agent vérificateur qui n'existe plus : sans lecteur, elle est une contrainte de rédaction
+  que rien ne récompense. Les critères **observables** vivent dans les tickets, en français.
+- **Les `FR`/`SC` sont du niveau produit, pas de la feature.** S'ils existent, ils vivent dans
+  `docs/vision.md` ; le `SPEC.md` y **renvoie** — « décline FR-2 (export CSV) » — et ne les recopie
+  jamais : seul le niveau produit a un lecteur.
 - **Aucun marqueur d'ambiguïté.** Pas de `[NEEDS CLARIFICATION]` : il n'y a plus de gate pour les
   résoudre. Un flou se tranche **maintenant**, en conversation, ou s'écrit **au hors-périmètre**
   comme délibérément non tranché.
@@ -66,7 +71,9 @@ Ratio : 30% humain / 70% AI (tu compiles et tu proposes ; l'humain relit et corr
 
 2. **Vérifie le socle — mais ne bloque pas dessus.** `CLAUDE.md` et `docs/adr/` absents → signale-le
    et renvoie vers `/scd-sdd:init`, puis **demande si on continue quand même**. Une spec écrite sans
-   glossaire ni ADR est possible ; elle est juste moins bonne, et l'humain doit le savoir.
+   glossaire ni ADR est possible ; elle est juste moins bonne, et l'humain doit le savoir. Note aussi
+   si `docs/vision.md` existe : présent, il porte les `FR`/`SC` et les epics auxquels ancrer la
+   feature (étape 7). Absent, rien ne change.
 
 3. **Explore le dépôt** si tu ne l'as pas déjà fait dans cette conversation : ce qui existe déjà et
    que la feature touche, les modules concernés, les tests comparables. C'est ce qui remplace
@@ -85,10 +92,17 @@ Ratio : 30% humain / 70% AI (tu compiles et tu proposes ; l'humain relit et corr
    d'implémentation**, avec son *pourquoi*. Ce qui a été écarté va au **hors-périmètre**, avec son
    motif.
 
-7. **Dépose les décisions structurantes rencontrées** en brouillon dans `docs/adr/_candidates/`, et
+7. **Ancre la feature dans `docs/vision.md`, s'il existe.** Lis-le : quel(s) `FR`/`SC` cette feature
+   sert, sous quel epic elle tombe. Reporte ce renvoi dans les décisions d'implémentation du
+   `SPEC.md` (« décline FR-2 (export CSV) »), et **propose d'ajouter la ligne `NNN — titre` sous
+   l'epic choisi**
+   (un `Edit` ciblé, confirmé par l'humain). Absent → saute cette étape, sans bruit ; tu ne le crées
+   pas ici, c'est `/scd-sdd:vision`.
+
+8. **Dépose les décisions structurantes rencontrées** en brouillon dans `docs/adr/_candidates/`, et
    **nomme-les** dans le rapport. Tu ne les figes pas.
 
-8. **Rends la spec à relire.** C'est le premier des deux gestes de validation du niveau feature, et
+9. **Rends la spec à relire.** C'est le premier des deux gestes de validation du niveau feature, et
    il n'y en a pas de troisième : dis-le, plutôt que de laisser croire qu'une gate suivra.
 
 ## Ce que tu NE fais PAS
@@ -97,6 +111,8 @@ Ratio : 30% humain / 70% AI (tu compiles et tu proposes ; l'humain relit et corr
 - Tu **n'écris aucun ticket** — c'est `/scd-sdd:tickets`, et le découpage s'arbitre séparément.
 - Tu **n'écris aucun ADR** ni ne touches à `docs/adr/NNNN-*.md`.
 - Tu **ne touches à aucun document du socle** — `CLAUDE.md`, `docs/ci.md`, `.claude/guards.json`.
+  Seule exception, confirmée par l'humain : ajouter la ligne `NNN — titre` de la feature sous son
+  epic dans `docs/vision.md` (étape 7). Tu n'y écris **rien d'autre**, et tu ne le crées pas.
 - Tu **n'écris aucun code** et n'exécutes aucun test.
 - Tu **ne rends aucun verdict**. Il n'y a plus de gate, et prétendre en jouer une serait rétablir ce
   que la refonte a retiré.

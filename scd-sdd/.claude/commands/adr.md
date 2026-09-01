@@ -1,5 +1,5 @@
 ---
-description: "Fige une décision structurante en ADR — Architecture Decision Record : un fichier court et IMMUABLE une fois accepté, qui porte le pourquoi qu'on relira dans six mois. Écrit docs/adr/NNNN-titre.md au format Nygard (contexte · décision · conséquences · alternatives écartées). Deux sources de candidats : la conversation en cours, et les brouillons laissés dans docs/adr/_candidates/ par /scd-sdd:spec ou /scd-sdd:tickets — dont c'est la seule voie de promotion. Rejouable à tout moment du projet."
+description: "Fige une décision structurante en ADR — Architecture Decision Record : un fichier court et IMMUABLE une fois accepté, qui porte le pourquoi qu'on relira dans six mois. Écrit docs/adr/NNNN-titre.md au format Nygard (contexte · décision · conséquences · alternatives écartées). Trois sources de candidats : la conversation en cours, les brouillons de docs/adr/_candidates/ laissés par /scd-sdd:init, /scd-sdd:vision, /scd-sdd:spec, /scd-sdd:tickets ou /scd-sdd:migrate — dont c'est la seule voie de promotion —, et les préoccupations de domaine encore ouvertes de docs/vision.md (ARCH-/SEC-/UX-) si le fichier existe. Rejouable à tout moment du projet."
 argument-hint: "[la décision à figer — optionnel, sinon relève les candidats]"
 allowed-tools:
   - Read
@@ -58,10 +58,11 @@ rédiges).
 
 1. **Charge la référence `adr.md`** (voir `## Skill active`). Communique en français.
 
-2. **Relève les candidats, des deux sources.** L'argument s'il y en a un, ou la décision qui vient
-   d'être prise dans la conversation ; et `docs/adr/_candidates/*.md`. Si les deux sont vides, dis-le
-   et arrête-toi : il n'y a rien à figer, et fabriquer un ADR pour justifier la commande est le
-   défaut à éviter.
+2. **Relève les candidats, des trois sources.** L'argument s'il y en a un, ou la décision qui vient
+   d'être prise dans la conversation ; `docs/adr/_candidates/*.md` ; et, **si `docs/vision.md`
+   existe**, ses **préoccupations de domaine encore ouvertes** (`ARCH-*`/`SEC-*`/`UX-*` qu'aucun ADR
+   ne cite déjà). Si les trois sont vides, dis-le et arrête-toi : il n'y a rien à figer, et fabriquer
+   un ADR pour justifier la commande est le défaut à éviter.
 
 3. **Trie.** Pour chaque candidat, une question : *est-ce structurant ?* Ce qui ne l'est pas se
    dit et ne s'écrit pas — un utilitaire, une convention évidente, un choix réversible en une heure.
@@ -81,6 +82,9 @@ rédiges).
    **trace observable dans l'arborescence ou dans les imports** ? C'est le critère qui décide si
    `/scd-sdd:guards` pourra en dériver un contrôle — et « non, décision de principe » est la réponse
    la plus fréquente, pas un échec.
+   Si l'ADR tranche une préoccupation de `docs/vision.md`, **cite-la** dans le Contexte
+   (« Tranche `SEC-2` (chiffrement au repos) ») — lien descendant, best-effort, sauté sans bruit si
+   le fichier est absent.
 
 7. **Signale les gestes que tu ne peux pas faire** : les brouillons promus à supprimer, un ADR
    ancien à passer en « Remplacé par », et — si un ADR neuf est vérifiable — le renvoi vers

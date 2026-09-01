@@ -4,10 +4,12 @@ description: |
   Le SOCLE d'un projet — trois artefacts écrits une fois, et les GARDES qui les rendent
   autre chose que des conseils. `docs/adr/NNNN-*.md` (décisions structurantes, immuables),
   `docs/ci.md` (ce qui décide qu'une PR passe) et `CLAUDE.md` (conventions, commandes,
-  Definition of Done, glossaire de domaine). Porte la frontière advisory / déterministe et
+  Definition of Done, glossaire de domaine) ; et, OPTIONNEL, au-dessus des features,
+  `docs/vision.md` (vision produit, exigences FR/SC, préoccupations par domaine base des ADR, epics).
+  Porte la frontière advisory / déterministe et
   la façon dont le plugin la franchit : un texte que l'agent lit ne le contraint pas, donc
   la défense vient de l'extérieur de l'agent — hooks de session livrés par le plugin,
-  périmètre possédé par le projet. Se charge pendant /scd-sdd:init, adr, guards et signer.
+  périmètre possédé par le projet. Se charge pendant /scd-sdd:init, adr, vision, guards et signer.
   Porte UNIQUEMENT le socle — ni la spec d'une feature ni son découpage en tickets (skill
   specs), ni l'implémentation d'un ticket (skill implement), ni le travail hors cycle
   (skill chantier).
@@ -47,6 +49,22 @@ tient en une quinzaine de lignes et se paie **une fois**, dans un fichier de tou
 entier. Un fichier séparé serait un document de plus que personne ne relit : le mode de défaillance
 que §D29 nomme.
 
+## L'artefact optionnel : la vision produit (`docs/vision.md`)
+
+Les trois artefacts ci-dessus sont **obligatoires**, et se dérivent en partie du dépôt. La vision
+produit est d'une autre nature : **optionnelle** et **non dérivable** — elle porte l'intention
+produit qu'aucun fichier ne contient. Elle vit un cran **au-dessus de la feature** : le north star,
+les exigences `FR`, les critères de succès `SC`, les préoccupations par domaine qui **nourrissent
+les ADR**, et un découpage `epic → feature`. Un projet sans elle fonctionne à l'identique — `spec`,
+`tickets`, `run`, `status` n'en dépendent pas.
+
+Deux traits la distinguent du reste du socle. Elle est le **seul artefact qui peut interviewer** :
+au dépôt vide, il n'y a rien à compiler, et §D41 n'a retiré l'interview qu'au niveau feature. Et
+elle porte **l'intention, pas l'état** — sa liste de features peut devancer le disque, car l'état
+réel se dérive par `/scd-sdd:status` (§D1/§D18). La frontière qui la sauve : un domaine porte des
+**préoccupations**, la **décision** reste un ADR qui les cite — sinon on reconstruit le `archi.md`
+du `1.x` (310 lignes) que §D41 a dissous dans les ADR. Écrite et entretenue par `/scd-sdd:vision`.
+
 ## Un seul écrivain pour `CLAUDE.md`, et deux gestes qui s'excluent
 
 `/scd-sdd:init` **assemble** un contrat absent et **entretient** un contrat existant. Jamais les
@@ -64,7 +82,8 @@ inconnue est présumée légitime**.
 |---|---|---|
 | `references/guards.md` | les trois couches de gardes, `.claude/guards.json`, le job CI, le gabarit de `docs/ci.md`, les limites déclarées | `/scd-sdd:guards` (intégrale) · `/scd-sdd:init` (bloc `<ci-md>` seul) |
 | `references/claude-md.md` | le contrat : gabarit, doctrine, table de promotion, checklist d'entretien | `/scd-sdd:init` — **tout sauf `<revision>`** en assemblage, **`<guidance>` + `<revision>` seuls** en révision |
-| `references/adr.md` | le format Nygard, les deux sources de candidats, le critère `Vérifiable ?` | `/scd-sdd:adr` (intégrale) |
+| `references/adr.md` | le format Nygard, les trois sources de candidats, le critère `Vérifiable ?` | `/scd-sdd:adr` (intégrale) |
+| `references/vision.md` | le gabarit de `docs/vision.md`, les deux gestes (synthèse/révision · interview), la règle préoccupation ≠ décision | `/scd-sdd:vision` (intégrale) |
 | `references/signature.md` | la soupape de `verifier-guard` : registre de clés, vérification hors ligne, modèle de menace | `/scd-sdd:guards`, **étape 7 et conditionnelle** — seulement si le garde est retenu |
 
 ⚠️ **`/scd-sdd:signer` ne charge aucune référence**, et c'est délibéré (§D40, écarté n° 3) : ce dont
