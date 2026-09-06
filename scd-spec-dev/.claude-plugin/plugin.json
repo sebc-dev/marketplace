@@ -33,6 +33,7 @@
     "./.claude/agents/integrity-reviewer.md",
     "./.claude/agents/quality-analyzer.md",
     "./.claude/agents/quality-fixer.md",
+    "./.claude/agents/quality-advisor.md",
     "./.claude/agents/chantier-reader.md"
   ],
   "keywords": [

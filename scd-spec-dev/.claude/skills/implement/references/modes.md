@@ -41,7 +41,7 @@ de `verifier`.
 | — | **Green / Red / Validate** | test | l'impl prouve l'intégration, puis tests-après VERTS |
 | — | **Green** | observé · aucun | preuve d'intégration (observé) / spike (aucun) |
 | 7 | **Verify** | tdd · test · observé | ceinture (tdd/test) ou preuve observable/`humanCheckRequired` (observé) |
-| 7½ | **Quality** | tous si `.claude/quality.json` | `quality-analyzer` → `quality-fixer` (autofix sûr) → re-analyze ; `blocking` échoue, `advisory` → findings. No-op sans le fichier |
+| 7½ | **Quality** | tous si `.claude/quality.json` | `quality-analyzer` → `quality-fixer` (autofix sûr) → **échecs non-autofixables : `quality-advisor` (fan-out /check) → triage → `fix-applier` → re-analyze** ; `blocking` résiduel échoue, `advisory` → findings. No-op sans le fichier |
 | 8 | **Context** | tous | `review-context` : dossier résolu **une fois** pour les six reviewers de code |
 | 9 | **Review** | tous | **8 reviewers ∥** contexte frais : 6 code + change + integrity (skill `review`) |
 | 10 | **Triage** | tous | `review-validator` : reproduit, ne garde que correction/exigence ; au doute skip |
@@ -56,7 +56,7 @@ n'est jamais celui qui juge (`test-validator`, `verifier`, les 8 reviewers, `rev
 ## Statuts de blocage (ce que le run rend)
 
 `blocked-branch` · `blocked-rebase` · `blocked-brief` · `blocked-red` · `blocked-tests-modified` ·
-`blocked-impl` · `blocked-verify` · `blocked-quality` (+ `-config` / `-tests-touched`) ·
+`blocked-impl` · `blocked-verify` · `blocked-quality` (+ `-config` / `-tests-touched` / `-fix`) ·
 `blocked-record` · `blocked-branch-drift` · `blocked-after-fix`. Sur tout `blocked-*` : **aucune PR
 ouverte**, la branche du ticket existe déjà (travail non perdu), et une fiche de chantier consigne le
 fait (sinon il disparaît au `/clear` — rien sur le disque ne distingue un run bloqué d'un ticket

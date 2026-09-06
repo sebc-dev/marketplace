@@ -64,8 +64,11 @@ avec les specs vivantes — le seul reviewer au niveau artefact) · **integrity*
 chemins protégés). Producteur ≠ vérificateur : aucun reviewer n'a écrit le code.
 
 **La quality gate** (opt-in par check, advisory par défaut) : une gate *déterministe et outillée*
-(lint, typecheck, couverture, complexité) distincte de la review LLM. Sans `.claude/quality.json`,
-c'est un no-op — le 0-gate reste vrai par défaut.
+(lint, typecheck, couverture, complexité) distincte de la review LLM. `quality-fixer` résorbe
+l'autofix sûr ; ce qu'il ne peut pas corriger mécaniquement (complexité, duplication, lint sans
+`--fix`) est repris par `quality-advisor` — un conseiller par check en échec, en contexte frais, qui
+diagnostique et propose une correction adaptée, appliquée via le triage adversarial puis le
+`fix-applier`. Sans `.claude/quality.json`, c'est un no-op — le 0-gate reste vrai par défaut.
 
 ---
 
@@ -137,9 +140,9 @@ ambigu, ou tests qui contredisent l'énoncé.
 - **7 skills** — `openspec` (la fondation & la frontière), `implement` (le niveau implémentation),
   `review` (les huit dimensions), `strategie-verif` (le mode par ticket), `change-decomposer` (le
   pont change→tickets), `chantier` (le hors-cycle).
-- **25 agents** — le cœur du run (briefer, branch-setup, test-writer/validator, implementer,
+- **26 agents** — le cœur du run (briefer, branch-setup, test-writer/validator, implementer,
   verifier, review-context/validator, fix-applier, progress-recorder, pr-describer/author, rebaser,
-  relander), les **8 reviewers** en contexte frais, la quality gate (analyzer + fixer), le
+  relander), les **8 reviewers** en contexte frais, la quality gate (analyzer + fixer + advisor), le
   `chantier-reader`.
 - **2 workflows** — `implement-ticket.js` (15 phases, segment de vérif variable selon les 4 modes) et
   `implement-parallel.js` (chaînes indépendantes, un worktree par ticket).

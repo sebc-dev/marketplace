@@ -26,7 +26,13 @@ l'une des deux catégories :
 - **Correction** : un défaut réel — bug, vulnérabilité confirmée, invariant violé, erreur non gérée
   sur chemin critique, critère sans test en `tdd`/`test`.
 - **Exigence** : ce qu'un document du projet impose (ADR, `docs/architecture.md`, conventions
-  écrites, hors-périmètre).
+  écrites, hors-périmètre) — **y compris un check de qualité déclaré par le projet dans
+  `.claude/quality.json`** dont la sortie prouve l'échec (complexité, duplication, lint, seuil). Ce
+  n'est pas un goût : le projet a *déclaré* ce check, un check `blocking` est une exigence. Retiens la
+  correction proposée si elle est **bornée**, **sûre** (elle ne touche ni test, ni config, ni
+  `quality.json`, n'ajoute aucun escape-hatch) et **reste dans le périmètre du ticket** ; rejette-la
+  si elle **déborde** (refactor plus large que le ticket) ou n'est pas ancrée dans la sortie de
+  l'outil.
 
 ## Ce que tu rejettes (`skip`)
 

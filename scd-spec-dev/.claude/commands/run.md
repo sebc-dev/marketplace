@@ -198,9 +198,10 @@ retourné :
   l'impl n'a pas passé l'intégration) · **`blocked-verify`** (le `verifier` n'a pas obtenu la ceinture
   ou une preuve observable) · **`blocked-after-fix`** → explique le blocage et la reprise. **Aucune PR
   n'est ouverte pour un ticket bloqué** ; la branche dédiée existe déjà.
-- **`blocked-quality`** / **`blocked-quality-config`** / **`blocked-quality-tests-touched`** → la
-  quality gate a un check `blocking` en échec, un `.claude/quality.json` illisible, ou l'autofix a
-  touché un test. Explique quel check, et la reprise.
+- **`blocked-quality`** / **`blocked-quality-config`** / **`blocked-quality-tests-touched`** /
+  **`blocked-quality-fix`** → la quality gate a un check `blocking` résiduel en échec, un
+  `.claude/quality.json` illisible, l'autofix a touché un test, ou une correction adaptée
+  (`quality-advisor` → `fix-applier`) a cassé la re-vérif. Explique quel check, et la reprise.
 - **`blocked-record`** / **`blocked-branch-drift`** → `progress-recorder` s'est arrêté ou a commité sur
   une branche ≠ celle posée par `branch-setup` (filet déterministe) : **aucune PR ouverte**. Signale
   `expectedBranch`/`recordedBranch` ; c'est un bug d'agent à investiguer avant de relancer.

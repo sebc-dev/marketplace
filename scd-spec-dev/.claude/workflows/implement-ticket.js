@@ -12,7 +12,7 @@ export const meta = {
     { title: 'Validate', detail: 'test-validator : (tdd · test) 1 critère = 1 test, cas limites, anti-tautologie' },
     { title: 'Green', detail: 'implementer : (tdd · test) implémente jusqu\'au vert sans toucher aux tests ; (observé) prouve l\'intégration ; (aucun) spike' },
     { title: 'Verify', detail: 'verifier : (tdd · test) CEINTURE — rejeu sur checkout propre + git diff test vide ; (observé) preuve observable / humanCheckRequired' },
-    { title: 'Quality', detail: 'quality-analyzer → quality-fixer (autofix sûr) → re-analyze : blocking échoue le ticket, advisory → findings. No-op sans .claude/quality.json' },
+    { title: 'Quality', detail: 'quality-analyzer → quality-fixer (autofix sûr) → escalade des échecs non-autofixables : quality-advisor (fan-out /check) → triage → fix-applier → re-analyze. blocking résiduel échoue le ticket, advisory → findings. No-op sans .claude/quality.json' },
     { title: 'Context', detail: 'review-context : dossier de contexte (invariants docs/architecture.md, ADR, décisions/hors-périmètre) résolu UNE fois pour les six reviewers de code' },
     { title: 'Review', detail: 'HUIT reviewers en parallèle, contexte frais : architecture, sécurité, conventions, propreté, error-handling, couverture + change (niveau artefact) + integrity (escape-hatches/chemins protégés)' },
     { title: 'Triage', detail: 'review-validator : triage sceptique adversarial, au doute → skip' },
@@ -293,6 +293,24 @@ const QUALITY_FIX = {
     residual: { type: 'array', items: { type: 'object', properties: { checkId: { type: 'string' }, severity: { type: 'string' }, status: { type: 'string' }, reason: { type: 'string' } } } },
     testsUntouched: { type: 'boolean' },
     blockingResidual: { type: 'integer', description: '> 0 → le ticket doit échouer' },
+  },
+}
+
+// Avis d'un quality-advisor sur UN check en échec non-autofixable : diagnostic + proposition
+// (correction_prompt) si une édition de code bornée peut le résorber, sinon `applicable:false` + reason.
+const QUALITY_ADVICE = {
+  type: 'object',
+  required: ['checkId', 'applicable'],
+  properties: {
+    checkId: { type: 'string' },
+    applicable: { type: 'boolean', description: 'true ssi une correction de code bornée peut résorber le check ici' },
+    kind: { type: 'string', description: 'refactor | dedupe | lint | complexity | …' },
+    severity: { type: 'string', description: 'blocking | advisory (repris du check)' },
+    location: { type: 'string' },
+    diagnosis: { type: 'string' },
+    correction_prompt: { type: 'string', description: 'autonome, chirurgical — présent ssi applicable:true' },
+    reason: { type: 'string', description: 'pourquoi non applicable (ex. exige des tests neufs) — présent ssi applicable:false' },
+    evidence: { type: 'string' },
   },
 }
 
@@ -671,13 +689,108 @@ if (q1 && q1.gate === 'ok') {
       { agentType: 'scd-spec-dev:quality-analyzer', schema: QUALITY_ANALYSIS, model: 'sonnet' },
     ) || q1
   }
+
+  // Escalade des échecs NON-autofixables (complexité, duplication, lint sans --fix, seuil manqué).
+  // FAN-OUT DYNAMIQUE : un quality-advisor PAR check en échec (la liste vient de quality.json), en
+  // contexte frais, qui DIAGNOSTIQUE et PROPOSE un correction_prompt — ou déclare non applicable
+  // (couverture → tests neufs, chemins protégés, refactor hors périmètre). Producteur ≠ vérificateur :
+  // l'advisor propose (lecture seule), la proposition passe par le triage adversarial (review-validator)
+  // puis le fix-applier (Edit chirurgical, re-vérifie), puis on RE-ANALYSE la gate. Le no-Edit du
+  // quality-fixer reste vrai : c'est ici le fix-applier générique, sous triage, qui applique.
+  const adviceByCheck = new Map()
+  const nonAutofix = (residual.findings || []).filter((f) => f.status === 'fail' && !f.autofixable)
+  if (nonAutofix.length) {
+    phase('Quality')
+    const advices = (await parallel(nonAutofix.map((f) => () =>
+      agent(
+        `Conseiller de la quality gate : DIAGNOSTIQUE le check "${f.checkId}" en échec sur le ticket ${ticket} (contexte frais, tu n'as pas écrit ce code) ` +
+        `et PROPOSE une correction adaptée, ou déclare-le non applicable ici. Relis l'entrée \`${f.checkId}\` de \`.claude/quality.json\` (cmd, seuil, intention), ` +
+        `ancre-toi dans la sortie réelle et le diff (\`${gitPrefix} diff …\` sur ${JSON.stringify(implFiles)}). ` +
+        `Si une édition de CODE DE PRODUCTION bornée, dans le périmètre du ticket, peut faire repasser le check → applicable:true + un correction_prompt AUTONOME et CHIRURGICAL. ` +
+        `Sinon applicable:false + reason : couverture/seuil de tests → exige des tests neufs (le fix-applier ne touche JAMAIS les tests) ; ` +
+        `seule issue = toucher un test/une config/quality.json → interdit ; refactor plus large que le ticket → à porter ailleurs. JAMAIS un escape-hatch. Au doute → non applicable.\n` +
+        `Finding du quality-analyzer:\n${JSON.stringify(f)}\nBRIEF (files/verifMode/criteres/context):\n${briefJson}` + iso,
+        { agentType: 'scd-spec-dev:quality-advisor', schema: QUALITY_ADVICE, model: 'opus', phase: 'Quality', label: `quality:${f.checkId}` },
+      ).then((advice) => ({ finding: f, advice })),
+    ))).filter(Boolean)
+    for (const { finding, advice } of advices) if (advice) adviceByCheck.set(finding.checkId, advice)
+
+    // Propositions applicables → findings mis en forme pour le triage adversarial existant.
+    const qProposals = advices
+      .filter(({ advice }) => advice && advice.applicable && advice.correction_prompt)
+      .map(({ finding, advice }, i) => ({
+        id: `quality-${finding.checkId || ('C' + (i + 1))}`,
+        dimension: 'quality',
+        severity: finding.severity || advice.severity || 'advisory',
+        location: advice.location || (finding.locations && finding.locations[0]) || '',
+        summary: `${finding.checkId} : ${advice.diagnosis || 'check de qualité en échec'}`,
+        rationale: `Check déclaré par le projet dans .claude/quality.json, échec prouvé par la sortie de l'outil. ${advice.evidence || ''}`,
+        correction_prompt: advice.correction_prompt,
+      }))
+    log(`Quality gate : ${nonAutofix.length} échec(s) non-autofixable(s) · ${qProposals.length} proposition(s) de correction · ${nonAutofix.length - qProposals.length} laissé(s) en finding`)
+
+    if (qProposals.length) {
+      // Triage adversarial : review-validator sait qu'un check DÉCLARÉ qui échoue est une exigence
+      // (pas un goût), et rejette une proposition qui déborde du ticket ou n'est pas ancrée.
+      phase('Quality')
+      const qById = new Map(qProposals.map((f) => [f.id, f]))
+      const qt = await agent(
+        `Triage sceptique et adversarial de ces propositions de correction de qualité. Ce sont des ÉCHECS de checks DÉCLARÉS par le projet dans \`.claude/quality.json\` ` +
+        `(faits outillés, pas des goûts) : un check \`blocking\` est une exigence. Pour chacune : REPRODUIS l'échec (lis la ligne citée, rejoue au besoin) et garde-la (decision:"apply") ` +
+        `UNIQUEMENT si la correction est BORNÉE, SÛRE (ne touche ni test, ni config, ni quality.json, aucun escape-hatch) et RESTE DANS LE PÉRIMÈTRE du ticket. ` +
+        `REJETTE (decision:"skip") ce qui déborde (refactor plus large que le ticket), n'est pas ancré dans la sortie de l'outil, ou est douteux. Au doute → skip. Chaque "apply" porte un correction_prompt autonome.\n` +
+        `Propositions:\n${JSON.stringify(qProposals)}\nFichiers d'impl:\n${JSON.stringify(implFiles)}\nBRIEF:\n${briefJson}` + iso,
+        { agentType: 'scd-spec-dev:review-validator', schema: TRIAGE, model: 'opus' },
+      )
+      const retained = ((qt && qt.decisions) || [])
+        .filter((d) => d.decision === 'apply')
+        .map((d) => {
+          const src = qById.get(d.id) || {}
+          return { id: d.id, dimension: 'quality', location: src.location, correction_prompt: d.correction_prompt || src.correction_prompt }
+        })
+      log(`Quality gate — triage : ${retained.length} correction(s) retenue(s) · ${qProposals.length - retained.length} rejetée(s)`)
+
+      if (retained.length) {
+        phase('Quality')
+        const qapplied = await agent(
+          `Applique EXACTEMENT ces corrections de qualité (rien d'autre), chirurgicalement — chaque édition ne touche que ce que son correction_prompt décrit. ` +
+          `JAMAIS un fichier de test, JAMAIS une config d'outillage, JAMAIS un escape-hatch. Si un correction_prompt s'avère infondé une fois dans le code, rends-le notApplied avec le motif (ne force pas). ` +
+          `Puis RE-VÉRIFIE selon le mode : ` +
+          (usesTests
+            ? `modes tdd/test → ré-exécute \`${brief.testCommand}\` (0 failed) ET \`${gitPrefix} diff\` sur les fichiers de test ${JSON.stringify(testFiles)} VIDE.`
+            : `mode observé → rejoue la vérification observable pertinente, la preuve tient toujours.`) +
+          `\nCorrections retenues:\n${JSON.stringify(retained)}\nBRIEF (verifMode/testCommand):\n${JSON.stringify({ verifMode: mode, testCommand: brief.testCommand })}` + iso,
+          { agentType: 'scd-spec-dev:fix-applier', schema: APPLY, model: 'sonnet' },
+        )
+        const rv = qapplied && qapplied.reverify
+        const reverifyOk = usesTests
+          ? (rv && rv.failed === 0 && rv.testsDiffEmpty !== false)
+          : !!(rv || (qapplied && qapplied.applied))
+        if (!qapplied || !reverifyOk) {
+          return { ticket, changeDir, status: 'blocked-quality-fix', mode, quality: residual, qualityFix: qapplied, green, verify, worktreeDir: wtDir }
+        }
+        log(`Quality gate — corrections appliquées : ${(qapplied.applied || []).length} · non appliquées : ${(qapplied.notApplied || []).length}`)
+        // RE-ANALYSE après corrections : l'état résiduel final fait autorité pour la décision blocking.
+        residual = await agent(
+          `Quality gate — RE-ANALYSE après corrections adaptées. Relis \`.claude/quality.json\` et RE-JOUE chaque check sur l'état courant du diff ` +
+          `(fichiers d'impl : ${JSON.stringify(implFiles)}). Rends l'état résiduel réel (blockingFailures / advisoryFailures).\n` +
+          `BRIEF (files/verifMode/criteres):\n${briefJson}` + iso,
+          { agentType: 'scd-spec-dev:quality-analyzer', schema: QUALITY_ANALYSIS, model: 'sonnet' },
+        ) || residual
+      }
+    }
+  }
+
   const s = residual.summary || {}
   if ((s.blockingFailures || 0) > 0) {
     return { ticket, changeDir, status: 'blocked-quality', mode, quality: residual, worktreeDir: wtDir }
   }
-  // Les advisory résiduels ne passent PAS par le triage (ce sont des faits outillés, pas des opinions
-  // LLM à reproduire) : ils sont versés à la description de PR pour le reviewer humain.
-  qualityAdvisory = (residual.findings || []).filter((f) => f.status === 'fail')
+  // Les advisory résiduels ne passent PAS par le triage de code (ce sont des faits outillés) : ils
+  // vont à la description de PR, enrichis du diagnostic de l'advisor (pourquoi non auto-corrigés).
+  qualityAdvisory = (residual.findings || []).filter((f) => f.status === 'fail').map((f) => {
+    const a = adviceByCheck.get(f.checkId)
+    return a && !a.applicable && a.reason ? { ...f, advice: a.reason } : f
+  })
   log(`Quality gate : ${(s.passed || 0)}/${(s.checks || 0)} check(s) au vert · ${qualityAdvisory.length} advisory résiduel(s)`)
 } else {
   log(`Quality gate : ${q1 && q1.gate === 'skipped' ? 'no-op (pas de .claude/quality.json)' : 'indisponible'}`)
