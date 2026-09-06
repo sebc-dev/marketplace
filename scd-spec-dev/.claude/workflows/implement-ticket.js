@@ -1,10 +1,7 @@
 export const meta = {
   name: 'implement-ticket',
   description:
-    "Implémente UN ticket NN d'un change OpenSpec (changes/<x>/tickets/NN-slug.md) selon son mode de vérif " +
-    "(`tdd` par défaut du cycle, `test`, `observé`, `aucun`) : branche → rebase → BRIEF → segment de vérif variable → " +
-    "quality gate → review 8 dimensions en contexte frais → triage adversarial → apply → record → describe → PR. " +
-    "Un lancement = un ticket, une PR. On n'appelle JAMAIS /opsx:apply : run prend le relais sur les tickets.",
+    "Implémente UN ticket NN d'un change OpenSpec (changes/<x>/tickets/NN-slug.md) selon son mode de vérif (`tdd` par défaut du cycle, `test`, `observé`, `aucun`) : branche → rebase → BRIEF → segment de vérif variable → quality gate → review 8 dimensions en contexte frais → triage adversarial → apply → record → describe → PR. Un lancement = un ticket, une PR. On n'appelle JAMAIS /opsx:apply : run prend le relais sur les tickets.",
   whenToUse:
     "Depuis /scd-spec-dev:run, pour implémenter un ticket NN de changes/<x>/, une fois ses bloqueurs faits et l'arbre propre.",
   phases: [

@@ -1,9 +1,7 @@
 export const meta = {
   name: 'implement-parallel',
   description:
-    "Lance plusieurs tickets d'un change OpenSpec en parallèle RÉEL via des worktrees git isolés. Les tickets aux " +
-    "fichiers disjoints tournent concurremment ; ceux qui se recoupent (fichiers non disjoints ou dépendance) sont " +
-    "sérialisés en chaînes --base. Chaque ticket passe par le workflow implement-ticket (mode worktree). Une PR par ticket.",
+    "Lance plusieurs tickets d'un change OpenSpec en parallèle RÉEL via des worktrees git isolés. Les tickets aux fichiers disjoints tournent concurremment ; ceux qui se recoupent (fichiers non disjoints ou dépendance) sont sérialisés en chaînes --base. Chaque ticket passe par le workflow implement-ticket (mode worktree). Une PR par ticket.",
   whenToUse:
     "Depuis /scd-spec-dev:run-parallel, après résolution des tickets, de leurs bases et du plan de co-parallélisabilité (chaînes) par la commande.",
   phases: [
