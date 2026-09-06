@@ -66,9 +66,13 @@ chemins protégés). Producteur ≠ vérificateur : aucun reviewer n'a écrit le
 **La quality gate** (opt-in par check, advisory par défaut) : une gate *déterministe et outillée*
 (lint, typecheck, couverture, complexité) distincte de la review LLM. `quality-fixer` résorbe
 l'autofix sûr ; ce qu'il ne peut pas corriger mécaniquement (complexité, duplication, lint sans
-`--fix`) est repris par `quality-advisor` — un conseiller par check en échec, en contexte frais, qui
-diagnostique et propose une correction adaptée, appliquée via le triage adversarial puis le
-`fix-applier`. Sans `.claude/quality.json`, c'est un no-op — le 0-gate reste vrai par défaut.
+`--fix`) est repris **par un agent dédié à chaque partie de la gate** — co-créé avec l'humain via
+`/scd-spec-dev:quality-agents` (`.claude/agents/quality-<check>.md`, possédé par le projet, porteur
+des instructions « comment traiter cette partie »), ou le générique `quality-advisor` à défaut. En
+contexte frais, il remonte les points à traiter selon les instructions de sa partie ; la proposition
+est appliquée via le triage adversarial puis le `fix-applier` (les agents dédiés sont **lecture
+seule** — c'est le `fix-applier`, sous triage, qui applique). Sans `.claude/quality.json`, c'est un
+no-op — le 0-gate reste vrai par défaut.
 
 ---
 
@@ -125,6 +129,7 @@ ambigu, ou tests qui contredisent l'énoncé.
 |---|---|
 | `/scd-spec-dev:setup` | monte OpenSpec dans le projet, copie le schéma `scd`, `config.yaml`, gabarits durables, filet CI. Idempotente par artefact |
 | `/scd-spec-dev:quality-setup` | paramètre la quality gate → `.claude/quality.json` (possédé par le projet) |
+| `/scd-spec-dev:quality-agents` | co-crée avec l'humain un **agent dédié par check** (`.claude/agents/quality-<id>.md`) — comment traiter cette partie |
 | `/scd-spec-dev:tickets` | décompose un change en tickets verticaux (invoque `strategie-verif`, arbitre la granularité) |
 | `/scd-spec-dev:run` | implémente **un** ticket : vérif → quality gate → review 8 dims → triage → PR |
 | `/scd-spec-dev:run-parallel` | plusieurs tickets en parallèle réel, chacun dans son worktree |

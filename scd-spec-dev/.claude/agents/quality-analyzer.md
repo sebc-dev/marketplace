@@ -50,6 +50,11 @@ Pour **chaque** entrée de `checks[]` :
   défaut `advisory`). Tu ne la ré-arbitres pas.
 - Pour chaque finding en échec, noter s'il est **autofixable** : `true` si le check déclare une
   `autofix` non nulle, `false` sinon. C'est le signal que le `quality-fixer` consomme.
+- Pour chaque finding en échec, reporter l'**agent dédié** de son check : le champ `agent` de l'entrée
+  dans `quality.json` (posé par `/scd-spec-dev:quality-agents`) — **mais seulement si le fichier
+  existe réellement** : vérifie par un Glob `.claude/agents/quality-*.md` que `<agent>.md` est présent.
+  Si `quality.json` nomme un agent absent du disque (orphelin), reporte `agent: null` (le run
+  retombera sur le générique `quality-advisor`). Aucun champ `agent` dans le check → `agent: null`.
 - Ne remonte **que des faits reproductibles** issus de la sortie réelle. Pas de spéculation, pas de
   jugement de style (c'est la review).
 
@@ -68,6 +73,7 @@ Pour **chaque** entrée de `checks[]` :
       "threshold": "lines >= 80%",
       "locations": ["src/export/csv.ts"],
       "autofixable": false,
+      "agent": "quality-coverage",
       "evidence": "…extrait court de la sortie…"
     }
   ]

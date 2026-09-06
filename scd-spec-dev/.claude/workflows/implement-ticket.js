@@ -12,7 +12,7 @@ export const meta = {
     { title: 'Validate', detail: 'test-validator : (tdd · test) 1 critère = 1 test, cas limites, anti-tautologie' },
     { title: 'Green', detail: 'implementer : (tdd · test) implémente jusqu\'au vert sans toucher aux tests ; (observé) prouve l\'intégration ; (aucun) spike' },
     { title: 'Verify', detail: 'verifier : (tdd · test) CEINTURE — rejeu sur checkout propre + git diff test vide ; (observé) preuve observable / humanCheckRequired' },
-    { title: 'Quality', detail: 'quality-analyzer → quality-fixer (autofix sûr) → escalade des échecs non-autofixables : quality-advisor (fan-out /check) → triage → fix-applier → re-analyze. blocking résiduel échoue le ticket, advisory → findings. No-op sans .claude/quality.json' },
+    { title: 'Quality', detail: 'quality-analyzer → quality-fixer (autofix sûr) → escalade des échecs non-autofixables : chaque check routé vers SON agent dédié quality-<id> (co-écrit par /scd-spec-dev:quality-agents, sinon générique quality-advisor) → triage → fix-applier → re-analyze. blocking résiduel échoue le ticket, advisory → findings. No-op sans .claude/quality.json' },
     { title: 'Context', detail: 'review-context : dossier de contexte (invariants docs/architecture.md, ADR, décisions/hors-périmètre) résolu UNE fois pour les six reviewers de code' },
     { title: 'Review', detail: 'HUIT reviewers en parallèle, contexte frais : architecture, sécurité, conventions, propreté, error-handling, couverture + change (niveau artefact) + integrity (escape-hatches/chemins protégés)' },
     { title: 'Triage', detail: 'review-validator : triage sceptique adversarial, au doute → skip' },
@@ -278,6 +278,7 @@ const QUALITY_ANALYSIS = {
           threshold: { type: 'string' },
           locations: { type: 'array', items: { type: 'string' } },
           autofixable: { type: 'boolean' },
+          agent: { type: 'string', description: "agent dédié du check (quality-<id>) vérifié présent sur disque, ou null → générique quality-advisor" },
           evidence: { type: 'string' },
         },
       },
@@ -691,28 +692,35 @@ if (q1 && q1.gate === 'ok') {
   }
 
   // Escalade des échecs NON-autofixables (complexité, duplication, lint sans --fix, seuil manqué).
-  // FAN-OUT DYNAMIQUE : un quality-advisor PAR check en échec (la liste vient de quality.json), en
-  // contexte frais, qui DIAGNOSTIQUE et PROPOSE un correction_prompt — ou déclare non applicable
-  // (couverture → tests neufs, chemins protégés, refactor hors périmètre). Producteur ≠ vérificateur :
-  // l'advisor propose (lecture seule), la proposition passe par le triage adversarial (review-validator)
-  // puis le fix-applier (Edit chirurgical, re-vérifie), puis on RE-ANALYSE la gate. Le no-Edit du
-  // quality-fixer reste vrai : c'est ici le fix-applier générique, sous triage, qui applique.
+  // FAN-OUT DYNAMIQUE : un agent PAR check en échec (la liste vient de quality.json), en contexte
+  // frais, qui DIAGNOSTIQUE et REMONTE les points à traiter — un correction_prompt si une édition de
+  // code bornée résorbe le check, sinon applicable:false. Chaque check est routé vers SON agent DÉDIÉ
+  // (quality-<id>, co-écrit par /scd-spec-dev:quality-agents et POSSÉDÉ par le projet — il porte les
+  // instructions « comment traiter cette partie ») ; à défaut, le générique scd-spec-dev:quality-advisor.
+  // Le champ `agent` vient du quality-analyzer, qui a vérifié la présence du fichier sur disque (le
+  // script de workflow n'a pas d'accès disque). Producteur ≠ vérificateur : l'agent propose (lecture
+  // seule), la proposition passe par le triage (review-validator) puis le fix-applier (Edit chirurgical,
+  // re-vérifie), puis on RE-ANALYSE la gate. Le no-Edit reste vrai : c'est le fix-applier, sous triage.
   const adviceByCheck = new Map()
   const nonAutofix = (residual.findings || []).filter((f) => f.status === 'fail' && !f.autofixable)
   if (nonAutofix.length) {
     phase('Quality')
-    const advices = (await parallel(nonAutofix.map((f) => () =>
-      agent(
-        `Conseiller de la quality gate : DIAGNOSTIQUE le check "${f.checkId}" en échec sur le ticket ${ticket} (contexte frais, tu n'as pas écrit ce code) ` +
-        `et PROPOSE une correction adaptée, ou déclare-le non applicable ici. Relis l'entrée \`${f.checkId}\` de \`.claude/quality.json\` (cmd, seuil, intention), ` +
-        `ancre-toi dans la sortie réelle et le diff (\`${gitPrefix} diff …\` sur ${JSON.stringify(implFiles)}). ` +
+    const advices = (await parallel(nonAutofix.map((f) => () => {
+      const dedicated = f.agent && /^quality-[a-z0-9][a-z0-9-]*$/.test(f.agent) ? f.agent : null
+      return agent(
+        `Agent de la quality gate pour le check "${f.checkId}" en échec sur le ticket ${ticket} (contexte frais, tu n'as pas écrit ce code). ` +
+        (dedicated
+          ? `Suis LES INSTRUCTIONS de ta partie (ton propre rôle) pour analyser et remonter les points à traiter. `
+          : `DIAGNOSTIQUE et PROPOSE une correction adaptée, ou déclare-le non applicable ici. `) +
+        `Relis l'entrée \`${f.checkId}\` de \`.claude/quality.json\` (cmd, seuil, intention), ancre-toi dans la sortie réelle et le diff (\`${gitPrefix} diff …\` sur ${JSON.stringify(implFiles)}). ` +
         `Si une édition de CODE DE PRODUCTION bornée, dans le périmètre du ticket, peut faire repasser le check → applicable:true + un correction_prompt AUTONOME et CHIRURGICAL. ` +
         `Sinon applicable:false + reason : couverture/seuil de tests → exige des tests neufs (le fix-applier ne touche JAMAIS les tests) ; ` +
         `seule issue = toucher un test/une config/quality.json → interdit ; refactor plus large que le ticket → à porter ailleurs. JAMAIS un escape-hatch. Au doute → non applicable.\n` +
         `Finding du quality-analyzer:\n${JSON.stringify(f)}\nBRIEF (files/verifMode/criteres/context):\n${briefJson}` + iso,
-        { agentType: 'scd-spec-dev:quality-advisor', schema: QUALITY_ADVICE, model: 'opus', phase: 'Quality', label: `quality:${f.checkId}` },
-      ).then((advice) => ({ finding: f, advice })),
-    ))).filter(Boolean)
+        { agentType: dedicated || 'scd-spec-dev:quality-advisor', schema: QUALITY_ADVICE, model: 'opus', phase: 'Quality', label: `quality:${f.checkId}${dedicated ? '' : '*'}` },
+      ).then((advice) => ({ finding: f, advice }))
+    }))).filter(Boolean)
+    log(`Quality gate — escalade : ${nonAutofix.filter((f) => f.agent).length}/${nonAutofix.length} check(s) routé(s) vers un agent dédié (le reste → générique quality-advisor)`)
     for (const { finding, advice } of advices) if (advice) adviceByCheck.set(finding.checkId, advice)
 
     // Propositions applicables → findings mis en forme pour le triage adversarial existant.

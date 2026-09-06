@@ -41,7 +41,7 @@ de `verifier`.
 | — | **Green / Red / Validate** | test | l'impl prouve l'intégration, puis tests-après VERTS |
 | — | **Green** | observé · aucun | preuve d'intégration (observé) / spike (aucun) |
 | 7 | **Verify** | tdd · test · observé | ceinture (tdd/test) ou preuve observable/`humanCheckRequired` (observé) |
-| 7½ | **Quality** | tous si `.claude/quality.json` | `quality-analyzer` → `quality-fixer` (autofix sûr) → **échecs non-autofixables : `quality-advisor` (fan-out /check) → triage → `fix-applier` → re-analyze** ; `blocking` résiduel échoue, `advisory` → findings. No-op sans le fichier |
+| 7½ | **Quality** | tous si `.claude/quality.json` | `quality-analyzer` → `quality-fixer` (autofix sûr) → **échecs non-autofixables : chaque check → son agent dédié `quality-<id>` (co-écrit par `/scd-spec-dev:quality-agents`, sinon générique `quality-advisor`) → triage → `fix-applier` → re-analyze** ; `blocking` résiduel échoue, `advisory` → findings. No-op sans le fichier |
 | 8 | **Context** | tous | `review-context` : dossier résolu **une fois** pour les six reviewers de code |
 | 9 | **Review** | tous | **8 reviewers ∥** contexte frais : 6 code + change + integrity (skill `review`) |
 | 10 | **Triage** | tous | `review-validator` : reproduit, ne garde que correction/exigence ; au doute skip |

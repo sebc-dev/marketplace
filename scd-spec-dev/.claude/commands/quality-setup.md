@@ -81,6 +81,7 @@ check de qualité. C'est un opt-in.
 | `checks[].severity` | `blocking` (échoue le ticket) \| `advisory` (finding) — **défaut `advisory`** |
 | `checks[].autofix` | commande de correction **SÛRE et déterministe** (formatter, `--fix`, tri d'imports) ou `null`. Jamais une correction qui réécrit de la logique. |
 | `checks[].threshold` | optionnel, pour un check numérique : `{ metric, min }` ou `{ metric, max }` — le `quality-analyzer` parse la sortie de `cmd` |
+| `checks[].agent` | optionnel, **écrit par `/scd-spec-dev:quality-agents`** (pas par cette commande) : le nom de l'**agent dédié** de ce check (`quality-<id>`), qui au run remonte les points à traiter selon les instructions de sa partie. Absent → le run route vers le générique `quality-advisor`. |
 
 **Frontière de l'`autofix` (rappel du contrat)** : seul l'autofix **sûr** est automatisé — ce que le
 `quality-fixer` exécute puis re-vérifie. Un finding sans `autofix` (complexité, duplication, seuil de
@@ -138,8 +139,13 @@ Utiliser `AskUserQuestion` pour la sévérité (au moins) ; l'humain peut tout l
 
 - `.claude/quality.json` [posé | entretenu] : N check(s), dont M `blocking` ;
 - rappeler que la gate se joue en **phase 7½ de `/scd-spec-dev:run`** (`quality-analyzer` →
-  `quality-fixer` autofix sûr → re-analyze), et qu'elle est **no-op** si ce fichier est supprimé ;
-- prochaine action : ouvrir/continuer un change, puis `/scd-spec-dev:run <NN>` — la gate s'appliquera.
+  `quality-fixer` autofix sûr → escalade des échecs non-autofixables → re-analyze), et qu'elle est
+  **no-op** si ce fichier est supprimé ;
+- proposer **`/scd-spec-dev:quality-agents`** pour co-créer, une partie à la fois, un **agent dédié
+  par check** (comment traiter cette partie) ; à défaut, le générique `quality-advisor` traite tous
+  les checks non-autofixables ;
+- prochaine action : `/scd-spec-dev:quality-agents` (optionnel), puis ouvrir/continuer un change et
+  `/scd-spec-dev:run <NN>` — la gate s'appliquera.
 
 > **Note de propriété.** `.claude/quality.json` est au projet. Les agents de la gate le **lisent** ;
 > le `quality-fixer` ne le modifie jamais (il n'a d'ailleurs pas d'outil `Edit`). Ce fichier
