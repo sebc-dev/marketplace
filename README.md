@@ -152,3 +152,22 @@ Practices*, and model knowledge where those three are silent. Every claim carrie
 `[MS]`/`[CANONICAL]`/`[APOLLO]`/`[MODEL]` — and undocumented areas are named rather than filled by
 inference.
 
+### [scd-spec-dev](./scd-spec-dev/) `v0.1.0`
+
+Spec-driven cycle built **on OpenSpec**, from change to PR — and the implementation layer OpenSpec
+lacks. OpenSpec carries the doc→tickets layer (living specs in `openspec/specs/`, an
+ADDED/MODIFIED/REMOVED **delta** model merged at archive time, a deterministic CLI, and durable
+context injected via `config.yaml`); this plugin adds what OpenSpec has none of — a per-ticket
+`/scd-spec-dev:run` that plays a dynamic subagent workflow, one PR per ticket. The verification mode
+of each ticket is decided once by `strategie-verif`, on the **verifiable-oracle** discriminant, into
+four modes (`tdd` · `test` · `observé` · `aucun`). All the rigour sits in the **relevance review** —
+eight dimensions in fresh context (architecture, security, conventions, cleanliness, error-handling,
+coverage, plus **change** at the artifact level and **integrity** for escape-hatches) — and in the
+producer ≠ verifier structure, not in session guards: **zero gate, zero session hook**, one automatic
+net (a CI grep, out of the dev loop). `/scd-spec-dev:setup` mounts OpenSpec and copies the `scd`
+schema into the target project — the plugin carries the recipe, the project carries the instance.
+`/opsx:apply` is never called; `run` takes over on the tickets. 11 slash commands.
+
+⚠️ Written and mechanically verified, **never played end to end**. The open question is the whole
+design: do review + verify hold the rigour **without a write-time hook**?
+

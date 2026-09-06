@@ -14,6 +14,7 @@ scd-flutter/                       # Dart 3.x + Flutter 3.44+ (7 disjoint skills
 scd-sdd/                           # Unified spec-driven cycle (foundation → specs → impl)
 scd-atlas/                         # Techno-plugin authoring by Research campaigns
 scd-rust/                          # Idiomatic, sound Rust (edition 2024) in 7 disjoint skills
+scd-spec-dev/                      # Spec-driven cycle built on OpenSpec, change → PR
 ```
 
 ## Conventions
@@ -54,4 +55,5 @@ Each plugin is a root-level directory containing:
 /plugin install scd-svelte@sebc-dev-marketplace
 /plugin install scd-sdd@sebc-dev-marketplace
 /plugin install scd-atlas@sebc-dev-marketplace
+/plugin install scd-spec-dev@sebc-dev-marketplace
 ```
