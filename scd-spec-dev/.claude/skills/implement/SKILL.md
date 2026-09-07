@@ -75,6 +75,11 @@ complète et le cycle par ticket ; l'essentiel :
 contexte frais, **rejoue les tests sur un checkout propre** et exige un `git diff` **vide** sur les
 fichiers de test. C'est là qu'un test neutralisé devient visible — le rattrapage réel du reward
 hacking, à la place du hook write-time qu'on assume ne pas avoir (cf. skill `review`, doctrine).
+**Self-correction bornée (§14 c)** : quand la ceinture est **propre** mais qu'un critère reste
+**inobservable** par la stratégie test (le test ne fait pas naître le comportement), le workflow
+retente **une** fois ce critère en observé (preuve montée ou `humanCheckRequired`) avant de rendre
+`blocked-verify` — le blocage de fin de run devient résolu-en-vol ou escaladé bon marché, la barre de
+sortie inchangée. Une ceinture **violée** (test modifié, `failed ≠ 0`) n'est **jamais** self-corrigée.
 
 **Le lien critère → test** (`tdd`/`test`) : un critère = **un test nommé** `SC-<NN><lettre>`, un pour
 un → matrice `critère → test → statut` dans la PR ; le `coverage-reviewer` bloque tout critère

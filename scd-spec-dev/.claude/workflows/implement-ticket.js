@@ -8,11 +8,12 @@ export const meta = {
     { title: 'Branch', detail: 'branch-setup : crée impl/<slug>-NN depuis la base à jour (arbre propre exigé en séquentiel ; en worktree → git worktree add dédié, arbre principal libre)' },
     { title: 'Rebase', detail: 'rebaser : (préventif, idempotent) repose la branche sur la base à jour ; no-op sur une branche fraîche' },
     { title: 'Prepare', detail: 'ticket-briefer : lit le fichier ticket SANS hypothèse OpenSpec, produit le BRIEF (critères SC-<NN><lettre>, verifMode, files, REVIEW_CONTEXT)' },
+    { title: 'Preflight', detail: 'escalation-triage (§14) : un verdict par critère AVANT toute écriture — repair (id manquant → id suivant ; ou mode-mismatch : strategie-verif ré-invoqué en assertion active (b) route le critère vers un autre mode → consigné, jamais une réécriture du mode du ticket), proceed (ceinture + review arbitrent), escalate (deux lectures produit → blocked-arbitrage, code jamais écrit sur une mauvaise interprétation). Ne décide jamais le sens de la spec' },
     { title: 'Red', detail: 'test-writer : (tdd) 1 test nommé par critère AVANT le code, état ROUGE ; (test) tests écrits juste APRÈS Green, état VERT' },
     { title: 'Validate', detail: 'test-validator : (tdd · test) 1 critère = 1 test, cas limites, anti-tautologie' },
     { title: 'Green', detail: 'implementer : (tdd · test) implémente jusqu\'au vert sans toucher aux tests ; (observé) prouve l\'intégration ; (aucun) spike' },
-    { title: 'Verify', detail: 'verifier : (tdd · test) CEINTURE — rejeu sur checkout propre + git diff test vide ; (observé) preuve observable / humanCheckRequired' },
-    { title: 'Quality', detail: 'quality-analyzer → quality-fixer (autofix sûr) → escalade des échecs non-autofixables : chaque check routé vers SON agent dédié quality-<id> (co-écrit par /scd-spec-dev:quality-agents, sinon générique quality-advisor) → triage → fix-applier → re-analyze. blocking résiduel échoue le ticket, advisory → findings. No-op sans .claude/quality.json' },
+    { title: 'Verify', detail: 'verifier : (tdd · test) CEINTURE — rejeu sur checkout propre + git diff test vide ; (observé) preuve observable / humanCheckRequired. §14 (c) : une passe de self-correction BORNÉE (une seule) si la ceinture est propre mais un critère reste inobservable par la stratégie test → tentée en observé (preuve montée ou humanCheckRequired) ; une ceinture violée n\'est JAMAIS self-corrigée' },
+    { title: 'Quality', detail: 'quality-analyzer → quality-fixer (autofix sûr) → escalade des échecs non-autofixables : chaque check routé vers SON agent dédié quality-<id> (co-écrit par /scd-spec-dev:quality-agents, sinon générique quality-advisor) → triage → applier → re-analyze. L\'applier est le fix-applier générique (jamais les tests) ou, si quality.json déclare un applier DE PROJET, celui-ci — seul autorisé à renforcer les tests, ses éditions auditées en contexte frais par test-edit-validator (additivité rejouée + tests ajoutés jugés). blocking résiduel échoue le ticket, advisory → findings. No-op sans .claude/quality.json' },
     { title: 'Context', detail: 'review-context : dossier de contexte (invariants docs/architecture.md, ADR, décisions/hors-périmètre) résolu UNE fois pour les six reviewers de code' },
     { title: 'Review', detail: 'HUIT reviewers en parallèle, contexte frais : architecture, sécurité, conventions, propreté, error-handling, couverture + change (niveau artefact) + integrity (escape-hatches/chemins protégés)' },
     { title: 'Triage', detail: 'review-validator : triage sceptique adversarial, au doute → skip' },
@@ -98,6 +99,58 @@ const BRIEF = {
       },
     },
     gaps: { type: 'array', items: { type: 'string' }, description: 'Ce que le ticket a forcé à deviner ou qui manque (id absent, Vérif illégale, Ce que ça livre vide)' },
+  },
+}
+
+// Triage d'escalade §14, en pré-flight (AVANT toute écriture). Un verdict par critère.
+// escalations non vide → le run s'arrête en blocked-arbitrage sans écrire de code.
+const TRIAGE = {
+  type: 'object',
+  required: ['triage'],
+  properties: {
+    triage: {
+      type: 'array',
+      items: {
+        type: 'object',
+        required: ['id', 'verdict'],
+        properties: {
+          id: { type: 'string', description: 'id du critère (SC-<NN><lettre>)' },
+          verdict: { type: 'string', description: 'repair | proceed | escalate' },
+          kind: { type: 'string', description: 'id-missing | ambiguous-oracle | none | …' },
+          reason: { type: 'string' },
+          modeAssertion: {
+            type: 'object',
+            description: 'Assertion ACTIVE (§14 b) : strategie-verif ré-invoqué par critère. holds=true → le verifMode figé tient. holds=false → mode ré-dérivé différent, PORTÉ EN repair kind:mode-mismatch (consigné, jamais un changement silencieux ni une réécriture du mode du ticket)',
+            properties: { holds: { type: 'boolean' }, reDerivedMode: { type: 'string', description: 'holds=false : le mode que strategie-verif rend pour ce critère (tdd|test|observé|aucun)' }, note: { type: 'string' } },
+          },
+          repair: {
+            type: 'object',
+            description: 'verdict=repair : la correction mécanique appliquée (ex. id manquant → id suivant)',
+            properties: { field: { type: 'string' }, from: {}, to: {}, verifiable: { type: 'string' } },
+          },
+          arbitrage: {
+            type: 'object',
+            description: 'verdict=escalate : l\'arbitrage façonné en décision',
+            properties: {
+              question: { type: 'string' },
+              readings: { type: 'array', items: { type: 'string' } },
+              options: {
+                type: 'array',
+                items: { type: 'object', properties: { label: { type: 'string' }, consequence: { type: 'string' }, runWillDo: { type: 'string' } } },
+              },
+            },
+          },
+        },
+      },
+    },
+    repairedCriteres: {
+      type: 'array',
+      description: 'Le tableau criteres COMPLET du BRIEF, réparations mécaniques appliquées (adopté tel quel par le workflow)',
+      items: { type: 'object', properties: { id: { type: 'string' }, text: { type: 'string' }, done: { type: 'boolean' } } },
+    },
+    escalations: { type: 'array', description: 'Sous-ensemble triage verdict=escalate ; NON VIDE → blocked-arbitrage', items: { type: 'object' } },
+    repairs: { type: 'array', description: 'Sous-ensemble triage verdict=repair', items: { type: 'object' } },
+    summary: { type: 'string' },
   },
 }
 
@@ -262,6 +315,7 @@ const QUALITY_ANALYSIS = {
   properties: {
     gate: { type: 'string', description: 'ok | skipped | error' },
     reason: { type: 'string' },
+    applier: { type: 'string', description: "applier du projet (quality-<slug>) déclaré en top-level `applier` de quality.json et vérifié présent sur disque, ou null → générique fix-applier" },
     summary: {
       type: 'object',
       properties: { checks: { type: 'integer' }, passed: { type: 'integer' }, blockingFailures: { type: 'integer' }, advisoryFailures: { type: 'integer' } },
@@ -323,8 +377,39 @@ const APPLY = {
     notApplied: { type: 'array', items: { type: 'object', properties: { id: { type: 'string' }, reason: { type: 'string' } } } },
     reverify: {
       type: 'object',
-      properties: { mode: { type: 'string' }, failed: { type: 'integer' }, testsDiffEmpty: { type: 'boolean' }, evidence: { type: 'string' } },
+      properties: {
+        mode: { type: 'string' },
+        failed: { type: 'integer' },
+        testsDiffEmpty: { type: 'boolean' },
+        // Renseigné par un applier de PROJET autorisé à renforcer les tests : le diff de test
+        // n'a RETIRÉ ni assertion ni cas, et n'a ajouté aucun neutralisant (.skip(/.only(…).
+        // Seul un `true` prouvé remplace l'exigence de diff de test VIDE (voir reverifyOk).
+        testsDiffAdditiveOnly: { type: 'boolean' },
+        evidence: { type: 'string' },
+      },
     },
+  },
+}
+
+// Audit, en contexte frais, des éditions de test faites par un applier DE PROJET. Le verdict fait
+// foi : il prime sur le `testsDiffAdditiveOnly` que l'applier a rendu sur son propre travail.
+const TEST_EDIT_AUDIT = {
+  type: 'object',
+  required: ['verdict'],
+  properties: {
+    verdict: { type: 'string', description: 'ok | violation' },
+    additive: { type: 'boolean', description: 'contrôles rejoués par le validateur, pas repris de l\'applier' },
+    removedAssertions: { type: 'array', items: { type: 'string' } },
+    addedNeutralizers: { type: 'array', items: { type: 'string' } },
+    addedTests: {
+      type: 'array',
+      items: { type: 'object', properties: { file: { type: 'string' }, test: { type: 'string' }, checkId: { type: 'string' }, judgment: { type: 'string' } } },
+    },
+    weakTests: {
+      type: 'array',
+      items: { type: 'object', properties: { file: { type: 'string' }, test: { type: 'string' }, why: { type: 'string' } } },
+    },
+    evidence: { type: 'string' },
   },
 }
 
@@ -481,6 +566,36 @@ const usesTests = (mode === 'tdd' || mode === 'test')
 log(`Ticket ${ticket} : ${brief.criteres.length} critère · ${brief.files.length} fichier(s) · mode ${mode}${brief.testCommand ? ` · test: ${brief.testCommand}` : ''}${(brief.gaps && brief.gaps.length) ? ` · ⚠ ${brief.gaps.length} gap(s)` : ''}`)
 
 // -------------------------------------------------------------------------
+// Preflight — TRIAGE D'ESCALADE §14, par critère, AVANT toute écriture de code.
+//   escalate (oracle ambigu) → blocked-arbitrage, rien n'est écrit sur une mauvaise interprétation ;
+//   repair (mécanique : id manquant, OU mode-mismatch — assertion active (b) : strategie-verif
+//     ré-invoqué par critère, un mode ré-dérivé ≠ figé sans étape 0 est consigné, jamais une
+//     réécriture du mode du ticket) → appliqué/consigné au BRIEF en vol, visible au corps de PR ;
+//   proceed → la ceinture verify-time + la review 8 dimensions restent l'arbitre (barre inchangée).
+// -------------------------------------------------------------------------
+phase('Preflight')
+const triage = await agent(
+  `Triage d'escalade §14 du ticket ${ticket}, en PRÉ-FLIGHT — aucun code n'est encore écrit. Pour CHAQUE critère du BRIEF, ` +
+  `applique le test opérationnel : existe-t-il une réponse vérifiablement juste, atteignable SANS choisir entre deux lectures produit plausibles ? ` +
+  `Trois verdicts — \`repair\` (anomalie mécanique dont la bonne réponse est vérifiable : id manquant/dupliqué → id stable suivant de la série SC-<NN><lettre> ; ou mode figé « ${mode} » contredit par la nature du critère → kind:mode-mismatch ; réparé/consigné en vol, ne bloque pas), ` +
+  `\`proceed\` (rien d'anormal → la ceinture verify-time et la review 8 dimensions restent l'arbitre unique), ` +
+  `\`escalate\` (deux lectures produit menant à des codes différents, rien ne tranche → le SEUL motif d'arrêt-pour-décision ; façonne l'arbitrage en décision : question + 2-3 lectures avec le code de chacune + ce que le run fera de la réponse). ` +
+  `Assertion de mode ACTIVE (§14 b) : ré-invoque le skill \`strategie-verif\` (outil Skill) par critère et applique son arbre à la nature du critère SEUL — son étape 0 (oracle ambigu) EST le discriminant d'escalate ; un mode rendu ≠ « ${mode} » sans porte d'étape 0 est un \`repair\` kind:mode-mismatch (renseigne modeAssertion.reDerivedMode, consigné, le critère poursuit — le verifier remontera humanCheckRequired si besoin). ` +
+  `Tu ne décides JAMAIS le sens de la spec, tu ne changes JAMAIS le mode DU TICKET (« ${mode} » reste figé — tu assertes par critère, tu ne réécris pas la décision de décomposition). ` +
+  `Retourne \`repairedCriteres\` (le tableau criteres COMPLET, ids réparés) et \`escalations\` (le sous-ensemble escalate, vide dans le cas nominal).\nBRIEF:\n${JSON.stringify(brief)}` + iso,
+  { agentType: 'scd-spec-dev:escalation-triage', schema: TRIAGE, model: 'opus' },
+)
+if (triage && Array.isArray(triage.escalations) && triage.escalations.length) {
+  // Ambiguïté d'oracle : on s'arrête AVANT d'écrire. La branche existe (posée en amont), aucun code n'y est.
+  return { ticket, changeDir, status: 'blocked-arbitrage', mode, arbitrage: triage.escalations, triage, brief, worktreeDir: wtDir }
+}
+if (triage && Array.isArray(triage.repairedCriteres) && triage.repairedCriteres.length) {
+  brief.criteres = triage.repairedCriteres // réparations mécaniques adoptées avant de sérialiser le BRIEF pour l'aval
+}
+const preflightRepairs = (triage && Array.isArray(triage.repairs)) ? triage.repairs : []
+if (preflightRepairs.length) log(`Preflight : ${preflightRepairs.length} réparation(s) mécanique(s) appliquée(s) au BRIEF (visible au corps de PR)`)
+
+// -------------------------------------------------------------------------
 // Segment de vérification — VARIABLE selon brief.verifMode.
 //   tdd    : Red(rouge) → Validate → Green(0 failed, tests intacts) → Verify(ceinture).
 //   test   : Green(intégration) → Red(tests APRÈS, vert) → Validate → Verify(ceinture, rejeu).
@@ -628,7 +743,42 @@ if (usesTests) {
     `Fichiers d'impl : ${JSON.stringify(implFiles)}\nBRIEF:\n${briefJson}` + iso,
     { agentType: 'scd-spec-dev:verifier', schema: VERIFY, model: 'opus' },
   )
-  if (!verify || !verify.allVerified || (verify.beltPassed && (verify.beltPassed.failed !== 0 || verify.beltPassed.testsDiffEmpty === false))) {
+  // §14 (c) — SELF-CORRECTION BORNÉE (UNE seule passe), et SEULEMENT si la ceinture est PROPRE.
+  //   Une ceinture violée (failed≠0 ou git diff test non vide) est un signal de neutralisation :
+  //   JAMAIS maquillée, elle bloque tel quel. Le cas rattrapé est le critère INOBSERVABLE par la
+  //   stratégie « test/tdd » (colibri : composant jamais monté, test qui grepe le source) alors que
+  //   la ceinture est propre → on tente UNE fois la stratégie suivante, en mode observé (strategie-verif
+  //   étape 3 : niveau test inatteignable → observé) : preuve observable montée, ou humanCheckRequired.
+  //   Résout-en-vol ou escalade bon marché le blocked-verify de fin de run, sans toucher à la barre de sortie.
+  const beltViolated = (v) => !!(v && v.beltPassed && (v.beltPassed.failed !== 0 || v.beltPassed.testsDiffEmpty === false))
+  if (verify && !verify.allVerified && !beltViolated(verify)) {
+    const unproven = (verify.criteria || []).filter((c) => c && !c.verified && !c.humanCheckRequired)
+    if (unproven.length) {
+      phase('Verify')
+      const sc = await agent(
+        `SELF-CORRECTION BORNÉE §14 (c) du ticket ${ticket} — UNE seule passe, AUCUNE boucle. La ceinture est PROPRE ` +
+        `(0 failed, git diff test VIDE) mais ${unproven.length} critère(s) ne sont pas prouvés par la stratégie « ${mode} » : ` +
+        `${unproven.map((c) => c.id).join(', ')}. Pour CHACUN, tente la stratégie SUIVANTE en mode OBSERVÉ — obtiens une ` +
+        `PREUVE OBSERVABLE (monte le composant / ré-exécute le critère et capture la sortie réelle), ou déclare un ` +
+        `\`humanCheckRequired\` avec l'instruction exacte pour l'humain. Tu ne touches à AUCUN fichier de test (la ceinture ` +
+        `est l'acquis, elle ne se rejoue pas), tu ne corriges pas le code, tu ne re-décides pas le mode du ticket. ` +
+        `Ne coche JAMAIS un critère non réellement observé. Retourne le VERIFY des SEULS critères ci-dessus ` +
+        `(chacun verified+evidence OU humanCheckRequired).\nFichiers d'impl : ${JSON.stringify(implFiles)}\n` +
+        `BRIEF:\n${briefJson}\nCritères à rattraper:\n${JSON.stringify(unproven)}` + iso,
+        { agentType: 'scd-spec-dev:verifier', schema: VERIFY, model: 'opus' },
+      )
+      if (sc && Array.isArray(sc.criteria)) {
+        const byId = new Map((verify.criteria || []).map((c) => [c.id, c]))
+        let resolved = 0
+        for (const c of sc.criteria) if (c && c.id && (c.verified || c.humanCheckRequired)) { byId.set(c.id, c); resolved++ }
+        verify.criteria = Array.from(byId.values())
+        verify.allVerified = !verify.criteria.some((c) => c && !c.verified && !c.humanCheckRequired)
+        verify.selfCorrected = { attempted: unproven.map((c) => c.id), resolved }
+        log(`Self-correction §14 (c) : ${resolved}/${unproven.length} critère(s) rattrapé(s) — preuve observée ou humanCheckRequired${verify.allVerified ? '' : ' · reste non prouvé → blocked-verify'}`)
+      }
+    }
+  }
+  if (!verify || !verify.allVerified || beltViolated(verify)) {
     return { ticket, changeDir, status: 'blocked-verify', mode, verify, green, tests, worktreeDir: wtDir }
   }
 } else if (mode === 'observé') {
@@ -661,6 +811,7 @@ const q1 = await agent(
   `ABSENT/illisible → la gate est un NO-OP : retourne { "gate": "skipped", "findings": [] } sans jouer aucun check, n'invente rien. ` +
   `Présent → joue chaque check sur le diff (fichiers d'impl : ${JSON.stringify(implFiles)}), capture la sortie réelle, évalue les seuils, ` +
   `classe pass/fail et blocking/advisory (sévérité du check, jamais ré-arbitrée), localise, note \`autofixable\` (autofix non nulle).\n` +
+  `Reporte aussi l'\`applier\` du projet : le champ top-level \`applier\` de quality.json, mais SEULEMENT si \`.claude/agents/<applier>.md\` existe vraiment (Glob) ; sinon null.\n` +
   `BRIEF (files/verifMode/criteres):\n${briefJson}` + iso,
   { agentType: 'scd-spec-dev:quality-analyzer', schema: QUALITY_ANALYSIS, model: 'sonnet' },
 )
@@ -669,6 +820,15 @@ if (q1 && q1.gate === 'error') {
 }
 if (q1 && q1.gate === 'ok') {
   let residual = q1
+  // APPLIER DE PROJET (optionnel). Le projet peut déclarer, en top-level `applier` de quality.json,
+  // un applier À LUI — autorisé à RENFORCER les tests là où le fix-applier générique ne les touche
+  // jamais. Motif : certains défauts ne sont réparables QUE dans les tests (un mutant qui survit
+  // faute d'assertion), et les laisser ouverts vide la gate de son sens. Le droit est borné par
+  // l'ADDITIVITÉ (aucune assertion ni aucun cas retiré, aucun neutralisant ajouté), que l'applier
+  // prouve et rend dans `testsDiffAdditiveOnly` — sans quoi l'exigence de diff de test VIDE tient.
+  // Le quality-analyzer l'a vérifié présent sur disque (le script n'a pas d'accès fichier).
+  const qApplier = q1 && typeof q1.applier === 'string' && /^quality-[a-z0-9][a-z0-9-]*$/.test(q1.applier) ? q1.applier : null
+  if (qApplier) log(`Quality gate — applier de projet déclaré : ${qApplier} (autorisé à renforcer les tests, additivité exigée)`)
   const fixable = (q1.findings || []).filter((f) => f.status === 'fail' && f.autofixable)
   if (fixable.length) {
     const qf = await agent(
@@ -745,7 +905,11 @@ if (q1 && q1.gate === 'ok') {
       const qt = await agent(
         `Triage sceptique et adversarial de ces propositions de correction de qualité. Ce sont des ÉCHECS de checks DÉCLARÉS par le projet dans \`.claude/quality.json\` ` +
         `(faits outillés, pas des goûts) : un check \`blocking\` est une exigence. Pour chacune : REPRODUIS l'échec (lis la ligne citée, rejoue au besoin) et garde-la (decision:"apply") ` +
-        `UNIQUEMENT si la correction est BORNÉE, SÛRE (ne touche ni test, ni config, ni quality.json, aucun escape-hatch) et RESTE DANS LE PÉRIMÈTRE du ticket. ` +
+        (qApplier
+          ? `UNIQUEMENT si la correction est BORNÉE, SÛRE (ne touche ni config d'outillage, ni quality.json, aucun escape-hatch) et RESTE DANS LE PÉRIMÈTRE du ticket. ` +
+            `Ce projet déclare un applier à lui (\`${qApplier}\`) AUTORISÉ à RENFORCER les tests : une correction qui AJOUTE un cas ou une assertion n'est donc PAS rejetée pour ce seul motif. ` +
+            `En revanche REJETTE toute correction qui exigerait de RETIRER ou d'AFFAIBLIR une assertion, un cas ou un fichier de test, et toute correction qui viserait à faire monter un chiffre sans renforcer la détection (test qui exécute sans asserter). `
+          : `UNIQUEMENT si la correction est BORNÉE, SÛRE (ne touche ni test, ni config, ni quality.json, aucun escape-hatch) et RESTE DANS LE PÉRIMÈTRE du ticket. `) +
         `REJETTE (decision:"skip") ce qui déborde (refactor plus large que le ticket), n'est pas ancré dans la sortie de l'outil, ou est douteux. Au doute → skip. Chaque "apply" porte un correction_prompt autonome.\n` +
         `Propositions:\n${JSON.stringify(qProposals)}\nFichiers d'impl:\n${JSON.stringify(implFiles)}\nBRIEF:\n${briefJson}` + iso,
         { agentType: 'scd-spec-dev:review-validator', schema: TRIAGE, model: 'opus' },
@@ -762,22 +926,57 @@ if (q1 && q1.gate === 'ok') {
         phase('Quality')
         const qapplied = await agent(
           `Applique EXACTEMENT ces corrections de qualité (rien d'autre), chirurgicalement — chaque édition ne touche que ce que son correction_prompt décrit. ` +
-          `JAMAIS un fichier de test, JAMAIS une config d'outillage, JAMAIS un escape-hatch. Si un correction_prompt s'avère infondé une fois dans le code, rends-le notApplied avec le motif (ne force pas). ` +
+          (qApplier
+            ? `Tu PEUX renforcer les tests quand la correction l'exige — c'est ton contrat — mais SEULEMENT PAR AJOUT : aucune assertion, aucun cas, aucun fichier de test retiré ou affaibli, aucun \`.skip(\`/\`.only(\` ajouté. Prouve-le par le contrôle du diff de test et rends \`testsDiffAdditiveOnly\`. `
+            : `JAMAIS un fichier de test, `) +
+          `JAMAIS une config d'outillage, JAMAIS un escape-hatch. Si un correction_prompt s'avère infondé une fois dans le code, rends-le notApplied avec le motif (ne force pas). ` +
           `Puis RE-VÉRIFIE selon le mode : ` +
           (usesTests
-            ? `modes tdd/test → ré-exécute \`${brief.testCommand}\` (0 failed) ET \`${gitPrefix} diff\` sur les fichiers de test ${JSON.stringify(testFiles)} VIDE.`
+            ? `modes tdd/test → ré-exécute \`${brief.testCommand}\` (0 failed) ET ` +
+              (qApplier
+                ? `\`${gitPrefix} diff\` sur les fichiers de test ${JSON.stringify(testFiles)} VIDE, ou — si tu les as renforcés — strictement ADDITIF, prouvé par la sortie du contrôle (\`testsDiffAdditiveOnly: true\`). Ne déclare JAMAIS \`testsDiffEmpty: true\` après avoir édité un test.`
+                : `\`${gitPrefix} diff\` sur les fichiers de test ${JSON.stringify(testFiles)} VIDE.`)
             : `mode observé → rejoue la vérification observable pertinente, la preuve tient toujours.`) +
           `\nCorrections retenues:\n${JSON.stringify(retained)}\nBRIEF (verifMode/testCommand):\n${JSON.stringify({ verifMode: mode, testCommand: brief.testCommand })}` + iso,
-          { agentType: 'scd-spec-dev:fix-applier', schema: APPLY, model: 'sonnet' },
+          { agentType: qApplier || 'scd-spec-dev:fix-applier', schema: APPLY, model: 'sonnet' },
         )
         const rv = qapplied && qapplied.reverify
+        // CEINTURE. Sans applier de projet, le diff de test doit être VIDE — inchangé. Avec un
+        // applier déclaré, un diff de test non vide est accepté ICI à titre PROVISOIRE : la garde
+        // n'est pas le `testsDiffAdditiveOnly` que l'applier rend sur son propre travail (producteur
+        // = vérificateur, ce que le cycle interdit partout ailleurs), c'est l'audit en contexte frais
+        // du test-edit-validator, juste en dessous, qui rejoue les contrôles lui-même.
         const reverifyOk = usesTests
-          ? (rv && rv.failed === 0 && rv.testsDiffEmpty !== false)
+          ? (rv && rv.failed === 0 && (rv.testsDiffEmpty !== false || !!qApplier))
           : !!(rv || (qapplied && qapplied.applied))
         if (!qapplied || !reverifyOk) {
           return { ticket, changeDir, status: 'blocked-quality-fix', mode, quality: residual, qualityFix: qapplied, green, verify, worktreeDir: wtDir }
         }
         log(`Quality gate — corrections appliquées : ${(qapplied.applied || []).length} · non appliquées : ${(qapplied.notApplied || []).length}`)
+
+        // AUDIT DES ÉDITIONS DE TEST — producteur ≠ vérificateur jusqu'au bout. Dès qu'un applier DE
+        // PROJET a travaillé en mode tdd/test, un agent en CONTEXTE FRAIS rejoue lui-même les
+        // contrôles d'additivité sur le `git diff` réel (il ne croit pas le `testsDiffAdditiveOnly`
+        // de la main qui a écrit) PUIS juge les tests AJOUTÉS : une tautologie ou une exécution sans
+        // assertion satisfait l'additivité tout en ne détectant rien — c'est la fraude que le grep ne
+        // voit pas. On l'invoque même si l'applier prétend n'avoir rien touché : c'est lui qui
+        // constate le diff, pas l'applier (un champ omis ne doit pas ouvrir un angle mort).
+        if (qApplier && usesTests) {
+          phase('Quality')
+          const tev = await agent(
+            `Audite les ÉDITIONS DE TEST faites par l'applier \`${qApplier}\` sur le ticket ${ticket} (contexte frais, tu n'as rien écrit). ` +
+            `NE CROIS PAS son \`testsDiffAdditiveOnly\` : rejoue TOI-MÊME les deux contrôles d'additivité sur \`${gitPrefix} diff -U0\` des fichiers de test ${JSON.stringify(testFiles)} ` +
+            `(aucune assertion ni aucun cas RETIRÉ ; aucun \`.skip(\`/\`.only(\`/\`.todo(\` AJOUTÉ ; aucun fichier de test supprimé ou vidé), et cite leur sortie. ` +
+            `Diff de test vide → verdict ok, tu t'arrêtes. Sinon JUGE chaque test AJOUTÉ : rejette tautologie, exécution sans assertion (toBeDefined/not.toThrow seuls), assertion sur un double au lieu du comportement, couplage à l'implémentation, et tout test qui ne se rattache à AUCUNE des corrections retenues. Au doute → violation.\n` +
+            `Rapport de l'applier:\n${JSON.stringify(qapplied)}\nCorrections retenues (avec leur checkId):\n${JSON.stringify(retained)}` + iso,
+            { agentType: 'scd-spec-dev:test-edit-validator', schema: TEST_EDIT_AUDIT, model: 'opus' },
+          )
+          if (!tev || tev.verdict !== 'ok') {
+            return { ticket, changeDir, status: 'blocked-quality-test-edit', mode, quality: residual, qualityFix: qapplied, testEdit: tev, green, verify, worktreeDir: wtDir }
+          }
+          log(`Quality gate — éditions de test auditées : additivité confirmée · ${(tev.addedTests || []).length} test(s) ajouté(s) jugé(s) probants`)
+        }
+
         // RE-ANALYSE après corrections : l'état résiduel final fait autorité pour la décision blocking.
         residual = await agent(
           `Quality gate — RE-ANALYSE après corrections adaptées. Relis \`.claude/quality.json\` et RE-JOUE chaque check sur l'état courant du diff ` +
@@ -984,7 +1183,9 @@ if (record && record.stopped) {
 const proof = usesTests
   ? (verify && verify.beltPassed ? verify.beltPassed.evidence : (green.testState && green.testState.evidence))
   : (verify && verify.criteria ? verify.criteria.map((c) => `${c.id}: ${c.verified ? (c.evidence || 'vérifié') : (c.humanCheckRequired || 'non vérifié')}`).join('\n') : (green.integration && green.integration.output))
-const humanChecks = (mode === 'observé' && verify && verify.criteria)
+// humanCheckRequired remonte à la PR en observé ET quand la self-correction §14 (c) en a produit
+// (un critère test/tdd inobservable rattrapé en observé) — sinon un rattrapage resterait invisible au reviewer.
+const humanChecks = (verify && verify.criteria && (mode === 'observé' || verify.selfCorrected))
   ? verify.criteria.filter((c) => c && c.humanCheckRequired).map((c) => `${c.id} : ${c.humanCheckRequired}`)
   : []
 
@@ -996,8 +1197,9 @@ const desc = canDescribe
   ? await agent(
       `Compose la description de la PR du ticket ${ticket} du change ${changeDir}, pour un REVIEWER HUMAIN. Corps Markdown EN COUCHES : ` +
       `1) TL;DR (30 s : ce que le ticket livre, mode ${mode}, verdict vert/attente humaine) ; 2) Ce que ça livre (context.why, backréférence proposal/story, hors-périmètre) ; ` +
-      `3) la MATRICE critère → test → statut (en observé : colonne « Preuve » = sortie capturée / humanCheckRequired) ; 4) Points à scruter ; ` +
+      `3) la MATRICE critère → test → statut (colonne « Preuve » = sortie capturée / humanCheckRequired en observé, ou pour un critère rattrapé par la self-correction §14 c en test/tdd) ; 4) Points à scruter ; ` +
       `5) <details> Ce que la review a décidé — findings appliqués ET rejetés avec motif ; 6) <details> Preuve d'exécution. ` +
+      (preflightRepairs.length ? `Si \`preflightRepairs\` est non vide, ajoute une ligne dans la couche 5 : les réparations mécaniques du triage §14 (ex. id de critère attribué), consignées, non bloquantes. ` : ``) +
       `Mesure le diff TOI-MÊME : \`${gitPrefix} diff --numstat <base>...<branche>\` — aucun chiffre inventé. ` +
       `N'écris PAS le bloc « PR EMPILÉE » (c'est pr-author). Lecture seule : aucun push, aucune PR.\n` +
       `Résumé:\n${JSON.stringify({
@@ -1015,6 +1217,7 @@ const desc = canDescribe
         humanCheckRequired: humanChecks,
         findingsApplied: triaged.apply,
         findingsRejected: triaged.skip,
+        preflightRepairs,
         qualityAdvisory,
         testCommand: brief.testCommand,
         checked: record ? record.checked : [],

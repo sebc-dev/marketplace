@@ -2,7 +2,9 @@
 
 Charge ce bloc quand il faut la **discipline par mode** ou l'ordre exact des phases. Le mode vit dans
 le champ `**Vérif :**` du ticket, **décidé une fois** par `strategie-verif` à la décomposition, jamais
-re-décidé au run.
+re-décidé au run. Le triage §14 en pré-flight l'**asserte** par critère — il ré-invoque `strategie-verif`
+et, si la nature d'un critère contredit mécaniquement le mode figé, consigne un `mode-mismatch` en
+réparation (visible au corps de PR) —, mais il ne **réécrit jamais** le champ `**Vérif :**` (§Décision 3).
 
 ## Ce que chaque mode exige
 
@@ -35,13 +37,14 @@ de `verifier`.
 | 1 | **Branch** | tous | arbre propre (séquentiel) ; `impl/<slug>-NN` depuis la base à jour |
 | 2 | **Rebase** | tous | préventif, idempotent (`--onto`) ; jamais de résolution auto |
 | 3 | **Prepare** | tous | `ticket-briefer` → BRIEF depuis le fichier ticket, **sans hypothèse OpenSpec** |
+| 3½ | **Preflight** | tous | `escalation-triage` (§14) : un verdict par critère AVANT d'écrire — `repair` (id manquant → réparé en vol ; ou `mode-mismatch` : `strategie-verif` ré-invoqué en **assertion active** route le critère vers un autre mode → consigné, jamais une réécriture du `**Vérif :**`), `proceed` (ceinture + review arbitrent), `escalate` (oracle ambigu → `blocked-arbitrage`, code jamais écrit) ; ne re-décide jamais le mode du ticket |
 | 4 | **Red** | tdd | 1 test/critère AVANT le code, ROUGE |
 | 5 | **Validate** | tdd · test | 1 critère = 1 test, cas limites, anti-tautologie |
 | 6 | **Green** | tdd · test | impl jusqu'au vert, tests intacts, diff test vide |
 | — | **Green / Red / Validate** | test | l'impl prouve l'intégration, puis tests-après VERTS |
 | — | **Green** | observé · aucun | preuve d'intégration (observé) / spike (aucun) |
-| 7 | **Verify** | tdd · test · observé | ceinture (tdd/test) ou preuve observable/`humanCheckRequired` (observé) |
-| 7½ | **Quality** | tous si `.claude/quality.json` | `quality-analyzer` → `quality-fixer` (autofix sûr) → **échecs non-autofixables : chaque check → son agent dédié `quality-<id>` (co-écrit par `/scd-spec-dev:quality-agents`, sinon générique `quality-advisor`) → triage → `fix-applier` → re-analyze** ; `blocking` résiduel échoue, `advisory` → findings. No-op sans le fichier |
+| 7 | **Verify** | tdd · test · observé | ceinture (tdd/test) ou preuve observable/`humanCheckRequired` (observé). §14 (c) : si la ceinture tdd/test est **propre** mais un critère reste **inobservable** par la stratégie test → **une** passe de self-correction bornée le tente en observé (preuve montée / `humanCheckRequired`) avant `blocked-verify` ; une ceinture **violée** n'est jamais self-corrigée |
+| 7½ | **Quality** | tous si `.claude/quality.json` | `quality-analyzer` → `quality-fixer` (autofix sûr) → **échecs non-autofixables : chaque check → son agent dédié `quality-<id>` (co-écrit par `/scd-spec-dev:quality-agents`, sinon générique `quality-advisor`) → triage → applier → re-analyze** ; l'applier est le `fix-applier` générique (jamais les tests, diff de test exigé VIDE) **ou**, si `quality.json` déclare un top-level `applier` présent sur disque, l'applier DU PROJET (co-écrit par `/scd-spec-dev:quality-agents`) — seul autorisé à **renforcer** les tests, et seulement par AJOUT ; ses éditions sont alors auditées en contexte frais par le **`test-edit-validator`**, qui REJOUE les contrôles d'additivité (il ne croit pas le `testsDiffAdditiveOnly` de l'applier) et juge les tests ajoutés (tautologie / exécution sans assertion → refus) — violation ⇒ `blocked-quality-test-edit` ; `blocking` résiduel échoue, `advisory` → findings. No-op sans le fichier |
 | 8 | **Context** | tous | `review-context` : dossier résolu **une fois** pour les six reviewers de code |
 | 9 | **Review** | tous | **8 reviewers ∥** contexte frais : 6 code + change + integrity (skill `review`) |
 | 10 | **Triage** | tous | `review-validator` : reproduit, ne garde que correction/exigence ; au doute skip |
@@ -55,9 +58,12 @@ n'est jamais celui qui juge (`test-validator`, `verifier`, les 8 reviewers, `rev
 
 ## Statuts de blocage (ce que le run rend)
 
-`blocked-branch` · `blocked-rebase` · `blocked-brief` · `blocked-red` · `blocked-tests-modified` ·
-`blocked-impl` · `blocked-verify` · `blocked-quality` (+ `-config` / `-tests-touched` / `-fix`) ·
+`blocked-branch` · `blocked-rebase` · `blocked-brief` · `blocked-arbitrage` · `blocked-red` ·
+`blocked-tests-modified` · `blocked-impl` · `blocked-verify` ·
+`blocked-quality` (+ `-config` / `-tests-touched` / `-fix` / `-test-edit`) ·
 `blocked-record` · `blocked-branch-drift` · `blocked-after-fix`. Sur tout `blocked-*` : **aucune PR
 ouverte**, la branche du ticket existe déjà (travail non perdu), et une fiche de chantier consigne le
 fait (sinon il disparaît au `/clear` — rien sur le disque ne distingue un run bloqué d'un ticket
-jamais lancé).
+jamais lancé). `blocked-arbitrage` est le cas à part : c'est le **seul** motif d'arrêt-pour-décision
+(§14), il survient en **pré-flight** — **aucun code écrit** —, et son payload `arbitrage` est
+l'escalade façonnée en décision (question + lectures + conséquence), non un simple constat d'échec.

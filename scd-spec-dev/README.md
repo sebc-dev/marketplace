@@ -74,6 +74,24 @@ est appliquée via le triage adversarial puis le `fix-applier` (les agents dédi
 seule** — c'est le `fix-applier`, sous triage, qui applique). Sans `.claude/quality.json`, c'est un
 no-op — le 0-gate reste vrai par défaut.
 
+**L'applier du projet** (optionnel, top-level `applier` de `quality.json`) : certains défauts ne sont
+réparables *que* dans les tests — un mutant qui survit faute d'assertion —, et le `fix-applier`
+générique n'y touche jamais. Un projet peut donc déclarer un **applier à lui** — co-créé avec l'humain
+par `/scd-spec-dev:quality-agents`, top-level `applier` de `quality.json` —, seul agent du cycle
+autorisé à **renforcer** les tests. Le droit n'est pas une confiance : il est borné par l'**additivité** —
+aucune assertion, aucun cas, aucun fichier de test retiré ou affaibli, aucun `.skip(`/`.only(`
+ajouté. Sans applier déclaré, la ceinture habituelle tient : diff de test **vide**, sinon le ticket
+échoue.
+
+Et ce n'est pas l'applier qui certifie son propre travail — ce serait producteur = vérificateur, ce
+que le cycle interdit partout ailleurs. Le **`test-edit-validator`** intervient en contexte frais :
+il **rejoue lui-même** les contrôles sur le `git diff` réel, puis **juge les tests ajoutés**. Car
+l'additivité ne suffit pas — on peut ajouter un test qui n'assure rien, satisfaire le contrôle
+mécanique et ne rien détecter de plus : tautologie, exécution sans assertion, assertion sur un double
+plutôt que sur le comportement. Son verdict fait foi ; une violation échoue le ticket en
+`blocked-quality-test-edit`, éditions laissées **sur la branche** pour que l'humain voie ce qui a été
+tenté.
+
 ---
 
 ## `strategie-verif` — quatre modes, fondés sur la recherche TDD
@@ -129,7 +147,7 @@ ambigu, ou tests qui contredisent l'énoncé.
 |---|---|
 | `/scd-spec-dev:setup` | monte OpenSpec dans le projet, copie le schéma `scd`, `config.yaml`, gabarits durables, filet CI. Idempotente par artefact |
 | `/scd-spec-dev:quality-setup` | paramètre la quality gate → `.claude/quality.json` (possédé par le projet) |
-| `/scd-spec-dev:quality-agents` | co-crée avec l'humain un **agent dédié par check** (`.claude/agents/quality-<id>.md`) — comment traiter cette partie |
+| `/scd-spec-dev:quality-agents` | co-crée avec l'humain les agents de la gate (projet) : un **diagnostiqueur par check** (`quality-<id>.md`, lecture seule) et, optionnel, l'**applier** (top-level `applier`) — le seul autorisé à renforcer les tests |
 | `/scd-spec-dev:tickets` | décompose un change en tickets verticaux (invoque `strategie-verif`, arbitre la granularité) |
 | `/scd-spec-dev:run` | implémente **un** ticket : vérif → quality gate → review 8 dims → triage → PR |
 | `/scd-spec-dev:run-parallel` | plusieurs tickets en parallèle réel, chacun dans son worktree |
@@ -145,11 +163,12 @@ ambigu, ou tests qui contredisent l'énoncé.
 - **7 skills** — `openspec` (la fondation & la frontière), `implement` (le niveau implémentation),
   `review` (les huit dimensions), `strategie-verif` (le mode par ticket), `change-decomposer` (le
   pont change→tickets), `chantier` (le hors-cycle).
-- **26 agents** — le cœur du run (briefer, branch-setup, test-writer/validator, implementer,
-  verifier, review-context/validator, fix-applier, progress-recorder, pr-describer/author, rebaser,
-  relander), les **8 reviewers** en contexte frais, la quality gate (analyzer + fixer + advisor), le
-  `chantier-reader`.
-- **2 workflows** — `implement-ticket.js` (15 phases, segment de vérif variable selon les 4 modes) et
+- **28 agents** — le cœur du run (briefer, `escalation-triage` — le triage d'escalade §14 en
+  pré-flight, branch-setup, test-writer/validator, implementer, verifier, review-context/validator,
+  fix-applier, progress-recorder, pr-describer/author, rebaser, relander), les **8 reviewers** en
+  contexte frais, la quality gate (analyzer + fixer + advisor + `test-edit-validator`, qui audite les
+  éditions de test d'un applier de projet), le `chantier-reader`.
+- **2 workflows** — `implement-ticket.js` (16 phases, segment de vérif variable selon les 4 modes) et
   `implement-parallel.js` (chaînes indépendantes, un worktree par ticket).
 - **La recette de schéma `scd`** — `openspec-schema/scd/` (le plugin porte la recette, `/setup` la
   copie dans le projet).

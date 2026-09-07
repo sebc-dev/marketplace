@@ -55,6 +55,11 @@ Pour **chaque** entrée de `checks[]` :
   existe réellement** : vérifie par un Glob `.claude/agents/quality-*.md` que `<agent>.md` est présent.
   Si `quality.json` nomme un agent absent du disque (orphelin), reporte `agent: null` (le run
   retombera sur le générique `quality-advisor`). Aucun champ `agent` dans le check → `agent: null`.
+- Reporter aussi, **une fois pour toute la gate**, l'**applier du projet** : le champ top-level
+  `applier` de `quality.json` — un applier possédé par le projet, autorisé à *renforcer* les tests là
+  où le `fix-applier` générique ne les touche jamais. Même règle que pour `agent` : ne le reporte que
+  si `.claude/agents/<applier>.md` **existe réellement** (Glob). Nommé mais absent du disque, ou champ
+  absent → `applier: null`, et le run retombe sur le `fix-applier` générique (diff de test exigé vide).
 - Ne remonte **que des faits reproductibles** issus de la sortie réelle. Pas de spéculation, pas de
   jugement de style (c'est la review).
 
@@ -63,6 +68,7 @@ Pour **chaque** entrée de `checks[]` :
 ```json
 {
   "gate": "ok" | "skipped" | "error",
+  "applier": "quality-apply",
   "summary": { "checks": 4, "passed": 3, "blockingFailures": 0, "advisoryFailures": 1 },
   "findings": [
     {

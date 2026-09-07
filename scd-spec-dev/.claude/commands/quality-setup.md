@@ -82,6 +82,7 @@ check de qualité. C'est un opt-in.
 | `checks[].autofix` | commande de correction **SÛRE et déterministe** (formatter, `--fix`, tri d'imports) ou `null`. Jamais une correction qui réécrit de la logique. |
 | `checks[].threshold` | optionnel, pour un check numérique : `{ metric, min }` ou `{ metric, max }` — le `quality-analyzer` parse la sortie de `cmd` |
 | `checks[].agent` | optionnel, **écrit par `/scd-spec-dev:quality-agents`** (pas par cette commande) : le nom de l'**agent dédié** de ce check (`quality-<id>`), qui au run remonte les points à traiter selon les instructions de sa partie. Absent → le run route vers le générique `quality-advisor`. |
+| `applier` | optionnel, **top-level** (un pour toute la gate, pas par check), posé par le projet : le nom d'un **applier à lui** (`quality-<slug>`, un agent de `.claude/agents/`) qui remplace le `fix-applier` générique sur les corrections de la gate et qui, contrairement à lui, a le droit de **renforcer les tests**. Le droit est borné au run par l'**additivité** — aucune assertion ni aucun cas retiré, aucun `.skip(`/`.only(` ajouté —, que l'applier doit prouver (`testsDiffAdditiveOnly: true`). Absent, ou nommant un fichier qui n'existe pas → `fix-applier` générique, diff de test exigé **vide**. |
 
 **Frontière de l'`autofix` (rappel du contrat)** : seul l'autofix **sûr** est automatisé — ce que le
 `quality-fixer` exécute puis re-vérifie. Un finding sans `autofix` (complexité, duplication, seuil de

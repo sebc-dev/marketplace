@@ -194,14 +194,40 @@ retourné :
   `--force-with-lease` rejeté → refetch puis relance). Aucun code écrit ; rien n'est forcé.
 - **`blocked-brief`** → le fichier ticket est mal formé (id absent, `**Vérif :**` illégale, « Ce que
   ça livre » vide) : le ticket est à réparer via `/scd-spec-dev:tickets`.
+- **`blocked-arbitrage`** (triage d'escalade §14, en **pré-flight**) → un critère admet **deux lectures
+  produit plausibles menant à un code différent**, et rien dans le ticket, le change ou les ADR ne
+  tranche : poursuivre obligerait l'agent à **inventer le sens de la spec**. Le run s'est arrêté
+  **avant d'écrire la moindre ligne** (la branche existe, aucun code n'y est) — c'est voulu : aucun
+  code ne part sur une mauvaise interprétation. C'est le **seul** motif d'arrêt-pour-décision.
+  `arbitrage` porte l'escalade **façonnée en décision** (question, 2-3 lectures avec le code de chacune,
+  conséquence). **Présente-la à l'humain et fais-le trancher.** Une fois tranché, la disambiguïsation
+  revient dans la spec — **repasse par le delta** du change puis `/scd-spec-dev:tickets` (le critère
+  récupère alors id + mode), ou traite-la en **nouveau ticket** ; éditer un critère à la main dans un
+  ticket vivant n'est pas une voie supportée. Puis relance `/scd-spec-dev:run`. Les anomalies
+  **mécaniques**, elles, ne bloquent pas : le triage les **répare en vol** et les consigne au corps de
+  PR — un id manquant → l'id suivant, ou un **mode-mismatch** (le triage ré-invoque `strategie-verif`
+  en assertion active et ré-dérive le mode d'un critère que sa nature contredit ; consigné, jamais une
+  réécriture du `**Vérif :**` du ticket, le `verifier` aval remonte un `humanCheckRequired` si besoin).
 - **`blocked-red`** / **`blocked-tests-modified`** (tdd) · **`blocked-impl`** (test/observé/aucun :
   l'impl n'a pas passé l'intégration) · **`blocked-verify`** (le `verifier` n'a pas obtenu la ceinture
   ou une preuve observable) · **`blocked-after-fix`** → explique le blocage et la reprise. **Aucune PR
-  n'est ouverte pour un ticket bloqué** ; la branche dédiée existe déjà.
+  n'est ouverte pour un ticket bloqué** ; la branche dédiée existe déjà. En tdd/test, `blocked-verify`
+  n'est rendu qu'**après** la passe de self-correction bornée §14 (c) : une ceinture **propre** dont un
+  critère reste inobservable par la stratégie test est d'abord retentée **une** fois en observé (preuve
+  montée ou `humanCheckRequired` — le run poursuit alors, le humanCheck coule à la PR) ; il ne reste
+  bloqué que si un critère demeure non prouvé. Une ceinture **violée** (test neutralisé, `failed ≠ 0`)
+  n'est **jamais** self-corrigée : elle bloque tel quel.
 - **`blocked-quality`** / **`blocked-quality-config`** / **`blocked-quality-tests-touched`** /
   **`blocked-quality-fix`** → la quality gate a un check `blocking` résiduel en échec, un
   `.claude/quality.json` illisible, l'autofix a touché un test, ou une correction adaptée
-  (`quality-advisor` → `fix-applier`) a cassé la re-vérif. Explique quel check, et la reprise.
+  (agent dédié → applier) a cassé la re-vérif. Explique quel check, et la reprise.
+- **`blocked-quality-test-edit`** → le projet déclare un **applier à lui** (top-level `applier`),
+  autorisé à renforcer les tests, et le `test-edit-validator` a refusé ses éditions en contexte
+  frais : soit l'additivité est rompue (une assertion ou un cas **retiré**, un `.skip(` ajouté), soit
+  un test **ajouté** ne détecte rien (tautologie, exécution sans assertion, assertion sur un double).
+  Les éditions restent **sur la branche, telles quelles**, pour que l'humain voie ce qui a été tenté.
+  Cite `removedAssertions` / `weakTests` et laisse trancher : c'est le cas où la gate a essayé
+  d'améliorer les tests et s'est fait prendre à mal le faire.
 - **`blocked-record`** / **`blocked-branch-drift`** → `progress-recorder` s'est arrêté ou a commité sur
   une branche ≠ celle posée par `branch-setup` (filet déterministe) : **aucune PR ouverte**. Signale
   `expectedBranch`/`recordedBranch` ; c'est un bug d'agent à investiguer avant de relancer.
