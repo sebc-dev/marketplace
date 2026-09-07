@@ -104,7 +104,7 @@ const BRIEF = {
 
 // Triage d'escalade §14, en pré-flight (AVANT toute écriture). Un verdict par critère.
 // escalations non vide → le run s'arrête en blocked-arbitrage sans écrire de code.
-const TRIAGE = {
+const ESCALATION_TRIAGE = {
   type: 'object',
   required: ['triage'],
   properties: {
@@ -583,7 +583,7 @@ const triage = await agent(
   `Assertion de mode ACTIVE (§14 b) : ré-invoque le skill \`strategie-verif\` (outil Skill) par critère et applique son arbre à la nature du critère SEUL — son étape 0 (oracle ambigu) EST le discriminant d'escalate ; un mode rendu ≠ « ${mode} » sans porte d'étape 0 est un \`repair\` kind:mode-mismatch (renseigne modeAssertion.reDerivedMode, consigné, le critère poursuit — le verifier remontera humanCheckRequired si besoin). ` +
   `Tu ne décides JAMAIS le sens de la spec, tu ne changes JAMAIS le mode DU TICKET (« ${mode} » reste figé — tu assertes par critère, tu ne réécris pas la décision de décomposition). ` +
   `Retourne \`repairedCriteres\` (le tableau criteres COMPLET, ids réparés) et \`escalations\` (le sous-ensemble escalate, vide dans le cas nominal).\nBRIEF:\n${JSON.stringify(brief)}` + iso,
-  { agentType: 'scd-spec-dev:escalation-triage', schema: TRIAGE, model: 'opus' },
+  { agentType: 'scd-spec-dev:escalation-triage', schema: ESCALATION_TRIAGE, model: 'opus' },
 )
 if (triage && Array.isArray(triage.escalations) && triage.escalations.length) {
   // Ambiguïté d'oracle : on s'arrête AVANT d'écrire. La branche existe (posée en amont), aucun code n'y est.
