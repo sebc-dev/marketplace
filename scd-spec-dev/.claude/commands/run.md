@@ -154,14 +154,24 @@ echo "$SRC"
 
 Rien trouvé → demande le chemin à l'utilisateur.
 
-**b. Normalise en LF avant de lancer.** Un seul octet `CR` dans le script fait rejeter tout le workflow
-par la couche de permission (« script contains control characters… »), **avant** qu'il ne démarre. Un
-cache installé sous `core.autocrlf=true` garde ses CRLF. Copie le script en LF dans un temporaire et
-passe **ce** chemin à `scriptPath` (le workflow est auto-contenu — aucun `require`, aucun chemin
-relatif, aucun `refsDir` — donc le lancer depuis une copie est sûr) :
+**b. Normalise en LF, sous le répertoire git, avant de lancer.** Deux contraintes se cumulent sur la
+copie temporaire — les manquer produit deux échecs distincts *avant* que le workflow ne démarre :
+
+- **LF.** Un seul octet `CR` dans le script fait rejeter tout le workflow par la couche de permission
+  (« script contains control characters… »). Un cache installé sous `core.autocrlf=true` garde ses CRLF.
+- **Emplacement autorisé.** `Workflow` n'accepte un `scriptPath` que sous un **répertoire autorisé** (le
+  répertoire de travail ou un répertoire ajouté) : **`/tmp` est refusé** (« scriptPath must be a script
+  path this tool returned, or a file you can already read »). Écris donc la copie sous le **répertoire
+  git** (`git rev-parse --absolute-git-dir`) — il est sous l'arbre de travail (donc autorisé) et
+  `git status` **ne le voit jamais**, si bien que la copie ne salit pas l'arbre et ne fait pas échouer
+  la garde d'arbre propre de `branch-setup`. Surtout **pas** `${TMPDIR:-/tmp}` (le défaut `/tmp` est
+  hors périmètre) ni la racine de l'arbre (untracked → arbre sale).
+
+Le workflow est auto-contenu — aucun `require`, aucun chemin relatif, aucun `refsDir` — donc le lancer
+depuis une copie est sûr :
 
 ```bash
-NORM="${TMPDIR:-/tmp}/implement-ticket.$$.js"
+NORM="$(git rev-parse --absolute-git-dir)/implement-ticket.$$.js"
 tr -d '\r' < "$SRC" > "$NORM" && echo "$NORM"
 ```
 

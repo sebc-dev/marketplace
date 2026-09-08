@@ -140,15 +140,23 @@ Puis :
   ```
 
   (En dernier recours, demande le chemin.)
-- **Normalise les DEUX scripts en LF.** Un seul octet `CR` fait rejeter le workflow par la couche de
-  permission avant démarrage. Les deux sont concernés : `implement-parallel.js` est le `scriptPath`, et
-  `implement-ticket.js` est ré-exécuté par l'orchestrateur via `workflow({scriptPath})` — il traverse
-  donc la même couche. Copie chacun en LF et passe **ces** chemins (scripts auto-contenus, sûrs depuis
-  une copie ; **aucun `refsDir`**) :
+- **Normalise les DEUX scripts en LF, sous le répertoire git.** Deux contraintes se cumulent, comme
+  pour `/scd-spec-dev:run` (étape 5b) :
+  - **LF** — un seul octet `CR` fait rejeter le workflow par la couche de permission avant démarrage.
+    Les deux sont concernés : `implement-parallel.js` est le `scriptPath` du lancement, et
+    `implement-ticket.js` est ré-exécuté par l'orchestrateur via `workflow({scriptPath})` — il traverse
+    la même couche.
+  - **Emplacement autorisé** — `Workflow` n'accepte un `scriptPath` que sous un **répertoire autorisé** ;
+    **`/tmp` est refusé**. Écris les deux copies sous le **répertoire git** (`git rev-parse
+    --absolute-git-dir`) : sous l'arbre de travail (donc autorisé) et invisible à `git status` (n'ouvre
+    pas d'arbre sale). Surtout **pas** `${TMPDIR:-/tmp}`.
+
+  Scripts auto-contenus, sûrs depuis une copie ; **aucun `refsDir`** :
 
   ```bash
-  tr -d '\r' < "$PAR" > "${TMPDIR:-/tmp}/implement-parallel.$$.js"
-  tr -d '\r' < "$IMP" > "${TMPDIR:-/tmp}/implement-ticket.$$.js"
+  GITDIR="$(git rev-parse --absolute-git-dir)"
+  tr -d '\r' < "$PAR" > "$GITDIR/implement-parallel.$$.js"
+  tr -d '\r' < "$IMP" > "$GITDIR/implement-ticket.$$.js"
   ```
 
 - **Lance** l'orchestrateur en lui passant le plan et le chemin de `implement-ticket.js` (qu'il exécute
