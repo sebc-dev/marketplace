@@ -196,6 +196,7 @@ const GREEN = {
       properties: { command: { type: 'string' }, failed: { type: 'integer' }, evidence: { type: 'string' } },
     },
     testsDiffEmpty: { type: 'boolean', description: 'true si git diff sur les fichiers de test est vide (modes tdd/test)' },
+    testsDiffAdditiveOnly: { type: 'boolean', description: 'modes tdd/test : true si le diff de test (après git add -N) est non vide mais strictement additif — aucune assertion/cas retiré, aucun .skip(/.only(/.todo( ajouté' },
     integration: {
       type: 'object',
       description: 'Mode observé : preuve que le code s\'intègre (build/typecheck/lint/run)',
@@ -214,7 +215,19 @@ const VERIFY = {
     beltPassed: {
       type: 'object',
       description: 'Modes tdd/test : la ceinture verify-time (null en observé)',
-      properties: { testsDiffEmpty: { type: 'boolean' }, failed: { type: 'integer' }, evidence: { type: 'string' } },
+      properties: {
+        testsDiffEmpty: { type: 'boolean', description: 'true si le git diff des fichiers de test est réellement vide' },
+        // Un diff de test non vide n'est PAS une neutralisation s'il est strictement ADDITIF : aucune
+        // assertion ni aucun cas retiré, aucun fichier de test vidé/supprimé, aucun .skip(/.only(/.todo(
+        // ajouté. Un fichier de test NEUF et des cas AJOUTÉS sont le contrat. Contrôlé sur `git diff` après
+        // `git add -N` (les fichiers neufs deviennent des additions visibles). Seul un `true` prouvé
+        // remplace l'exigence de diff VIDE (voir beltViolated).
+        testsDiffAdditiveOnly: { type: 'boolean' },
+        removedAssertions: { type: 'array', items: { type: 'string' }, description: 'assertions/cas retirés ou affaiblis — non vide ⇒ neutralisation' },
+        addedNeutralizers: { type: 'array', items: { type: 'string' }, description: '.skip(/.only(/.todo( ajoutés — non vide ⇒ neutralisation' },
+        failed: { type: 'integer' },
+        evidence: { type: 'string' },
+      },
     },
     criteria: {
       type: 'array',
@@ -648,20 +661,22 @@ if (mode === 'tdd') {
   do {
     green = await agent(
       `Mode TDD. Implémente/complète le code de production du ticket ${ticket} jusqu'à ce que \`${brief.testCommand}\` montre 0 failed. ` +
-      `INTERDICTION d'éditer les fichiers de test ${JSON.stringify(tests.testFiles)} — à la fin, exécute ` +
-      `\`${gitPrefix} diff -- ${tests.testFiles.join(' ')}\` : il DOIT être vide (testsDiffEmpty=true), sinon annule tes changements sur ces fichiers. ` +
+      `INTERDICTION d'affaiblir les fichiers de test ${JSON.stringify(tests.testFiles)} — les tests du test-writer sont l'acquis. À la fin, exécute ` +
+      `\`${gitPrefix} add -N ${tests.testFiles.join(' ')}\` (rend les fichiers neufs visibles) puis \`${gitPrefix} diff -U0 -- ${tests.testFiles.join(' ')}\` : ` +
+      `il doit être VIDE (testsDiffEmpty=true) OU strictement ADDITIF (testsDiffAdditiveOnly=true) — aucune assertion ni aucun cas RETIRÉ, aucun fichier de test vidé/supprimé, aucun \`.skip(\`/\`.only(\`/\`.todo(\` ajouté. ` +
+      `Si TON diff retire ou affaiblit un test, annule tes changements sur ces fichiers. ` +
       `INTERDICTION de tout escape-hatch (@ts-ignore, as any, eslint-disable, # noqa, .skip(, --no-verify). ` +
       `Montre la sortie réelle (testState.failed=0 uniquement si 0 failed).\nBRIEF:\n${briefJson}` + iso,
       { agentType: 'scd-spec-dev:implementer', schema: GREEN, model: 'sonnet' },
     )
-    if (green && green.testState && green.testState.failed === 0 && green.testsDiffEmpty) break
-    if (green) log(`Vert non atteint (failed=${green.testState ? green.testState.failed : '?'}, testsDiffEmpty=${green.testsDiffEmpty}) — retry ${gtry + 1}`)
+    if (green && green.testState && green.testState.failed === 0 && (green.testsDiffEmpty || green.testsDiffAdditiveOnly)) break
+    if (green) log(`Vert non atteint (failed=${green.testState ? green.testState.failed : '?'}, testsDiffEmpty=${green.testsDiffEmpty}, testsDiffAdditiveOnly=${green.testsDiffAdditiveOnly}) — retry ${gtry + 1}`)
   } while (++gtry < 3 && budget.remaining() > 40_000)
 
   if (!green || !green.testState || green.testState.failed !== 0) {
     return { ticket, changeDir, status: 'blocked-red', mode, green, tests, worktreeDir: wtDir }
   }
-  if (!green.testsDiffEmpty) {
+  if (!green.testsDiffEmpty && !green.testsDiffAdditiveOnly) {
     return { ticket, changeDir, status: 'blocked-tests-modified', mode, green, tests, worktreeDir: wtDir }
   }
 } else if (mode === 'test') {
@@ -734,23 +749,27 @@ const testFiles = (tests && tests.testFiles) || []
 if (usesTests) {
   phase('Verify')
   verify = await agent(
-    `Mode ${mode.toUpperCase()}. Applique la CEINTURE en CONTEXTE FRAIS (tu n'as pas écrit ce code) : ` +
-    `pars d'un checkout PROPRE ; vérifie que \`${gitPrefix} diff\` sur les fichiers de test ${JSON.stringify(testFiles)} entre la base et la tête est VIDE ` +
-    `(un test modifié pendant l'implémentation = neutralisation → échec, beltPassed.testsDiffEmpty=false) ; ` +
-    `rejoue \`${brief.testCommand}\` et confirme 0 failed sur TA sortie réelle (beltPassed.failed=0). ` +
-    (mode === 'test' ? `NB : en test-after les tests sont NEUFS (ajoutés après l'impl) — la ceinture confirme surtout leur VERT réel sur checkout propre. ` : ``) +
+    `Mode ${mode.toUpperCase()}. Applique la CEINTURE en CONTEXTE FRAIS (tu n'as pas écrit ce code). ` +
+    `La ceinture attrape la NEUTRALISATION d'un test, pas l'ajout de tests — un fichier de test NEUF et des cas AJOUTÉS sont exactement le contrat. ` +
+    `1) Rends les fichiers neufs visibles : \`${gitPrefix} add -N ${testFiles.join(' ')}\` (un fichier untracked est INVISIBLE à git diff sans ça). ` +
+    `2) Lis \`${gitPrefix} diff -U0 -- ${testFiles.join(' ')}\` (base → tête). VIDE → beltPassed.testsDiffEmpty=true. ` +
+    `Non vide → décide beltPassed.testsDiffAdditiveOnly : true SSI strictement additif — aucune assertion ni aucun cas RETIRÉ ou affaibli, aucun fichier de test vidé/supprimé, aucun \`.skip(\`/\`.only(\`/\`.todo(\` AJOUTÉ. ` +
+    `Cite dans beltPassed.removedAssertions et beltPassed.addedNeutralizers ce que tu trouves ; l'un des deux non vide ⇒ additiveOnly=false = neutralisation → échec, remonté tel quel. Au doute → additiveOnly=false. ` +
+    `3) Rejoue \`${brief.testCommand}\` et confirme 0 failed sur TA sortie réelle (beltPassed.failed=0). ` +
     `Renseigne \`criteria\` (correspondance test → critère) et \`allVerified\`.\n` +
     `Fichiers d'impl : ${JSON.stringify(implFiles)}\nBRIEF:\n${briefJson}` + iso,
     { agentType: 'scd-spec-dev:verifier', schema: VERIFY, model: 'opus' },
   )
   // §14 (c) — SELF-CORRECTION BORNÉE (UNE seule passe), et SEULEMENT si la ceinture est PROPRE.
-  //   Une ceinture violée (failed≠0 ou git diff test non vide) est un signal de neutralisation :
+  //   Une ceinture violée (failed≠0 ou diff de test NON additif) est un signal de neutralisation :
   //   JAMAIS maquillée, elle bloque tel quel. Le cas rattrapé est le critère INOBSERVABLE par la
   //   stratégie « test/tdd » (colibri : composant jamais monté, test qui grepe le source) alors que
   //   la ceinture est propre → on tente UNE fois la stratégie suivante, en mode observé (strategie-verif
   //   étape 3 : niveau test inatteignable → observé) : preuve observable montée, ou humanCheckRequired.
   //   Résout-en-vol ou escalade bon marché le blocked-verify de fin de run, sans toucher à la barre de sortie.
-  const beltViolated = (v) => !!(v && v.beltPassed && (v.beltPassed.failed !== 0 || v.beltPassed.testsDiffEmpty === false))
+  // Un diff de test non vide n'est PAS une violation s'il est prouvé strictement ADDITIF (fichier neuf,
+  //   cas ajoutés). Seul un diff qui RETIRE/affaiblit un test ou ajoute un neutralisant viole la ceinture.
+  const beltViolated = (v) => !!(v && v.beltPassed && (v.beltPassed.failed !== 0 || (v.beltPassed.testsDiffEmpty === false && v.beltPassed.testsDiffAdditiveOnly !== true)))
   if (verify && !verify.allVerified && !beltViolated(verify)) {
     const unproven = (verify.criteria || []).filter((c) => c && !c.verified && !c.humanCheckRequired)
     if (unproven.length) {
@@ -1140,14 +1159,14 @@ if (triaged.apply.length) {
     `JAMAIS un fichier de test, JAMAIS un escape-hatch. Si un correction_prompt s'avère infondé une fois dans le code, rends-le notApplied avec le motif (ne force pas). ` +
     `Puis RE-VÉRIFIE selon le mode : ` +
     (usesTests
-      ? `modes tdd/test → ré-exécute \`${brief.testCommand}\` (0 failed) ET \`${gitPrefix} diff\` sur les fichiers de test ${JSON.stringify(testFiles)} VIDE.`
+      ? `modes tdd/test → ré-exécute \`${brief.testCommand}\` (0 failed) ET \`${gitPrefix} add -N ${testFiles.join(' ')}\` puis \`${gitPrefix} diff -U0\` sur les fichiers de test VIDE (testsDiffEmpty=true), ou — tu n'as pas touché aux tests, mais le diff porte les tests du ticket — strictement ADDITIF (testsDiffAdditiveOnly=true : aucune assertion/cas retiré, aucun .skip(/.only(/.todo( ajouté).`
       : `mode observé → rejoue la vérification observable pertinente, la preuve tient toujours.`) +
     `\nFindings retenus:\n${JSON.stringify(triaged.apply)}\nBRIEF (verifMode/testCommand):\n${JSON.stringify({ verifMode: mode, testCommand: brief.testCommand })}` + iso,
     { agentType: 'scd-spec-dev:fix-applier', schema: APPLY, model: 'sonnet' },
   )
   const rv = applied && applied.reverify
   const reverifyOk = usesTests
-    ? (rv && rv.failed === 0 && rv.testsDiffEmpty !== false)
+    ? (rv && rv.failed === 0 && (rv.testsDiffEmpty !== false || rv.testsDiffAdditiveOnly === true))
     : !!(rv || (applied && applied.applied))
   if (!applied || !reverifyOk) {
     return { ticket, changeDir, status: 'blocked-after-fix', mode, applied, triaged, green, verify, worktreeDir: wtDir }
