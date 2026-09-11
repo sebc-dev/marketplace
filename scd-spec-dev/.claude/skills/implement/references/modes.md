@@ -44,7 +44,7 @@ de `verifier`.
 | — | **Green / Red / Validate** | test | l'impl prouve l'intégration, puis tests-après VERTS |
 | — | **Green** | observé · aucun | preuve d'intégration (observé) / spike (aucun) |
 | 7 | **Verify** | tdd · test · observé | ceinture (tdd/test) ou preuve observable/`humanCheckRequired` (observé). §14 (c) : si la ceinture tdd/test est **propre** mais un critère reste **inobservable** par la stratégie test → **une** passe de self-correction bornée le tente en observé (preuve montée / `humanCheckRequired`) avant `blocked-verify` ; une ceinture **violée** n'est jamais self-corrigée |
-| 7½ | **Quality** | tous si `.claude/quality.json` | `quality-analyzer` → `quality-fixer` (autofix sûr) → **échecs non-autofixables : chaque check → son agent dédié `quality-<id>` (co-écrit par `/scd-spec-dev:quality-agents`, sinon générique `quality-advisor`) → triage → applier → re-analyze** ; l'applier est le `fix-applier` générique (jamais les tests, diff de test exigé VIDE) **ou**, si `quality.json` déclare un top-level `applier` présent sur disque, l'applier DU PROJET (co-écrit par `/scd-spec-dev:quality-agents`) — seul autorisé à **renforcer** les tests, et seulement par AJOUT ; ses éditions sont alors auditées en contexte frais par le **`test-edit-validator`**, qui REJOUE les contrôles d'additivité (il ne croit pas le `testsDiffAdditiveOnly` de l'applier) et juge les tests ajoutés (tautologie / exécution sans assertion → refus) — violation ⇒ `blocked-quality-test-edit` ; `blocking` résiduel échoue, `advisory` → findings. No-op sans le fichier |
+| 7½ | **Quality** | tous si `.claude/quality.json` | `quality-analyzer` (localise + qualifie `impl`/`test`/`mixed`) → `quality-fixer` (autofix sûr) → **échecs non-autofixables : chaque check → son agent dédié `quality-<id>` (co-écrit par `/scd-spec-dev:quality-agents`, sinon générique `quality-advisor`) → triage → applier → re-analyze** ; l'applier est le `fix-applier` générique (jamais les tests) **ou**, si `quality.json` déclare un top-level `applier` présent sur disque, l'applier DU PROJET — seul autorisé à **renforcer** les tests par AJOUT ; ses éditions sont alors auditées en contexte frais par le **`test-edit-validator`**, qui REJOUE l'additivité et juge les tests ajoutés — violation ⇒ `blocked-quality-test-edit` ; `blocking` résiduel échoue, `advisory` → findings. No-op sans le fichier |
 | 8 | **Context** | tous | `review-context` : dossier résolu **une fois** pour les six reviewers de code |
 | 9 | **Review** | tous | **8 reviewers ∥** contexte frais : 6 code + change + integrity (skill `review`) |
 | 10 | **Triage** | tous | `review-validator` : reproduit, ne garde que correction/exigence ; au doute skip |
@@ -56,11 +56,35 @@ de `verifier`.
 **Producteur ≠ vérificateur** partout : celui qui écrit (`test-writer`, `implementer`, `fix-applier`)
 n'est jamais celui qui juge (`test-validator`, `verifier`, les 8 reviewers, `review-validator`).
 
+### La quality gate ne détruit jamais de contenu
+
+Un autofix (`eslint . --fix`, un formatter) balaie le projet et peut toucher un fichier de test. Au
+moment où la gate passe, les tests du ticket sont un travail **non commité** — fichiers neufs, ou
+fichiers existants enrichis par le `test-writer`. Revenir à l'index ou à HEAD (`git checkout --`,
+`git restore`) les **détruirait** : blob vide pour un fichier neuf rendu visible par `git add -N`,
+version d'avant le ticket pour un fichier enrichi. C'est le bug de la v0.6.3 (des tests neufs perdus).
+
+Deux règles le rendent impossible :
+
+- **Le `quality-fixer` protège les tests par SNAPSHOT/RESTAURATION** : il copie chaque test hors de
+  l'arbre avant tout autofix, puis restaure par `cp` — jamais par une commande git. `git checkout --`,
+  `git restore`, `git rm`, `rm` et toute recréation « de mémoire » sur un test lui sont interdits. Le
+  `verifier`, en amont, **défait son `git add -N`** (`git reset`) pour ne pas laisser l'index piéger un
+  `checkout` aval.
+- **Un échec localisé dans un test neuf est routé, pas bloqué.** Le `quality-analyzer` qualifie chaque
+  échec (`impl`/`test`/`mixed`). Un échec autofixable localisé **dans un test** du ticket (modes
+  tdd/test) — un lint corrigeable, par exemple `no-unnecessary-type-assertion` — voit son autofix
+  **gardé** (édition additive : mêmes assertions, mêmes cas), puis **audité en contexte frais** par le
+  `test-edit-validator`, exactement comme les éditions d'un applier de projet. Il ne finit plus en
+  `blocked-quality-*` sans qu'un agent autorisé l'ait corrigé.
+
 ## Statuts de blocage (ce que le run rend)
 
 `blocked-branch` · `blocked-rebase` · `blocked-brief` · `blocked-arbitrage` · `blocked-red` ·
 `blocked-tests-modified` · `blocked-impl` · `blocked-verify` ·
-`blocked-quality` (+ `-config` / `-tests-touched` / `-fix` / `-test-edit`) ·
+`blocked-quality` (+ `-config` / `-tests-touched` / `-fix` / `-test-edit`) — `-tests-touched` n'est
+désormais atteignable que si une **restauration** de test depuis le snapshot échoue, jamais sur un
+simple diff non vide ·
 `blocked-record` · `blocked-branch-drift` · `blocked-after-fix`. Sur tout `blocked-*` : **aucune PR
 ouverte**, la branche du ticket existe déjà (travail non perdu), et une fiche de chantier consigne le
 fait (sinon il disparaît au `/clear` — rien sur le disque ne distingue un run bloqué d'un ticket

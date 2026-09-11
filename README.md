@@ -152,7 +152,7 @@ Practices*, and model knowledge where those three are silent. Every claim carrie
 `[MS]`/`[CANONICAL]`/`[APOLLO]`/`[MODEL]` — and undocumented areas are named rather than filled by
 inference.
 
-### [scd-spec-dev](./scd-spec-dev/) `v0.6.3`
+### [scd-spec-dev](./scd-spec-dev/) `v0.7.0`
 
 Spec-driven cycle built **on OpenSpec**, from change to PR — and the implementation layer OpenSpec
 lacks. OpenSpec carries the doc→tickets layer (living specs in `openspec/specs/`, an

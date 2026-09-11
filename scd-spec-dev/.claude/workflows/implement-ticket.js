@@ -13,7 +13,7 @@ export const meta = {
     { title: 'Validate', detail: 'test-validator : (tdd · test) 1 critère = 1 test, cas limites, anti-tautologie' },
     { title: 'Green', detail: 'implementer : (tdd · test) implémente jusqu\'au vert sans toucher aux tests ; (observé) prouve l\'intégration ; (aucun) spike' },
     { title: 'Verify', detail: 'verifier : (tdd · test) CEINTURE — rejeu sur checkout propre + git diff test vide ; (observé) preuve observable / humanCheckRequired. §14 (c) : une passe de self-correction BORNÉE (une seule) si la ceinture est propre mais un critère reste inobservable par la stratégie test → tentée en observé (preuve montée ou humanCheckRequired) ; une ceinture violée n\'est JAMAIS self-corrigée' },
-    { title: 'Quality', detail: 'quality-analyzer → quality-fixer (autofix sûr) → escalade des échecs non-autofixables : chaque check routé vers SON agent dédié quality-<id> (co-écrit par /scd-spec-dev:quality-agents, sinon générique quality-advisor) → triage → applier → re-analyze. L\'applier est le fix-applier générique (jamais les tests) ou, si quality.json déclare un applier DE PROJET, celui-ci — seul autorisé à renforcer les tests, ses éditions auditées en contexte frais par test-edit-validator (additivité rejouée + tests ajoutés jugés). blocking résiduel échoue le ticket, advisory → findings. No-op sans .claude/quality.json' },
+    { title: 'Quality', detail: 'quality-analyzer (localise + qualifie impl/test/mixed) → quality-fixer (autofix sûr, tests protégés par SNAPSHOT/RESTAURATION — jamais de git checkout : la gate ne détruit aucun contenu ; un autofix additif sur un test neuf est GARDÉ et audité par test-edit-validator, pas bloqué) → escalade des échecs non-autofixables : chaque check routé vers SON agent dédié quality-<id> (co-écrit par /scd-spec-dev:quality-agents, sinon générique quality-advisor) → triage → applier → re-analyze. L\'applier est le fix-applier générique (jamais les tests) ou, si quality.json déclare un applier DE PROJET, celui-ci — seul autorisé à renforcer les tests, ses éditions auditées en contexte frais par test-edit-validator (additivité rejouée + tests ajoutés jugés). blocking résiduel échoue le ticket, advisory → findings. No-op sans .claude/quality.json' },
     { title: 'Context', detail: 'review-context : dossier de contexte (invariants docs/architecture.md, ADR, décisions/hors-périmètre) résolu UNE fois pour les six reviewers de code' },
     { title: 'Review', detail: 'HUIT reviewers en parallèle, contexte frais : architecture, sécurité, conventions, propreté, error-handling, couverture + change (niveau artefact) + integrity (escape-hatches/chemins protégés)' },
     { title: 'Triage', detail: 'review-validator : triage sceptique adversarial, au doute → skip' },
@@ -344,6 +344,7 @@ const QUALITY_ANALYSIS = {
           measured: { type: 'string' },
           threshold: { type: 'string' },
           locations: { type: 'array', items: { type: 'string' } },
+          locationsNature: { type: 'string', description: "impl | test | mixed — nature des locations confrontées aux testFiles du ticket ; route un échec localisé dans un test neuf au lieu de le bloquer" },
           autofixable: { type: 'boolean' },
           agent: { type: 'string', description: "agent dédié du check (quality-<id>) vérifié présent sur disque, ou null → générique quality-advisor" },
           evidence: { type: 'string' },
@@ -359,7 +360,13 @@ const QUALITY_FIX = {
   properties: {
     applied: { type: 'array', items: { type: 'object', properties: { checkId: { type: 'string' }, cmd: { type: 'string' }, result: { type: 'string' } } } },
     residual: { type: 'array', items: { type: 'object', properties: { checkId: { type: 'string' }, severity: { type: 'string' }, status: { type: 'string' }, reason: { type: 'string' } } } },
-    testsUntouched: { type: 'boolean' },
+    // Fichiers de test dont l'autofix additif (lint/format/typage sur un test neuf du ticket, modes
+    // tdd/test) a été GARDÉ, en attente d'audit par le test-edit-validator. Non vide ⇒ audit, jamais blocage.
+    testsEdited: { type: 'array', items: { type: 'string' } },
+    testsUntouched: { type: 'boolean', description: 'true ssi le contenu final de chaque test == son snapshot (testsEdited vide) — verdict honnête sur l\'état final, un test restauré compte comme intact' },
+    // La SEULE anomalie de tests qui échoue le ticket : une restauration depuis le snapshot n'a pas
+    // reproduit le contenu d'avant autofix. Plus jamais un simple git diff non vide.
+    restoreFailed: { type: 'boolean' },
     blockingResidual: { type: 'integer', description: '> 0 → le ticket doit échouer' },
   },
 }
@@ -756,6 +763,7 @@ if (usesTests) {
     `Non vide → décide beltPassed.testsDiffAdditiveOnly : true SSI strictement additif — aucune assertion ni aucun cas RETIRÉ ou affaibli, aucun fichier de test vidé/supprimé, aucun \`.skip(\`/\`.only(\`/\`.todo(\` AJOUTÉ. ` +
     `Cite dans beltPassed.removedAssertions et beltPassed.addedNeutralizers ce que tu trouves ; l'un des deux non vide ⇒ additiveOnly=false = neutralisation → échec, remonté tel quel. Au doute → additiveOnly=false. ` +
     `3) Rejoue \`${brief.testCommand}\` et confirme 0 failed sur TA sortie réelle (beltPassed.failed=0). ` +
+    `4) DÉFAIS l'intent-to-add : \`${gitPrefix} reset -q -- ${testFiles.join(' ')}\` — le \`add -N\` de l'étape 1 a mis les fichiers neufs dans l'index avec un blob VIDE ; le laisser piégerait tout \`checkout\`/\`restore\` aval (il ramènerait le blob vide, pas le contenu de travail). Rends l'arbre exactement comme trouvé. ` +
     `Renseigne \`criteria\` (correspondance test → critère) et \`allVerified\`.\n` +
     `Fichiers d'impl : ${JSON.stringify(implFiles)}\nBRIEF:\n${briefJson}` + iso,
     { agentType: 'scd-spec-dev:verifier', schema: VERIFY, model: 'opus' },
@@ -829,7 +837,8 @@ const q1 = await agent(
   `Quality gate du ticket ${ticket}. Lis \`.claude/quality.json\` (possédé par le projet). ` +
   `ABSENT/illisible → la gate est un NO-OP : retourne { "gate": "skipped", "findings": [] } sans jouer aucun check, n'invente rien. ` +
   `Présent → joue chaque check sur le diff (fichiers d'impl : ${JSON.stringify(implFiles)}), capture la sortie réelle, évalue les seuils, ` +
-  `classe pass/fail et blocking/advisory (sévérité du check, jamais ré-arbitrée), localise, note \`autofixable\` (autofix non nulle).\n` +
+  `classe pass/fail et blocking/advisory (sévérité du check, jamais ré-arbitrée), localise, note \`autofixable\` (autofix non nulle). ` +
+  `Pour chaque échec, qualifie \`locationsNature\` (impl | test | mixed) en confrontant les fichiers cités aux fichiers de test du ticket ${JSON.stringify(testFiles)} (et convention *.test.*/*.spec.*/__tests__/tests/).\n` +
   `Reporte aussi l'\`applier\` du projet : le champ top-level \`applier\` de quality.json, mais SEULEMENT si \`.claude/agents/<applier>.md\` existe vraiment (Glob) ; sinon null.\n` +
   `BRIEF (files/verifMode/criteres):\n${briefJson}` + iso,
   { agentType: 'scd-spec-dev:quality-analyzer', schema: QUALITY_ANALYSIS, model: 'sonnet' },
@@ -849,17 +858,44 @@ if (q1 && q1.gate === 'ok') {
   const qApplier = q1 && typeof q1.applier === 'string' && /^quality-[a-z0-9][a-z0-9-]*$/.test(q1.applier) ? q1.applier : null
   if (qApplier) log(`Quality gate — applier de projet déclaré : ${qApplier} (autorisé à renforcer les tests, additivité exigée)`)
   const fixable = (q1.findings || []).filter((f) => f.status === 'fail' && f.autofixable)
+  // Findings autofixables LOCALISÉS DANS UN TEST NEUF du ticket (modes tdd/test) : leur autofix
+  // (lint/format/typage) est une édition ADDITIVE légitime, pas une neutralisation. Le fixer la GARDE
+  // au lieu de la détruire, et le test-edit-validator l'audite en contexte frais (juste en dessous).
+  const testLocatedFixable = usesTests
+    ? fixable.filter((f) => f.locationsNature === 'test' || f.locationsNature === 'mixed')
+    : []
   if (fixable.length) {
     const qf = await agent(
-      `Quality gate — AUTOFIX SÛR UNIQUEMENT. Relis \`.claude/quality.json\` pour la commande \`autofix\` exacte de chaque checkId. ` +
+      `Quality gate — AUTOFIX SÛR UNIQUEMENT. Relis \`.claude/quality.json\` pour la commande \`autofix\` exacte de chaque checkId. Préfixe git : \`${gitPrefix}\`. Mode : ${mode}. Fichiers de test du ticket : ${JSON.stringify(testFiles)}. ` +
+      `AVANT tout autofix, SNAPSHOT chaque fichier de test existant hors de l'arbre (\`SNAP=$(mktemp -d)\` puis \`cp\` chemins préservés) — c'est ta seule voie de retour sûre, l'index/HEAD ramèneraient un blob vide ou la version d'avant le ticket. ` +
       `Pour chaque finding en échec dont le check déclare une \`autofix\` non nulle : exécute-la (respecte scope.paths), puis RE-JOUE la \`cmd\` du check pour confirmer. ` +
-      `GARDE-FOUS : jamais les tests (après chaque autofix, \`${gitPrefix} diff\` sur les tests DOIT rester vide, sinon \`git checkout --\` sur ces chemins et check non-autofixable) ; ` +
-      `jamais .claude/quality.json ; jamais un escape-hatch. Un finding sans autofix reste résiduel à l'identique.\n` +
+      `APRÈS les autofix, statue sur chaque fichier de test : inchangé → rien ; changé ET localisation d'un finding \`locationsNature\` test/mixed en mode tdd/test → GARDE la version corrigée (édition additive) et liste-le dans \`testsEdited\` ; changé pour toute autre raison → RESTAURE par \`cp\` depuis le snapshot (JAMAIS \`git checkout --\`/\`restore\`/\`rm\`) et rends ce check non-autofixable. ` +
+      `Si une restauration ne reproduit pas le snapshot → \`restoreFailed: true\`. \`testsUntouched\` = état FINAL honnête (un test restauré compte comme intact). ` +
+      `Jamais .claude/quality.json ; jamais un escape-hatch. Un finding sans autofix reste résiduel à l'identique.\n` +
       `Findings du quality-analyzer:\n${JSON.stringify(q1.findings || [])}` + iso,
       { agentType: 'scd-spec-dev:quality-fixer', schema: QUALITY_FIX, model: 'haiku' },
     )
-    if (qf && qf.testsUntouched === false) {
+    // La SEULE anomalie de tests qui échoue le ticket est une RESTAURATION ratée — plus jamais un
+    // simple diff non vide (qui détruisait le contenu par `git checkout --`).
+    if (qf && qf.restoreFailed === true) {
       return { ticket, changeDir, status: 'blocked-quality-tests-touched', mode, quality: q1, qualityFix: qf, worktreeDir: wtDir }
+    }
+    // AUDIT en contexte frais des autofix de test GARDÉS par le fixer (comme pour l'applier de projet).
+    const fixerTestsEdited = (qf && Array.isArray(qf.testsEdited)) ? qf.testsEdited : []
+    if (usesTests && fixerTestsEdited.length) {
+      phase('Quality')
+      const tev = await agent(
+        `Audite les ÉDITIONS DE TEST gardées par le quality-fixer sur le ticket ${ticket} (contexte frais, tu n'as rien écrit). Ce sont des autofix de lint/format/typage sur des tests neufs du ticket. ` +
+        `Rejoue TOI-MÊME les deux contrôles d'additivité sur \`${gitPrefix} diff -U0\` des fichiers ${JSON.stringify(fixerTestsEdited)} et cite leur sortie. ` +
+        `ADMETS la seule exception d'une paire -/+ où l'assertion ET le cas restent identiques, seul le formatage ou une assertion de type inutile (\`as Foo\`) ayant changé — c'est le contrat d'un autofix additif, PAS un retrait. Un retrait RÉEL (assertion/cas disparu sans équivalent, \`.skip(\`/\`.only(\`/\`.todo(\` ajouté, fichier vidé) → violation. ` +
+        `Un autofix ne doit RIEN ajouter comme cas/assertion : s'il en ajoute, c'est un hors-mandat → violation. Au doute → violation.\n` +
+        `Rapport du fixer:\n${JSON.stringify(qf)}\nFindings de test qui l'ont mandaté (avec leur checkId):\n${JSON.stringify(testLocatedFixable)}` + iso,
+        { agentType: 'scd-spec-dev:test-edit-validator', schema: TEST_EDIT_AUDIT, model: 'opus' },
+      )
+      if (!tev || tev.verdict !== 'ok') {
+        return { ticket, changeDir, status: 'blocked-quality-test-edit', mode, quality: q1, qualityFix: qf, testEdit: tev, worktreeDir: wtDir }
+      }
+      log(`Quality gate — autofix de test gardé(s) audité(s) : additivité confirmée sur ${fixerTestsEdited.length} fichier(s)`)
     }
     // Re-analyze après autofix : l'état résiduel fait autorité (blocking → échec, advisory → findings).
     residual = await agent(

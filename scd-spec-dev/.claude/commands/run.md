@@ -229,8 +229,13 @@ retourné :
   n'est **jamais** self-corrigée : elle bloque tel quel.
 - **`blocked-quality`** / **`blocked-quality-config`** / **`blocked-quality-tests-touched`** /
   **`blocked-quality-fix`** → la quality gate a un check `blocking` résiduel en échec, un
-  `.claude/quality.json` illisible, l'autofix a touché un test, ou une correction adaptée
-  (agent dédié → applier) a cassé la re-vérif. Explique quel check, et la reprise.
+  `.claude/quality.json` illisible, la **restauration d'un test depuis le snapshot a échoué**, ou une
+  correction adaptée (agent dédié → applier) a cassé la re-vérif. **`blocked-quality-tests-touched`
+  ne devrait plus être atteignable que si la restauration elle-même échoue** : la gate ne détruit
+  jamais de contenu (le `quality-fixer` snapshot les tests avant tout autofix et restaure par `cp`,
+  jamais par `git checkout --`), et un autofix de lint localisé dans un test neuf du ticket est
+  **gardé puis audité** par le `test-edit-validator`, pas restauré ni bloqué. Explique quel check, et
+  la reprise.
 - **`blocked-quality-test-edit`** → le projet déclare un **applier à lui** (top-level `applier`),
   autorisé à renforcer les tests, et le `test-edit-validator` a refusé ses éditions en contexte
   frais : soit l'additivité est rompue (une assertion ou un cas **retiré**, un `.skip(` ajouté), soit

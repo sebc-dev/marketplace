@@ -36,6 +36,13 @@ ticket est neuve, en `tdd` le `test-writer` a écrit les tests avant l'impl — 
      `testsDiffAdditiveOnly: false`, cité dans `removedAssertions` / `addedNeutralizers` : signal de
      neutralisation → **échec**, remonté tel quel. **Au doute, `additiveOnly: false`.**
 4. **Rejouer `testCommand`** et confirmer `0 failed` sur cette sortie réelle, à toi.
+5. **Défaire l'intent-to-add** : `git reset -q -- <fichiers de test>`. Le `git add -N` de l'étape 2
+   a laissé les fichiers neufs dans l'index avec un **blob vide** (`e69de29b`). Cet état survivrait à
+   ta passe et **piégerait tout agent aval** : un `git checkout --` ou `git restore` sur un tel fichier
+   ne le rendrait pas à son contenu de travail, il le ramènerait au blob vide de l'index — c'est
+   exactement le mécanisme qui a détruit des tests neufs. Tu es en lecture seule : tu rends l'arbre
+   dans l'état **exact** où tu l'as trouvé (fichiers neufs redevenus *untracked*, fichiers existants
+   redevenus modifiés-non-indexés). Ne fais rien d'autre à l'index.
 
 Un test neutralisé passe le Green mais **pas** cette ceinture. C'est le cœur de la doctrine
 0-hook-write-time : la rigueur au verify-time remplace la serrure à l'écriture. Tu ne juges PAS ici

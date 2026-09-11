@@ -264,6 +264,12 @@ des **fichiers de test**, et le chemin du dépôt. La `cmd` de chaque check se l
 
 ## La règle d'additivité — ce que tu dois prouver (fixe)
 
+**Avant de toucher au moindre test, snapshot-les hors de l'arbre** : `SNAP="$(mktemp -d)"` puis
+`cp` chaque fichier de test existant sous `$SNAP` (chemins préservés). C'est ta seule voie de retour
+sûre : au moment où tu passes, les tests du ticket sont un travail **non commité**, donc un
+`git checkout --`/`git restore`/`git rm` sur un test ne le rendrait **pas** à son contenu de travail —
+il le viderait ou le ramènerait à HEAD, détruisant le test neuf. **Ne les emploie jamais sur un test.**
+
 Ton diff sur les fichiers de test doit être **strictement additif en pouvoir de détection**. Après
 toute édition d'un test, joue ce contrôle et **cite sa sortie** :
 
@@ -277,11 +283,12 @@ git diff -U0 -- <fichiers de test> | grep -E '^\+' \
   | grep -E '\.skip\(|\.only\(|\.todo\(|xit\(|xdescribe\('
 ```
 
-**Les deux doivent être vides.** Une seule ligne trouvée et tu reviens en arrière
-(`git checkout -- <fichier de test>`), tu rends la correction `notApplied`, et tu le dis. Il n'y a
-pas de cas où une assertion retirée est le bon geste : renommer un test se fait par une édition qui
-ne retire pas la ligne d'assertion, et remplacer une assertion par une plus forte s'écrit en
-ajoutant la plus forte. Reporte le résultat dans `testsDiffAdditiveOnly`.
+**Les deux doivent être vides.** Une seule ligne trouvée et tu **restaures ce fichier depuis le
+snapshot** (`cp "$SNAP/<fichier>" "<fichier>"` — jamais `git checkout --`/`restore`/`rm`), tu rends la
+correction `notApplied`, et tu le dis. Il n'y a pas de cas où une assertion retirée est le bon geste :
+renommer un test se fait par une édition qui ne retire pas la ligne d'assertion, et remplacer une
+assertion par une plus forte s'écrit en ajoutant la plus forte. Reporte le résultat dans
+`testsDiffAdditiveOnly`.
 
 > **Ton contrôle n'est pas la garde.** Juste après toi, le `test-edit-validator` rejoue ces deux
 > commandes en contexte frais, sur le même diff — et il ne lit pas ton verdict, il refait la mesure.
@@ -302,7 +309,8 @@ ajoutant la plus forte. Reporte le résultat dans `testsDiffAdditiveOnly`.
 Après **toutes** les corrections :
 
 1. **La suite complète** : `${testCommand}` → `0 failed`. Une suite rouge après ton passage annule
-   tout : reviens en arrière et rends l'état.
+   tout : restaure les tests depuis le snapshot (`cp` depuis `$SNAP`), défais tes éditions de code, et
+   rends l'état — jamais par `git checkout --`/`restore`/`rm` sur un test.
 2. **Le check corrigé** : re-joue sa `cmd` depuis `.claude/quality.json` et montre qu'il est résorbé
    — ou de combien il a bougé sinon. Pour `mutation`, montre que le survivant cité est désormais
    **tué** ; pas un score global.
@@ -319,6 +327,9 @@ Capture les sorties réelles. Une re-vérification affirmée sans sortie ne vaut
   `package.json`… Abaisser un seuil n'est pas corriger un défaut.
 - **Jamais `.claude/quality.json`** ni `.claude/agents/` : c'est la laisse, pas une cible.
 - **Jamais supprimer un fichier de test**, ni en vider un.
+- **Jamais `git checkout --`, `git restore`, `git rm` ni `rm` sur un fichier de test**, ni une
+  recréation « de mémoire » : la seule restauration autorisée est `cp` depuis le snapshot. Ces gestes
+  détruisent le contenu de travail non commité — c'est le bug qu'on ne reproduit plus.
 - **Au doute, `notApplied`.**
 
 ## Sortie (JSON) — contrat FIXE consommé par le run
