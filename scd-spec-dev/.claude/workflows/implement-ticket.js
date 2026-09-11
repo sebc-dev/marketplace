@@ -351,6 +351,10 @@ const QUALITY_ANALYSIS = {
         },
       },
     },
+    // sha256 du CONTENU de chaque fichier de test existant (clé = chemin repo-relatif, valeur = sha256).
+    // Calculé par l'analyzer, qui n'a PAS joué l'autofix : c'est la preuve d'intégrité que le SCRIPT
+    // compare avant/après le fixer (producteur ≠ vérificateur) au lieu de croire le testsUntouched du fixer.
+    testFileHashes: { type: 'object', additionalProperties: { type: 'string' } },
   },
 }
 
@@ -635,7 +639,8 @@ if (mode === 'tdd') {
   tests = await agent(
     `Mode TDD. Écris les tests du ticket ${ticket} — un test nommé par critère, l'id SC-<NN><lettre> DANS le nom — puis exécute ` +
     `\`${brief.testCommand}\` et CONFIRME le ROUGE (échec pour la BONNE raison : fonctionnalité absente, pas une erreur de compilation triviale). ` +
-    `expectedState="red". Ne touche JAMAIS au code de production.\nBRIEF:\n${briefJson}` + iso,
+    `expectedState="red". Ne touche JAMAIS au code de production. ` +
+    `AVANT de rendre, FORMATE/LINTE tes SEULS fichiers de test : joue l'\`autofix\` de \`.claude/quality.json\` (sinon le formateur/linter détecté) RESTREINT à ces fichiers, puis re-joue \`${brief.testCommand}\` et reconfirme le ROUGE — un défaut cosmétique laissé dans un test neuf bloquerait la quality gate en aval.\nBRIEF:\n${briefJson}` + iso,
     { agentType: 'scd-spec-dev:test-writer', schema: TESTS, model: 'sonnet' },
   )
   if (!tests || tests.skipped) throw new Error('test-writer : aucun test produit en mode tdd')
@@ -704,7 +709,8 @@ if (mode === 'tdd') {
   tests = await agent(
     `Mode TEST (test-after). Le code du ticket ${ticket} est écrit. Écris maintenant les tests — un test nommé par critère, ` +
     `l'id SC-<NN><lettre> DANS le nom — puis exécute \`${brief.testCommand}\` et CONFIRME le VERT (expectedState="green", 0 failed). ` +
-    `Ne touche JAMAIS au code de production ; teste le comportement, pas l'implémentation.\n` +
+    `Ne touche JAMAIS au code de production ; teste le comportement, pas l'implémentation. ` +
+    `AVANT de rendre, FORMATE/LINTE tes SEULS fichiers de test : joue l'\`autofix\` de \`.claude/quality.json\` (sinon le formateur/linter détecté) RESTREINT à ces fichiers, puis re-joue \`${brief.testCommand}\` et reconfirme le VERT — un défaut cosmétique laissé dans un test neuf bloquerait la quality gate en aval.\n` +
     `Fichiers d'impl : ${JSON.stringify(green.implFiles)}\nBRIEF:\n${briefJson}` + iso,
     { agentType: 'scd-spec-dev:test-writer', schema: TESTS, model: 'sonnet' },
   )
@@ -833,12 +839,17 @@ if (usesTests) {
 // -------------------------------------------------------------------------
 phase('Quality')
 let qualityAdvisory = []
+// Fichiers de test que la quality gate a ÉDITÉS et gardés (autofix additif du fixer, ou renfort de
+// l'applier de projet), audités par le test-edit-validator. Remontés à la PR : une édition de test
+// par la gate se déclare au reviewer humain.
+let qualityTestEdits = []
 const q1 = await agent(
   `Quality gate du ticket ${ticket}. Lis \`.claude/quality.json\` (possédé par le projet). ` +
   `ABSENT/illisible → la gate est un NO-OP : retourne { "gate": "skipped", "findings": [] } sans jouer aucun check, n'invente rien. ` +
   `Présent → joue chaque check sur le diff (fichiers d'impl : ${JSON.stringify(implFiles)}), capture la sortie réelle, évalue les seuils, ` +
   `classe pass/fail et blocking/advisory (sévérité du check, jamais ré-arbitrée), localise, note \`autofixable\` (autofix non nulle). ` +
-  `Pour chaque échec, qualifie \`locationsNature\` (impl | test | mixed) en confrontant les fichiers cités aux fichiers de test du ticket ${JSON.stringify(testFiles)} (et convention *.test.*/*.spec.*/__tests__/tests/).\n` +
+  `Pour chaque échec, qualifie \`locationsNature\` (impl | test | mixed) en confrontant les fichiers cités aux fichiers de test du ticket ${JSON.stringify(testFiles)} (et convention *.test.*/*.spec.*/__tests__/tests/). ` +
+  `Renseigne \`testFileHashes\` : pour CHAQUE fichier de test du ticket qui existe, le sha256 de son CONTENU (\`sha256sum <fichier>\`, clé = chemin repo-relatif). C'est la preuve d'intégrité comparée côté script.\n` +
   `Reporte aussi l'\`applier\` du projet : le champ top-level \`applier\` de quality.json, mais SEULEMENT si \`.claude/agents/<applier>.md\` existe vraiment (Glob) ; sinon null.\n` +
   `BRIEF (files/verifMode/criteres):\n${briefJson}` + iso,
   { agentType: 'scd-spec-dev:quality-analyzer', schema: QUALITY_ANALYSIS, model: 'sonnet' },
@@ -895,15 +906,38 @@ if (q1 && q1.gate === 'ok') {
       if (!tev || tev.verdict !== 'ok') {
         return { ticket, changeDir, status: 'blocked-quality-test-edit', mode, quality: q1, qualityFix: qf, testEdit: tev, worktreeDir: wtDir }
       }
+      qualityTestEdits = fixerTestsEdited.slice()
       log(`Quality gate — autofix de test gardé(s) audité(s) : additivité confirmée sur ${fixerTestsEdited.length} fichier(s)`)
     }
     // Re-analyze après autofix : l'état résiduel fait autorité (blocking → échec, advisory → findings).
+    // Elle rend AUSSI les hash post-fixer : c'est l'agent (pas le fixer) qui les produit, le script compare.
     residual = await agent(
       `Quality gate — RE-ANALYSE après autofix. Relis \`.claude/quality.json\` et RE-JOUE chaque check sur l'état courant du diff ` +
-      `(fichiers d'impl : ${JSON.stringify(implFiles)}). Rends l'état résiduel réel (blockingFailures / advisoryFailures).\n` +
+      `(fichiers d'impl : ${JSON.stringify(implFiles)}). Rends l'état résiduel réel (blockingFailures / advisoryFailures). ` +
+      `Renseigne \`testFileHashes\` : le sha256 du CONTENU de chaque fichier de test du ticket ${JSON.stringify(testFiles)} qui existe (\`sha256sum\`, clé = chemin repo-relatif).\n` +
       `BRIEF (files/verifMode/criteres):\n${briefJson}` + iso,
       { agentType: 'scd-spec-dev:quality-analyzer', schema: QUALITY_ANALYSIS, model: 'sonnet' },
     ) || q1
+
+    // PREUVE D'INTÉGRITÉ CÔTÉ SCRIPT (critère 1 du bug prosperity, producteur ≠ vérificateur). On ne
+    // CROIT PAS le testsUntouched/restoreFailed rendus par le fixer (haiku) sur son propre travail :
+    // l'analyzer AVANT (q1) et la re-analyse APRÈS — deux agents qui n'ont PAS joué l'autofix — hashent
+    // les fichiers de test, et LE SCRIPT compare les chaînes. Tout fichier NON gardé (hors testsEdited)
+    // dont le hash a changé est un test que le fixer a modifié ou détruit sans droit → le ticket échoue.
+    // On ne flague qu'un changement PROUVÉ (post-hash présent ET différent) : une re-analyse qui aurait
+    // omis les hash ne doit pas bloquer un ticket sain par simple absence.
+    if (usesTests) {
+      const preHashes = (q1 && q1.testFileHashes) || {}
+      const postHashes = (residual && residual.testFileHashes) || {}
+      const kept = new Set(qualityTestEdits)
+      const tampered = Object.keys(preHashes).filter(
+        (p) => !kept.has(p) && postHashes[p] !== undefined && postHashes[p] !== preHashes[p],
+      )
+      if (tampered.length) {
+        log(`Quality gate — INTÉGRITÉ DES TESTS ROMPUE (hash côté script) : ${tampered.length} fichier(s) de test non gardé(s) modifié(s) par le fixer — ${tampered.join(', ')}.`)
+        return { ticket, changeDir, status: 'blocked-quality-tests-touched', mode, quality: residual, qualityFix: qf, tamperedTests: tampered, worktreeDir: wtDir }
+      }
+    }
   }
 
   // Escalade des échecs NON-autofixables (complexité, duplication, lint sans --fix, seuil manqué).
@@ -1255,6 +1289,7 @@ const desc = canDescribe
       `3) la MATRICE critère → test → statut (colonne « Preuve » = sortie capturée / humanCheckRequired en observé, ou pour un critère rattrapé par la self-correction §14 c en test/tdd) ; 4) Points à scruter ; ` +
       `5) <details> Ce que la review a décidé — findings appliqués ET rejetés avec motif ; 6) <details> Preuve d'exécution. ` +
       (preflightRepairs.length ? `Si \`preflightRepairs\` est non vide, ajoute une ligne dans la couche 5 : les réparations mécaniques du triage §14 (ex. id de critère attribué), consignées, non bloquantes. ` : ``) +
+      (qualityTestEdits.length ? `Si \`qualityTestEdits\` est non vide, dis-le explicitement dans la couche 4 : la quality gate a FORMATÉ ${qualityTestEdits.length} fichier(s) de test (autofix additif de lint/format, audité en contexte frais par le test-edit-validator — pas une neutralisation) : ${JSON.stringify(qualityTestEdits)}. ` : ``) +
       `Mesure le diff TOI-MÊME : \`${gitPrefix} diff --numstat <base>...<branche>\` — aucun chiffre inventé. ` +
       `N'écris PAS le bloc « PR EMPILÉE » (c'est pr-author). Lecture seule : aucun push, aucune PR.\n` +
       `Résumé:\n${JSON.stringify({
@@ -1274,6 +1309,7 @@ const desc = canDescribe
         findingsRejected: triaged.skip,
         preflightRepairs,
         qualityAdvisory,
+        qualityTestEdits,
         testCommand: brief.testCommand,
         checked: record ? record.checked : [],
         commits: record ? record.commits : [],

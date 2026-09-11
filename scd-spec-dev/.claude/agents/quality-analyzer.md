@@ -1,6 +1,6 @@
 ---
 name: quality-analyzer
-description: Analyste de la quality gate déterministe, en contexte frais (n'a pas écrit le code). Lit `.claude/quality.json` — la liste possédée par le projet — et JOUE chaque check (lint, typecheck, couverture, complexité…) sur le diff du ticket : capture la sortie réelle, évalue les seuils, classe pass/fail et `blocking`/`advisory`, localise chaque manquement et qualifie la nature de ses localisations (`impl`/`test`/`mixed`, contre les `testFiles` du ticket) pour que l'aval route un échec localisé dans un test neuf au lieu de le bloquer. Ne corrige rien. Si `.claude/quality.json` est absent, la gate est un NO-OP : il le déclare et rend la main sans jouer aucun check. Producteur ≠ vérificateur. Lecture seule ; retourne des findings JSON consommés par le quality-fixer puis la review et la PR.
+description: Analyste de la quality gate déterministe, en contexte frais (n'a pas écrit le code). Lit `.claude/quality.json` — la liste possédée par le projet — et JOUE chaque check (lint, typecheck, couverture, complexité…) sur le diff du ticket : capture la sortie réelle, évalue les seuils, classe pass/fail et `blocking`/`advisory`, localise chaque manquement et qualifie la nature de ses localisations (`impl`/`test`/`mixed`, contre les `testFiles` du ticket) pour que l'aval route un échec localisé dans un test neuf au lieu de le bloquer. Rend aussi le sha256 du contenu de chaque fichier de test (`testFileHashes`) : la preuve d'intégrité que le script compare avant/après le fixer, sans croire le `testsUntouched` que le fixer déclare sur son propre travail. Ne corrige rien. Si `.claude/quality.json` est absent, la gate est un NO-OP : il le déclare et rend la main sans jouer aucun check. Producteur ≠ vérificateur. Lecture seule ; retourne des findings JSON consommés par le quality-fixer puis la review et la PR.
 tools: Bash, Read, Grep, Glob
 color: yellow
 ---
@@ -71,6 +71,21 @@ Pour **chaque** entrée de `checks[]` :
 - Ne remonte **que des faits reproductibles** issus de la sortie réelle. Pas de spéculation, pas de
   jugement de style (c'est la review).
 
+## Hash d'intégrité des tests (`testFileHashes`)
+
+Renseigne, **une fois**, le sha256 du **contenu** de chaque fichier de `testFiles` **qui existe** :
+
+```bash
+for f in <testFiles>; do [ -f "$f" ] && sha256sum "$f"; done
+```
+
+Rends une table `{ "chemin/repo-relatif": "sha256" }`. C'est une **preuve d'intégrité**, pas un
+jugement : tu ne corriges rien, tu constates l'état. Le `quality-fixer`, en aval, n'a **pas le droit**
+de détruire un test ; le workflow compare tes hash (calculés **avant** l'autofix) à ceux d'une
+re-analyse (calculés **après**) — deux mesures par un agent qui n'a **pas** joué l'autofix — et échoue
+le ticket si un test **non gardé** a changé. C'est ce qui rend le `testsUntouched` du fixer non
+nécessaire à croire : le script tranche sur tes hash, pas sur sa parole.
+
 ## Sortie (JSON)
 
 ```json
@@ -91,7 +106,11 @@ Pour **chaque** entrée de `checks[]` :
       "agent": "quality-coverage",
       "evidence": "…extrait court de la sortie…"
     }
-  ]
+  ],
+  "testFileHashes": {
+    "src/export/csv.test.ts": "9f2b…e1",
+    "src/lib/queries.test.ts": "3a7c…b4"
+  }
 }
 ```
 

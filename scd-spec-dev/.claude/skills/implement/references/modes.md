@@ -64,8 +64,12 @@ fichiers existants enrichis par le `test-writer`. Revenir à l'index ou à HEAD 
 `git restore`) les **détruirait** : blob vide pour un fichier neuf rendu visible par `git add -N`,
 version d'avant le ticket pour un fichier enrichi. C'est le bug de la v0.6.3 (des tests neufs perdus).
 
-Deux règles le rendent impossible :
+Quatre règles le rendent impossible :
 
+- **Le `test-writer` formate ses tests à la source.** Avant de rendre, il joue l'`autofix` de
+  `.claude/quality.json` (sinon le formateur détecté) **restreint aux seuls fichiers de test qu'il
+  vient d'écrire**, puis reconfirme l'état attendu. Un défaut cosmétique dans un test neuf est ainsi
+  résorbé par son auteur — la gate n'a plus rien à corriger dans la plupart des cas.
 - **Le `quality-fixer` protège les tests par SNAPSHOT/RESTAURATION** : il copie chaque test hors de
   l'arbre avant tout autofix, puis restaure par `cp` — jamais par une commande git. `git checkout --`,
   `git restore`, `git rm`, `rm` et toute recréation « de mémoire » sur un test lui sont interdits. Le
@@ -76,15 +80,20 @@ Deux règles le rendent impossible :
   tdd/test) — un lint corrigeable, par exemple `no-unnecessary-type-assertion` — voit son autofix
   **gardé** (édition additive : mêmes assertions, mêmes cas), puis **audité en contexte frais** par le
   `test-edit-validator`, exactement comme les éditions d'un applier de projet. Il ne finit plus en
-  `blocked-quality-*` sans qu'un agent autorisé l'ait corrigé.
+  `blocked-quality-*` sans qu'un agent autorisé l'ait corrigé, et la PR **mentionne** l'édition.
+- **La preuve d'intégrité est côté script, pas dans la parole du fixer.** Le `quality-analyzer` hashe
+  (sha256) les fichiers de test **avant** l'autofix, une re-analyse les rehashe **après** — deux agents
+  qui n'ont pas joué l'autofix —, et **le workflow compare les chaînes**. Tout fichier **non gardé**
+  (hors `testsEdited`) dont le hash a changé échoue le ticket (`blocked-quality-tests-touched`), sans
+  croire le `testsUntouched` que le fixer déclare sur son propre travail (producteur ≠ vérificateur).
 
 ## Statuts de blocage (ce que le run rend)
 
 `blocked-branch` · `blocked-rebase` · `blocked-brief` · `blocked-arbitrage` · `blocked-red` ·
 `blocked-tests-modified` · `blocked-impl` · `blocked-verify` ·
 `blocked-quality` (+ `-config` / `-tests-touched` / `-fix` / `-test-edit`) — `-tests-touched` n'est
-désormais atteignable que si une **restauration** de test depuis le snapshot échoue, jamais sur un
-simple diff non vide ·
+désormais atteignable que si le **hash côté script** d'un test non gardé a changé (le fixer l'a modifié
+sans droit) ou si une **restauration** depuis le snapshot échoue, jamais sur un simple diff non vide ·
 `blocked-record` · `blocked-branch-drift` · `blocked-after-fix`. Sur tout `blocked-*` : **aucune PR
 ouverte**, la branche du ticket existe déjà (travail non perdu), et une fiche de chantier consigne le
 fait (sinon il disparaît au `/clear` — rien sur le disque ne distingue un run bloqué d'un ticket

@@ -1,6 +1,6 @@
 ---
 name: test-writer
-description: Écrit les tests d'un ticket — un test nommé par critère (SC-<NN><lettre>), l'id dans le nom du test — puis les exécute et confirme l'état attendu selon le mode du ticket : ROUGE en mode `tdd` (test avant impl), VERT en mode `test` (test écrit juste après l'impl). Applique le rubric de test (FIRST, AAA, cas limites EP+BVA, doubles minimaux sans sur-mock). Ne touche JAMAIS au code de production. En mode `observé` ou `aucun`, il ne s'exécute pas (pas de segment test). Retourne la liste des fichiers de test et la preuve de l'état attendu (sortie réelle).
+description: Écrit les tests d'un ticket — un test nommé par critère (SC-<NN><lettre>), l'id dans le nom du test — puis les exécute et confirme l'état attendu selon le mode du ticket : ROUGE en mode `tdd` (test avant impl), VERT en mode `test` (test écrit juste après l'impl). Applique le rubric de test (FIRST, AAA, cas limites EP+BVA, doubles minimaux sans sur-mock). Avant de rendre, il FORMATE/LINTE (autofix du projet) les SEULS fichiers de test qu'il vient d'écrire, pour qu'un défaut cosmétique dans un test neuf ne bloque pas la quality gate en aval — là où aucun agent n'a le droit de corriger un test. Ne touche JAMAIS au code de production. En mode `observé` ou `aucun`, il ne s'exécute pas (pas de segment test). Retourne la liste des fichiers de test et la preuve de l'état attendu (sortie réelle).
 tools: Bash, Read, Edit, Write, Grep, Glob
 color: magenta
 ---
@@ -52,6 +52,25 @@ Lancer `testCommand` et **capturer la sortie**.
   (fonctionnalité absente), pas sur une erreur de compilation ou un import cassé. Un rouge illégitime
   est un défaut à corriger avant de rendre.
 - En `test` : l'état attendu est **VERT** — `0 failed`.
+
+## Formater et linter les tests que tu écris — AVANT de rendre
+
+Un défaut cosmétique laissé dans un **test neuf** (format, tri d'imports, assertion de type inutile)
+bloque la quality gate en aval : les checks du projet (`eslint .`, `prettier --check .`) le voient, et
+aucun agent du cycle n'a le droit de corriger un test. Résorbe-le à la source, toi qui l'écris.
+
+1. Lis **`.claude/quality.json`** s'il existe. Pour chaque check qui déclare une commande `autofix`,
+   joue-la **restreinte à tes seuls fichiers de test** — jamais tout le projet. Exemples :
+   `eslint <tes fichiers de test> --fix`, `prettier --write <tes fichiers de test>`. Tu ne touches
+   qu'à ce que tu viens d'écrire.
+2. **Sans** `.claude/quality.json`, applique le formateur/linter détecté du projet (les `conventions`
+   du BRIEF, `docs/ci.md`) sur ces mêmes fichiers.
+3. **Re-joue `testCommand`** et reconfirme l'état attendu (ROUGE en `tdd`, VERT en `test`). Le
+   formatage ne change pas le rouge/vert ; s'il le change, c'est un signal — rends l'écart tel quel.
+
+Le `verifier` compare à **`HEAD`**, pas à un état intermédiaire : un test que tu as formaté avant la
+ceinture n'est **pas** une violation. Pour un fichier neuf, tout est un ajout ; pour un fichier
+existant enrichi, le diff reste additif (mêmes assertions, mêmes cas).
 
 ## Ce que tu ne fais jamais
 

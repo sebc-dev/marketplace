@@ -122,8 +122,15 @@ laisser intacts les findings non-autofixables.
   l'état final** : un test transitoirement modifié par un autofix puis **restauré** compte comme
   intact. Il est `false` dès qu'un test a été gardé (cas 2) — état normal, pas une anomalie.
 - `restoreFailed` : `true` seulement si une **restauration a échoué** à reproduire le snapshot. C'est
-  la seule anomalie de tests qui doit faire échouer le ticket (`blocked-quality-tests-touched`) — plus
-  jamais un simple `git diff` non vide.
+  la seule anomalie de tests **que tu déclares** qui fait échouer le ticket (`blocked-quality-tests-touched`)
+  — plus jamais un simple `git diff` non vide.
+
+> **Ta parole n'est pas la garde.** Le workflow ne **croit pas** ton `testsUntouched` : un
+> `quality-analyzer` en contexte frais a hashé les tests **avant** ton passage, un autre les rehashe
+> **après**, et **le script compare**. Tout fichier de test **non listé dans `testsEdited`** dont le
+> hash a bougé échoue le ticket, que tu aies déclaré `testsUntouched: true` ou non. Rends un rapport
+> **honnête** : c'est la seule manière que ton `testsEdited` (les fichiers que tu as le droit de garder)
+> corresponde à ce que le script mesure.
 
 `blockingResidual > 0` → le ticket doit **échouer** (un check `blocking` n'a pas été résorbé). Les
 résiduels `advisory` partent en findings vers la review et la description de PR.
