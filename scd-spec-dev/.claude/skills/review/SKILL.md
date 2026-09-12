@@ -8,7 +8,9 @@ description: |
   reviewer au niveau artefact) + integrity (escape-hatches et chemins protégés affaiblis — le jumeau
   review-time du filet CI). Porte la structure producteur ≠ vérificateur, le dossier de contexte
   résolu UNE fois, le triage adversarial (reproduire avant de retenir, au doute skip), et la frontière
-  entre ce qui BLOQUE et ce qui reste suggestion. Se charge pendant /scd-spec-dev:run (phase Review) et
+  entre ce qui BLOQUE et ce qui reste suggestion. La dimension architecture juge sur DEUX référents :
+  la table des invariants (promu / candidat / retiré) et le sous-graphe du modèle LikeC4 lu par le
+  MCP `likec4`. Se charge pendant /scd-spec-dev:run (phase Review) et
   /scd-spec-dev:review (l'utilitaire hors run). Une référence chargée à la demande :
   references/dimensions.md (les huit dimensions en détail + le contrat de finding). Porte UNIQUEMENT
   la review : elle n'écrit ni ne corrige rien (fix-applier applique, sous /scd-spec-dev:run), ne porte
@@ -40,7 +42,7 @@ sur le **diff seul**.
 
 | Dimension | Reviewer | Ce qui BLOQUE |
 |---|---|---|
-| architecture | `architecture-reviewer` | violation d'un invariant `docs/architecture.md`/ADR sans dérogation déclarée |
+| architecture | `architecture-reviewer` | violation d'un invariant **promu** (`docs/architecture.md`, colonne ADR remplie) sans dérogation déclarée ; un import du diff qui franchit une frontière du **modèle LikeC4** sans relation `A -> B` quand un invariant promu couvre la paire ; un `.c4` du diff que `likec4 validate` rejette |
 | sécurité | `security-reviewer` | vulnérabilité **confirmée dans le diff** (une spéculation non ancrée n'est pas un finding) |
 | error-handling | `error-handling-reviewer` | erreur non gérée sur un **chemin critique** |
 | couverture | `coverage-reviewer` | en `tdd`/`test` : chemin critique / critère sans test. En `observé` : **jamais** « absence de test » |
@@ -49,10 +51,16 @@ sur le **diff seul**.
 | conventions | `conventions-reviewer` | rien par défaut — un écart qu'aucun document ne porte est **suggestion** |
 | propreté | `cleanliness-reviewer` | rien par défaut — **sauf** une illisibilité qui rend le code non maintenable |
 
-**Deux nuances qui se reperdent.** `integrity` est un **filet, pas une serrure** : ajouter un **test
+**Trois nuances qui se reperdent.** `integrity` est un **filet, pas une serrure** : ajouter un **test
 neuf** en `tdd`/`test` est le contrat, pas une infraction — il vise l'**affaiblissement** d'un test
-existant, pas l'ajout. Et `change` est le **seul reviewer au niveau artefact**, autorisé à rouvrir le
-change ; il reçoit le **dossier du change**, pas le dossier de review.
+existant, pas l'ajout. `change` est le **seul reviewer au niveau artefact**, autorisé à rouvrir le
+change ; il reçoit le **dossier du change**, pas le dossier de review — et, si le projet porte un
+modèle, il vérifie par le MCP `likec4` que les FQN cités par le `design.md` existent. Et
+`architecture` juge sur **deux référents** : la table des invariants (promu = opposable, candidat =
+suggestion au plus, retiré = rien) et le **sous-graphe du modèle LikeC4** que `review-context` a lu
+par MCP — une frontière franchie sans relation dans le modèle est une **suggestion « relation non
+modélisée »** tant qu'aucun invariant promu ne la couvre. Sans modèle, la dimension juge comme
+avant, sur la table seule.
 
 Chaque reviewer rend des findings au schéma commun `{ severity: bloquant|suggestion, location,
 summary, rationale, correction_prompt }` — le `correction_prompt` est **autonome** (réappliquable
@@ -61,9 +69,14 @@ sans le contexte du reviewer).
 ## Le dossier de contexte — résolu une fois
 
 `review-context`, en contexte frais, résout **une seule fois** ce que six reviewers reliraient sinon :
-invariants de `docs/architecture.md`, corps des ADR contraignants, décisions d'implémentation et
-hors-périmètre du change, contrats d'interface, et les **aides** (`.claude/review.json` fait autorité —
-skills distillés, serveurs MCP en pointeur). Il **cite**, il ne juge pas.
+la table des invariants de `docs/architecture.md` — **structurée** (`{id, rule, elements[], class,
+adr, status}`), pas paraphrasée —, le **sous-graphe du modèle LikeC4** touché par le diff (par le
+serveur MCP `likec4`, le seul qu'il interroge : chaque fichier rattaché à son élément par
+`sourceDir`, relations à profondeur 1 avec leur kind, fichiers `unmapped` signalés — `model: null`
+avec le motif si le MCP est indisponible, jamais un arrêt), corps des ADR contraignants, décisions
+d'implémentation et hors-périmètre du change, contrats d'interface, et les **aides**
+(`.claude/review.json` fait autorité — skills distillés, autres serveurs MCP en pointeur). Il
+**cite**, il ne juge pas.
 
 ## Le triage adversarial
 

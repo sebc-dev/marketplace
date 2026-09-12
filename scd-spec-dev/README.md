@@ -3,7 +3,7 @@
 Cycle spec-driven bâti sur **OpenSpec**, du change à la PR — et la couche d'implémentation
 qu'OpenSpec n'a pas.
 
-> **⚠️ Écrit et mécaniquement vérifié, jamais joué de bout en bout.** Le plugin existe en `0.1.0`,
+> **⚠️ Écrit et mécaniquement vérifié, jamais joué de bout en bout.** Le plugin existe en `0.12.0`,
 > `claude plugin validate` au vert, mais aucun projet réel n'a encore parcouru
 > `setup → propose → tickets → run → sync → archive`. La question ouverte est celle de toute la
 > conception : la **review + verify** tiennent-elles la rigueur **sans hook write-time** ?
@@ -58,10 +58,11 @@ La recherche TDD, elle, recommande des hooks anti-triche. **Cette tension est as
 | Journal des tentatives | le rapport de findings + la description de PR (findings appliqués **et** rejetés) |
 | Job CI de rattrapage | **CONSERVÉ** : un job CI qui grep les escape-hatches, hors boucle de dev — le seul garde-fou automatique |
 
-**La review de pertinence, huit dimensions en contexte frais** : architecture · sécurité ·
-conventions · propreté · error-handling · couverture · **change** (bien cadré, testable, sans conflit
-avec les specs vivantes — le seul reviewer au niveau artefact) · **integrity** (escape-hatches +
-chemins protégés). Producteur ≠ vérificateur : aucun reviewer n'a écrit le code.
+**La review de pertinence, huit dimensions en contexte frais** : architecture (la table des
+invariants **et** le modèle LikeC4, lu par MCP) · sécurité · conventions · propreté · error-handling ·
+couverture · **change** (bien cadré, testable, sans conflit avec les specs vivantes — le seul reviewer
+au niveau artefact) · **integrity** (escape-hatches + chemins protégés). Producteur ≠ vérificateur :
+aucun reviewer n'a écrit le code.
 
 **La quality gate** (opt-in par check, advisory par défaut) : une gate *déterministe et outillée*
 (lint, typecheck, couverture, complexité) distincte de la review LLM. `quality-fixer` résorbe
@@ -121,7 +122,8 @@ ambigu, ou tests qui contredisent l'énoncé.
 
 ```bash
 /scd-spec-dev:setup          # détecte OpenSpec (guide l'install si absent), openspec init,
-                             # copie le schéma scd, accorde config.yaml, gabarits durables, filet CI
+                             # copie le schéma scd, accorde config.yaml, gabarits durables, filet CI,
+                             # et la dimension archi : modèle LikeC4, table d'invariants, MCP, job CI
 /scd-spec-dev:quality-setup  # (optionnel) paramètre la quality gate → .claude/quality.json
 ```
 
@@ -141,15 +143,66 @@ ambigu, ou tests qui contredisent l'énoncé.
 
 ---
 
+## L'architecture : un modèle, pas de la prose
+
+Jusqu'ici l'architecture entrait dans le cycle par de la prose que personne ne pouvait vérifier — un
+fichier de puces qu'un reviewer paraphrasait. **`/scd-spec-dev:setup` pose maintenant un modèle
+LikeC4** : un modèle unique en `.c4`, versionné en git, validé avec un **code de sortie**, exporté en
+JSON typé, et interrogeable par un **serveur MCP** de vingt outils en lecture seule.
+
+Ce que `setup` pose, si `likec4` est sur le PATH — **absent, ces étapes sont sautées et signalées**,
+tout le reste du montage joue (l'architecture est une dimension, OpenSpec est la fondation) :
+
+| Artefact | Propriétaire | Ce qu'il porte |
+|---|---|---|
+| `docs/architecture/likec4.config.json` + `model.c4` | **l'humain** (écrits si absents) | la structure : éléments, relations, vues |
+| `docs/architecture.md` | **l'humain** | la **table** des invariants : `Id · Règle · Éléments (FQN) · Classe · ADR` |
+| clé `likec4` du `.mcp.json` | **le plugin** (la clé seule) | `likec4 mcp docs/architecture`, en lecture seule |
+| job CI `likec4-validate` | **le plugin** | `likec4 validate` sur chaque push, gardé par `test -f` |
+| `.claude/scripts/scd-arch-conformance.mjs` | **le plugin** (rafraîchi au re-jeu) | la couche 3 : les imports du diff confrontés aux relations du modèle par `sourceDir` — le check `architecture` de `.claude/quality.json`, proposé par `quality-setup` avec le check `likec4` |
+
+**Deux conventions font tout le travail.** `metadata { sourceDir 'src/api' }` est la **seule** clé
+code ↔ modèle : un fichier du diff est rattaché à l'élément dont le `sourceDir` est le préfixe le plus
+long de son chemin ; un élément sans `sourceDir` est un élément de contexte, jamais confronté au code.
+Et **la question d'admission** d'un invariant — il doit **nommer des éléments du modèle** *et*
+**laisser une trace observable** dans l'arborescence ou les imports (classes 1 à 11 de la taxonomie ;
+sémantique et runtime n'entrent pas). C'est le garde-fou anti-*big design up front* : il porte sur ce
+qui entre dans la table, plus sur l'absence d'outil.
+
+**Le DSL décrit, il ne contraint pas** : `likec4 validate` prouve que le *modèle* est cohérent, jamais
+que le *code* l'est. La confrontation des imports réels aux relations du modèle est une couche à part :
+le script `scd-arch-conformance.mjs`, déterministe, **aveugle** aux alias de chemins, aux barrels, aux
+imports dynamiques calculés et aux cycles transitifs — il le déclare dans son en-tête ; ce qu'il ne
+voit pas, l'`architecture-reviewer` le juge, en contexte frais.
+
+> **Les deux commandes d'assistance existent** : `/scd-spec-dev:archi` amorce le modèle depuis le code
+> (arborescence, manifestes, imports → conteneurs avec `sourceDir`, une vue par conteneur, candidats
+> d'invariants) puis le révise contre le code ; `/scd-spec-dev:adr` écrit l'ADR Nygard et, si la
+> décision touche le modèle, le delta du `.c4`, la vue `adr-NNNN` rendue en Mermaid et la promotion
+> des invariants. **La review lit le modèle par MCP** : `review-context` résout la table en structuré
+> (candidat / promu / retiré) et le sous-graphe touché par le diff via le serveur `likec4` ;
+> l'`architecture-reviewer` bloque un import qui franchit une frontière sans relation dans le modèle
+> quand un invariant promu couvre la paire — suggestion « relation non modélisée » sinon — et valide
+> tout `.c4` du diff ; le `change-reviewer` vérifie que les FQN cités par `design.md` existent. Sans
+> modèle : repli sur la prose, jamais un arrêt. **Et la PR montre l'impact** : la description d'un
+> ticket qui touche le modèle porte la couche « Impact architecture » — éléments touchés, vue Mermaid
+> du conteneur (rendue par `likec4 gen mermaid`, repliée), relations à profondeur 1, et `likec4
+> validate` joué par le `pr-describer` si un `.c4` est dans le diff ; omise sans modèle ou sans
+> élément touché.
+
+---
+
 ## Les commandes
 
 | Commande | Rôle |
 |---|---|
-| `/scd-spec-dev:setup` | monte OpenSpec dans le projet, copie le schéma `scd`, `config.yaml`, gabarits durables, filet CI. Idempotente par artefact |
+| `/scd-spec-dev:setup` | monte OpenSpec dans le projet, copie le schéma `scd`, `config.yaml`, gabarits durables, filet CI, **+ le socle d'architecture LikeC4**. Idempotente par artefact |
+| `/scd-spec-dev:archi` | amorce le modèle LikeC4 depuis le code (conteneurs + `sourceDir`, une vue par conteneur, candidats d'invariants) ou le révise contre le code — jamais d'ADR, jamais de promotion |
+| `/scd-spec-dev:adr` | écrit un ADR Nygard ; s'il touche le modèle : delta du `.c4`, vue `adr-NNNN` rendue en Mermaid, invariants promus ou créés (colonne `ADR`). Un ADR accepté ne s'édite pas, il se supersède |
 | `/scd-spec-dev:quality-setup` | paramètre la quality gate → `.claude/quality.json` (possédé par le projet) |
 | `/scd-spec-dev:quality-agents` | co-crée avec l'humain les agents de la gate (projet) : un **diagnostiqueur par check** (`quality-<id>.md`, lecture seule) et, optionnel, l'**applier** (top-level `applier`) — le seul autorisé à renforcer les tests |
 | `/scd-spec-dev:tickets` | décompose un change en tickets verticaux (invoque `strategie-verif`, arbitre la granularité) |
-| `/scd-spec-dev:run` | implémente **un** ticket : vérif → quality gate → review 8 dims → triage → PR |
+| `/scd-spec-dev:run` | implémente **un** ticket : vérif → quality gate → review 8 dims → triage → PR (description avec couche « Impact architecture » si le modèle est touché) |
 | `/scd-spec-dev:run-parallel` | plusieurs tickets en parallèle réel, chacun dans son worktree |
 | `/scd-spec-dev:review` | review de pertinence à la demande, hors run — **lecture seule**, rapporte |
 | `/scd-spec-dev:sync` · `reland` | anti-orphelinage des PR empilées (curatif · rattrapage d'orphelin) |
@@ -160,9 +213,10 @@ ambigu, ou tests qui contredisent l'énoncé.
 
 ## Ce qu'il y a dedans
 
-- **7 skills** — `openspec` (la fondation & la frontière), `implement` (le niveau implémentation),
+- **9 skills** — `openspec` (la fondation & la frontière), `implement` (le niveau implémentation),
   `review` (les huit dimensions), `strategie-verif` (le mode par ticket), `change-decomposer` (le
-  pont change→tickets), `chantier` (le hors-cycle).
+  pont change→tickets), `chantier` (le hors-cycle), `architecture` (le contrat d'architecture) et
+  `likec4-dsl` (le skill officiel LikeC4, **vendorisé** en `1.59.3`, MIT — recopié, jamais fusionné).
 - **28 agents** — le cœur du run (briefer, `escalation-triage` — le triage d'escalade §14 en
   pré-flight, branch-setup, test-writer/validator, implementer, verifier, review-context/validator,
   fix-applier, progress-recorder, pr-describer/author, rebaser, relander), les **8 reviewers** en

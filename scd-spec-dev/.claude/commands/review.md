@@ -56,8 +56,10 @@ et distingue impl / tests — les reviewers en ont besoin. Communique en frança
 
 - **Si un ticket est identifié** (cas `<change> NN`) : produis le BRIEF via l'agent `ticket-briefer`
   (Task) sur `openspec/changes/<x>/tickets/NN-*.md`, puis le **dossier de review** via `review-context`
-  (Task) — invariants de `docs/architecture.md`, ADR contraignants, décisions/hors-périmètre, aides
-  (`.claude/review.json`). C'est ce dossier qui évite six lectures redondantes.
+  (Task) — invariants de `docs/architecture.md`, le sous-graphe LikeC4 touché par le diff (par le
+  MCP `likec4`), ADR contraignants, décisions/hors-périmètre, aides (`.claude/review.json`). C'est ce
+  dossier qui évite six lectures redondantes. La couche « Impact architecture » d'une PR est
+  produite par `run` (phase `Describe`), pas ici : cette commande rapporte, elle ne décrit aucune PR.
 - **Sinon** (range/PR sans ticket) : pas de BRIEF ni de dossier riche. Constitue un contexte léger — la
   liste des fichiers, `CLAUDE.md`, `docs/architecture.md` s'il existe — et **dis-le** dans le rapport :
   hors d'un ticket, il n'y a ni critères ni hors-périmètre, donc la dimension **couverture** ne peut

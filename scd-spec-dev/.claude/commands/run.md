@@ -134,8 +134,10 @@ Rappels avant lancement :
   `Bash(glab mr *)`. Signale-le si ce n'est pas déjà le cas.
 - **Description de la PR** : l'avant-dernière phase (`Describe`, `pr-describer`, lecture seule) compose
   la description destinée au reviewer humain — fonctionnel **et** code, findings appliqués **et
-  rejetés**. Elle est **sautée** si le budget restant est trop faible : la PR s'ouvre alors avec un
-  corps de repli minimal, jamais sans description.
+  rejetés**. Quand le ticket touche le modèle LikeC4, elle porte la couche **« Impact
+  architecture »** (éléments touchés, vue Mermaid du conteneur, relations, `likec4 validate` si un
+  `.c4` est dans le diff) — omise sinon. Elle est **sautée** si le budget restant est trop faible : la
+  PR s'ouvre alors avec un corps de repli minimal, jamais sans description.
 
 Le workflow se lance **par son chemin de fichier** (`scriptPath`), **jamais par `name`** : les
 workflows de ce plugin vivent sous `.claude/workflows/`, hors du répertoire `workflows/` racine (le

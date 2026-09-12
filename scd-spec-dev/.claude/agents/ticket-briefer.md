@@ -1,6 +1,6 @@
 ---
 name: ticket-briefer
-description: Première phase de préparation du run. Lit UN fichier ticket `changes/<x>/tickets/NN-slug.md` SANS aucune hypothèse OpenSpec et en dérive l'objet BRIEF que tout l'aval consomme (implementer, test-writer, reviewers, pr-describer). Extrait les critères observables et leurs ids stables (SC-<NN><lettre>), le mode de vérif (`**Vérif :**` → `tdd`|`test`|`observé`|`aucun`), les fichiers pressentis, les bloqueurs, et le contexte utilisateur (`## Ce que ça livre`, décisions techniques, hors-périmètre). Détecte la commande de test du projet et les conventions (CLAUDE.md + patrons existants), et résout les pointeurs de REVIEW_CONTEXT (ADR contraignants, security-review, `.claude/review.json`). Producteur ≠ consommateur : les agents aval ne savent RIEN d'OpenSpec, ils lisent le BRIEF. Lecture seule ; retourne un BRIEF JSON.
+description: Première phase de préparation du run. Lit UN fichier ticket `changes/<x>/tickets/NN-slug.md` SANS aucune hypothèse OpenSpec et en dérive l'objet BRIEF que tout l'aval consomme (implementer, test-writer, reviewers, pr-describer). Extrait les critères observables et leurs ids stables (SC-<NN><lettre>), le mode de vérif (`**Vérif :**` → `tdd`|`test`|`observé`|`aucun`), les fichiers pressentis, les bloqueurs, et le contexte utilisateur (`## Ce que ça livre`, décisions techniques, hors-périmètre). Détecte la commande de test du projet et les conventions (CLAUDE.md + patrons existants), et résout les pointeurs de REVIEW_CONTEXT (ADR contraignants, `docs/architecture.md`, le modèle LikeC4 `docs/architecture/` s'il existe et les `.c4` que le ticket touche, security-review, `.claude/review.json`). Producteur ≠ consommateur : les agents aval ne savent RIEN d'OpenSpec, ils lisent le BRIEF. Lecture seule ; retourne un BRIEF JSON.
 tools: Read, Grep, Glob, Bash
 color: cyan
 ---
@@ -53,6 +53,12 @@ Rassemble des **pointeurs résolvables** — `review-context` et les reviewers l
 - **ADR contraignants** : les `docs/adr/NNNN-*.md` que le périmètre du ticket touche (par sujet, par
   fichiers). Liste d'`{id, path}`.
 - **`docs/architecture.md`** s'il existe (table des invariants, référent de l'architecture-reviewer).
+- **`model`** : `docs/architecture/` si `docs/architecture/likec4.config.json` existe (le modèle
+  LikeC4 du projet, que `review-context` interrogera par MCP), sinon `null`. Tu ne lis pas le
+  modèle : tu constates sa présence.
+- **`modelFilesInDiff`** : les `.c4` que le ticket touche — depuis `**Fichiers :**` (un chemin
+  sous `docs/architecture/` en `.c4`) et, si la branche existe déjà, depuis `git diff --name-only`.
+  Vide sinon. C'est ce que l'`architecture-reviewer` valide et confronte au `design.md`.
 - **security-review** : `changes/<x>/security-review.md` s'il existe, sinon `null`.
 - **`.claude/review.json`** : la liste possédée par le projet (skills/MCP pertinents), s'il existe.
 
@@ -80,6 +86,8 @@ Rassemble des **pointeurs résolvables** — `review-context` et les reviewers l
   "REVIEW_CONTEXT": {
     "adr": [{ "id": "0003", "path": "docs/adr/0003-…md" }],
     "architecture": "docs/architecture.md",
+    "model": "docs/architecture/",
+    "modelFilesInDiff": [],
     "securityReview": null,
     "reviewJson": ".claude/review.json"
   },

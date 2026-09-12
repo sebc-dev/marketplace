@@ -14,7 +14,7 @@ export const meta = {
     { title: 'Green', detail: 'implementer : (tdd · test) implémente jusqu\'au vert sans toucher aux tests ; (observé) prouve l\'intégration ; (aucun) spike' },
     { title: 'Verify', detail: 'verifier : (tdd · test) CEINTURE — rejeu sur checkout propre + git diff test vide ; (observé) preuve observable / humanCheckRequired. §14 (c) : une passe de self-correction BORNÉE (une seule) si la ceinture est propre mais un critère reste inobservable par la stratégie test → tentée en observé (preuve montée ou humanCheckRequired) ; une ceinture violée n\'est JAMAIS self-corrigée' },
     { title: 'Quality', detail: 'quality-analyzer (localise + qualifie impl/test/mixed) → quality-fixer (autofix sûr, tests protégés par SNAPSHOT/RESTAURATION — jamais de git checkout : la gate ne détruit aucun contenu ; un autofix additif sur un test neuf est GARDÉ et audité par test-edit-validator, pas bloqué) → escalade des échecs non-autofixables : chaque check routé vers SON agent dédié quality-<id> (co-écrit par /scd-spec-dev:quality-agents, sinon générique quality-advisor) → triage → applier → re-analyze. L\'applier est le fix-applier générique (jamais les tests) ou, si quality.json déclare un applier DE PROJET, celui-ci — seul autorisé à renforcer les tests, ses éditions auditées en contexte frais par test-edit-validator (additivité rejouée + tests ajoutés jugés). blocking résiduel échoue le ticket, advisory → findings. No-op sans .claude/quality.json' },
-    { title: 'Context', detail: 'review-context : dossier de contexte (invariants docs/architecture.md, ADR, décisions/hors-périmètre) résolu UNE fois pour les six reviewers de code' },
+    { title: 'Context', detail: 'review-context : dossier de contexte (table des invariants docs/architecture.md structurée, sous-graphe du modèle LikeC4 par le MCP likec4, ADR, décisions/hors-périmètre) résolu UNE fois pour les six reviewers de code' },
     { title: 'Review', detail: 'HUIT reviewers en parallèle, contexte frais : architecture, sécurité, conventions, propreté, error-handling, couverture + change (niveau artefact) + integrity (escape-hatches/chemins protégés)' },
     { title: 'Triage', detail: 'review-validator : triage sceptique adversarial, au doute → skip' },
     { title: 'Apply', detail: 'fix-applier : applique les findings retenus chirurgicalement, re-vérifie selon le mode' },
@@ -94,6 +94,8 @@ const BRIEF = {
       properties: {
         adr: { type: 'array', items: { type: 'object', properties: { id: { type: 'string' }, path: { type: 'string' } } } },
         architecture: { type: 'string', description: 'docs/architecture.md si présent' },
+        model: { type: 'string', description: 'docs/architecture/ si docs/architecture/likec4.config.json existe (modèle LikeC4, lu par review-context via le MCP likec4), sinon null' },
+        modelFilesInDiff: { type: 'array', items: { type: 'string' }, description: 'Les .c4 que le ticket touche (**Fichiers :** et/ou diff) — validés et confrontés au design par l\'architecture-reviewer' },
         securityReview: { type: 'string', description: 'changes/<x>/security-review.md ou null' },
         reviewJson: { type: 'string', description: '.claude/review.json ou null' },
       },
@@ -252,8 +254,33 @@ const REVIEW_CONTEXT = {
   properties: {
     invariants: {
       type: 'object',
-      description: 'Table des invariants de docs/architecture.md — référent de l\'architecture-reviewer',
-      properties: { source: { type: 'string' }, rules: { type: 'array', items: { type: 'string' } } },
+      description: 'Table des invariants de docs/architecture.md — référent de l\'architecture-reviewer. rules[] = prose ; table[] = structuré (status : promu | candidat | retiré)',
+      properties: {
+        source: { type: 'string' },
+        rules: { type: 'array', items: { type: 'string' } },
+        table: {
+          type: 'array',
+          items: { type: 'object', properties: { id: { type: 'string' }, rule: { type: 'string' }, elements: { type: 'array', items: { type: 'string' } }, class: { type: 'string' }, adr: { type: 'string' }, status: { type: 'string', description: 'promu | candidat | retiré' } } },
+        },
+      },
+    },
+    // Le sous-graphe du modèle LikeC4 touché par le diff, lu par le MCP likec4 (le workflow n'a ni shell ni
+    // fichier : tout passe par l'agent). null si pas de modèle ou MCP indisponible — le motif est dans notes.
+    model: {
+      type: 'object',
+      description: 'Sous-graphe LikeC4 des éléments touchés par le diff (rattachement par sourceDir, préfixe le plus long ; relations à profondeur 1 avec kind ; fichiers unmapped signalés). null si pas de modèle / MCP indisponible (motif dans notes)',
+      properties: {
+        project: { type: 'string', description: 'name de docs/architecture/likec4.config.json — passé à chaque appel MCP' },
+        elements: {
+          type: 'array',
+          items: { type: 'object', properties: { id: { type: 'string' }, kind: { type: 'string' }, sourceDir: { type: 'array', items: { type: 'string' } }, files: { type: 'array', items: { type: 'string' }, description: 'Fichiers du diff rattachés à cet élément' }, view: { type: 'string', description: 'La vue nommée comme le conteneur (defaultView) — rendue en Mermaid par pr-describer' }, sourceLocation: { type: 'object', properties: { path: { type: 'string' }, line: { type: 'integer', description: '0-based, tel que le MCP le rend' } } } } },
+        },
+        relations: {
+          type: 'array',
+          items: { type: 'object', properties: { source: { type: 'string' }, target: { type: 'string' }, kind: { type: 'string', description: 'sync | async — un sync laisse une trace d\'import, un async jamais' }, title: { type: 'string' } } },
+        },
+        unmapped: { type: 'array', items: { type: 'string' }, description: 'Fichiers du diff qu\'aucun sourceDir ne couvre — signalés, jamais un finding' },
+      },
     },
     adr: {
       type: 'array',
@@ -577,7 +604,9 @@ const brief = await agent(
   `SANS présumer d'OpenSpec : le fichier ticket se suffit ; ce qui manque, tu le signales dans \`gaps\`, tu ne rouvres pas le change. ` +
   `Détecte \`verifMode\` ∈ {tdd, test, observé, aucun} — « arbitrage humain » y serait un défaut bloquant (gap). ` +
   `Détecte la commande de test (\`docs/ci.md\` fait foi si présent) et les conventions (CLAUDE.md + patrons voisins). ` +
-  `Résous les pointeurs de REVIEW_CONTEXT (ADR contraignants, docs/architecture.md, changes/<x>/security-review.md, .claude/review.json). ` +
+  `Résous les pointeurs de REVIEW_CONTEXT (ADR contraignants, docs/architecture.md, changes/<x>/security-review.md, .claude/review.json ; ` +
+  `\`model\` = docs/architecture/ si docs/architecture/likec4.config.json existe sinon null — tu constates, tu ne lis pas le modèle ; ` +
+  `\`modelFilesInDiff\` = les .c4 que le ticket touche, depuis **Fichiers :** et le diff s'il existe, vide sinon). ` +
   `Retourne le BRIEF structuré.` + iso,
   { agentType: 'scd-spec-dev:ticket-briefer', schema: BRIEF, model: 'sonnet' },
 )
@@ -1093,21 +1122,36 @@ if (q1 && q1.gate === 'ok') {
 }
 
 // Contexte de review résolu UNE fois pour les SIX reviewers de code (leur faire relire
-// docs/architecture.md et les ADR serait six lectures redondantes). review-context cite, ne juge pas.
+// docs/architecture.md et les ADR serait six lectures redondantes, et six interrogations du MCP likec4).
+// review-context cite, ne juge pas. Le modèle LikeC4 est lu PAR MCP, jamais par export : le script n'a ni
+// bash() ni fichier, et review-context n'a pas Bash — model: null (motif dans notes) si le MCP manque.
 // Repli sûr si sauté : dossier vide, chaque reviewer a son mode dégradé.
 phase('Context')
+const modelPath = (brief.REVIEW_CONTEXT && brief.REVIEW_CONTEXT.model) || null
+const modelFilesInDiff = (brief.REVIEW_CONTEXT && Array.isArray(brief.REVIEW_CONTEXT.modelFilesInDiff)) ? brief.REVIEW_CONTEXT.modelFilesInDiff : []
 const dossier = await agent(
   `Collecte le DOSSIER DE CONTEXTE de review du ticket ${ticket} du change ${changeDir}, en contexte frais, ` +
   `pour que six reviewers de code n'aient pas à relire les mêmes documents. Résous : la table des invariants de ` +
-  `\`docs/architecture.md\` (référent de l'architecture-reviewer — dis-le absent le cas échéant), le corps des ADR ` +
-  `contraignant ce ticket (résumés), les décisions d'impl et le hors-périmètre (depuis context du BRIEF), les contrats ` +
-  `d'interface, et les aides à la review (aids : skills locaux DISTILLÉS + serveurs MCP en POINTEUR ; \`.claude/review.json\` ` +
+  `\`docs/architecture.md\` (référent de l'architecture-reviewer — dis-le absent le cas échéant) en STRUCTURÉ ` +
+  `(\`table[]\` : {id, rule, elements[], class, adr, status promu|candidat|retiré} — « — » = candidat, « — retiré par NNNN » = retiré) ` +
+  `en plus de la prose \`rules[]\`, ` +
+  (modelPath
+    ? `le SOUS-GRAPHE du modèle LikeC4 (\`${modelPath}\`, project = name de likec4.config.json, passé à CHAQUE appel) par le MCP likec4 : ` +
+      `query-by-metadata {key:"sourceDir", matchMode:"exists"} pour tous les éléments à sourceDir (chaîne ou tableau), rattache chaque fichier modifié ` +
+      `à l'élément dont un sourceDir est le PRÉFIXE LE PLUS LONG (sinon unmapped[], signalé, jamais un finding), puis read-element par élément rattaché ` +
+      `pour relationships.incoming/outgoing AVEC leur kind (sync|async), defaultView et sourceLocation → \`model: { project, elements[], relations[], unmapped[] }\`. ` +
+      `MCP en erreur ou absent → \`model: null\` et le motif dans notes, jamais un arrêt. ` +
+      (wtDir && modelFilesInDiff.length ? `⚠ Le serveur MCP likec4 lit le modèle du checkout de SESSION (son cwd), pas celui du worktree : les .c4 édités par ce ticket ne sont pas encore dans ce que le MCP rend — note-le dans notes, c'est l'architecture-reviewer qui valide les .c4 du diff par likec4 validate dans le worktree. ` : ``)
+    : `\`model: null\` (pas de docs/architecture/likec4.config.json — dis-le dans notes), `) +
+  `le corps des ADR contraignant ce ticket (résumés), les décisions d'impl et le hors-périmètre (depuis context du BRIEF), les contrats ` +
+  `d'interface, et les aides à la review (aids : skills locaux DISTILLÉS + autres serveurs MCP en POINTEUR ; \`.claude/review.json\` ` +
   `fait autorité, l'auto-détection complète). Cite (id + source), NE JUGE PAS, n'invente aucun champ.\n` +
-  `Fichiers modifiés : ${JSON.stringify(implFiles)}\nBRIEF:\n${briefJson}` + iso,
+  `Fichiers modifiés : ${JSON.stringify(implFiles)}\n.c4 dans le diff : ${JSON.stringify(modelFilesInDiff)}\nBRIEF:\n${briefJson}` + iso,
   { agentType: 'scd-spec-dev:review-context', schema: REVIEW_CONTEXT, model: 'sonnet' },
 )
 const reviewCtx = {
-  invariants: (dossier && dossier.invariants) || { source: null, rules: [] },
+  invariants: (dossier && dossier.invariants) || { source: null, rules: [], table: [] },
+  model: (dossier && dossier.model) || null,
   adr: (dossier && dossier.adr) || [],
   decisions: (dossier && dossier.decisions) || (brief.context && brief.context.decisions) || '',
   outOfScope: (dossier && dossier.outOfScope) || (brief.context && brief.context.outOfScope) || '',
@@ -1115,7 +1159,10 @@ const reviewCtx = {
   aids: (dossier && dossier.aids) || { skills: [], mcp: [] },
 }
 const reviewCtxJson = JSON.stringify(reviewCtx)
-log(`Dossier de contexte : ${(reviewCtx.invariants.rules || []).length} invariant(s) · ${reviewCtx.adr.length} ADR · ${(reviewCtx.aids.skills || []).length} skill(s)/${(reviewCtx.aids.mcp || []).length} MCP${dossier ? '' : ' (agent sauté — dossier vide, replis dégradés)'}`)
+const modelSummary = reviewCtx.model
+  ? `modèle ${(reviewCtx.model.elements || []).length} élément(s)/${(reviewCtx.model.relations || []).length} relation(s)${(reviewCtx.model.unmapped || []).length ? `/${reviewCtx.model.unmapped.length} unmapped` : ''}`
+  : (modelPath ? 'modèle : MCP indisponible (repli prose)' : 'sans modèle')
+log(`Dossier de contexte : ${(reviewCtx.invariants.rules || []).length} invariant(s) · ${reviewCtx.adr.length} ADR · ${modelSummary} · ${(reviewCtx.aids.skills || []).length} skill(s)/${(reviewCtx.aids.mcp || []).length} MCP${dossier ? '' : ' (agent sauté — dossier vide, replis dégradés)'}`)
 
 // Fan-out : HUIT reviewers en PARALLÈLE, contexte frais (producteur ≠ vérificateur).
 //  - 6 reviewers de code : jugent le DIFF contre le dossier de review.
@@ -1134,12 +1181,21 @@ const CODE_REVIEWERS = [
 ]
 const noAutoTest = usesTests ? `` : ` — PAS de test automatisé attendu (c'est le contrat) : ne remonte JAMAIS « absence de test », juge par la vérif observable.`
 
+// architecture-reviewer : deux vérifications sur le modèle quand le dossier en porte un — (a) un import du diff
+// qui franchit une frontière d'élément sans relation A -> B : bloquant si un invariant PROMU couvre la paire,
+// suggestion « relation non modélisée » sinon ; (b) un .c4 dans le diff passe likec4 validate (Bash) et est cité
+// par le design.md. Sans modèle : comportement antérieur (table seule).
+const archiHint = reviewCtx.model
+  ? ` Le dossier porte \`model\` (éléments rattachés par sourceDir, relations avec kind, unmapped) : applique les vérifications (a) import franchissant une frontière sans relation A -> B — BLOQUANT si un invariant promu (\`invariants.table[]\`, status promu) couvre la paire, SUGGESTION « relation non modélisée » sinon — et (b) .c4 dans le diff ${JSON.stringify(modelFilesInDiff)} → \`likec4 validate --no-layout --json --project ${reviewCtx.model.project || '<name>'} docs/architecture\` (code 1 = bloquant) et cité par la section Architecture de \`${changeDir}/design.md\` (sinon suggestion). Un candidat n'est jamais bloquant ; un retiré n'est rien ; un fichier unmapped ne produit aucun finding. N'interroge le MCP likec4 (project « ${reviewCtx.model.project || '?'} ») que pour ce que le dossier n'a pas (read-element pour une sourceLocation, find-relationships pour confirmer une absence).${wtDir && modelFilesInDiff.length ? ' ⚠ Le MCP lit le modèle du checkout de session, pas du worktree : pour les .c4 de ce diff, seul ton likec4 validate (cwd = worktree) fait foi.' : ''}`
+  : ` Le dossier n'a pas de \`model\` (${modelPath ? 'MCP likec4 indisponible — motif dans notes' : 'pas de modèle LikeC4'}) : juge sur la table et les ADR seuls, dis-le en note.`
+
 const reviewThunks = CODE_REVIEWERS.map((r) => () =>
   agent(
     `Review la SEULE dimension ${r.dim} de l'implémentation du ticket ${ticket} (contexte frais, tu n'as pas écrit ce code). ` +
     `Récupère le diff via \`${gitPrefix} diff …\` sur ${JSON.stringify(implFiles)} (+ tests ${JSON.stringify(testFiles)} pour la couverture). Mode de vérif : ${mode}${noAutoTest} ` +
     `Charge SEULEMENT ta dimension, classe bloquant/suggestion, rédige un correction_prompt autonome. ` +
-    `Le dossier porte \`aids\` (skills DISTILLÉS / MCP en pointeur) : consulte ceux pertinents à ta dimension.\n` +
+    `Le dossier porte \`aids\` (skills DISTILLÉS / MCP en pointeur) : consulte ceux pertinents à ta dimension.` +
+    (r.dim === 'architecture' ? archiHint : '') + `\n` +
     `Dossier de contexte:\n${reviewCtxJson}\nBRIEF:\n${briefJson}` + iso,
     { agentType: `scd-spec-dev:${r.agent}`, schema: FINDINGS, model: r.model, phase: 'Review', label: `review:${r.dim}` },
   ).then((res) => ({ dim: r.dim, res })),
@@ -1155,6 +1211,9 @@ reviewThunks.push(() =>
     `Tu peux jouer \`openspec validate <change> --strict\`, \`openspec diff <change>\`, \`openspec show\`. ` +
     `BLOQUANT : conflit avec une capacité vivante (un ADDED qui redéclare, un MODIFIED/REMOVED sans cible vivante), critère non testable sur chemin critique, ` +
     `\`openspec validate --strict\` en échec. Flou de cadrage = suggestion. Le change a été relu par l'humain (1er geste) : ne rouvre pas une décision assumée, signale une incohérence RÉELLE. ` +
+    (modelPath
+      ? `Le projet porte un modèle LikeC4 (\`${modelPath}\`${reviewCtx.model && reviewCtx.model.project ? `, project « ${reviewCtx.model.project} »` : ''}) : chaque FQN cité par la section Architecture de design.md doit exister — search-element sur le MCP likec4, un found[].id EXACTEMENT égal au FQN. FQN inconnu = suggestion ; le design introduit une relation nouvelle sans .c4 édité dans le change (modelFilesInDiff ${JSON.stringify(modelFilesInDiff)}, aucun docs/architecture/*.c4 dans le diff) = BLOQUANT. MCP en erreur : note et passe. `
+      : `Pas de modèle LikeC4 dans le projet : rien de nouveau sur l'architecture. `) +
     `Classe bloquant/suggestion, rédige un correction_prompt autonome.\nBRIEF:\n${briefJson}` + iso,
     { agentType: 'scd-spec-dev:change-reviewer', schema: FINDINGS, model: 'opus', phase: 'Review', label: 'review:change' },
   ).then((res) => ({ dim: 'change', res })),
@@ -1291,6 +1350,13 @@ const desc = canDescribe
       (preflightRepairs.length ? `Si \`preflightRepairs\` est non vide, ajoute une ligne dans la couche 5 : les réparations mécaniques du triage §14 (ex. id de critère attribué), consignées, non bloquantes. ` : ``) +
       (qualityTestEdits.length ? `Si \`qualityTestEdits\` est non vide, dis-le explicitement dans la couche 4 : la quality gate a FORMATÉ ${qualityTestEdits.length} fichier(s) de test (autofix additif de lint/format, audité en contexte frais par le test-edit-validator — pas une neutralisation) : ${JSON.stringify(qualityTestEdits)}. ` : ``) +
       `Mesure le diff TOI-MÊME : \`${gitPrefix} diff --numstat <base>...<branche>\` — aucun chiffre inventé. ` +
+      (reviewCtx.model && (reviewCtx.model.elements || []).length
+        ? `Le ticket touche ${reviewCtx.model.elements.length} élément(s) du modèle LikeC4 (\`model.elements[]\` : id, kind, files, view — la vue nommée comme le conteneur ; \`model.relations[]\` : le voisinage à profondeur 1 avec kind ; \`model.unmapped[]\` : fichiers hors modèle, signalés jamais jugés ; modelFilesInDiff : les .c4 édités) : ÉCRIS la couche 4bis « Impact architecture » entre les Points à scruter et les <details> — éléments touchés (id, kind, files), vue Mermaid du conteneur (\`likec4 gen mermaid -o /tmp/likec4-mermaid docs/architecture\` — pas d'option --project, le chemin borne le projet — puis <view>.mmd ENTIER, front-matter compris, dans un bloc mermaid replié dans un <details> ; .mmd manquant → le dire), relations (\`A -[kind]-> B — titre\`)` +
+          ((modelFilesInDiff || []).length
+            ? `, et comme modelFilesInDiff est non vide : le delta du .c4 lu depuis \`${gitPrefix} diff <base>...<branche> -- ${modelFilesInDiff.map((f) => `"${f}"`).join(' ')}\` (lignes +/- portant -> ou un élément déclaré, jamais deviné) et \`likec4 validate --no-layout --json --project ${reviewCtx.model.project || '<name>'} docs/architecture\` joué PAR TOI${wtDir ? ` avec \`${wtDir}\` comme cwd (le MCP lit le checkout de session, pas le worktree)` : ``}, résultat rapporté court (ok / erreurs)`
+            : `. Aucun .c4 dans le diff : ne joue PAS likec4 validate, le modèle n'a pas changé`) +
+          `. Rien d'inventé : tout vient de model, du CLI ou de git joués par toi. `
+        : ``) +
       `N'écris PAS le bloc « PR EMPILÉE » (c'est pr-author). Lecture seule : aucun push, aucune PR.\n` +
       `Résumé:\n${JSON.stringify({
         ticket, changeDir,
@@ -1303,6 +1369,8 @@ const desc = canDescribe
         testsByCriterion: tests.testsByCriterion,
         testFiles, implFiles,
         context: brief.context,
+        model: reviewCtx.model,
+        modelFilesInDiff,
         proof,
         humanCheckRequired: humanChecks,
         findingsApplied: triaged.apply,

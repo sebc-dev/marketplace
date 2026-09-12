@@ -32,6 +32,13 @@ export const meta = {
 // }
 // Une chaîne de longueur 1 = un ticket indépendant ; une chaîne > 1 = des tickets empilés (chaque
 // étape branche/PR depuis la précédente via `base`).
+//
+// Le dossier de review — dont le sous-graphe du modèle LikeC4 lu par le MCP `likec4` (REVIEW_CONTEXT.model,
+// modelFilesInDiff) — vit ENTIÈREMENT dans implement-ticket : cet orchestrateur ne lui passe rien de plus.
+// Un point propre au mode worktree : le serveur MCP est déclaré par le `.mcp.json` du projet et démarre dans
+// le checkout de SESSION — il rend le modèle de la base, pas celui d'un worktree. Un `.c4` édité par un
+// ticket n'est vu que par le `likec4 validate` de l'architecture-reviewer (cwd = worktree) ; implement-ticket
+// le dit à review-context et au reviewer quand modelFilesInDiff est non vide.
 // ---------------------------------------------------------------------------
 
 const changeDir = args && args.changeDir

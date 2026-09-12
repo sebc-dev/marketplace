@@ -23,10 +23,29 @@ correction attendue, sans supposer que le lecteur a vu le reste de la review.
 ## Les six reviewers de code
 
 ### `architecture-reviewer`
-- **Référent** : la table d'invariants de `docs/architecture.md` et les ADR contraignants, **résolus
-  par `review-context`** (il ne relit pas les documents lui-même).
+- **Référents** : la table d'invariants de `docs/architecture.md` — **structurée** par
+  `review-context` en `{id, rule, elements[], class, adr, status}`, où `status` vaut `promu` (ADR
+  rempli : opposable), `candidat` (`—` : informatif) ou `retiré` (`— retiré par NNNN` : mort, ne
+  s'oppose plus) — les ADR contraignants, et le **modèle LikeC4** : `model.elements[]` (les éléments
+  rattachés aux fichiers du diff par `sourceDir`, préfixe le plus long), `model.relations[]`
+  (profondeur 1, avec `kind`), `model.unmapped[]`. Tout est **résolu par `review-context`** par le
+  MCP `likec4` ; le reviewer n'interroge le MCP que pour ce qui manque au dossier (`read-element`
+  pour une `sourceLocation`, `find-relationships` pour confirmer une absence).
 - **Bloque** : frontière franchie, sens de dépendance inversé, artefact hors du dossier prescrit, import
-  prohibé — toute **violation d'invariant**, sauf **dérogation déclarée** dans le change.
+  prohibé — toute **violation d'un invariant promu**, sauf **dérogation déclarée** dans le ticket ou
+  le design. Un **candidat** est une suggestion au plus ; un **retiré** n'est rien.
+- **Vérification (a) — import qui franchit une frontière** : un fichier rattaché à `A` qui importe un
+  fichier rattaché à `B` (`A ≠ B`) sans relation `A -> B` de kind `sync` dans `model.relations[]` :
+  **bloquant** si un invariant promu couvre la paire (classe de dépendance — 1, 2, 3, 4, 8, 9, 11 —
+  et `elements[]` contenant `A` **et** `B` ; n'en contenant qu'un, la règle lue doit interdire ce
+  sens-là), **suggestion « relation non modélisée »** sinon (le `.c4` doit gagner la relation dans ce change, ou l'import disparaître). Un
+  `async` ne justifie jamais un import ; la relation dans l'autre sens non plus. Un fichier
+  `unmapped` ou un import non résolu (alias, paquet) ne produit **aucun** finding.
+- **Vérification (b) — un `.c4` dans le diff** (`REVIEW_CONTEXT.modelFilesInDiff[]`) :
+  `likec4 validate --no-layout --json --project <name> docs/architecture` en code 1 = **bloquant** ;
+  delta non cité par la section `## Architecture` du `design.md` du change = **suggestion**.
+- **Sans modèle** (`model: null` — pas de `likec4.config.json`, MCP indisponible, motif dans
+  `notes`) : jugement sur la table seule, (a) et (b) ne s'appliquent pas, dit en `note`.
 - **Repli** quand la table est vide : cohérence avec l'existant. Un invariant **ne se re-discute pas**.
 
 ### `security-reviewer`
@@ -62,6 +81,11 @@ correction attendue, sans supposer que le lecteur a vu le reste de la review.
   **vivante** (`openspec/specs/`), `openspec validate --strict` en échec.
 - **Autorisé à rouvrir le change** : c'est la seule dimension qui remet en cause l'artefact amont, pas
   seulement le code. Sauté hors d'un ticket (range/PR sans change).
+- **Le design et le modèle** (seulement si `REVIEW_CONTEXT.model` n'est pas nul) : chaque FQN cité
+  par la section `## Architecture` du `design.md` doit exister dans le modèle — `search-element` sur
+  le MCP `likec4`, un `found[].id` **exactement** égal au FQN. FQN inconnu = **suggestion** ; le design
+  introduit une **relation nouvelle** sans qu'aucun `.c4` ne soit édité dans le change = **bloquant**
+  (le modèle et le code arrivent dans la même PR, ou le modèle ment). Sans modèle : rien de nouveau.
 
 ### `integrity-reviewer` — le jumeau review-time du filet CI
 - Cherche dans les **lignes ajoutées** les mêmes jetons que le filet CI : `@ts-ignore`, `as any`,

@@ -115,6 +115,24 @@ Pour chaque check dont la commande se lit dans le dépôt, préparer une entrée
 Candidats typiques : `typecheck`, `lint`, `format`, `coverage`, `complexity`, `duplication`,
 `security-audit` (ex. `npm audit`, `pip-audit`). N'inclure que ceux qui existent réellement.
 
+### Les deux candidats de la dimension architecture (si `docs/architecture/likec4.config.json` existe)
+
+`test -f docs/architecture/likec4.config.json` — le projet a un modèle LikeC4 (posé par
+`/scd-spec-dev:setup`). Lire son `name` (`cat docs/architecture/likec4.config.json`) : c'est le
+`<nom>` que `--project` prend partout. Proposer alors deux candidats, `advisory` comme les autres :
+
+| `id` | `cmd` | `autofix` | Ce qu'il attrape |
+|---|---|---|---|
+| `likec4` | `likec4 validate --no-layout --json --project <nom> docs/architecture` | `likec4 format docs/architecture` | le **modèle** est cohérent : syntaxe, références, sémantique du DSL (code 1 si invalide) |
+| `architecture` | `node .claude/scripts/scd-arch-conformance.mjs --model docs/architecture --project <nom> --base <branche par défaut>` | `null` | le **code** est conforme au modèle : chaque import du diff qui franchit une frontière d'élément (rattachement par `sourceDir`) correspond à une relation du modèle dans le bon sens (code 1 si findings) |
+
+`<branche par défaut>` est celle du dépôt (`main` ou `master`) : la lire dans `docs/ci.md` ou le
+`package.json` si elle y figure, sinon la faire confirmer à l'étape 3. L'autofix de `likec4` est un
+**formateur** (`likec4 format`), donc sûr ; celui d'`architecture` est `null` par nature — une
+frontière franchie sans relation se corrige dans le code ou dans le modèle, jamais mécaniquement. Le
+script est la copie que `setup` pose dans `.claude/scripts/` (plugin-owned, rafraîchie au re-jeu) ;
+s'il manque, rejouer `/scd-spec-dev:setup` avant de retenir ce candidat.
+
 ## Étape 3 — Faire arbitrer (le geste humain)
 
 Présenter les candidats — **le problème d'abord, en prose**, puis les choix. Deux décisions par
