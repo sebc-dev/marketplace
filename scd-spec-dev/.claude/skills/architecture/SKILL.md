@@ -6,13 +6,15 @@ description: |
   par les agents, le format de la table des invariants opposables de docs/architecture.md et sa
   question d'admission, le tri ADR (pourquoi) / modèle (quoi, maintenant) / design (comment, cette
   fois), et le serveur MCP `likec4` déclaré par le projet. Se charge pendant /scd-spec-dev:setup (qui
-  pose le squelette), /scd-spec-dev:archi et /scd-spec-dev:adr, et par les agents review-context,
+  pose le squelette), /scd-spec-dev:archi, /scd-spec-dev:archi-dossier (le dossier complet : contexte,
+  déploiement, flux, README ; en relevé depuis le code ou en conception avant lui, tag #planned) et
+  /scd-spec-dev:adr, et par les agents review-context,
   architecture-reviewer et change-reviewer (câblés sur le MCP), et pr-describer (la couche « Impact
   architecture » de la PR : éléments touchés, vue Mermaid, relations, likec4 validate).
   Deux références chargées à la demande :
   references/invariants.md (la table, les 11 classes admises, la question d'admission),
   references/modele.md (les conventions .c4 du plugin : kinds, sourceDir, vues, le squelette posé par
-  setup). Porte UNIQUEMENT le contrat : la SYNTAXE du DSL et les drapeaux du CLI sont dans le skill
+  setup, les fichiers du dossier, les tags planned et external, les kinds de déploiement). Porte UNIQUEMENT le contrat : la SYNTAXE du DSL et les drapeaux du CLI sont dans le skill
   `likec4-dsl` (l'officiel, vendorisé), la review et ses seuils de blocage dans le skill `review`, la
   fondation OpenSpec dans le skill `openspec`.
 ---
@@ -76,8 +78,10 @@ model {
 **Rattachement d'un fichier du diff** : l'élément dont le `sourceDir` est le **préfixe le plus long**
 du chemin du fichier. `src/api/auth/token.ts` va à `shop.api` (`src/api`) même si `shop` porte `src`.
 
-**Un élément sans `sourceDir` est un élément de contexte** — un acteur, un système externe, un
-regroupement : il n'est **jamais** confronté au code. Un fichier qu'aucun `sourceDir` ne couvre est
+**Un élément sans `sourceDir` est un élément de contexte** — un acteur, un système externe (tag
+`#external`), un regroupement : il n'est **jamais** confronté au code. **Un élément `#planned`** a un
+`sourceDir` qui n'existe pas encore : il est le contrat que les premiers tickets honorent, la révision
+de `/archi` ne le compte pas disparu et propose de retirer le tag quand le dossier apparaît. Un fichier qu'aucun `sourceDir` ne couvre est
 `unmapped` : il est signalé, il ne produit aucun finding.
 
 `link` reste **libre pour l'humain** (dépôt, point d'entrée, doc) : aucun agent ne s'en sert pour
@@ -102,7 +106,13 @@ par un contrôle statique, et une règle infalsifiable qu'un reviewer doit « ju
 remplace.
 
 Colonne `ADR` remplie par `/scd-spec-dev:adr`. **Une ligne sans ADR est un candidat**, proposé par
-`/scd-spec-dev:archi` et promu par l'humain — jamais opposable tant qu'elle n'est pas promue.
+`/scd-spec-dev:archi` ou `/scd-spec-dev:archi-dossier` et promu par l'humain — jamais opposable tant
+qu'elle n'est pas promue.
+
+**Le modèle est le référent, pas le code.** C'est ce qui rend légitime un modèle écrit **avant** le
+code : `/scd-spec-dev:archi-dossier` en conception pose des conteneurs `#planned` avec le `sourceDir`
+prévu, et la review comme la couche 3 confrontent ensuite le diff à ce contrat. Les mêmes documents
+sont relevés **depuis** le code sur un projet existant.
 
 ## Le MCP — déclaré par le projet
 

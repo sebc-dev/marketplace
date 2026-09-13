@@ -1,5 +1,5 @@
 ---
-description: "Amorce ou révise le modèle LikeC4 du projet (docs/architecture/*.c4) DEPUIS LE CODE, jamais depuis des hypothèses. Deux modes choisis sur l'état du disque : AMORÇAGE quand aucun élément ne porte de `metadata { sourceDir }` — lit l'arborescence (git ls-files), les manifestes et les points d'entrée, propose les conteneurs (puis les composants si besoin) avec leur sourceDir par lots de quatre options, écrit le .c4 avec une vue par conteneur, valide (likec4 validate --no-layout --json --project), puis propose des CANDIDATS d'invariants observés dans les imports réels (colonne ADR à —, classe 1 à 11) ; RÉVISION sinon — confronte modèle et code (dossier sans élément, sourceDir disparu, relation observée absente du modèle, relation du modèle sans trace) et fait arbitrer les deltas. N'écrit aucun ADR (c'est /scd-spec-dev:adr), ne promeut aucun candidat, n'édite aucun code."
+description: "Amorce ou révise le modèle LikeC4 du projet (docs/architecture/*.c4) DEPUIS LE CODE, jamais depuis des hypothèses. Deux modes choisis sur l'état du disque : AMORÇAGE quand aucun élément ne porte de `metadata { sourceDir }` — lit l'arborescence (git ls-files), les manifestes et les points d'entrée, propose les conteneurs (puis les composants si besoin) avec leur sourceDir par lots de quatre options, écrit le .c4 avec une vue par conteneur, valide (likec4 validate --no-layout --json --project), puis propose des CANDIDATS d'invariants observés dans les imports réels (colonne ADR à —, classe 1 à 11) ; RÉVISION sinon — confronte modèle et code (dossier sans élément, sourceDir disparu, relation observée absente du modèle, relation du modèle sans trace) et fait arbitrer les deltas. N'écrit aucun ADR (c'est /scd-spec-dev:adr), ne promeut aucun candidat, n'édite aucun code ; le dossier complet (contexte, déploiement, flux, README) est /scd-spec-dev:archi-dossier, et un élément #planned posé par lui n'est jamais un sourceDir disparu."
 argument-hint: "(aucun — le mode est choisi sur l'état de docs/architecture/*.c4)"
 allowed-tools:
   - Read
@@ -35,7 +35,8 @@ seulement ce qu'il a retenu.
 - **Aucun invariant sans trace observable** : une règle qui ne se lit ni dans l'arborescence ni dans
   les imports n'entre pas dans la table, et tu dis pourquoi (étape 4).
 - **Aucune édition de code**, ni de `docs/adr/`. Tu écris dans `docs/architecture/*.c4` et dans la
-  table de `docs/architecture.md`, rien d'autre.
+  table de `docs/architecture.md`, rien d'autre. Le contexte, le déploiement, les flux et le README
+  narratif sont le travail de `/scd-spec-dev:archi-dossier`.
 - **Jamais un troisième niveau** sous le `system` (`container` → `component`, et c'est tout) sans
   demande explicite de l'humain.
 - **Jamais de `link`** : il est libre pour l'humain, aucun agent ne rattache du code par lui.
@@ -117,7 +118,11 @@ Quatre confrontations, chacune une liste — vide ou pas, elle se dit :
 
 1. **Dossier sans élément** : un dossier de code de premier niveau (ou un manifeste) qu'aucun
    `sourceDir` ne couvre.
-2. **`sourceDir` disparu** : `test -d <chemin>` échoue pour un élément du modèle.
+2. **`sourceDir` disparu** : `test -d <chemin>` échoue pour un élément du modèle. **Sauf** si
+   l'élément porte le tag `#planned` (glose : un élément posé par `/scd-spec-dev:archi-dossier` en
+   conception, dont le dossier n'existe pas encore) : il est **prévu, pas disparu**, et il ne va pas
+   dans cette liste. À l'inverse, un élément `#planned` dont `test -d` **réussit** entre dans une
+   cinquième liste, **tag à retirer** : le code est arrivé, l'élément est réel.
 3. **Relation observée, absente du modèle** : un import de `A` vers `B` (deux éléments à
    `sourceDir`) sans relation `A -> B` dans le `.c4`.
 4. **Relation du modèle sans trace** : une relation `sync` entre deux éléments à `sourceDir` dont
@@ -178,7 +183,9 @@ Vues : index, api, ui, orders · unmapped : scripts/ (outillage, non modélisé 
 </report>
 
 **Prochaine action** : `/scd-spec-dev:adr "<titre>" "<contexte>"` pour promouvoir un candidat ou
-figer une décision qui touche le modèle ; sinon rien — le modèle est à jour, la review le lira.
+figer une décision qui touche le modèle ; `/scd-spec-dev:archi-dossier` pour le dossier complet —
+contexte, déploiement, flux, README — que cette commande n'écrit pas ; sinon rien — le modèle est à
+jour, la review le lira.
 
 ## Skill active
 

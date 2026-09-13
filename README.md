@@ -152,7 +152,7 @@ Practices*, and model knowledge where those three are silent. Every claim carrie
 `[MS]`/`[CANONICAL]`/`[APOLLO]`/`[MODEL]` — and undocumented areas are named rather than filled by
 inference.
 
-### [scd-spec-dev](./scd-spec-dev/) `v0.12.0`
+### [scd-spec-dev](./scd-spec-dev/) `v0.13.0`
 
 Spec-driven cycle built **on OpenSpec**, from change to PR — and the implementation layer OpenSpec
 lacks. OpenSpec carries the doc→tickets layer (living specs in `openspec/specs/`, an
@@ -166,7 +166,7 @@ coverage, plus **change** at the artifact level and **integrity** for escape-hat
 producer ≠ verifier structure, not in session guards: **zero gate, zero session hook**, one automatic
 net (a CI grep, out of the dev loop). `/scd-spec-dev:setup` mounts OpenSpec and copies the `scd`
 schema into the target project — the plugin carries the recipe, the project carries the instance.
-`/opsx:apply` is never called; `run` takes over on the tickets. 15 slash commands.
+`/opsx:apply` is never called; `run` takes over on the tickets. 16 slash commands.
 
 **Architecture is tooled, not prose.** `/scd-spec-dev:setup` detects **LikeC4** (absent, its steps are
 *skipped and reported* — the rest of the mount still plays), lays down a model skeleton in
@@ -176,11 +176,18 @@ project's `.mcp.json`, and adds a `likec4-validate` CI job. An invariant is admi
 **names model elements** *and* **leaves an observable trace** in the tree or the imports — the
 anti-BDUF guardrail. Two skills carry it: `architecture` (the contract — where the model lives,
 `sourceDir` as the single code ↔ model key, the ADR / model / design split) and `likec4-dsl` (the
-official skill, vendored at `1.59.3`, MIT). Two assistance commands: `/scd-spec-dev:archi` bootstraps the
+official skill, vendored at `1.59.3`, MIT). Three assistance commands: `/scd-spec-dev:archi` bootstraps the
 model **from the code** (tree, manifests, imports → containers with `sourceDir`, one view per
 container, candidate invariants) and later revises it against the code; `/scd-spec-dev:adr` writes a
 Nygard ADR and, when the decision touches the model, the `.c4` delta, an `adr-NNNN` view rendered to
-Mermaid, and the promotion of invariants (the `ADR` column). **The review reads the model over MCP**:
+Mermaid, and the promotion of invariants (the `ADR` column). `/scd-spec-dev:archi-dossier` writes the
+**full architecture dossier** — context (actors, `#external` systems), components, deployment, key flows
+as dynamic views, a narrative README with the views rendered to Mermaid, candidate invariants and
+candidate ADRs (never a written ADR) — in two modes picked from the disk: **survey** on an existing
+project (a complete draft from the code, every element with its trace, then one human re-read) and
+**design** on an empty one (vision, roadmap, specs and the human asked in batches; planned containers
+carry `#planned` and the `sourceDir` the first tickets must honour — the model is the referent, not
+the code). **The review reads the model over MCP**:
 `review-context` resolves the invariant table into structure (candidate / promoted / retired) and the
 LikeC4 subgraph touched by the diff through the `likec4` server (files attached by `sourceDir`,
 depth-1 relations with their kind, unmapped files reported); `architecture-reviewer` blocks an import

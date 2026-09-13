@@ -2,7 +2,8 @@
 
 > Référence du skill `architecture`. Chargée quand on **écrit** dans le modèle :
 > `/scd-spec-dev:setup` (le squelette), `/scd-spec-dev:archi` (amorçage et révision),
-> `/scd-spec-dev:adr` (le delta d'un ADR), et un `design.md` qui introduit une relation.
+> `/scd-spec-dev:archi-dossier` (le dossier complet), `/scd-spec-dev:adr` (le delta d'un ADR), et un
+> `design.md` qui introduit une relation.
 > La **syntaxe** du DSL et les drapeaux du CLI sont dans le skill `likec4-dsl` : cette référence ne
 > porte que ce que **ce plugin** décide par-dessus.
 
@@ -140,6 +141,29 @@ Accompagné de `docs/architecture/likec4.config.json` :
 Le `system` est **vide à dessein** : les conteneurs viennent de `/scd-spec-dev:archi`, qui les lit
 dans l'arborescence réelle. Un squelette pré-rempli d'hypothèses est un modèle faux dès le premier
 jour.
+
+## Les fichiers du dossier — posés par `archi-dossier`
+
+| Fichier | Contenu | Bloc `specification` ajouté |
+|---|---|---|
+| `model.c4` | le `system`, ses conteneurs et composants, une vue par conteneur | celui de `setup`, jamais retouché |
+| `context.c4` | les acteurs, les systèmes externes `#external`, leurs relations au `system`, la vue `context` | `tag external`, `tag planned` |
+| `deployment.c4` | les nœuds (`environment`, `node`), les `instanceOf`, la vue `deployment view prod` | `deploymentNode environment`, `deploymentNode node` |
+| `flows.c4` | une vue `dynamic view flow-<slug>` par flux clé | — |
+| `README.md` | le narratif : une phrase par élément, les vues collées en Mermaid, les décisions à figer | — |
+
+Les blocs de tête **fusionnent** entre fichiers : un `specification` dans `context.c4` complète celui
+de `model.c4` sans le réécrire. Un fichier voisin référence le `system` en **FQN complet**
+(`shop.api`), jamais par l'identifiant court.
+
+**Deux tags, un sens chacun.** `#external` : un système tiers, jamais de `sourceDir`, jamais confronté
+au code. `#planned` : un conteneur dont le `sourceDir` **n'existe pas encore** — posé en conception,
+retiré par la révision de `/archi` quand `test -d` réussit. Chaque élément porte un commentaire
+`// trace : <fichier>[:ligne] — …` (relevé) ou `// décision : lot N — …` (conception) : c'est ce que
+l'humain relit.
+
+`likec4 gen mermaid -o <dir>` sort un `.mmd` **par vue**, nommé par l'identifiant de la vue
+(`context.mmd`, `prod.mmd`, `flow-checkout.mmd`), y compris pour les vues `dynamic` et `deployment`.
 
 ## Découper en plusieurs `.c4`
 

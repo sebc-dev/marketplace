@@ -3,7 +3,7 @@
 Cycle spec-driven bâti sur **OpenSpec**, du change à la PR — et la couche d'implémentation
 qu'OpenSpec n'a pas.
 
-> **⚠️ Écrit et mécaniquement vérifié, jamais joué de bout en bout.** Le plugin existe en `0.12.0`,
+> **⚠️ Écrit et mécaniquement vérifié, jamais joué de bout en bout.** Le plugin existe en `0.13.0`,
 > `claude plugin validate` au vert, mais aucun projet réel n'a encore parcouru
 > `setup → propose → tickets → run → sync → archive`. La question ouverte est celle de toute la
 > conception : la **review + verify** tiennent-elles la rigueur **sans hook write-time** ?
@@ -175,11 +175,13 @@ le script `scd-arch-conformance.mjs`, déterministe, **aveugle** aux alias de ch
 imports dynamiques calculés et aux cycles transitifs — il le déclare dans son en-tête ; ce qu'il ne
 voit pas, l'`architecture-reviewer` le juge, en contexte frais.
 
-> **Les deux commandes d'assistance existent** : `/scd-spec-dev:archi` amorce le modèle depuis le code
+> **Les trois commandes d'assistance existent** : `/scd-spec-dev:archi` amorce le modèle depuis le code
 > (arborescence, manifestes, imports → conteneurs avec `sourceDir`, une vue par conteneur, candidats
 > d'invariants) puis le révise contre le code ; `/scd-spec-dev:adr` écrit l'ADR Nygard et, si la
 > décision touche le modèle, le delta du `.c4`, la vue `adr-NNNN` rendue en Mermaid et la promotion
-> des invariants. **La review lit le modèle par MCP** : `review-context` résout la table en structuré
+> des invariants ; `/scd-spec-dev:archi-dossier` écrit le dossier complet — contexte, déploiement, flux,
+> README — depuis le code (relevé) ou avant lui (conception, tag `#planned`), le modèle étant le
+> référent que la review confronte au diff. **La review lit le modèle par MCP** : `review-context` résout la table en structuré
 > (candidat / promu / retiré) et le sous-graphe touché par le diff via le serveur `likec4` ;
 > l'`architecture-reviewer` bloque un import qui franchit une frontière sans relation dans le modèle
 > quand un invariant promu couvre la paire — suggestion « relation non modélisée » sinon — et valide
@@ -198,6 +200,7 @@ voit pas, l'`architecture-reviewer` le juge, en contexte frais.
 |---|---|
 | `/scd-spec-dev:setup` | monte OpenSpec dans le projet, copie le schéma `scd`, `config.yaml`, gabarits durables, filet CI, **+ le socle d'architecture LikeC4**. Idempotente par artefact |
 | `/scd-spec-dev:archi` | amorce le modèle LikeC4 depuis le code (conteneurs + `sourceDir`, une vue par conteneur, candidats d'invariants) ou le révise contre le code — jamais d'ADR, jamais de promotion |
+| `/scd-spec-dev:archi-dossier` | le dossier complet : contexte (`#external`), composants, déploiement, flux (`dynamic view`), README narratif aux vues Mermaid, candidats d'invariants et d'ADR — **relevé** depuis le code (brouillon complet, une relecture) ou **conception** avant lui (lots de questions, conteneurs `#planned`) |
 | `/scd-spec-dev:adr` | écrit un ADR Nygard ; s'il touche le modèle : delta du `.c4`, vue `adr-NNNN` rendue en Mermaid, invariants promus ou créés (colonne `ADR`). Un ADR accepté ne s'édite pas, il se supersède |
 | `/scd-spec-dev:quality-setup` | paramètre la quality gate → `.claude/quality.json` (possédé par le projet) |
 | `/scd-spec-dev:quality-agents` | co-crée avec l'humain les agents de la gate (projet) : un **diagnostiqueur par check** (`quality-<id>.md`, lecture seule) et, optionnel, l'**applier** (top-level `applier`) — le seul autorisé à renforcer les tests |
