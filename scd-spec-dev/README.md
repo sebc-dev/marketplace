@@ -3,7 +3,7 @@
 Cycle spec-driven bâti sur **OpenSpec**, du change à la PR — et la couche d'implémentation
 qu'OpenSpec n'a pas.
 
-> **⚠️ Écrit et mécaniquement vérifié, jamais joué de bout en bout.** Le plugin existe en `0.13.0`,
+> **⚠️ Écrit et mécaniquement vérifié, jamais joué de bout en bout.** Le plugin existe en `0.16.0`,
 > `claude plugin validate` au vert, mais aucun projet réel n'a encore parcouru
 > `setup → propose → tickets → run → sync → archive`. La question ouverte est celle de toute la
 > conception : la **review + verify** tiennent-elles la rigueur **sans hook write-time** ?
@@ -34,11 +34,17 @@ jamais `/opsx:apply`** ; `/scd-spec-dev:run` prend le relais sur les tickets.
 ① Cadrage durable   vision · roadmap · caps (archi/test/sécu/design-system) · ADR   (injecté via config.yaml)
 ② Change OpenSpec   /opsx:propose  →  proposal · design · deltas specs/              (1er geste humain : relire)
 ③ Tickets           /scd-spec-dev:tickets  →  tranches verticales NN-slug.md          (2e geste humain : arbitrer)
-④ Implémentation    /scd-spec-dev:run <NN>  →  branche → vérif → review 8 dims → PR   (une PR par ticket)
+④ Implémentation    /scd-spec-dev:run <NN>  →  branche → vérif → review 8 dims → PR → page  (une PR par ticket)
 ⑤ Archive           PR mergées → openspec archive  →  openspec/specs/ (vérité courante, reboucle sur la roadmap)
 ```
 
 **Deux gestes humains**, et deux seulement : relire le change, arbitrer la granularité des tickets.
+
+**La PR n'est pas le dernier geste.** L'**étape 6bis** du `run` publie la **page de relecture** du
+ticket — le diff fichier par fichier avec un basculement vers le fichier complet, la narration par
+fichier du `pr-describer`, les schémas LikeC4, pensés pour se lire sur un **téléphone** — et ce que
+l'humain y coche, annote et tranche revient par `/scd-spec-dev:review-page notes <URL>`. Hors du
+cycle, `/scd-spec-dev:review-page` rend la même page sur n'importe quel diff.
 
 ---
 
@@ -208,6 +214,7 @@ voit pas, l'`architecture-reviewer` le juge, en contexte frais.
 | `/scd-spec-dev:run` | implémente **un** ticket : vérif → quality gate → review 8 dims → triage → PR (description avec couche « Impact architecture » si le modèle est touché) |
 | `/scd-spec-dev:run-parallel` | plusieurs tickets en parallèle réel, chacun dans son worktree |
 | `/scd-spec-dev:review` | review de pertinence à la demande, hors run — **lecture seule**, rapporte |
+| `/scd-spec-dev:review-page` | la **page de relecture** hors run : diff par fichier + narration + schémas, publiée en artefact et pensée pour un téléphone ; `notes <URL>` relit la relecture et la poste en `gh pr review` |
 | `/scd-spec-dev:sync` · `reland` | anti-orphelinage des PR empilées (curatif · rattrapage d'orphelin) |
 | `/scd-spec-dev:status` | où en est le projet, dérivé d'`openspec list` + tickets + PR + chantiers |
 | `/scd-spec-dev:pause` · `resume` · `note` | chantiers : le contexte à travers les `/clear` |
@@ -227,6 +234,10 @@ voit pas, l'`architecture-reviewer` le juge, en contexte frais.
   éditions de test d'un applier de projet), le `chantier-reader`.
 - **2 workflows** — `implement-ticket.js` (16 phases, segment de vérif variable selon les 4 modes) et
   `implement-parallel.js` (chaînes indépendantes, un worktree par ticket).
+- **2 scripts déterministes** — `.claude/scripts/scd-arch-conformance.mjs`, la couche 3 de
+  l'architecture, **copié dans le projet** par `/setup` (il sert un check de la quality gate), et
+  `scripts/scd-review-page.mjs`, qui rend la page de relecture depuis `git` et un manifeste JSON :
+  celui-là est **joué depuis le plugin**, jamais copié — rien dedans n'est propre au projet.
 - **La recette de schéma `scd`** — `openspec-schema/scd/` (le plugin porte la recette, `/setup` la
   copie dans le projet).
 

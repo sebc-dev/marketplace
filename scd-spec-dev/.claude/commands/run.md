@@ -1,5 +1,5 @@
 ---
-description: "Implémentation d'UN ticket NN d'un change OpenSpec : lance le dynamic workflow implement-ticket selon le mode de vérif du ticket (**Vérif :** — tdd rouge→vert le test avant le code ; test test-after ; observé une preuve capturée ; aucun un spike) → quality gate → review 8 dimensions en contexte frais → triage → apply → describe → PR. Résout le change, le ticket et sa base depuis le disque, exige un arbre propre, puis exécute le workflow en arrière-plan. On n'appelle JAMAIS /opsx:apply : run prend le relais sur les tickets."
+description: "Implémentation d'UN ticket NN d'un change OpenSpec : lance le dynamic workflow implement-ticket selon le mode de vérif du ticket (**Vérif :** — tdd rouge→vert le test avant le code ; test test-after ; observé une preuve capturée ; aucun un spike) → quality gate → review 8 dimensions en contexte frais → triage → apply → describe → PR → page de relecture. Résout le change, le ticket et sa base depuis le disque, exige un arbre propre, puis exécute le workflow en arrière-plan. On n'appelle JAMAIS /opsx:apply : run prend le relais sur les tickets."
 argument-hint: "[<change>] <NN> [--base <branche>]"
 allowed-tools:
   - Read
@@ -18,7 +18,13 @@ allowed-tools:
   - Bash(find *)
   - Bash(tr *)
   - Bash(echo *)
+  - Bash(mkdir *)
+  - Bash(node *)
+  - Bash(gh pr view *)
+  - Bash(gh pr comment *)
+  - Bash(glab mr note *)
   - Workflow
+  - Artifact
   - AskUserQuestion
 ---
 
@@ -137,7 +143,10 @@ Rappels avant lancement :
   rejetés**. Quand le ticket touche le modèle LikeC4, elle porte la couche **« Impact
   architecture »** (éléments touchés, vue Mermaid du conteneur, relations, `likec4 validate` si un
   `.c4` est dans le diff) — omise sinon. Elle est **sautée** si le budget restant est trop faible : la
-  PR s'ouvre alors avec un corps de repli minimal, jamais sans description.
+  PR s'ouvre alors avec un corps de repli minimal, jamais sans description. Elle compose **en plus**
+  `page` — la narration **par fichier** (ordre de lecture, rôle, ce que change chaque fichier, points
+  à scruter, critères exercés, schémas Mermaid) qui remonte au retour sous `pageManifest` et nourrit
+  l'étape 6bis.
 
 Le workflow se lance **par son chemin de fichier** (`scriptPath`), **jamais par `name`** : les
 workflows de ce plugin vivent sous `.claude/workflows/`, hors du répertoire `workflows/` racine (le
@@ -200,6 +209,7 @@ retourné :
     dépendance, puis `/scd-spec-dev:sync <change> NN`.
   - Si **`humanCheckRequired`** non vide (mode observé) : la PR porte une checklist de points qu'un
     humain doit constater (rendu visuel, effet externe).
+  - Le retour porte **`pageManifest`** → enchaîne sur l'**étape 6bis** : la page de relecture.
 - **`blocked-branch`** → la branche dédiée n'a pas pu être posée (arbre sale au moment de brancher, ou
   problème git) ; **rien n'a été écrit**. Commiter/remiser puis relancer.
 - **`blocked-rebase`** → la phase préventive a échoué (conflit avorté à résoudre à la main, ou
@@ -251,6 +261,73 @@ retourné :
   une branche ≠ celle posée par `branch-setup` (filet déterministe) : **aucune PR ouverte**. Signale
   `expectedBranch`/`recordedBranch` ; c'est un bug d'agent à investiguer avant de relancer.
 
+## Étape 6bis — Rendre la page de relecture
+
+**Seulement sur un `done` dont le retour porte `pageManifest`.** Tout autre statut : saute cette étape.
+
+La page montre le diff fichier par fichier, avec la narration du `pr-describer`, les schémas et les
+annotations du triage — de quoi relire un ticket sur un téléphone. Ce n'est **pas** une écriture
+documentaire : l'étape 7 reste la seule. Et la règle « la conversation principale ne lit pas les
+diffs » tient — tu **lances un script et tu publies un fichier**, tu n'ouvres aucun diff.
+
+`<slug>` = le nom de la branche du ticket, `/` remplacé par `-` (`impl/export-02` → `impl-export-02`).
+`.claude/review-page/` est **ignoré par git** (posé par `/scd-spec-dev:setup`).
+
+**a. Écris le manifeste.** `mkdir -p .claude/review-page`, puis `Write` de
+`.claude/review-page/<slug>.manifest.json` avec le `pageManifest` **TEL QUEL** — ne le réécris pas, ne
+le résume pas, n'en retire rien : le script le valide strictement et échoue bruyamment sur un
+manifeste abîmé.
+
+**b. Résous le script**, exactement comme à l'étape 5a (le shell expand `${CLAUDE_PLUGIN_ROOT}`) :
+
+```bash
+SCRIPT="${CLAUDE_PLUGIN_ROOT}/scripts/scd-review-page.mjs"
+[ -f "$SCRIPT" ] || SCRIPT="$(find "$HOME/.claude/plugins/cache" -path '*scd-spec-dev*/scd-review-page.mjs' 2>/dev/null | sort -V | tail -1)"
+[ -f "$SCRIPT" ] || SCRIPT="$(find "$HOME/.claude/plugins" -path '*scd-spec-dev*/scd-review-page.mjs' 2>/dev/null | sort -V | tail -1)"
+echo "$SCRIPT"
+```
+
+Rien trouvé → dis-le et saute l'étape (la PR est ouverte, rien n'est perdu).
+
+**c. Reporte l'état s'il y en a un.** `.claude/review-page/<slug>.url` existe (la page a déjà été
+publiée pour cette branche) → `Artifact(action: "read_file", url: <url lue>, path: "state.json")`, et
+passe le fichier obtenu en `--state` : les notes de la relecture précédente sont conservées, celles
+dont la ligne a disparu marquées `stale`.
+
+**d. Rends la page.**
+
+```bash
+node "$SCRIPT" --manifest .claude/review-page/<slug>.manifest.json --repo . \
+  --base "$(git merge-base <base> <branche>)" --head <branche> --pr <pr.url> \
+  -o .claude/review-page/<slug>
+```
+
+`pr` est `null` → **omets `--pr`** : le manifeste ne porte pas de `body`, la page le dit. Acceptable.
+
+**e. Publie.**
+
+```
+Artifact(file_path: ".claude/review-page/<slug>.artifact.html",
+         files: { "state.json": ".claude/review-page/<slug>.state.json" },
+         capabilities: { artifact: {} }, favicon: "🔍",
+         description: "Page de relecture du ticket <NN> — <titre>")
+```
+
+- `<slug>.url` existe → ajoute `url: <url lue>` pour republier au même endroit, et **ne passe PAS
+  `files`** : un `state.json` non passé est **conservé**, le passer écraserait la relecture en cours.
+  Exception : tu as reporté un état par `--state` en **c** — alors passe `files`, le fichier rendu
+  contient déjà les notes précédentes.
+- Écris l'URL rendue dans `.claude/review-page/<slug>.url`.
+- **L'outil `Artifact` n'est pas disponible** (SDK, clé API, surface sans artefacts) → donne le chemin
+  local de `.claude/review-page/<slug>.html` (document complet, ouvrable hors ligne) et continue.
+  **Jamais un échec** : la page est un confort, pas une étape du contrat.
+
+**f. Signale-la sur la PR**, best-effort (une erreur ici ne bloque rien) :
+
+```bash
+gh pr comment <pr.url> --body "Page de relecture : <URL>"    # ou : glab mr note <pr.url> -m "…"
+```
+
 ## Étape 7 — Sur tout statut `blocked-*`, ouvre une fiche de chantier
 
 C'est la **seule écriture documentaire** de cette commande, et elle existe pour une raison précise : un
@@ -270,6 +347,8 @@ pas une seconde.
 ## Ce que tu NE fais PAS
 
 - Tu ne lis pas les diffs, tu n'écris pas de code, tu ne juges pas la qualité de l'implémentation.
+  **La page de relecture ne fait pas exception** : le script la rend depuis `git` et le manifeste, tu
+  ne l'écris pas et tu n'y ajoutes aucun jugement.
 - Tu ne boucles pas sur plusieurs tickets, tu ne relances pas automatiquement un ticket bloqué.
 - Tu ne modifies ni le change, ni le fichier du ticket (les cases sont à `progress-recorder`).
 - Tu ne rebases pas et tu ne relandes pas à la main : c'est `/scd-spec-dev:sync` et
@@ -285,7 +364,9 @@ pas une seconde.
 
 ## À la fin
 
-Sur un `done` : propose le ticket suivant (`/scd-spec-dev:run <change> NN+1`), ou
+Sur un `done` : rappelle l'**URL de la page de relecture** (ou son chemin local si l'artefact n'a pas
+pu être publié) — c'est là qu'on relit, qu'on coche et qu'on annote. Puis propose le ticket suivant
+(`/scd-spec-dev:run <change> NN+1`), ou
 `/scd-spec-dev:status <change>` s'il y a des PR à classer. Sur une PR empilée, la suite est
 `/scd-spec-dev:sync <change> NN` **une fois la dépendance mergée**.
 

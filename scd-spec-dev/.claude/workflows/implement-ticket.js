@@ -482,6 +482,38 @@ const PR_BODY = {
   properties: {
     title: { type: 'string', description: 'Titre au scope du ticket' },
     body: { type: 'string', description: 'Corps Markdown en couches, SANS le bloc « PR EMPILÉE » (posé par pr-author)' },
+    // Matière de la PAGE DE RELECTURE — narration par fichier. Ni pr-author ni le workflow n'en font
+    // rien : elle remonte au retour final (pageManifest) et c'est la conversation principale qui rend
+    // la page (run.md, étape 6bis). Optionnelle : describer sauté ou page absente → la page se rend
+    // sans narration et le dit.
+    page: {
+      type: 'object',
+      description: 'Narration par fichier pour la page de relecture — elle MONTRE, elle ne juge pas (le triage reste l\'arbitre)',
+      properties: {
+        readingOrder: { type: 'array', items: { type: 'string' }, description: 'Chemins du diff dans l\'ordre de lecture recommandé' },
+        files: {
+          type: 'array',
+          description: 'TOUS les fichiers du diff (git diff --name-only fait foi) ; au-delà de 40 fichiers, les générés sont regroupés en UNE entrée',
+          items: {
+            type: 'object',
+            required: ['path', 'kind'],
+            properties: {
+              path: { type: 'string' },
+              kind: { type: 'string', description: 'impl | test | config | model | doc | generated' },
+              role: { type: 'string', description: 'La place du fichier dans le ticket (point d\'entrée, adaptateur, fixture…)' },
+              summary: { type: 'string', description: 'Markdown COURT : ce que ce fichier change et pourquoi (une ligne pour un généré)' },
+              scrutinize: { type: 'array', items: { type: 'string' }, description: 'Ce que le reviewer doit regarder de près DANS CE FICHIER' },
+              criteria: { type: 'array', items: { type: 'string' }, description: 'ids SC-<NN><lettre> portés par ce fichier — un test dit quel critère il exerce' },
+            },
+          },
+        },
+        diagrams: {
+          type: 'array',
+          description: 'Les .mmd DÉJÀ lus pour la couche 4bis, collés entiers — jamais un second appel au CLI',
+          items: { type: 'object', properties: { id: { type: 'string' }, title: { type: 'string' }, mermaid: { type: 'string', description: 'Contenu ENTIER du .mmd, front-matter compris' } } },
+        },
+      },
+    },
   },
 }
 
@@ -1340,7 +1372,9 @@ const humanChecks = (verify && verify.criteria && (mode === 'observé' || verify
 // La description est un ARTEFACT DE REVIEW : juger le fonctionnel ET le code sans rouvrir les specs.
 // Non bloquant : si le describer est sauté (budget) ou échoue, pr-author compose son corps de repli.
 phase('Describe')
-const canDescribe = !budget.total || budget.remaining() > 40_000
+// 60 000 et non 40 000 : le describer produit désormais AUSSI `page` — une entrée par fichier du
+// diff, plus les .mmd collés entiers. La porte monte avec le livrable.
+const canDescribe = !budget.total || budget.remaining() > 60_000
 const desc = canDescribe
   ? await agent(
       `Compose la description de la PR du ticket ${ticket} du change ${changeDir}, pour un REVIEWER HUMAIN. Corps Markdown EN COUCHES : ` +
@@ -1357,6 +1391,12 @@ const desc = canDescribe
             : `. Aucun .c4 dans le diff : ne joue PAS likec4 validate, le modèle n'a pas changé`) +
           `. Rien d'inventé : tout vient de model, du CLI ou de git joués par toi. `
         : ``) +
+      `Compose AUSSI \`page\` — la matière de la PAGE DE RELECTURE, rendue hors de toi par un script (aucun HTML, aucun diff calculé par toi, aucun jugement : la sévérité reste au triage). ` +
+      `\`readingOrder\` : les chemins dans l'ordre où un humain doit lire. \`files[]\` couvre TOUS les fichiers du diff — \`${gitPrefix} diff --name-only <base>...<branche>\` FAIT FOI ` +
+      `(matière connue ici : impl ${JSON.stringify(implFiles)}, tests ${JSON.stringify(testFiles)}${(modelFilesInDiff || []).length ? `, modèle ${JSON.stringify(modelFilesInDiff)}` : ``} — mais c'est git qui arbitre, pas cette liste). ` +
+      `Par fichier : \`kind\` (impl | test | config | model | doc | generated), \`role\` (sa place dans le ticket), \`summary\` (Markdown COURT : ce qu'il change et pourquoi), \`scrutinize[]\` (ce qu'il faut regarder de près DANS CE FICHIER), ` +
+      `\`criteria[]\` (les ids SC-<NN><lettre> qu'il porte — un TEST dit quel critère il exerce). Un GÉNÉRÉ (verrou, build, snapshot) a \`kind: generated\` et un \`summary\` d'UNE ligne ; au-delà de 40 fichiers, regroupe les générés en UNE entrée. ` +
+      `\`diagrams[]\` = les .mmd DÉJÀ lus pour la couche 4bis, collés entiers (front-matter compris) — jamais un second appel au CLI ; pas de couche 4bis → \`diagrams: []\`. ` +
       `N'écris PAS le bloc « PR EMPILÉE » (c'est pr-author). Lecture seule : aucun push, aucune PR.\n` +
       `Résumé:\n${JSON.stringify({
         ticket, changeDir,
@@ -1425,6 +1465,46 @@ const pr = await agent(
 // inspection humaine (le travail du ticket n'existe que là si le push n'a pas pu se faire).
 const worktreeKept = wtDir && !(pr && pr.prUrl && pr.worktreeRemoved) ? wtDir : null
 
+// PAGE DE RELECTURE — la page n'est PAS rendue ici. Ni un workflow ni un sous-agent n'a l'outil
+// `Artifact`, et le script d'un workflow n'a aucun accès disque : c'est la CONVERSATION PRINCIPALE
+// qui écrit le manifeste, lance `scd-review-page.mjs` et publie (run.md, étape 6bis). Le workflow ne
+// fait que TRANSMETTRE la matière, par son retour — le seul canal sans LLM. Compact et SANS `body`
+// (la page le reprend sur la PR via `--pr`). Aucune phase ajoutée.
+const pageCriteria = (brief.criteres || []).map((c) => {
+  const byTest = (tests.testsByCriterion || []).find((t) => t && t.id === c.id)
+  const verified = ((verify && verify.criteria) || []).find((v) => v && v.id === c.id)
+  return {
+    id: c.id,
+    text: c.text,
+    test: byTest ? byTest.test : null,
+    status: verified && verified.verified ? 'vert' : (verified && verified.humanCheckRequired ? 'humanCheck' : 'non vérifié'),
+    proof: verified ? (verified.evidence || verified.humanCheckRequired || null) : null,
+  }
+})
+const pageManifest = {
+  schemaVersion: 1,
+  meta: {
+    title: brief.title,
+    ticket,
+    changeDir,
+    branch: (record && record.branch) || branchInfo.branch,
+    base: base || branchInfo.base,
+    verifMode: mode,
+    verdict: humanChecks.length ? 'attente humaine' : 'vert',
+  },
+  page: described && described.page ? described.page : null, // null → page sans narration, elle le dit
+  criteria: pageCriteria,
+  model: reviewCtx.model || null,
+  modelFilesInDiff,
+  review: {
+    applied: triaged.apply,
+    rejected: triaged.skip,
+    qualityAdvisory,
+    preflightRepairs,
+    humanChecks,
+  },
+}
+
 return {
   ticket, changeDir,
   status: 'done',
@@ -1442,4 +1522,5 @@ return {
   worktree: useWorktree,
   worktreeDir: worktreeKept, // null si supprimé après succès ; chemin conservé sinon
   pr: pr && pr.prUrl ? { url: pr.prUrl, state: pr.state, stacked: pr.stacked, base: pr.base || base || branchInfo.base } : null,
+  pageManifest,
 }

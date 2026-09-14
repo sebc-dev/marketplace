@@ -56,6 +56,13 @@ de `verifier`.
 **Producteur ≠ vérificateur** partout : celui qui écrit (`test-writer`, `implementer`, `fix-applier`)
 n'est jamais celui qui juge (`test-validator`, `verifier`, les 8 reviewers, `review-validator`).
 
+- **6bis — page de relecture.** Le workflow s'arrête à la PR ; c'est la **conversation principale**
+  qui enchaîne, à l'**étape 6bis de `run.md`** — elle seule a l'outil `Artifact`. Elle écrit le
+  `pageManifest` rendu par le workflow, joue `scripts/scd-review-page.mjs` et publie la page (diff par
+  fichier, narration du `pr-describer`, schémas, annotations du triage, `state.json`). **Aucune phase
+  n'est ajoutée** au workflow ; hors du cycle, `/scd-spec-dev:review-page` fait la même chose sur
+  n'importe quel diff.
+
 ### La quality gate ne détruit jamais de contenu
 
 Un autofix (`eslint . --fix`, un formatter) balaie le projet et peut toucher un fichier de test. Au

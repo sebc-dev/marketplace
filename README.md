@@ -152,7 +152,7 @@ Practices*, and model knowledge where those three are silent. Every claim carrie
 `[MS]`/`[CANONICAL]`/`[APOLLO]`/`[MODEL]` — and undocumented areas are named rather than filled by
 inference.
 
-### [scd-spec-dev](./scd-spec-dev/) `v0.13.0`
+### [scd-spec-dev](./scd-spec-dev/) `v0.16.0`
 
 Spec-driven cycle built **on OpenSpec**, from change to PR — and the implementation layer OpenSpec
 lacks. OpenSpec carries the doc→tickets layer (living specs in `openspec/specs/`, an
@@ -166,7 +166,16 @@ coverage, plus **change** at the artifact level and **integrity** for escape-hat
 producer ≠ verifier structure, not in session guards: **zero gate, zero session hook**, one automatic
 net (a CI grep, out of the dev loop). `/scd-spec-dev:setup` mounts OpenSpec and copies the `scd`
 schema into the target project — the plugin carries the recipe, the project carries the instance.
-`/opsx:apply` is never called; `run` takes over on the tickets. 16 slash commands.
+`/opsx:apply` is never called; `run` takes over on the tickets. 17 slash commands.
+
+**The PR is not the last gesture.** Step 6bis of `run` publishes a **review page** for the ticket —
+every file's diff with a toggle to the full file, the per-file narration composed by `pr-describer`,
+the LikeC4 diagrams and an impact graph, laid out to be read **on a phone** — published as an
+Artifact carrying its reading state in `state.json` (files seen, notes anchored to a line, a general
+note, a verdict). `/scd-spec-dev:review-page` renders the same page outside the cycle on any diff (a
+ticket, a range, a PR, the working tree), and `review-page notes <URL>` reads the review back, prints
+it and offers to post it as a `gh pr review`. The page **shows**, it never judges: its annotations
+come from the triage.
 
 **Architecture is tooled, not prose.** `/scd-spec-dev:setup` detects **LikeC4** (absent, its steps are
 *skipped and reported* — the rest of the mount still plays), lays down a model skeleton in

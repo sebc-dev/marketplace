@@ -1,5 +1,5 @@
 ---
-description: "Monte OpenSpec dans le projet cible et l'accorde au schéma scd de ce plugin, en UNE passe rejouable. DÉTECTE OpenSpec sans jamais l'installer (le repli npx n'existe pas : les /opsx:* appellent `openspec` nu, allowed-tools scellé sur Bash(openspec:*) — exiger `openspec` sur le PATH est le seul montage viable) : absent, elle s'arrête en guidant vers `npm i -g @fission-ai/openspec@latest`. Présente, elle pose l'échafaudage (`openspec init --tools claude`, jamais re-init : au re-jeu `openspec update`), copie la recette de schéma scd portée par le plugin dans openspec/schemas/scd/, accorde openspec/config.yaml (schema: scd + un bloc context/rules balisé, édits humains préservés), scaffolde les gabarits durables (vision, roadmap, caps, adr/0001) seulement s'ils manquent, et pose le filet CI grep des escape-hatches. Idempotente par artefact : chaque artefact a un propriétaire et une règle au re-jeu. Monte aussi la dimension ARCHITECTURE : détecte LikeC4 (absent, les étapes LikeC4 sont SAUTÉES ET SIGNALÉES — le reste du montage joue, contrairement à OpenSpec qui est la fondation), pose le squelette de modèle docs/architecture/ (likec4.config.json + model.c4), récrit docs/architecture.md au format table d'invariants opposables, ajoute la clé likec4 au .mcp.json du projet sans toucher aux autres serveurs, copie le script de conformité code ↔ modèle scd-arch-conformance.mjs dans .claude/scripts/ (plugin-owned, rafraîchi), et pose un job CI likec4-validate dans le même workflow que le filet escape-hatch."
+description: "Monte OpenSpec dans le projet cible et l'accorde au schéma scd de ce plugin, en UNE passe rejouable. DÉTECTE OpenSpec sans jamais l'installer (le repli npx n'existe pas : les /opsx:* appellent `openspec` nu, allowed-tools scellé sur Bash(openspec:*) — exiger `openspec` sur le PATH est le seul montage viable) : absent, elle s'arrête en guidant vers `npm i -g @fission-ai/openspec@latest`. Présente, elle pose l'échafaudage (`openspec init --tools claude`, jamais re-init : au re-jeu `openspec update`), copie la recette de schéma scd portée par le plugin dans openspec/schemas/scd/, accorde openspec/config.yaml (schema: scd + un bloc context/rules balisé, édits humains préservés), scaffolde les gabarits durables (vision, roadmap, caps, adr/0001) seulement s'ils manquent, pose le filet CI grep des escape-hatches, et ajoute la ligne .claude/review-page/ au .gitignore (les artefacts de session de la page de relecture). Idempotente par artefact : chaque artefact a un propriétaire et une règle au re-jeu. Monte aussi la dimension ARCHITECTURE : détecte LikeC4 (absent, les étapes LikeC4 sont SAUTÉES ET SIGNALÉES — le reste du montage joue, contrairement à OpenSpec qui est la fondation), pose le squelette de modèle docs/architecture/ (likec4.config.json + model.c4), récrit docs/architecture.md au format table d'invariants opposables, ajoute la clé likec4 au .mcp.json du projet sans toucher aux autres serveurs, copie le script de conformité code ↔ modèle scd-arch-conformance.mjs dans .claude/scripts/ (plugin-owned, rafraîchi), et pose un job CI likec4-validate dans le même workflow que le filet escape-hatch."
 argument-hint: "(aucun — détecte, monte, rejouable)"
 allowed-tools:
   - Read
@@ -511,6 +511,19 @@ et pas un chemin vers le plugin** : le Bash d'un agent ne substitue pas `${CLAUD
 c'est `.claude/quality.json` qui l'appelle (`node .claude/scripts/scd-arch-conformance.mjs …`, le
 check `architecture` proposé par `/scd-spec-dev:quality-setup`).
 
+### Ignorer `.claude/review-page/` (toujours, modèle ou pas)
+
+`/scd-spec-dev:run` rend la **page de relecture** d'un ticket sous `.claude/review-page/` (manifeste,
+HTML, `state.json`, URL de l'artefact) : des artefacts **de session**, régénérés à chaque run, qui
+n'ont rien à faire dans un commit. Artefact **plugin-owned**, posé **inconditionnellement** — la page
+ne dépend d'aucun modèle LikeC4.
+
+- `.gitignore` **absent** → le créer avec la seule ligne `.claude/review-page/`.
+- `.gitignore` **présent** → `Read`, puis `Edit` pour **ajouter la ligne si elle manque**, à la fin.
+  **Ne réécris jamais le reste du fichier** : un `.gitignore` porte l'histoire du projet.
+- Ligne déjà là → ne rien faire. (Un motif plus large qui la couvre déjà, `.claude/` par exemple,
+  compte comme présent.)
+
 ---
 
 ## Étape 6 — Poser le filet CI (grep des escape-hatches)
@@ -685,7 +698,8 @@ Afficher un récapitulatif court :
   **laissés intacts car présents**, résultat de `likec4 validate`, `docs/architecture.md` (table),
   clé `likec4` du `.mcp.json` (ajoutée / rafraîchie / sautée), script de conformité
   `.claude/scripts/scd-arch-conformance.mjs` (copié / rafraîchi / sauté), job CI `likec4-validate`
-  (posé / sauté).
+  (posé / sauté) ;
+- ligne `.claude/review-page/` du `.gitignore` (ajoutée / déjà présente / fichier créé).
 
 Puis la **prochaine action** : amorcer le modèle avec `/scd-spec-dev:archi` si le squelette vient
 d'être posé, puis ouvrir un premier change avec `/opsx:propose "<idée>"` (relire) et
@@ -704,3 +718,4 @@ d'être posé, puis ouvrir un premier change avec `/opsx:propose "<idée>"` (rel
 | Modèle LikeC4 (`docs/architecture/*.c4`, `likec4.config.json`) | **l'humain** | écrits **seulement si absents** ; un modèle existant n'est ni réécrit ni reformaté, seulement **validé** |
 | Serveur `likec4` du `.mcp.json` | **le plugin** (la clé), le projet (le fichier) | la clé `likec4` est **réécrite** ; toute autre clé, et tout le reste du fichier, **préservés mot pour mot** |
 | Script de conformité (`.claude/scripts/scd-arch-conformance.mjs`) | **le plugin** | **rafraîchi** (recopié depuis `${CLAUDE_PLUGIN_ROOT}/scripts/`, comme le schéma `scd`) ; une copie éditée à la main est écrasée |
+| Ligne `.claude/review-page/` du `.gitignore` | **le plugin** (la ligne), le projet (le fichier) | la **ligne** est ajoutée si elle manque, jamais en double ; **tout le reste du fichier est préservé mot pour mot** (fichier absent → créé avec cette seule ligne) |

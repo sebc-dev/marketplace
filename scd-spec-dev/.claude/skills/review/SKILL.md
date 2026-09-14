@@ -10,9 +10,12 @@ description: |
   résolu UNE fois, le triage adversarial (reproduire avant de retenir, au doute skip), et la frontière
   entre ce qui BLOQUE et ce qui reste suggestion. La dimension architecture juge sur DEUX référents :
   la table des invariants (promu / candidat / retiré) et le sous-graphe du modèle LikeC4 lu par le
-  MCP `likec4`. Se charge pendant /scd-spec-dev:run (phase Review) et
-  /scd-spec-dev:review (l'utilitaire hors run). Une référence chargée à la demande :
-  references/dimensions.md (les huit dimensions en détail + le contrat de finding). Porte UNIQUEMENT
+  MCP `likec4`. Porte aussi la PAGE DE RELECTURE — le support où l'humain lit le diff fichier par
+  fichier, coche, annote et rend un verdict : elle MONTRE, elle ne juge pas. Se charge pendant
+  /scd-spec-dev:run (phase Review, et l'étape 6bis qui publie la page), /scd-spec-dev:review
+  (l'utilitaire hors run) et /scd-spec-dev:review-page (la page seule, sans reviewer). Une référence
+  chargée à la demande : references/dimensions.md (les huit dimensions en détail + le contrat de
+  finding). Porte UNIQUEMENT
   la review : elle n'écrit ni ne corrige rien (fix-applier applique, sous /scd-spec-dev:run), ne porte
   ni le parsing du ticket ni l'anti-orphelinage (skill implement), ni la fondation OpenSpec (skill
   openspec), ni le découpage (skill change-decomposer).
@@ -85,6 +88,23 @@ dans le code avant de le retenir, ne garde que ce qui touche la **correction** o
 **rejette** style/spéculation/sur-engineering/hors-scope/doublon. **Au doute → skip.** Le triage décide
 `apply`/`skip` ; il ne corrige rien. Un finding retenu est ensuite appliqué chirurgicalement par
 `fix-applier` (dans `run` seulement ; l'utilitaire `review` **rapporte** et n'applique pas).
+
+## La page de relecture
+
+Le rapport de findings s'adresse au cycle ; la **page de relecture** s'adresse à l'humain. Une page
+porte le **diff de chaque fichier** (avec un basculement vers le fichier complet), la **narration par
+fichier** composée par `pr-describer` (ordre de lecture, rôle, ce que change ce fichier, points à
+scruter, critères exercés), les **schémas LikeC4** et le graphe d'impact, les **annotations du
+triage** — les findings `applied`/`rejected` ancrés sur leur ligne —, et l'**état de relecture** dans
+son `state.json` : cases « vu », notes ancrées à la ligne (`question` | `changement`), note générale,
+verdict. Elle est pensée pour un téléphone.
+
+**Elle MONTRE, elle ne juge pas** : aucune sévérité n'y est inventée, tout jugement vient des huit
+dimensions et du triage. Hors du cycle, il n'y a donc **aucune** annotation — c'est correct, pas une
+lacune. Elle est rendue par un script déterministe du plugin et publiée par la conversation
+principale : à l'**étape 6bis de `/scd-spec-dev:run`** (après la PR), ou par
+**`/scd-spec-dev:review-page`** sur n'importe quel diff. `review-page notes <URL>` fait le retour :
+elle relit le `state.json`, imprime le compte-rendu et propose de le poster en `gh pr review`.
 
 ## Deux entrées, un même dispositif
 
