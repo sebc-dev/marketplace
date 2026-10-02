@@ -357,6 +357,12 @@ corriger.
 Donne à l'humain la commande **copiable telle quelle**, avec le `runId` et le chemin de la copie
 relevés à l'étape 5d. Trois limites :
 
+- **La reprise se fait avec la copie qui a lancé le run, jamais avec une version plus récente du
+  plugin.** Une nouvelle version change souvent les prompts des phases en amont du point de rejeu :
+  ces phases seraient rejouées elles aussi. En `tdd`, le `test-writer` réécrirait ses tests sur un
+  code déjà écrit, ne verrait jamais le rouge attendu, et le run finirait en `blocked-red`. Pour
+  profiter d'un correctif du plugin sur un run déjà lancé, ajoute à la main, dans l'ancienne copie,
+  une mention au prompt de la première phase à rejouer (c'est ce que fait le jeton `rerun`).
 - **La reprise ne vit que dans la session qui a lancé le run.** Après un `/clear` ou dans une autre
   session, `resumeFromRunId` n'existe plus : relance `/scd-spec-dev:run`, qui rejoindra la branche
   existante (arbre propre exigé, donc commite d'abord la correction). Le run repart alors du début,
