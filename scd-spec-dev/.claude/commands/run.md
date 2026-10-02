@@ -196,6 +196,10 @@ Workflow(scriptPath: "<chemin normalisé en b>", args: { changeDir: "openspec/ch
 > C'est un **template** — omets `base`/`oldBase` quand ils n'ont pas lieu d'être (ticket indépendant
 > sur la base par défaut).
 
+**d. Relève le `runId`** (`wf_…`, le dernier segment du `Transcript dir` rendu par le lancement) et
+**garde la copie normalisée** tant que le ticket n'est pas `done` : la reprise d'un run bloqué a
+besoin des deux (étape 6ter).
+
 ## Étape 6 — Rendre compte
 
 Le workflow tourne en arrière-plan (`/workflows` pour suivre). À sa complétion, résume le `status`
@@ -232,7 +236,7 @@ retourné :
   réécriture du `**Vérif :**` du ticket, le `verifier` aval remonte un `humanCheckRequired` si besoin).
 - **`blocked-red`** / **`blocked-tests-modified`** (tdd) · **`blocked-impl`** (test/observé/aucun :
   l'impl n'a pas passé l'intégration) · **`blocked-verify`** (le `verifier` n'a pas obtenu la ceinture
-  ou une preuve observable) · **`blocked-after-fix`** → explique le blocage et la reprise. **Aucune PR
+  ou une preuve observable) · **`blocked-after-fix`** → explique le blocage et la reprise (étape 6ter). **Aucune PR
   n'est ouverte pour un ticket bloqué** ; la branche dédiée existe déjà. En tdd/test, `blocked-verify`
   n'est rendu qu'**après** la passe de self-correction bornée §14 (c) : une ceinture **propre** dont un
   critère reste inobservable par la stratégie test est d'abord retentée **une** fois en observé (preuve
@@ -249,7 +253,8 @@ retourné :
   La gate ne détruit jamais de contenu (snapshot avant autofix, restauration par `cp`, jamais
   `git checkout --`), un autofix de lint localisé dans un test neuf est **gardé puis audité** par le
   `test-edit-validator` et **mentionné dans la PR**, et le `test-writer` a déjà formaté ses tests en
-  amont. Explique quel check, et la reprise.
+  amont. Explique quel check, et la reprise (étape 6ter) : le cas typique est un défaut localisé dans
+  un test neuf, que seul l'humain a le droit de corriger — la reprise exige alors le jeton `rerun`.
 - **`blocked-quality-test-edit`** → le projet déclare un **applier à lui** (top-level `applier`),
   autorisé à renforcer les tests, et le `test-edit-validator` a refusé ses éditions en contexte
   frais : soit l'additivité est rompue (une assertion ou un cas **retiré**, un `.skip(` ajouté), soit
@@ -328,6 +333,41 @@ Artifact(file_path: ".claude/review-page/<slug>.artifact.html",
 gh pr comment <pr.url> --body "Page de relecture : <URL>"    # ou : glab mr note <pr.url> -m "…"
 ```
 
+## Étape 6ter — Reprendre un run bloqué
+
+**Seulement sur un statut `blocked-*`.** Une reprise relance le workflow avec `resumeFromRunId` : les
+agents déjà joués sont resservis depuis le cache, sans un token, tant que leur prompt est
+**identique**. Ce cache ne sait pas qu'un humain a corrigé l'arbre entre-temps — le script n'a aucune
+I/O. Une reprise nue après une correction ressert donc **l'échec à l'identique**, en quelques
+millisecondes : c'est arrivé sur `colibri-cms`, où un `blocked-quality` corrigé à la main est revenu
+avec la même ligne fautive et la même empreinte de test. D'où deux formes :
+
+- **Sans correction humaine** (crash, coupure, budget épuisé) → reprise nue, mêmes `args` :
+  `Workflow(scriptPath: "<copie normalisée>", resumeFromRunId: "<runId>", args: { …mêmes args… })`.
+- **Après une correction humaine** (test retouché, code réparé, config corrigée) → mêmes `args`
+  **plus un jeton de rejeu** : `args: { …mêmes args…, rerun: "2" }`. Incrémente le jeton à chaque
+  nouvelle tentative (`"3"`, `"4"`…) : un jeton déjà joué est lui-même en cache.
+
+Le jeton rejoue toutes les phases qui constatent ou touchent l'arbre une fois les tests figés :
+`Green` en `tdd`/`observé`/`aucun`, la ceinture `Verify`, la quality gate et tout l'aval. La branche,
+le BRIEF, le triage et l'écriture des tests restent en cache. En mode `test`, il commence à `Verify` :
+`Green` y précède le `test-writer`, et le rejouer ferait réécrire les tests que l'humain vient de
+corriger.
+
+Donne à l'humain la commande **copiable telle quelle**, avec le `runId` et le chemin de la copie
+relevés à l'étape 5d. Trois limites :
+
+- **La reprise ne vit que dans la session qui a lancé le run.** Après un `/clear` ou dans une autre
+  session, `resumeFromRunId` n'existe plus : relance `/scd-spec-dev:run`, qui rejoindra la branche
+  existante (arbre propre exigé, donc commite d'abord la correction). Le run repart alors du début,
+  écriture des tests comprise.
+- **La correction humaine garde le sens des tests.** La validation des tests (`Validate`) reste en
+  cache : un test dont l'humain a changé une assertion ou un cas n'est plus celui qui a été validé.
+  Dans ce cas, relance au lieu de reprendre.
+- **Certains blocages ne se reprennent pas.** `blocked-branch`, `blocked-rebase`, `blocked-brief`,
+  `blocked-arbitrage` et `blocked-impl` en mode `test` se règlent en amont du point de rejeu : corrige
+  la cause, puis relance.
+
 ## Étape 7 — Sur tout statut `blocked-*`, ouvre une fiche de chantier
 
 C'est la **seule écriture documentaire** de cette commande, et elle existe pour une raison précise : un
@@ -337,7 +377,9 @@ ticket jamais lancé**. Sans cette fiche, le fait disparaît au `/clear`.
 `docs/chantiers/en-cours/AAAA-MM-JJ-run-<slug>-<NN>.md`, `Portée : <change> · ticket NN`. Charge les
 blocs `<interdits>` et `<template>` de `chantier/references/fiche.md`. Y entrent : le statut `blocked-*`
 exact, la branche du ticket (le travail n'est pas perdu), ce que le workflow a produit avant de
-s'arrêter, et la sortie d'erreur **non tronquée**. Manifeste de contexte : le fichier ticket et le
+s'arrêter, la sortie d'erreur **non tronquée**, et la **commande de reprise** de l'étape 6ter
+(`runId`, chemin de la copie normalisée — la session qui pourra la jouer est celle-ci seulement).
+Manifeste de contexte : le fichier ticket et le
 change, tous deux `à lire`.
 
 ⚠️ **C'est toi qui écris, jamais le workflow** (aucune I/O par contrat) ni `progress-recorder`, qui ne
@@ -370,7 +412,8 @@ pu être publié) — c'est là qu'on relit, qu'on coche et qu'on annote. Puis p
 `/scd-spec-dev:status <change>` s'il y a des PR à classer. Sur une PR empilée, la suite est
 `/scd-spec-dev:sync <change> NN` **une fois la dépendance mergée**.
 
-Sur un blocage : donne la commande de reprise, et rappelle que la branche du ticket existe déjà (le
+Sur un blocage : donne la commande de reprise de l'étape 6ter — avec `rerun` si l'humain doit
+corriger l'arbre avant —, et rappelle que la branche du ticket existe déjà (le
 travail n'est pas perdu). **Si la reprise n'est pas immédiate**, ajoute : « `/scd-spec-dev:pause` avant
 de `/clear` — la fiche gardera ce que tu allais faire, et c'est le seul endroit où ce run bloqué
 laissera une trace. »

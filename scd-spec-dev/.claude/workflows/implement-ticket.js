@@ -170,6 +170,21 @@ const TESTS = {
     expectedState: { type: 'string', description: 'red (tdd) | green (test)' },
     observedState: { type: 'string', description: 'État réellement observé — s\'il diffère, ne pas maquiller' },
     evidence: { type: 'string', description: 'Extrait de la sortie de test prouvant l\'état' },
+    qualityChecks: {
+      type: 'array',
+      description: 'Checks blocking SANS autofix joués sur les seuls fichiers de test : corrigé / ignoré (rouge attendu en tdd) / non corrigé',
+      items: {
+        type: 'object',
+        required: ['checkId', 'status'],
+        properties: {
+          checkId: { type: 'string' },
+          status: { type: 'string', description: 'pass | fail, sur les fichiers de test du ticket' },
+          fixed: { type: 'array', items: { type: 'string' } },
+          ignored: { type: 'array', items: { type: 'string' } },
+          unresolved: { type: 'array', items: { type: 'string' } },
+        },
+      },
+    },
   },
 }
 
@@ -531,7 +546,7 @@ const PR_RESULT = {
 }
 
 // ---------------------------------------------------------------------------
-// Orchestration. args = { changeDir: "changes/export-csv", ticket: "02", base?, oldBase?, worktree?, prefetched? }.
+// Orchestration. args = { changeDir: "changes/export-csv", ticket: "02", base?, oldBase?, worktree?, prefetched?, rerun? }.
 // Tout accès disque/git se fait DANS les agents (l'orchestrateur n'a pas d'I/O).
 //
 // Deux modes d'exécution, comme dans le patron du plugin :
@@ -552,6 +567,20 @@ const base = args && args.base ? args.base : null
 const oldBase = args && args.oldBase ? args.oldBase : null
 const useWorktree = !!(args && args.worktree)
 const prefetched = !!(args && args.prefetched) // le remote a été fetché avant le fan-out (évite les fetch concurrents)
+
+// JETON DE REJEU. Une reprise (`resumeFromRunId`) ressert depuis le cache tout agent dont le couple
+// (prompt, opts) est inchangé. Or le script n'a aucune I/O : il ne voit pas qu'un HUMAIN a corrigé
+// l'arbre entre deux tentatives (test retouché après un blocked-quality, code réparé après un
+// blocked-red). Sans jeton, la reprise ressert l'échec à l'identique, en quelques millisecondes et
+// sans un token. `args.rerun` (chaîne libre, incrémentée à chaque tentative : "2", "3"…) est injecté
+// dans les prompts de toutes les phases qui CONSTATENT ou TOUCHENT l'arbre une fois les tests figés —
+// voir armRerun() plus bas. Les phases amont (branche, BRIEF, triage, écriture et validation des
+// tests) restent servies du cache. Jamais d'aléa ni de Date.now() à la place : ils invalideraient le
+// cache à CHAQUE reprise, y compris la reprise nominale après un crash, qui ne doit rien rejouer.
+const rerun = args && args.rerun ? String(args.rerun) : null
+const rerunTag = rerun
+  ? `\n\n(Re-jeu ${rerun} : un humain a pu corriger l'arbre depuis la tentative précédente — rejoue tout sur l'état courant, ne présume rien d'une tentative antérieure.)`
+  : ``
 
 // Glob du fichier ticket : la décomposition l'a écrit `NN-slug.md`. L'orchestrateur ne connaît pas le
 // slug (aucune I/O) — les agents résolvent le fichier depuis ce glob.
@@ -602,7 +631,7 @@ if (useWorktree && !wtDir) {
   return { ticket, changeDir, status: 'blocked-branch', branchInfo, note: 'mode worktree demandé mais worktreeDir absent du retour branch-setup' }
 }
 const gitPrefix = wtDir ? `git -C "${wtDir}"` : `git`
-const iso = wtDir
+let iso = wtDir
   ? `\n\n⚠ ISOLATION WORKTREE — opère EXCLUSIVEMENT dans le worktree du ticket : \`${wtDir}\`. ` +
     `TOUT git via \`git -C "${wtDir}" …\` (jamais un git implicite sur le cwd de session, partagé avec d'autres tickets). ` +
     `Chemins de fichiers (lecture/écriture) : ABSOLUS, sous \`${wtDir}\`. ` +
@@ -610,6 +639,20 @@ const iso = wtDir
     `Ne touche JAMAIS au checkout principal ni au worktree d'un autre ticket.`
   : ``
 log(`Branche ${branchInfo.branch} depuis ${base || branchInfo.base || 'défaut'}${branchInfo.exists ? ' (reprise)' : ''}${wtDir ? ` · worktree ${wtDir}` : ''}`)
+
+// Arme le jeton de rejeu : à partir de cet appel, `iso` — suffixé à chaque prompt aval — porte
+// `rerunTag`, et `rerunSuffix` le porte pour le seul prompt aval qui n'a pas `iso` (pr-author).
+// Idempotent. Appelé juste AVANT la première phase qui touche l'arbre une fois les tests figés :
+// Green en tdd (après Red/Validate) et en observé/aucun (aucun test en aval) ; Verify en `test`, où
+// Green PRÉCÈDE le test-writer — le rejouer changerait son résultat, donc le prompt du test-writer,
+// qui réécrirait les tests corrigés par l'humain.
+let rerunSuffix = ``
+const armRerun = () => {
+  if (!rerun || rerunSuffix) return
+  rerunSuffix = rerunTag
+  iso += rerunTag
+  log(`Re-jeu ${rerun} : les phases suivantes sont rejouées sur l'état courant de l'arbre (cache de reprise invalidé)`)
+}
 
 // Préventif : no-op sur une branche fraîche (idempotent) ; sur une REPRISE où la base a bougé, on
 // repose la branche sur la base à jour AVANT d'écrire.
@@ -701,7 +744,7 @@ if (mode === 'tdd') {
     `Mode TDD. Écris les tests du ticket ${ticket} — un test nommé par critère, l'id SC-<NN><lettre> DANS le nom — puis exécute ` +
     `\`${brief.testCommand}\` et CONFIRME le ROUGE (échec pour la BONNE raison : fonctionnalité absente, pas une erreur de compilation triviale). ` +
     `expectedState="red". Ne touche JAMAIS au code de production. ` +
-    `AVANT de rendre, FORMATE/LINTE tes SEULS fichiers de test : joue l'\`autofix\` de \`.claude/quality.json\` (sinon le formateur/linter détecté) RESTREINT à ces fichiers, puis re-joue \`${brief.testCommand}\` et reconfirme le ROUGE — un défaut cosmétique laissé dans un test neuf bloquerait la quality gate en aval.\nBRIEF:\n${briefJson}` + iso,
+    `AVANT de rendre, FORMATE/LINTE tes SEULS fichiers de test : joue l'\`autofix\` de \`.claude/quality.json\` (sinon le formateur/linter détecté) RESTREINT à ces fichiers ; PUIS joue chaque check \`blocking\` SANS autofix (typecheck, analyse…) et corrige toi-même, dans tes tests, les erreurs qui y sont localisées — sans escape-hatch, sans toucher au sens d'une assertion, en IGNORANT celles dues au code de production pas encore écrit (rouge attendu) ; rends-les dans \`qualityChecks\`. Re-joue enfin \`${brief.testCommand}\` et reconfirme le ROUGE — un défaut laissé dans un test neuf bloquerait la quality gate en aval, où plus aucun agent n'a le droit de le corriger.\nBRIEF:\n${briefJson}` + iso,
     { agentType: 'scd-spec-dev:test-writer', schema: TESTS, model: 'sonnet' },
   )
   if (!tests || tests.skipped) throw new Error('test-writer : aucun test produit en mode tdd')
@@ -729,6 +772,7 @@ if (mode === 'tdd') {
     if (!tests || tests.skipped) throw new Error('test-writer : correction des tests échouée')
   } while (++vtry < 2 && budget.remaining() > 40_000)
 
+  armRerun()
   phase('Green')
   let gtry = 0
   do {
@@ -771,7 +815,7 @@ if (mode === 'tdd') {
     `Mode TEST (test-after). Le code du ticket ${ticket} est écrit. Écris maintenant les tests — un test nommé par critère, ` +
     `l'id SC-<NN><lettre> DANS le nom — puis exécute \`${brief.testCommand}\` et CONFIRME le VERT (expectedState="green", 0 failed). ` +
     `Ne touche JAMAIS au code de production ; teste le comportement, pas l'implémentation. ` +
-    `AVANT de rendre, FORMATE/LINTE tes SEULS fichiers de test : joue l'\`autofix\` de \`.claude/quality.json\` (sinon le formateur/linter détecté) RESTREINT à ces fichiers, puis re-joue \`${brief.testCommand}\` et reconfirme le VERT — un défaut cosmétique laissé dans un test neuf bloquerait la quality gate en aval.\n` +
+    `AVANT de rendre, FORMATE/LINTE tes SEULS fichiers de test : joue l'\`autofix\` de \`.claude/quality.json\` (sinon le formateur/linter détecté) RESTREINT à ces fichiers ; PUIS joue chaque check \`blocking\` SANS autofix (typecheck, analyse…) et corrige toi-même, dans tes tests, les erreurs qui y sont localisées — sans escape-hatch, sans toucher au sens d'une assertion ; rends-les dans \`qualityChecks\`. Re-joue enfin \`${brief.testCommand}\` et reconfirme le VERT — un défaut laissé dans un test neuf bloquerait la quality gate en aval, où plus aucun agent n'a le droit de le corriger.\n` +
     `Fichiers d'impl : ${JSON.stringify(green.implFiles)}\nBRIEF:\n${briefJson}` + iso,
     { agentType: 'scd-spec-dev:test-writer', schema: TESTS, model: 'sonnet' },
   )
@@ -789,6 +833,7 @@ if (mode === 'tdd') {
     if (blocking.length) log(`⚠ ${blocking.length} gap(s) bloquant(s) sur les tests test-after — remontés, on poursuit vers la ceinture.`)
   }
 } else if (mode === 'observé') {
+  armRerun()
   phase('Green')
   green = await agent(
     `Mode OBSERVÉ (pas de test automatisé possible). Implémente le ticket ${ticket} d'après ses critères, de façon à satisfaire ` +
@@ -802,6 +847,7 @@ if (mode === 'tdd') {
   }
 } else {
   // aucun — spike jetable : impl exploratoire, aucune exigence de test ni de vérif observable.
+  armRerun()
   phase('Green')
   green = await agent(
     `Mode AUCUN (spike jetable). Produis le code exploratoire répondant à la question du ticket ${ticket}. ` +
@@ -816,6 +862,7 @@ if (mode === 'tdd') {
 
 const implFiles = (green && green.implFiles) || []
 const testFiles = (tests && tests.testFiles) || []
+armRerun() // mode `test` : le rejeu commence à la ceinture (no-op dans les autres modes, déjà armé)
 
 // La CEINTURE verify-time est le rattrapage réel du reward hacking (doctrine 0-hook-write-time).
 // tdd/test : le verifier rejoue les tests sur checkout propre + exige un git diff test vide.
@@ -1457,7 +1504,7 @@ const pr = await agent(
     proof: described ? undefined : proof,
     humanCheckRequired: described ? undefined : humanChecks,
     testCommand: described ? undefined : brief.testCommand,
-  })}`,
+  })}` + rerunSuffix,
   { agentType: 'scd-spec-dev:pr-author', schema: PR_RESULT, model: 'sonnet' },
 )
 
