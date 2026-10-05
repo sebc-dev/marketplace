@@ -99,8 +99,12 @@ c'est un signal de neutralisation, bloqué tel quel en amont, jamais maquillé.
 ```
 
 En `tdd`/`test`, `beltPassed` porte
-`{ testsDiffEmpty, testsDiffAdditiveOnly, removedAssertions, addedNeutralizers, failed, evidence }`
-et `criteria` reflète la correspondance test → critère. La ceinture est PROPRE quand `failed: 0` et
+`{ testsDiffEmpty, testsDiffAdditiveOnly, removedAssertions, addedNeutralizers, failed, evidence, testFileHashes }`.
+`testFileHashes` donne le sha256 du contenu de chaque fichier de test du ticket au moment de la
+ceinture : le workflow le compare au contenu commité, pour qu'un test modifié après toi ne parte pas
+en PR. Un `beltPassed` absent, ou qui n'affirme ni diff vide ni additivité, compte comme une ceinture
+**non attestée** : le ticket échoue en `blocked-verify`. `criteria` reflète la correspondance test →
+critère. La ceinture est PROPRE quand `failed: 0` et
 que le diff de test est vide (`testsDiffEmpty: true`) OU additif (`testsDiffAdditiveOnly: true`).
 `allVerified: false` (échec de ceinture ou critère non prouvé) fait échouer le ticket ou déclenche
 l'attente humaine, selon le motif.

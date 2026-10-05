@@ -38,11 +38,17 @@ Pour chaque finding retenu :
 
 Après avoir appliqué :
 
-- **`tdd` / `test`** : ré-exécuter `testCommand` → **`0 failed`**, **et** `git diff` sur les fichiers
-  de test **vide**. Une correction qui a fait rougir un test ou modifié un test est un échec.
+- **`tdd` / `test`** : ré-exécuter `testCommand` → **`0 failed`**, lu sur ta sortie réelle. Une
+  correction qui a fait rougir un test est un échec. Tu n'as pas à juger le diff des tests : le
+  workflow compare lui-même le contenu de chaque fichier de test commité à celui que la ceinture a
+  vérifié. Un test que tu aurais modifié fait échouer le ticket au Record.
 - **`observé`** : rejouer la vérification observable pertinente → la **preuve tient toujours**.
 
 Si la re-vérif échoue, ne pas maquiller : remonter l'état réel.
+
+**Liste dans `applied[].files` chaque fichier que tu as créé ou modifié.** C'est la liste que le
+workflow fait commiter : un fichier que tu as écrit sans le déclarer reste hors du commit et fait
+échouer le ticket (`blocked-record-incomplete`).
 
 ## Sortie (JSON)
 
@@ -54,6 +60,6 @@ Si la re-vérif échoue, ne pas maquiller : remonter l'état réel.
   "notApplied": [
     { "id": "F-3", "reason": "exigerait d'éditer un test" }
   ],
-  "reverify": { "mode": "tdd", "failed": 0, "testsDiffEmpty": true, "evidence": "…" }
+  "reverify": { "mode": "tdd", "failed": 0, "evidence": "…" }
 }
 ```

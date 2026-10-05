@@ -48,7 +48,7 @@ there: its deliverable is the corpus. The subject map carries the campaign's sta
 domain packs; `campaign` orchestrates and composes nothing itself.
 Human-in-the-loop by construction: no session can launch Research. 7 slash commands.
 
-### [scd-sdd](./scd-sdd/) `v2.7.0`
+### [scd-sdd](./scd-sdd/) `v2.7.1`
 
 Lean spec-driven cycle, from empty repo to reviewable PR — and the **guards** that stop the agent
 from rewriting whatever verifies its own work.
@@ -152,7 +152,7 @@ Practices*, and model knowledge where those three are silent. Every claim carrie
 `[MS]`/`[CANONICAL]`/`[APOLLO]`/`[MODEL]` — and undocumented areas are named rather than filled by
 inference.
 
-### [scd-spec-dev](./scd-spec-dev/) `v0.17.2`
+### [scd-spec-dev](./scd-spec-dev/) `v0.17.3`
 
 Spec-driven cycle built **on OpenSpec**, from change to PR — and the implementation layer OpenSpec
 lacks. OpenSpec carries the doc→tickets layer (living specs in `openspec/specs/`, an

@@ -60,18 +60,26 @@ const perChain = await parallel(
     const results = []
     for (let i = 0; i < chain.tickets.length; i++) {
       const step = chain.tickets[i]
-      const out = await workflow(
-        { scriptPath: implPath },
-        {
-          changeDir,
-          ticket: step.ticket,
-          base: step.base || undefined,
-          oldBase: step.oldBase || undefined,
-          worktree: true,
-          prefetched: true, // le remote a été fetché une fois avant le fan-out (pas de fetch concurrents)
-        },
-      )
-      results.push(out || { ticket: step.ticket, changeDir, status: 'blocked-unknown', note: 'workflow implement-ticket sans retour (skip/échec)' })
+      // Une exception d'un ticket ne doit pas emporter le résultat des tickets déjà aboutis de la chaîne.
+      let out = null
+      let crash = null
+      try {
+        out = await workflow(
+          { scriptPath: implPath },
+          {
+            changeDir,
+            ticket: step.ticket,
+            base: step.base || undefined,
+            oldBase: step.oldBase || undefined,
+            worktree: true,
+            prefetched: true, // le remote a été fetché une fois avant le fan-out (pas de fetch concurrents)
+          },
+        )
+      } catch (e) {
+        crash = String((e && e.message) || e)
+        log(`Ticket ${step.ticket} : exception — ${crash}`)
+      }
+      results.push(out || { ticket: step.ticket, changeDir, status: 'blocked-unknown', note: crash ? `exception dans implement-ticket : ${crash}` : 'workflow implement-ticket sans retour (skip/échec)' })
       if (!out || out.status !== 'done') {
         // stoppe la chaîne : les tickets empilés en aval sont désormais non lançables.
         for (let j = i + 1; j < chain.tickets.length; j++) {
@@ -85,8 +93,15 @@ const perChain = await parallel(
 )
 
 // Aplatis en rapport par ticket.
+// Une chaîne qui lève une exception rend null : elle n'est JAMAIS retirée en silence. Chacun de ses
+// tickets compte comme `blocked-unknown` — 0.17.2 et avant les filtraient, et un lancement dont les trois
+// chaînes avaient planté (« agent not found ») rendait `all-done` avec `tickets: []`.
 const tickets = []
-for (const c of perChain.filter(Boolean)) {
+const perChainSafe = chains.map((chain, i) => perChain[i] || {
+  chainId: chain.id,
+  results: chain.tickets.map((l) => ({ ticket: l.ticket, changeDir, status: 'blocked-unknown', note: 'chaîne en échec sans retour (exception dans implement-ticket) — voir le journal du workflow' })),
+})
+for (const c of perChainSafe) {
   for (const r of c.results) {
     tickets.push({
       ticket: r.ticket,
@@ -109,7 +124,7 @@ log(`Terminé : ${done.length} ticket(s) done, ${blocked.length} bloqué(s).`)
 
 return {
   changeDir,
-  status: blocked.length === 0 ? 'all-done' : (done.length ? 'partial' : 'all-blocked'),
+  status: blocked.length === 0 && done.length ? 'all-done' : (done.length ? 'partial' : 'all-blocked'),
   chains: chains.length,
   done: done.length,
   blocked: blocked.length,

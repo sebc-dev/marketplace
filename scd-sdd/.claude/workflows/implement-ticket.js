@@ -189,8 +189,11 @@ const VERIFY = {
 
 // Dossier de contexte résolu UNE fois par review-context et servi aux six reviewers.
 // Aucune I/O de review dans l'orchestrateur : l'agent lit docs/adr/ et SPEC.md.
+// `required` sur tout schéma d'agent : sans lui, un résultat enveloppé `{input:"<json>"}` passe la
+// validation et les reviewers jugent sans dossier (constaté sur scd-spec-dev). Garde de publication code 7.
 const REVIEW_CONTEXT = {
   type: 'object',
+  required: ['invariants'],
   properties: {
     invariants: {
       type: 'array',

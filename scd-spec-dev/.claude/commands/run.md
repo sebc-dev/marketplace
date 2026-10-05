@@ -267,9 +267,22 @@ retourné :
   Les éditions restent **sur la branche, telles quelles**, pour que l'humain voie ce qui a été tenté.
   Cite `removedAssertions` / `weakTests` et laisse trancher : c'est le cas où la gate a essayé
   d'améliorer les tests et s'est fait prendre à mal le faire.
-- **`blocked-record`** / **`blocked-branch-drift`** → `progress-recorder` s'est arrêté ou a commité sur
-  une branche ≠ celle posée par `branch-setup` (filet déterministe) : **aucune PR ouverte**. Signale
-  `expectedBranch`/`recordedBranch` ; c'est un bug d'agent à investiguer avant de relancer.
+- **`blocked-record`** / **`blocked-branch-drift`** → `progress-recorder` s'est arrêté, n'a rien rendu
+  (aucun commit attesté), ou a commité sur une branche ≠ celle posée par `branch-setup` (filet
+  déterministe) : **aucune PR ouverte**. Signale `expectedBranch`/`recordedBranch` ; c'est un bug
+  d'agent à investiguer avant de relancer.
+- **`blocked-record-incomplete`** → après le commit, `git status` n'était pas propre : `leftovers`
+  liste ce qui reste. Le workflow fait commiter lui-même le code, les tests du ticket et les fichiers
+  que les correcteurs ont déclarés (`commitFiles`) ; ce qui reste a été écrit **sans être déclaré**, ou
+  **sans droit** (un test créé par un correcteur, une sonde d'un juge, une édition du change). **Aucune
+  PR ouverte**, les commits du ticket sont sur la branche. Montre `leftovers` à l'humain : il commite ce
+  qui manque à la branche, retire le reste, puis reprend avec un jeton `rerun` (étape 6ter).
+- **`blocked-tests-touched-after-verify`** (tdd/test) → le contenu commité d'un test du ticket
+  (`touchedTests`) n'est plus celui que la ceinture a vérifié, et aucune phase n'avait le droit de le
+  changer hors audit (le fix-applier ne touche jamais un test). Le script l'a établi en comparant le
+  hash rendu par le `verifier` à celui rendu par le `progress-recorder`. **Aucune PR ouverte.** Montre
+  le diff du test depuis le commit de la ceinture : l'humain décide si la modification est légitime.
+  C'est le même signal qu'une ceinture violée, simplement constaté plus tard.
 
 ## Étape 6bis — Rendre la page de relecture
 

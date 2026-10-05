@@ -49,7 +49,7 @@ de `verifier`.
 | 9 | **Review** | tous | **8 reviewers ∥** contexte frais : 6 code + change + integrity (skill `review`) |
 | 10 | **Triage** | tous | `review-validator` : reproduit, ne garde que correction/exigence ; au doute skip |
 | 11 | **Apply** | tous | `fix-applier` chirurgical, re-vérifie selon le mode |
-| 12 | **Record** | tous | `progress-recorder` coche les critères satisfaits, commit sur la branche dédiée |
+| 12 | **Record** | tous | `progress-recorder` coche les critères **prouvés** et commite la liste que le **script** calcule (code, tests du ticket, fichiers déclarés par les correcteurs). Deux contrôles côté script : le hash de chaque test commité = celui de la ceinture (sinon `blocked-tests-touched-after-verify`), et `git status` propre après le commit (sinon `blocked-record-incomplete`) |
 | 13 | **Describe** | tous | `pr-describer` : corps en couches + matrice critère→test, findings appliqués **et** rejetés |
 | 14 | **PR** | tous | `pr-author` : push + PR ready, ou **draft** anti-orphelinage si empilée |
 
@@ -101,7 +101,8 @@ Quatre règles le rendent impossible :
 `blocked-quality` (+ `-config` / `-tests-touched` / `-fix` / `-test-edit`) — `-tests-touched` n'est
 désormais atteignable que si le **hash côté script** d'un test non gardé a changé (le fixer l'a modifié
 sans droit) ou si une **restauration** depuis le snapshot échoue, jamais sur un simple diff non vide ·
-`blocked-record` · `blocked-branch-drift` · `blocked-after-fix`. Sur tout `blocked-*` : **aucune PR
+`blocked-record` · `blocked-branch-drift` · `blocked-record-incomplete` ·
+`blocked-tests-touched-after-verify` · `blocked-after-fix`. Sur tout `blocked-*` : **aucune PR
 ouverte**, la branche du ticket existe déjà (travail non perdu), et une fiche de chantier consigne le
 fait (sinon il disparaît au `/clear` — rien sur le disque ne distingue un run bloqué d'un ticket
 jamais lancé). `blocked-arbitrage` est le cas à part : c'est le **seul** motif d'arrêt-pour-décision

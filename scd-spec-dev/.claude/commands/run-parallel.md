@@ -182,7 +182,9 @@ Puis :
 ## Étape 6 — Rendre compte
 
 Le workflow tourne en arrière-plan (`/workflows`). À la complétion, résume le retour
-(`status: all-done | partial | all-blocked`) puis, **par ticket** : `status`, `branch`, `base`, `pr`
+(`status: all-done | partial | all-blocked` — `all-done` exige au moins un ticket `done` et aucun
+bloqué ; une chaîne qui plante compte chacun de ses tickets en `blocked-unknown`, jamais en silence)
+puis, **par ticket** : `status`, `branch`, `base`, `pr`
 (URL ou null), et `worktreeDir` **si conservé** (ticket en échec — le worktree est laissé pour
 inspection humaine).
 

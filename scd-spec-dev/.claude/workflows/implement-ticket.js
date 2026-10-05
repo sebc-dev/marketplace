@@ -232,6 +232,7 @@ const VERIFY = {
     beltPassed: {
       type: 'object',
       description: 'Modes tdd/test : la ceinture verify-time (null en observé)',
+      required: ['failed', 'testsDiffEmpty', 'testFileHashes'],
       properties: {
         testsDiffEmpty: { type: 'boolean', description: 'true si le git diff des fichiers de test est réellement vide' },
         // Un diff de test non vide n'est PAS une neutralisation s'il est strictement ADDITIF : aucune
@@ -244,6 +245,10 @@ const VERIFY = {
         addedNeutralizers: { type: 'array', items: { type: 'string' }, description: '.skip(/.only(/.todo( ajoutés — non vide ⇒ neutralisation' },
         failed: { type: 'integer' },
         evidence: { type: 'string' },
+        // sha256 du contenu de chaque fichier de test du ticket AU MOMENT de la ceinture : la référence que
+        // le SCRIPT compare au contenu commité (Record). Un test modifié après la ceinture sans audit
+        // (fix-applier, juge qui écrit dans l'arbre) échoue le ticket au lieu de partir en PR.
+        testFileHashes: { type: 'object', additionalProperties: { type: 'string' } },
       },
     },
     criteria: {
@@ -264,8 +269,12 @@ const VERIFY = {
 }
 
 // Dossier de contexte résolu UNE fois par review-context et servi aux six reviewers de code.
+// `required` sur TOUT schéma d'agent : sans lui, un résultat enveloppé `{input:"<json>"}` passe la
+// validation (colibri : deux reviews sans table d'invariants, un `done` avec `pr: null` alors que la PR
+// existait). Avec lui, le runtime rejette l'enveloppe et l'agent se corrige. Garde de publication code 7.
 const REVIEW_CONTEXT = {
   type: 'object',
+  required: ['invariants'],
   properties: {
     invariants: {
       type: 'object',
@@ -366,9 +375,15 @@ const TRIAGE = {
 
 const QUALITY_ANALYSIS = {
   type: 'object',
-  required: ['gate'],
+  required: ['gate', 'checks'],
   properties: {
     gate: { type: 'string', description: 'ok | skipped | error' },
+    // ÉCHO BRUT de quality.json, sans jugement : le SCRIPT en dérive `autofixable` (voir isAutofixable).
+    checks: {
+      type: 'array',
+      description: 'Pour chaque check de quality.json : son id et sa commande autofix TELLE QU\'ÉCRITE (chaîne vide si absente ou null). [] si la gate est skipped.',
+      items: { type: 'object', required: ['id', 'autofix'], properties: { id: { type: 'string' }, autofix: { type: 'string' } } },
+    },
     reason: { type: 'string' },
     applier: { type: 'string', description: "applier du projet (quality-<slug>) déclaré en top-level `applier` de quality.json et vérifié présent sur disque, ou null → générique fix-applier" },
     summary: {
@@ -481,12 +496,15 @@ const TEST_EDIT_AUDIT = {
 
 const RECORD = {
   type: 'object',
-  required: ['branch', 'checked'],
+  required: ['branch', 'checked', 'porcelainAfter', 'testFileHashes'],
   properties: {
     branch: { type: 'string', description: 'Branche portant les commits du ticket' },
     checked: { type: 'array', items: { type: 'string' }, description: 'ids SC-<NN><lettre> cochés' },
     commits: { type: 'array', items: { type: 'object', properties: { sha: { type: 'string' }, message: { type: 'string' } } } },
     ticketFileUpdated: { type: 'boolean' },
+    // Sorties BRUTES, jamais une synthèse : le script en tire lui-même ses conclusions.
+    porcelainAfter: { type: 'string', description: 'Sortie brute de `git status --porcelain --untracked-files=all` APRÈS le dernier commit ; chaîne vide si arbre propre' },
+    testFileHashes: { type: 'object', additionalProperties: { type: 'string' }, description: 'sha256 du contenu de chaque fichier de test listé, AVANT de stager ; « absent » si le fichier n\'existe pas' },
     stopped: { type: 'boolean', description: 'true si progress-recorder s\'est arrêté (mauvaise branche)' },
   },
 }
@@ -534,6 +552,7 @@ const PR_BODY = {
 
 const PR_RESULT = {
   type: 'object',
+  required: ['branch'],
   properties: {
     prUrl: { type: 'string' },
     branch: { type: 'string' },
@@ -893,6 +912,7 @@ if (usesTests) {
     `Cite dans beltPassed.removedAssertions et beltPassed.addedNeutralizers ce que tu trouves ; l'un des deux non vide ⇒ additiveOnly=false = neutralisation → échec, remonté tel quel. Au doute → additiveOnly=false. ` +
     `3) Rejoue \`${brief.testCommand}\` et confirme 0 failed sur TA sortie réelle (beltPassed.failed=0). ` +
     `4) DÉFAIS l'intent-to-add : \`${gitPrefix} reset -q -- ${testFiles.join(' ')}\` — le \`add -N\` de l'étape 1 a mis les fichiers neufs dans l'index avec un blob VIDE ; le laisser piégerait tout \`checkout\`/\`restore\` aval (il ramènerait le blob vide, pas le contenu de travail). Rends l'arbre exactement comme trouvé. ` +
+    `5) Renseigne \`beltPassed.testFileHashes\` : pour CHAQUE fichier ${JSON.stringify(testFiles)}, le sha256 de son CONTENU (\`sha256sum\`, ou \`shasum -a 256\`, hex seul ; clé = chemin repo-relatif tel qu'écrit ici). C'est la référence que le script comparera au contenu commité. ` +
     `Renseigne \`criteria\` (correspondance test → critère) — CHAQUE critère du BRIEF y figure : un critère absent compte comme non prouvé. ` +
     `Un critère que la stratégie test ne constate pas → \`verified: false\` + \`humanCheckRequired\`. \`allVerified\` est ta lecture ; le workflow le recalcule.\n` +
     `Fichiers d'impl : ${JSON.stringify(implFiles)}\nBRIEF:\n${briefJson}` + iso,
@@ -909,7 +929,12 @@ if (usesTests) {
   //   il est acquis par `settle` et coule à la PR, sans passe — c'est le cas que 0.17.1 bloquait à tort.
   // Un diff de test non vide n'est PAS une violation s'il est prouvé strictement ADDITIF (fichier neuf,
   //   cas ajoutés). Seul un diff qui RETIRE/affaiblit un test ou ajoute un neutralisant viole la ceinture.
-  const beltViolated = (v) => !!(v && v.beltPassed && (v.beltPassed.failed !== 0 || (v.beltPassed.testsDiffEmpty === false && v.beltPassed.testsDiffAdditiveOnly !== true)))
+  // Une ceinture NON ATTESTÉE compte comme violée : pas de `beltPassed`, pas de `failed: 0`, ni diff vide ni
+  //   additivité affirmés. 0.17.2 et avant laissaient passer un verifier qui ne rendait pas `beltPassed`.
+  const beltViolated = (v) => {
+    const b = v && v.beltPassed
+    return !b || b.failed !== 0 || (b.testsDiffEmpty !== true && b.testsDiffAdditiveOnly !== true)
+  }
   // Ceinture violée : ni recalcul ni rattrapage — elle bloque telle quelle, quoi que dise allVerified.
   if (verify && !beltViolated(verify)) {
     const unproven = unsettled(verify)
@@ -922,7 +947,7 @@ if (usesTests) {
         `PREUVE OBSERVABLE (monte le composant / ré-exécute le critère et capture la sortie réelle), ou déclare un ` +
         `\`humanCheckRequired\` avec l'instruction exacte pour l'humain. Tu ne touches à AUCUN fichier de test (la ceinture ` +
         `est l'acquis, elle ne se rejoue pas), tu ne corriges pas le code, tu ne re-décides pas le mode du ticket. ` +
-        `Ne coche JAMAIS un critère non réellement observé. Retourne le VERIFY des SEULS critères ci-dessus ` +
+        `Ne coche JAMAIS un critère non réellement observé. Retourne le VERIFY des SEULS critères ci-dessus, SANS \`beltPassed\` (la ceinture est acquise) ` +
         `(chacun verified+evidence OU humanCheckRequired).\nFichiers d'impl : ${JSON.stringify(implFiles)}\n` +
         `BRIEF:\n${briefJson}\nCritères à rattraper:\n${JSON.stringify(unproven)}` + iso,
         { agentType: 'scd-spec-dev:verifier', schema: VERIFY, model: 'opus' },
@@ -944,6 +969,7 @@ if (usesTests) {
     if (verify.allVerified && hcIds.length) log(`Ceinture propre · ${hcIds.join(', ')} à constater par un humain (humanCheckRequired) → poursuite vers la PR, critère(s) non coché(s)`)
   }
   if (!verify || !verify.allVerified || beltViolated(verify)) {
+    if (verify && !verify.beltPassed) log('Ceinture NON ATTESTÉE : le verifier n\'a pas rendu `beltPassed` → blocked-verify')
     return { ticket, changeDir, status: 'blocked-verify', mode, verify, green, tests, worktreeDir: wtDir }
   }
 } else if (mode === 'observé') {
@@ -976,11 +1002,19 @@ let qualityAdvisory = []
 // l'applier de projet), audités par le test-edit-validator. Remontés à la PR : une édition de test
 // par la gate se déclare au reviewer humain.
 let qualityTestEdits = []
+// Fichiers de test que la gate a édités SOUS AUDIT du test-edit-validator (autofix gardé du fixer, tests
+// ajoutés par l'applier de projet), et les hash de la dernière analyse qui les a vus. Pour ces fichiers,
+// la référence d'intégrité du Record est le hash d'après la gate, plus celui de la ceinture.
+const gateAuditedTests = new Set()
+let gateTestHashes = null
+// Fichiers écrits par l'applier de la gate : comme ceux du fix-applier de la review, ils partent au commit.
+let qualityAppliedFiles = []
 const q1 = await agent(
   `Quality gate du ticket ${ticket}. Lis \`.claude/quality.json\` (possédé par le projet). ` +
-  `ABSENT/illisible → la gate est un NO-OP : retourne { "gate": "skipped", "findings": [] } sans jouer aucun check, n'invente rien. ` +
+  `ABSENT/illisible → la gate est un NO-OP : retourne { "gate": "skipped", "checks": [], "findings": [] } sans jouer aucun check, n'invente rien. ` +
+  `Présent → recopie d'abord \`checks\` : pour CHAQUE check du fichier, son \`id\` et sa commande \`autofix\` TELLE QU'ÉCRITE (chaîne vide si absente ou null) — un écho brut, le script en dérive ce qui est autofixable. ` +
   `Présent → joue chaque check sur le diff (fichiers d'impl : ${JSON.stringify(implFiles)}), capture la sortie réelle, évalue les seuils, ` +
-  `classe pass/fail et blocking/advisory (sévérité du check, jamais ré-arbitrée), localise, note \`autofixable\` (autofix non nulle). ` +
+  `classe pass/fail et blocking/advisory (sévérité du check, jamais ré-arbitrée), localise. ` +
   `Pour chaque échec, qualifie \`locationsNature\` (impl | test | mixed) en confrontant les fichiers cités aux fichiers de test du ticket ${JSON.stringify(testFiles)} (et convention *.test.*/*.spec.*/__tests__/tests/). ` +
   `Renseigne \`testFileHashes\` : pour CHAQUE fichier de test du ticket qui existe, le sha256 de son CONTENU (\`sha256sum <fichier>\`, clé = chemin repo-relatif). C'est la preuve d'intégrité comparée côté script.\n` +
   `Reporte aussi l'\`applier\` du projet : le champ top-level \`applier\` de quality.json, mais SEULEMENT si \`.claude/agents/<applier>.md\` existe vraiment (Glob) ; sinon null.\n` +
@@ -1001,7 +1035,13 @@ if (q1 && q1.gate === 'ok') {
   // Le quality-analyzer l'a vérifié présent sur disque (le script n'a pas d'accès fichier).
   const qApplier = q1 && typeof q1.applier === 'string' && /^quality-[a-z0-9][a-z0-9-]*$/.test(q1.applier) ? q1.applier : null
   if (qApplier) log(`Quality gate — applier de projet déclaré : ${qApplier} (autorisé à renforcer les tests, additivité exigée)`)
-  const fixable = (q1.findings || []).filter((f) => f.status === 'fail' && f.autofixable)
+  // `autofixable` se LIT dans quality.json, il ne se juge pas : le script le dérive de l'écho brut
+  // `q1.checks` (quality.json ne change pas pendant le run). Sur colibri, l'analyzer rendait
+  // `autofixable: false` 4 fois sur 8 pour un check qui déclarait `npm run lint -- --fix` — le fixer
+  // aurait été sauté. Un check absent de l'écho retombe sur le booléen de l'analyzer.
+  const autofixById = new Map((q1.checks || []).filter((c) => c && c.id).map((c) => [c.id, typeof c.autofix === 'string' && c.autofix.trim() !== '']))
+  const isAutofixable = (f) => (autofixById.has(f.checkId) ? autofixById.get(f.checkId) : !!f.autofixable)
+  const fixable = (q1.findings || []).filter((f) => f.status === 'fail' && isAutofixable(f))
   // Findings autofixables LOCALISÉS DANS UN TEST NEUF du ticket (modes tdd/test) : leur autofix
   // (lint/format/typage) est une édition ADDITIVE légitime, pas une neutralisation. Le fixer la GARDE
   // au lieu de la détruire, et le test-edit-validator l'audite en contexte frais (juste en dessous).
@@ -1040,17 +1080,20 @@ if (q1 && q1.gate === 'ok') {
         return { ticket, changeDir, status: 'blocked-quality-test-edit', mode, quality: q1, qualityFix: qf, testEdit: tev, worktreeDir: wtDir }
       }
       qualityTestEdits = fixerTestsEdited.slice()
+      for (const p of fixerTestsEdited) gateAuditedTests.add(p)
       log(`Quality gate — autofix de test gardé(s) audité(s) : additivité confirmée sur ${fixerTestsEdited.length} fichier(s)`)
     }
     // Re-analyze après autofix : l'état résiduel fait autorité (blocking → échec, advisory → findings).
     // Elle rend AUSSI les hash post-fixer : c'est l'agent (pas le fixer) qui les produit, le script compare.
-    residual = await agent(
+    const reFix = await agent(
       `Quality gate — RE-ANALYSE après autofix. Relis \`.claude/quality.json\` et RE-JOUE chaque check sur l'état courant du diff ` +
       `(fichiers d'impl : ${JSON.stringify(implFiles)}). Rends l'état résiduel réel (blockingFailures / advisoryFailures). ` +
       `Renseigne \`testFileHashes\` : le sha256 du CONTENU de chaque fichier de test du ticket ${JSON.stringify(testFiles)} qui existe (\`sha256sum\`, clé = chemin repo-relatif).\n` +
       `BRIEF (files/verifMode/criteres):\n${briefJson}` + iso,
       { agentType: 'scd-spec-dev:quality-analyzer', schema: QUALITY_ANALYSIS, model: 'sonnet' },
-    ) || q1
+    )
+    residual = reFix || q1
+    if (reFix && reFix.testFileHashes) gateTestHashes = reFix.testFileHashes
 
     // PREUVE D'INTÉGRITÉ CÔTÉ SCRIPT (critère 1 du bug prosperity, producteur ≠ vérificateur). On ne
     // CROIT PAS le testsUntouched/restoreFailed rendus par le fixer (haiku) sur son propre travail :
@@ -1084,7 +1127,7 @@ if (q1 && q1.gate === 'ok') {
   // seule), la proposition passe par le triage (review-validator) puis le fix-applier (Edit chirurgical,
   // re-vérifie), puis on RE-ANALYSE la gate. Le no-Edit reste vrai : c'est le fix-applier, sous triage.
   const adviceByCheck = new Map()
-  const nonAutofix = (residual.findings || []).filter((f) => f.status === 'fail' && !f.autofixable)
+  const nonAutofix = (residual.findings || []).filter((f) => f.status === 'fail' && !isAutofixable(f))
   if (nonAutofix.length) {
     phase('Quality')
     const advices = (await parallel(nonAutofix.map((f) => () => {
@@ -1152,6 +1195,7 @@ if (q1 && q1.gate === 'ok') {
             ? `Tu PEUX renforcer les tests quand la correction l'exige — c'est ton contrat — mais SEULEMENT PAR AJOUT : aucune assertion, aucun cas, aucun fichier de test retiré ou affaibli, aucun \`.skip(\`/\`.only(\` ajouté. Prouve-le par le contrôle du diff de test et rends \`testsDiffAdditiveOnly\`. `
             : `JAMAIS un fichier de test, `) +
           `JAMAIS une config d'outillage, JAMAIS un escape-hatch. Si un correction_prompt s'avère infondé une fois dans le code, rends-le notApplied avec le motif (ne force pas). ` +
+          `Liste dans \`applied[].files\` CHAQUE fichier que tu as créé ou modifié : c'est la liste que le script fera commiter. ` +
           `Puis RE-VÉRIFIE selon le mode : ` +
           (usesTests
             ? `modes tdd/test → ré-exécute \`${brief.testCommand}\` (0 failed) ET ` +
@@ -1174,6 +1218,7 @@ if (q1 && q1.gate === 'ok') {
         if (!qapplied || !reverifyOk) {
           return { ticket, changeDir, status: 'blocked-quality-fix', mode, quality: residual, qualityFix: qapplied, green, verify, worktreeDir: wtDir }
         }
+        qualityAppliedFiles = (qapplied.applied || []).flatMap((a) => (a && Array.isArray(a.files) ? a.files : []))
         log(`Quality gate — corrections appliquées : ${(qapplied.applied || []).length} · non appliquées : ${(qapplied.notApplied || []).length}`)
 
         // AUDIT DES ÉDITIONS DE TEST — producteur ≠ vérificateur jusqu'au bout. Dès qu'un applier DE
@@ -1196,16 +1241,22 @@ if (q1 && q1.gate === 'ok') {
           if (!tev || tev.verdict !== 'ok') {
             return { ticket, changeDir, status: 'blocked-quality-test-edit', mode, quality: residual, qualityFix: qapplied, testEdit: tev, green, verify, worktreeDir: wtDir }
           }
+          for (const t of tev.addedTests || []) if (t && t.file) gateAuditedTests.add(t.file)
           log(`Quality gate — éditions de test auditées : additivité confirmée · ${(tev.addedTests || []).length} test(s) ajouté(s) jugé(s) probants`)
         }
 
         // RE-ANALYSE après corrections : l'état résiduel final fait autorité pour la décision blocking.
-        residual = await agent(
+        const reApply = await agent(
           `Quality gate — RE-ANALYSE après corrections adaptées. Relis \`.claude/quality.json\` et RE-JOUE chaque check sur l'état courant du diff ` +
-          `(fichiers d'impl : ${JSON.stringify(implFiles)}). Rends l'état résiduel réel (blockingFailures / advisoryFailures).\n` +
+          `(fichiers d'impl : ${JSON.stringify(implFiles)}). Rends l'état résiduel réel (blockingFailures / advisoryFailures). ` +
+          `Renseigne \`testFileHashes\` : le sha256 du CONTENU de chaque fichier de test du ticket ${JSON.stringify(testFiles)} qui existe (\`sha256sum\`, clé = chemin repo-relatif).\n` +
           `BRIEF (files/verifMode/criteres):\n${briefJson}` + iso,
           { agentType: 'scd-spec-dev:quality-analyzer', schema: QUALITY_ANALYSIS, model: 'sonnet' },
-        ) || residual
+        )
+        residual = reApply || residual
+        // Des corrections viennent d'être appliquées : un hash antérieur ne décrit plus l'arbre. Sans
+        // re-analyse, les tests audités n'ont plus de référence (non prouvé → signalé, pas bloqué).
+        gateTestHashes = (reApply && reApply.testFileHashes) || null
       }
     }
   }
@@ -1385,25 +1436,33 @@ if (findings.length) {
   log('Aucun finding — triage sauté.')
 }
 
+// Fichiers écrits par le fix-applier de la review : ils DOIVENT partir dans le commit du Record (0.17.1 ne
+// commitait que implFiles — la branche de 004/09 ne compilait pas sans eux).
+let reviewAppliedFiles = []
 if (triaged.apply.length) {
   phase('Apply')
   const applied = await agent(
     `Applique EXACTEMENT ces findings retenus (rien d'autre), chirurgicalement — chaque édition ne touche que ce que son correction_prompt décrit. ` +
     `JAMAIS un fichier de test, JAMAIS un escape-hatch. Si un correction_prompt s'avère infondé une fois dans le code, rends-le notApplied avec le motif (ne force pas). ` +
+    `Liste dans \`applied[].files\` CHAQUE fichier que tu as créé ou modifié : c'est la liste que le script fera commiter. ` +
     `Puis RE-VÉRIFIE selon le mode : ` +
     (usesTests
-      ? `modes tdd/test → ré-exécute \`${brief.testCommand}\` (0 failed) ET \`${gitPrefix} add -N ${testFiles.join(' ')}\` puis \`${gitPrefix} diff -U0\` sur les fichiers de test VIDE (testsDiffEmpty=true), ou — tu n'as pas touché aux tests, mais le diff porte les tests du ticket — strictement ADDITIF (testsDiffAdditiveOnly=true : aucune assertion/cas retiré, aucun .skip(/.only(/.todo( ajouté).`
+      ? `modes tdd/test → ré-exécute \`${brief.testCommand}\` et rends \`reverify.failed\` lu sur ta sortie réelle (0 attendu). Tu n'as pas à juger le diff des tests : le script compare lui-même le contenu des fichiers de test à celui de la ceinture.`
       : `mode observé → rejoue la vérification observable pertinente, la preuve tient toujours.`) +
     `\nFindings retenus:\n${JSON.stringify(triaged.apply)}\nBRIEF (verifMode/testCommand):\n${JSON.stringify({ verifMode: mode, testCommand: brief.testCommand })}` + iso,
     { agentType: 'scd-spec-dev:fix-applier', schema: APPLY, model: 'sonnet' },
   )
   const rv = applied && applied.reverify
+  // L'intégrité des tests n'est plus le `testsDiffAdditiveOnly` que le fix-applier déclarait sur son propre
+  // travail (vide de sens pour un test neuf : tout diff contre /dev/null est « additif ») : le Record compare
+  // le hash de chaque test commité à celui de la ceinture.
   const reverifyOk = usesTests
-    ? (rv && rv.failed === 0 && (rv.testsDiffEmpty !== false || rv.testsDiffAdditiveOnly === true))
+    ? (rv && rv.failed === 0)
     : !!(rv || (applied && applied.applied))
   if (!applied || !reverifyOk) {
     return { ticket, changeDir, status: 'blocked-after-fix', mode, applied, triaged, green, verify, worktreeDir: wtDir }
   }
+  reviewAppliedFiles = (applied.applied || []).flatMap((a) => (a && Array.isArray(a.files) ? a.files : []))
   log(`Corrections appliquées : ${(applied.applied || []).length} · non appliquées : ${(applied.notApplied || []).length}`)
 }
 
@@ -1414,6 +1473,16 @@ phase('Record')
 const provenIds = verify
   ? criteriaOf(verify).filter((c) => c.verified).map((c) => c.id)
   : (brief.criteres || []).map((c) => c.id)
+// CE QUE LE COMMIT DOIT CONTENIR, calculé par le script (D2 de l'audit colibri : 0.17.1 ne passait que
+// implFiles — 17 PR sur ~28 sont parties sans leurs tests ou sans les corrections de review). Les tests du
+// ticket en font partie : les COMMITER n'est pas les éditer. Un fichier de test écrit par un applier sans
+// en avoir le droit (hors tests du ticket et hors éditions auditées de la gate) n'y entre pas : il reste
+// dans l'arbre et fait échouer le contrôle d'arbre propre ci-dessous.
+const isTestPath = (p) => /(^|\/)(tests?|__tests__)\//.test(p) || /\.(test|spec)\.[^/]+$/.test(p)
+const allowedTests = new Set([...testFiles, ...qualityTestEdits, ...gateAuditedTests])
+const fromAppliers = [...qualityAppliedFiles, ...reviewAppliedFiles].filter((p) => !isTestPath(p) || allowedTests.has(p))
+const commitFiles = Array.from(new Set([...implFiles, ...allowedTests, ...fromAppliers]))
+  .filter((p) => typeof p === 'string' && p.trim() !== '')
 const record = await agent(
   `Enregistre la progression du ticket ${ticket}. Tu es DÉJÀ sur la branche dédiée \`${branchInfo.branch}\` ` +
   `(créée en phase Branch${wtDir ? `, checkoutée dans le worktree` : ``}) — n'en crée aucune autre, ne change pas de branche. ` +
@@ -1421,10 +1490,16 @@ const record = await agent(
   `Coche ([ ] → [x]) les SEULS critères PROUVÉS — leurs ids : ${JSON.stringify(provenIds)} — et rien d'autre. ` +
   `Un critère absent de cette liste (en attente d'un constat humain, humanCheckRequired) reste [ ]. ` +
   `Vérifie \`${gitPrefix} branch --show-current\` = \`${branchInfo.branch}\` (sinon STOP, stopped:true). ` +
-  `Index sélectif (impl + fichier ticket, jamais git add -A), un commit par tranche observable si possible, message court au scope du ticket. Jamais --no-verify. ` +
-  `Fichiers d'impl modifiés : ${JSON.stringify(implFiles)}` + iso,
+  `1) AVANT de stager, rends \`testFileHashes\` : pour chaque fichier de ${JSON.stringify(testFiles)}, le sha256 de son contenu (\`sha256sum\` ou \`shasum -a 256\`, hex seul ; la chaîne « absent » si le fichier n'existe pas ; clé = le chemin tel qu'écrit ici). ` +
+  `2) Stage EXACTEMENT, parmi la liste ci-dessous, les fichiers que \`${gitPrefix} status --porcelain --untracked-files=all\` montre (créés, modifiés ou supprimés), plus le fichier ticket — jamais \`git add -A\`, aucun fichier hors liste même s'il est sale. Les TESTS de la liste en font partie : tu les commites, tu ne les édites jamais. ` +
+  `3) Un commit par tranche observable si possible, message court au scope du ticket. Jamais --no-verify. ` +
+  `4) APRÈS le dernier commit, rends \`porcelainAfter\` = la sortie BRUTE de \`${gitPrefix} status --porcelain --untracked-files=all\` (chaîne vide si l'arbre est propre) — ne la filtre pas, ne la commente pas, ne commite rien de plus pour la vider.\n` +
+  `Fichiers à commiter : ${JSON.stringify(commitFiles)}` + iso,
   { agentType: 'scd-spec-dev:progress-recorder', schema: RECORD, model: 'haiku' },
 )
+if (!record) {
+  return { ticket, changeDir, status: 'blocked-record', note: 'progress-recorder sans retour — aucun commit attesté, PR non ouverte', worktreeDir: wtDir }
+}
 // Filet déterministe : la branche portant les commits DOIT être celle posée par branch-setup.
 if (record && record.branch && record.branch !== branchInfo.branch) {
   return {
@@ -1436,6 +1511,40 @@ if (record && record.branch && record.branch !== branchInfo.branch) {
 }
 if (record && record.stopped) {
   return { ticket, changeDir, status: 'blocked-record', record, note: 'progress-recorder s\'est arrêté (mauvaise branche)', worktreeDir: wtDir }
+}
+
+// INTÉGRITÉ DES TESTS jusqu'au commit (D7 de l'audit) : chaque test du ticket commité doit avoir le contenu
+// que la ceinture a vérifié — ou, s'il a été édité sous audit par la gate, celui de la dernière analyse de la
+// gate. Le SCRIPT compare les hash rendus par deux agents qui n'ont pas écrit les tests. Comme dans la gate,
+// seul un changement PROUVÉ bloque (deux hash présents et différents, ou fichier devenu « absent ») ; une
+// référence manquante est signalée.
+const testIntegrity = (beltHashes, audited, gateHashes, recordHashes, files) => {
+  const touched = []
+  const unproven = []
+  for (const p of files) {
+    const ref = audited.has(p) ? (gateHashes && gateHashes[p]) : (beltHashes && beltHashes[p])
+    const now = recordHashes && recordHashes[p]
+    if (!ref || !now) unproven.push(p)
+    else if (now !== ref) touched.push(p)
+  }
+  return { touched, unproven }
+}
+// ARBRE PROPRE après le commit : ce qui reste dans `git status` est un fichier que le run a écrit sans le
+// déclarer, ou qu'il a écrit sans droit (test créé par un applier, sonde d'un juge, édition du change).
+// Il ne part pas en PR en silence : le ticket échoue et l'humain tranche.
+const leftoversOf = (porcelain) => String(porcelain || '').split('\n').map((l) => l.replace(/\s+$/, '')).filter((l) => l.trim() !== '')
+const integrity = usesTests
+  ? testIntegrity((verify && verify.beltPassed && verify.beltPassed.testFileHashes) || null, gateAuditedTests, gateTestHashes, record.testFileHashes, testFiles)
+  : { touched: [], unproven: [] }
+const leftovers = leftoversOf(record.porcelainAfter)
+if (integrity.unproven.length) log(`⚠ Intégrité non prouvée (hash manquant) pour ${integrity.unproven.length} test(s) : ${integrity.unproven.join(', ')}`)
+if (integrity.touched.length) {
+  log(`Tests MODIFIÉS après la ceinture, hors audit : ${integrity.touched.join(', ')} → blocked-tests-touched-after-verify`)
+  return { ticket, changeDir, status: 'blocked-tests-touched-after-verify', mode, touchedTests: integrity.touched, leftovers, record, worktreeDir: wtDir }
+}
+if (leftovers.length) {
+  log(`Arbre NON PROPRE après le commit (${leftovers.length} entrée(s)) → blocked-record-incomplete : ${leftovers.join(' · ')}`)
+  return { ticket, changeDir, status: 'blocked-record-incomplete', mode, leftovers, commitFiles, record, worktreeDir: wtDir }
 }
 
 // Preuve d'exécution pour la description (0 failed / diff test vide, ou preuve observable).
