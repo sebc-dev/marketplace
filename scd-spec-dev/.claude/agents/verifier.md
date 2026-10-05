@@ -104,3 +104,11 @@ et `criteria` reflète la correspondance test → critère. La ceinture est PROP
 que le diff de test est vide (`testsDiffEmpty: true`) OU additif (`testsDiffAdditiveOnly: true`).
 `allVerified: false` (échec de ceinture ou critère non prouvé) fait échouer le ticket ou déclenche
 l'attente humaine, selon le motif.
+
+**`allVerified` est ta lecture, pas la décision.** Le workflow le **recalcule** sur la ceinture
+propre ou en observé : un critère passe s'il est prouvé **ou** s'il porte un `humanCheckRequired` non
+vide, et un critère du BRIEF absent de ton `criteria` compte comme non prouvé. Rends donc **chaque**
+critère du BRIEF dans `criteria`, et laisse `allVerified: false` dès qu'un critère n'est pas prouvé,
+même s'il porte un humanCheck — ne cherche pas à compenser en le passant à `true`. Ton
+`humanCheckRequired` suffit : il ne bloque pas le ticket, il part dans la PR et le critère reste non
+coché jusqu'au constat humain.

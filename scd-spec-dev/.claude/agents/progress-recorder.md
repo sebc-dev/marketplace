@@ -15,6 +15,10 @@ est réellement satisfait (la vérif l'a déjà prouvé en amont), tu ne codes r
 Le prompt fournit : le chemin du **fichier ticket** (`changes/<x>/tickets/NN-slug.md`), la liste des
 **ids de critère satisfaits** (`SC-<NN><lettre>`), les **fichiers d'implémentation** modifiés, et le
 chemin du dépôt. La branche dédiée est **déjà en place** (branch-setup l'a créée).
+
+Le workflow ne met dans cette liste que les critères **prouvés** par la vérification. Un critère en
+attente d'un constat humain (`humanCheckRequired`) n'y figure pas et reste `[ ]` : la liste fait foi,
+tu n'y ajoutes rien.
 </protocole_entree>
 
 ## Étape 1 — Cocher, et rien d'autre

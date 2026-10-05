@@ -211,8 +211,9 @@ retourné :
   - Si **`pr.stacked`** : la PR est ouverte en **draft** (labels `stacked`/`needs-sync`, bloc
     d'avertissement). Rappelle qu'elle **ne doit pas être mergée directement** : merger d'abord la
     dépendance, puis `/scd-spec-dev:sync <change> NN`.
-  - Si **`humanCheckRequired`** non vide (mode observé) : la PR porte une checklist de points qu'un
-    humain doit constater (rendu visuel, effet externe).
+  - Si **`humanCheckRequired`** non vide (mode observé, ou critère inobservable en tdd/test) : la PR
+    porte une checklist de points qu'un humain doit constater (rendu visuel, effet externe, CSP). Ces
+    critères restent **non cochés** dans le ticket jusqu'au constat humain.
   - Le retour porte **`pageManifest`** → enchaîne sur l'**étape 6bis** : la page de relecture.
 - **`blocked-branch`** → la branche dédiée n'a pas pu être posée (arbre sale au moment de brancher, ou
   problème git) ; **rien n'a été écrit**. Commiter/remiser puis relancer.
@@ -237,12 +238,16 @@ retourné :
 - **`blocked-red`** / **`blocked-tests-modified`** (tdd) · **`blocked-impl`** (test/observé/aucun :
   l'impl n'a pas passé l'intégration) · **`blocked-verify`** (le `verifier` n'a pas obtenu la ceinture
   ou une preuve observable) · **`blocked-after-fix`** → explique le blocage et la reprise (étape 6ter). **Aucune PR
-  n'est ouverte pour un ticket bloqué** ; la branche dédiée existe déjà. En tdd/test, `blocked-verify`
-  n'est rendu qu'**après** la passe de self-correction bornée §14 (c) : une ceinture **propre** dont un
-  critère reste inobservable par la stratégie test est d'abord retentée **une** fois en observé (preuve
-  montée ou `humanCheckRequired` — le run poursuit alors, le humanCheck coule à la PR) ; il ne reste
-  bloqué que si un critère demeure non prouvé. Une ceinture **violée** (test neutralisé, `failed ≠ 0`)
-  n'est **jamais** self-corrigée : elle bloque tel quel.
+  n'est ouverte pour un ticket bloqué** ; la branche dédiée existe déjà. C'est le **workflow** qui
+  décide `blocked-verify`, jamais l'`allVerified` rendu par le verifier : un critère passe s'il est
+  prouvé **ou** s'il porte un `humanCheckRequired` non vide, et un critère que le verifier n'a pas
+  rendu compte comme non prouvé. En tdd/test, `blocked-verify` n'est rendu qu'**après** la passe de
+  self-correction bornée §14 (c) : une ceinture **propre** dont un critère reste non prouvé **sans**
+  humanCheck est d'abord retentée **une** fois en observé (preuve montée ou `humanCheckRequired`) ; il
+  ne reste bloqué que si un critère demeure non prouvé. Un humanCheck déjà posé par le verifier de la
+  ceinture ne déclenche pas de passe et ne bloque pas : le run poursuit, le humanCheck coule à la PR.
+  Une ceinture **violée** (test neutralisé, `failed ≠ 0`) n'est **jamais** self-corrigée : elle bloque
+  tel quel.
 - **`blocked-quality`** / **`blocked-quality-config`** / **`blocked-quality-tests-touched`** /
   **`blocked-quality-fix`** → la quality gate a un check `blocking` résiduel en échec, un
   `.claude/quality.json` illisible, le **hash d'un test non gardé a changé** (le fixer l'a modifié sans

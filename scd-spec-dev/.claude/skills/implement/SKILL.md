@@ -80,6 +80,9 @@ hacking, à la place du hook write-time qu'on assume ne pas avoir (cf. skill `re
 retente **une** fois ce critère en observé (preuve montée ou `humanCheckRequired`) avant de rendre
 `blocked-verify` — le blocage de fin de run devient résolu-en-vol ou escaladé bon marché, la barre de
 sortie inchangée. Une ceinture **violée** (test modifié, `failed ≠ 0`) n'est **jamais** self-corrigée.
+**La barre de sortie est tenue par le script**, pas par l'`allVerified` du verifier : un critère passe
+s'il est prouvé ou s'il porte un `humanCheckRequired` non vide. Un humanCheck déjà posé par la
+ceinture ne déclenche aucune passe et ne bloque pas ; il part dans la PR et le critère reste non coché.
 
 **Le lien critère → test** (`tdd`/`test`) : un critère = **un test nommé** `SC-<NN><lettre>`, un pour
 un → matrice `critère → test → statut` dans la PR ; le `coverage-reviewer` bloque tout critère

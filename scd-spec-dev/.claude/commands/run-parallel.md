@@ -188,6 +188,9 @@ inspection humaine).
 
 - Les tickets `done` ont vu leur worktree **supprimé** après création de la PR ; les tickets bloqués
   **gardent le leur**.
+- Un ticket `done` dont **`humanCheckRequired`** est non vide (mode observé, ou critère inobservable
+  en tdd/test) : sa PR porte la checklist des points qu'un humain doit constater, et ces critères
+  restent **non cochés** dans le ticket. Nomme-les par ticket.
 - **PR empilées (`pr.stacked`)** : un ticket empilé (2ᵉ+ d'une chaîne, ou stacké sur une dépendance
   hors-ensemble) ouvre sa PR en **draft** (labels `stacked`/`needs-sync`). C'est voulu — **ne pas
   merger avant `/scd-spec-dev:sync`** une fois la dépendance mergée. La 1ʳᵉ PR d'une chaîne sur le

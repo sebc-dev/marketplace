@@ -12,7 +12,7 @@ export const meta = {
     { title: 'Red', detail: 'test-writer : (tdd) 1 test nommé par critère AVANT le code, état ROUGE ; (test) tests écrits juste APRÈS Green, état VERT' },
     { title: 'Validate', detail: 'test-validator : (tdd · test) 1 critère = 1 test, cas limites, anti-tautologie' },
     { title: 'Green', detail: 'implementer : (tdd · test) implémente jusqu\'au vert sans toucher aux tests ; (observé) prouve l\'intégration ; (aucun) spike' },
-    { title: 'Verify', detail: 'verifier : (tdd · test) CEINTURE — rejeu sur checkout propre + git diff test vide ; (observé) preuve observable / humanCheckRequired. §14 (c) : une passe de self-correction BORNÉE (une seule) si la ceinture est propre mais un critère reste inobservable par la stratégie test → tentée en observé (preuve montée ou humanCheckRequired) ; une ceinture violée n\'est JAMAIS self-corrigée' },
+    { title: 'Verify', detail: 'verifier : (tdd · test) CEINTURE — rejeu sur checkout propre + git diff test vide ; (observé) preuve observable / humanCheckRequired. §14 (c) : une passe de self-correction BORNÉE (une seule) si la ceinture est propre mais un critère reste inobservable par la stratégie test → tentée en observé (preuve montée ou humanCheckRequired) ; une ceinture violée n\'est JAMAIS self-corrigée. allVerified RECALCULÉ par le script (preuve OU humanCheckRequired non vide, par critère du BRIEF) : un humanCheck ne bloque pas, il coule à la PR, non coché' },
     { title: 'Quality', detail: 'quality-analyzer (localise + qualifie impl/test/mixed) → quality-fixer (autofix sûr, tests protégés par SNAPSHOT/RESTAURATION — jamais de git checkout : la gate ne détruit aucun contenu ; un autofix additif sur un test neuf est GARDÉ et audité par test-edit-validator, pas bloqué) → escalade des échecs non-autofixables : chaque check routé vers SON agent dédié quality-<id> (co-écrit par /scd-spec-dev:quality-agents, sinon générique quality-advisor) → triage → applier → re-analyze. L\'applier est le fix-applier générique (jamais les tests) ou, si quality.json déclare un applier DE PROJET, celui-ci — seul autorisé à renforcer les tests, ses éditions auditées en contexte frais par test-edit-validator (additivité rejouée + tests ajoutés jugés). blocking résiduel échoue le ticket, advisory → findings. No-op sans .claude/quality.json' },
     { title: 'Context', detail: 'review-context : dossier de contexte (table des invariants docs/architecture.md structurée, sous-graphe du modèle LikeC4 par le MCP likec4, ADR, décisions/hors-périmètre) résolu UNE fois pour les six reviewers de code' },
     { title: 'Review', detail: 'HUIT reviewers en parallèle, contexte frais : architecture, sécurité, conventions, propreté, error-handling, couverture + change (niveau artefact) + integrity (escape-hatches/chemins protégés)' },
@@ -864,6 +864,21 @@ const implFiles = (green && green.implFiles) || []
 const testFiles = (tests && tests.testFiles) || []
 armRerun() // mode `test` : le rejeu commence à la ceinture (no-op dans les autres modes, déjà armé)
 
+// BARRE DE SORTIE du Verify, tenue par le SCRIPT dans tous les modes (producteur ≠ vérificateur, comme
+// les hash de tests de la quality gate) : l'`allVerified` rendu par le verifier n'est JAMAIS cru. Sur
+// colibri, à situation identique (ceinture propre, seuls des humanCheck restants), il valait true 11
+// fois sur 20 — et chaque `false` sortait en blocked-verify à tort. Un critère est ACQUIS s'il est
+// prouvé, ou s'il porte un humanCheckRequired NON VIDE (il coule alors à la PR, à constater, non coché).
+// Un critère du BRIEF que le verifier n'a pas rendu n'est pas acquis ; aucun critère du tout ne passe pas.
+const hasHumanCheck = (c) => !!c && typeof c.humanCheckRequired === 'string' && c.humanCheckRequired.trim() !== ''
+const criteriaOf = (v) => {
+  const rendered = new Map(((v && v.criteria) || []).filter((c) => c && c.id).map((c) => [c.id, c]))
+  for (const c of brief.criteres || []) if (c && c.id && !rendered.has(c.id)) rendered.set(c.id, { id: c.id, text: c.text, verified: false })
+  return Array.from(rendered.values())
+}
+const unsettled = (v) => criteriaOf(v).filter((c) => !c.verified && !hasHumanCheck(c))
+const settle = (v) => { v.allVerified = criteriaOf(v).length > 0 && unsettled(v).length === 0 }
+
 // La CEINTURE verify-time est le rattrapage réel du reward hacking (doctrine 0-hook-write-time).
 // tdd/test : le verifier rejoue les tests sur checkout propre + exige un git diff test vide.
 // observé  : preuve observable par critère / humanCheckRequired. aucun : pas de verify (spike).
@@ -878,7 +893,8 @@ if (usesTests) {
     `Cite dans beltPassed.removedAssertions et beltPassed.addedNeutralizers ce que tu trouves ; l'un des deux non vide ⇒ additiveOnly=false = neutralisation → échec, remonté tel quel. Au doute → additiveOnly=false. ` +
     `3) Rejoue \`${brief.testCommand}\` et confirme 0 failed sur TA sortie réelle (beltPassed.failed=0). ` +
     `4) DÉFAIS l'intent-to-add : \`${gitPrefix} reset -q -- ${testFiles.join(' ')}\` — le \`add -N\` de l'étape 1 a mis les fichiers neufs dans l'index avec un blob VIDE ; le laisser piégerait tout \`checkout\`/\`restore\` aval (il ramènerait le blob vide, pas le contenu de travail). Rends l'arbre exactement comme trouvé. ` +
-    `Renseigne \`criteria\` (correspondance test → critère) et \`allVerified\`.\n` +
+    `Renseigne \`criteria\` (correspondance test → critère) — CHAQUE critère du BRIEF y figure : un critère absent compte comme non prouvé. ` +
+    `Un critère que la stratégie test ne constate pas → \`verified: false\` + \`humanCheckRequired\`. \`allVerified\` est ta lecture ; le workflow le recalcule.\n` +
     `Fichiers d'impl : ${JSON.stringify(implFiles)}\nBRIEF:\n${briefJson}` + iso,
     { agentType: 'scd-spec-dev:verifier', schema: VERIFY, model: 'opus' },
   )
@@ -889,16 +905,19 @@ if (usesTests) {
   //   la ceinture est propre → on tente UNE fois la stratégie suivante, en mode observé (strategie-verif
   //   étape 3 : niveau test inatteignable → observé) : preuve observable montée, ou humanCheckRequired.
   //   Résout-en-vol ou escalade bon marché le blocked-verify de fin de run, sans toucher à la barre de sortie.
+  //   Un critère auquel le verifier de la ceinture a DÉJÀ posé un humanCheckRequired n'a rien à rattraper :
+  //   il est acquis par `settle` et coule à la PR, sans passe — c'est le cas que 0.17.1 bloquait à tort.
   // Un diff de test non vide n'est PAS une violation s'il est prouvé strictement ADDITIF (fichier neuf,
   //   cas ajoutés). Seul un diff qui RETIRE/affaiblit un test ou ajoute un neutralisant viole la ceinture.
   const beltViolated = (v) => !!(v && v.beltPassed && (v.beltPassed.failed !== 0 || (v.beltPassed.testsDiffEmpty === false && v.beltPassed.testsDiffAdditiveOnly !== true)))
-  if (verify && !verify.allVerified && !beltViolated(verify)) {
-    const unproven = (verify.criteria || []).filter((c) => c && !c.verified && !c.humanCheckRequired)
+  // Ceinture violée : ni recalcul ni rattrapage — elle bloque telle quelle, quoi que dise allVerified.
+  if (verify && !beltViolated(verify)) {
+    const unproven = unsettled(verify)
     if (unproven.length) {
       phase('Verify')
       const sc = await agent(
         `SELF-CORRECTION BORNÉE §14 (c) du ticket ${ticket} — UNE seule passe, AUCUNE boucle. La ceinture est PROPRE ` +
-        `(0 failed, git diff test VIDE) mais ${unproven.length} critère(s) ne sont pas prouvés par la stratégie « ${mode} » : ` +
+        `(0 failed, diff de test vide ou strictement additif) mais ${unproven.length} critère(s) ne sont pas prouvés par la stratégie « ${mode} » : ` +
         `${unproven.map((c) => c.id).join(', ')}. Pour CHACUN, tente la stratégie SUIVANTE en mode OBSERVÉ — obtiens une ` +
         `PREUVE OBSERVABLE (monte le composant / ré-exécute le critère et capture la sortie réelle), ou déclare un ` +
         `\`humanCheckRequired\` avec l'instruction exacte pour l'humain. Tu ne touches à AUCUN fichier de test (la ceinture ` +
@@ -908,16 +927,21 @@ if (usesTests) {
         `BRIEF:\n${briefJson}\nCritères à rattraper:\n${JSON.stringify(unproven)}` + iso,
         { agentType: 'scd-spec-dev:verifier', schema: VERIFY, model: 'opus' },
       )
+      let resolved = 0
       if (sc && Array.isArray(sc.criteria)) {
-        const byId = new Map((verify.criteria || []).map((c) => [c.id, c]))
-        let resolved = 0
-        for (const c of sc.criteria) if (c && c.id && (c.verified || c.humanCheckRequired)) { byId.set(c.id, c); resolved++ }
+        const byId = new Map(criteriaOf(verify).map((c) => [c.id, c]))
+        const asked = new Set(unproven.map((c) => c.id))
+        for (const c of sc.criteria) if (c && asked.has(c.id) && (c.verified || hasHumanCheck(c))) { byId.set(c.id, c); resolved++ }
         verify.criteria = Array.from(byId.values())
-        verify.allVerified = !verify.criteria.some((c) => c && !c.verified && !c.humanCheckRequired)
-        verify.selfCorrected = { attempted: unproven.map((c) => c.id), resolved }
-        log(`Self-correction §14 (c) : ${resolved}/${unproven.length} critère(s) rattrapé(s) — preuve observée ou humanCheckRequired${verify.allVerified ? '' : ' · reste non prouvé → blocked-verify'}`)
       }
+      verify.selfCorrected = { attempted: unproven.map((c) => c.id), resolved }
+      settle(verify)
+      log(`Self-correction §14 (c) : ${resolved}/${unproven.length} critère(s) rattrapé(s) — preuve observée ou humanCheckRequired${verify.allVerified ? '' : ' · reste non prouvé → blocked-verify'}`)
+    } else {
+      settle(verify)
     }
+    const hcIds = criteriaOf(verify).filter((c) => !c.verified && hasHumanCheck(c)).map((c) => c.id)
+    if (verify.allVerified && hcIds.length) log(`Ceinture propre · ${hcIds.join(', ')} à constater par un humain (humanCheckRequired) → poursuite vers la PR, critère(s) non coché(s)`)
   }
   if (!verify || !verify.allVerified || beltViolated(verify)) {
     return { ticket, changeDir, status: 'blocked-verify', mode, verify, green, tests, worktreeDir: wtDir }
@@ -929,14 +953,15 @@ if (usesTests) {
     `si le critère est déjà exécutable (CI local, terraform plan/apply, script one-shot, requête), RÉ-EXÉCUTE-le et capture la sortie (evidence) ; ` +
     `sinon joue la vérification observable dédiée. Ce que tu ne PEUX PAS constater par exécution (rendu visuel, effet externe, ressenti UX) → ` +
     `\`humanCheckRequired\` avec l'instruction exacte pour l'humain — ne coche JAMAIS un critère non réellement observé. ` +
-    `allVerified=true si chaque critère a une preuve OU un humanCheckRequired documenté.\n` +
+    `CHAQUE critère du BRIEF figure dans \`criteria\` : un critère absent compte comme non prouvé. \`allVerified\` est ta lecture ; le workflow le recalcule.\n` +
     `Fichiers d'impl : ${JSON.stringify(implFiles)}\nBRIEF:\n${briefJson}` + iso,
     { agentType: 'scd-spec-dev:verifier', schema: VERIFY, model: 'opus' },
   )
+  if (verify) settle(verify) // même barre qu'en tdd/test : preuve OU humanCheckRequired non vide, par critère
   if (!verify || !verify.allVerified) {
     return { ticket, changeDir, status: 'blocked-verify', mode, verify, green, worktreeDir: wtDir }
   }
-  const hc = (verify.criteria || []).filter((c) => c && c.humanCheckRequired)
+  const hc = (verify.criteria || []).filter((c) => !c.verified && hasHumanCheck(c))
   log(`Vérif observé : ${verify.criteria ? verify.criteria.filter((c) => c && c.verified).length : 0} critère(s) prouvé(s)${hc.length ? ` · ${hc.length} à vérifier par un humain` : ''}`)
 }
 
@@ -1383,11 +1408,18 @@ if (triaged.apply.length) {
 }
 
 phase('Record')
+// Le script choisit ce qui se coche : un critère PROUVÉ par le Verify, jamais un humanCheckRequired, qui
+// reste [ ] jusqu'au constat humain (0.17.1 passait tous les ids du BRIEF). Sans Verify (mode aucun,
+// spike), aucune preuve par critère n'existe : la liste du BRIEF tient, comme avant.
+const provenIds = verify
+  ? criteriaOf(verify).filter((c) => c.verified).map((c) => c.id)
+  : (brief.criteres || []).map((c) => c.id)
 const record = await agent(
   `Enregistre la progression du ticket ${ticket}. Tu es DÉJÀ sur la branche dédiée \`${branchInfo.branch}\` ` +
   `(créée en phase Branch${wtDir ? `, checkoutée dans le worktree` : ``}) — n'en crée aucune autre, ne change pas de branche. ` +
   `Fichier ticket : ` + (wtDir ? `\`${wtDir}/${ticketGlob}\`` : `\`${ticketGlob}\``) + `. ` +
-  `Coche ([ ] → [x]) les critères satisfaits — leurs ids : ${JSON.stringify((brief.criteres || []).map((c) => c.id))} — et rien d'autre. ` +
+  `Coche ([ ] → [x]) les SEULS critères PROUVÉS — leurs ids : ${JSON.stringify(provenIds)} — et rien d'autre. ` +
+  `Un critère absent de cette liste (en attente d'un constat humain, humanCheckRequired) reste [ ]. ` +
   `Vérifie \`${gitPrefix} branch --show-current\` = \`${branchInfo.branch}\` (sinon STOP, stopped:true). ` +
   `Index sélectif (impl + fichier ticket, jamais git add -A), un commit par tranche observable si possible, message court au scope du ticket. Jamais --no-verify. ` +
   `Fichiers d'impl modifiés : ${JSON.stringify(implFiles)}` + iso,
@@ -1410,10 +1442,12 @@ if (record && record.stopped) {
 const proof = usesTests
   ? (verify && verify.beltPassed ? verify.beltPassed.evidence : (green.testState && green.testState.evidence))
   : (verify && verify.criteria ? verify.criteria.map((c) => `${c.id}: ${c.verified ? (c.evidence || 'vérifié') : (c.humanCheckRequired || 'non vérifié')}`).join('\n') : (green.integration && green.integration.output))
-// humanCheckRequired remonte à la PR en observé ET quand la self-correction §14 (c) en a produit
-// (un critère test/tdd inobservable rattrapé en observé) — sinon un rattrapage resterait invisible au reviewer.
-const humanChecks = (verify && verify.criteria && (mode === 'observé' || verify.selfCorrected))
-  ? verify.criteria.filter((c) => c && c.humanCheckRequired).map((c) => `${c.id} : ${c.humanCheckRequired}`)
+// Tout critère NON PROUVÉ qui porte un humanCheckRequired non vide remonte à la PR, QUEL QUE SOIT le chemin qui l'a
+// posé : verifier observé, verifier de la ceinture tdd/test, ou self-correction §14 (c). 0.17.1 le
+// conditionnait au mode observé ou à la passe §14 (c) : un humanCheck posé par la ceinture disparaissait
+// de la PR alors que le critère était coché.
+const humanChecks = verify
+  ? criteriaOf(verify).filter((c) => !c.verified && hasHumanCheck(c)).map((c) => `${c.id} : ${c.humanCheckRequired}`)
   : []
 
 // La description est un ARTEFACT DE REVIEW : juger le fonctionnel ET le code sans rouvrir les specs.
@@ -1426,7 +1460,7 @@ const desc = canDescribe
   ? await agent(
       `Compose la description de la PR du ticket ${ticket} du change ${changeDir}, pour un REVIEWER HUMAIN. Corps Markdown EN COUCHES : ` +
       `1) TL;DR (30 s : ce que le ticket livre, mode ${mode}, verdict vert/attente humaine) ; 2) Ce que ça livre (context.why, backréférence proposal/story, hors-périmètre) ; ` +
-      `3) la MATRICE critère → test → statut (colonne « Preuve » = sortie capturée / humanCheckRequired en observé, ou pour un critère rattrapé par la self-correction §14 c en test/tdd) ; 4) Points à scruter ; ` +
+      `3) la MATRICE critère → test → statut (colonne « Preuve » = sortie capturée, ou l'instruction humanCheckRequired pour tout critère de \`humanCheckRequired\` — en observé, ou en test/tdd quand la ceinture ou la self-correction §14 c l'a posé : statut « à constater », jamais « vert », et le critère reste NON COCHÉ dans le ticket) ; 4) Points à scruter ; ` +
       `5) <details> Ce que la review a décidé — findings appliqués ET rejetés avec motif ; 6) <details> Preuve d'exécution. ` +
       (preflightRepairs.length ? `Si \`preflightRepairs\` est non vide, ajoute une ligne dans la couche 5 : les réparations mécaniques du triage §14 (ex. id de critère attribué), consignées, non bloquantes. ` : ``) +
       (qualityTestEdits.length ? `Si \`qualityTestEdits\` est non vide, dis-le explicitement dans la couche 4 : la quality gate a FORMATÉ ${qualityTestEdits.length} fichier(s) de test (autofix additif de lint/format, audité en contexte frais par le test-edit-validator — pas une neutralisation) : ${JSON.stringify(qualityTestEdits)}. ` : ``) +
@@ -1524,7 +1558,7 @@ const pageCriteria = (brief.criteres || []).map((c) => {
     id: c.id,
     text: c.text,
     test: byTest ? byTest.test : null,
-    status: verified && verified.verified ? 'vert' : (verified && verified.humanCheckRequired ? 'humanCheck' : 'non vérifié'),
+    status: verified && verified.verified ? 'vert' : (hasHumanCheck(verified) ? 'humanCheck' : 'non vérifié'),
     proof: verified ? (verified.evidence || verified.humanCheckRequired || null) : null,
   }
 })

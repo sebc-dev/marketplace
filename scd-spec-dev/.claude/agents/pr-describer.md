@@ -45,6 +45,9 @@ L'ordre de lecture recommandé se déduit du diff (le point d'entrée d'abord, l
    ```
 
    En `observé`, la colonne « Test » devient « Preuve » (sortie capturée / `humanCheckRequired`).
+   En `tdd`/`test`, un critère listé dans `humanCheckRequired` (posé par la ceinture ou par la
+   self-correction §14 c) a pour preuve l'instruction humanCheck et pour statut **« à constater »**,
+   jamais « vert » : il reste non coché dans le ticket jusqu'au constat humain.
 4. **Points à scruter** : ce sur quoi le reviewer humain doit concentrer son attention.
 
 **4bis. Impact architecture** — entre les Points à scruter et les `<details>` ; voir la section

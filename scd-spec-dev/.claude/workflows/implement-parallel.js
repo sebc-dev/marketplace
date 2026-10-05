@@ -95,6 +95,7 @@ for (const c of perChain.filter(Boolean)) {
       branch: r.branch || null,
       base: r.base || null,
       pr: r.pr || null,
+      humanCheckRequired: r.humanCheckRequired || [], // critères à constater par un humain, non cochés — listés dans la PR
       worktreeDir: r.worktreeDir || null, // conservé si échec/bloqué, null si supprimé après succès
       pageManifest: r.pageManifest || null, // matière de la page de relecture — rendue par la conversation principale, jamais ici
       note: r.note || null,
